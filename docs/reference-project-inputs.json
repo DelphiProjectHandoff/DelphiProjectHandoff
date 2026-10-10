@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "commit": "e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d",
+  "scope": "Explicit project references; transitive include/resource closure remains WP2 work",
+  "files": [
+    {
+      "path": "Converter.Advanced.CriticalAreas.pas",
+      "sha256": "0637ad98fac8056c3ae132be6f203e353b8c77e7f6e2f8db0bd1577bfd2721db",
+      "size": 29514
+    },
+    {
+      "path": "Converter.Advanced.DataAware.pas",
+      "sha256": "a55eb8bfe30072d5af8bf45bc8251ea2a33adc043895873a69d9585510284fe5",
+      "size": 17138
+    },
+    {
+      "path": "Converter.Advanced.ThirdParty.pas",
+      "sha256": "c60991ebd9a6434a674110c3a5434ee6f76ed0e932368869d32479955a681699",
+      "size": 37477
+    },
+    {
+      "path": "Converter.Advanced.WinAPI.pas",
+      "sha256": "062e37dca09164c01ef258417d8faa7a6b193063cd29ce77a45aaed8a17eca03",
+      "size": 46684
+    },
+    {
+      "path": "Converter.Core.Engine.pas",
+      "sha256": "073a64a09113e0a3dc41c1dbe8e723a436de7e1135d2079634cc37a63fa1552b",
+      "size": 104253
+    },
+    {
+      "path": "Converter.Core.FileManager.pas",
+      "sha256": "7f7165449bcf2341cd82518dcf4c18dd91414e94ebcb7b2bb33625392217e083",
+      "size": 12493
+    },
+    {
+      "path": "Converter.Core.Integration.pas",
+      "sha256": "d8d687bc8fabb18405dab0af5f940094efda6cd0e7c0c4d232ffa91008af29e3",
+      "size": 72869
+    },
+    {
+      "path": "Converter.Core.Types.pas",
+      "sha256": "a53ab7ea1c5d2c65023108cabd3539d610b08a22f66597343d5660062ec4812d",
+      "size": 24299
+    },
+    {
+      "path": "Converter.Generator.FMX.pas",
+      "sha256": "4df26ba0b7886b76210064bf6fe7754dba25c8deec49f57bf835b10f8abdc5f4",
+      "size": 103652
+    },
+    {
+      "path": "Converter.Mapper.Catalog.pas",
+      "sha256": "37bdd4f99458f2d6271ded4044ed36dcb96f8ea524eea161658e59eab9e91592",
+      "size": 62106
+    },
+    {
+      "path": "Converter.Mapper.Component.pas",
+      "sha256": "6a21ea4786f426b5dce6aa78f1166e527035c0c676fcefa3f32acefe75849a3c",
+      "size": 89152
+    },
+    {
+      "path": "Converter.Parser.DFM.pas",
+      "sha256": "545dff5511b7ac268c1a8193985b6910b4159f2268a94a284dd3e885d3852129",
+      "size": 27339
+    },
+    {
+      "path": "Converter.Parser.Pascal.pas",
+      "sha256": "a6d77adf813034c7c69bc9111ae079f0f9efb25a768173f8d6c8034288750db2",
+      "size": 50822
+    },
+    {
+      "path": "Converter.Project.Generator.pas",
+      "sha256": "bc2c51b2f2660cfad2c1be070ae13fc3c34e134651fd80790c878a6647468356",
+      "size": 45401
+    },
+    {
+      "path": "Converter.Reporting.Html.pas",
+      "sha256": "12d4db343cb482f0e1fa699a98879d67921c36b6ae0941f1345247bc4056d536",
+      "size": 19583
+    },
+    {
+      "path": "Converter.Reporting.Json.pas",
+      "sha256": "1a82c11946b72f24da78b62dd1bce0e0a0232d297784104a2e3860a83aab3f30",
+      "size": 7123
+    },
+    {
+      "path": "Converter.Reporting.Model.pas",
+      "sha256": "4d9db221a93ccc9f24bdded50b9a731e445a543b7a642900e39a79cf24159b1b",
+      "size": 4056
+    },
+    {
+      "path": "Converter.Reporting.Text.pas",
+      "sha256": "90258b3042365b674b43499f6fb5f39a87ae38ee4bc831eee38967c138deaae5",
+      "size": 11554
+    },
+    {
+      "path": "Converter.Rewrite.AutoFixes.pas",
+      "sha256": "be23ff705fd7e80a92a1a0d56362144cd99f4ad8d1d6aa928bfc74c6560e6e7e",
+      "size": 81839
+    },
+    {
+      "path": "Converter.Rewrite.Compatibility.pas",
+      "sha256": "3f283ce02cfea00d775922b8d0919d7cc4057c675d98228fce8d1914d31d935b",
+      "size": 76088
+    },
+    {
+      "path": "Converter.Rewrite.LiveBindings.pas",
+      "sha256": "d6c7aea517ba536edb59d2a4759d02bc5dd0141e3e180ae01557eeae45ca793a",
+      "size": 161222
+    },
+    {
+      "path": "Converter.Rewrite.RuntimeNormalization.pas",
+      "sha256": "0ab1af0a50742a00e65bd01b17602738d51b3f17524287bf576be9dedc8adb58",
+      "size": 51242
+    },
+    {
+      "path": "Converter.Rewrite.UsesClause.pas",
+      "sha256": "0b3235e53e4e72d954ec98886f85b179eb611c1993ab12aa01093a759b974055",
+      "size": 49822
+    },
+    {
+      "path": "MainForm.fmx",
+      "sha256": "4641a33a481ab0412695624277d741639f2869310f86afb2ca1934b2b7b1799a",
+      "size": 82620
+    },
+    {
+      "path": "MainForm.pas",
+      "sha256": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4",
+      "size": 79784
+    },
+    {
+      "path": "VCL2FMXConverter.dpr",
+      "sha256": "f22976719b2265a3fd451162b5f86ac450c6efd1e23e1c80af9c7c87ba91a9e8",
+      "size": 1785
+    },
+    {
+      "path": "VCL2FMXConverter.dproj",
+      "sha256": "36ff96dbd345d3d1aca6a39daf5f4b80cb1487a1d472420aa983996a3083ca91",
+      "size": 88224
+    }
+  ]
+}

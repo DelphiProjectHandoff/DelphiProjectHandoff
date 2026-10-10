@@ -1,0 +1,25 @@
+DPH WP0 decisions and provenance
+Last changed: 10 October 2026
+
+Authorization: Owner approved WP0 only and required a pre-change backup on D:\ for every phase. Backup completed before project creation at D:\DPH Backups\WP0_PreChange_20261010_185135. No post-change disk backup requested or made.
+
+ADR-001: Independent Delphi FMX project. No converter libraries, packages or build references. The only application unit is DPH.UI.Main. UI controls are in its FMX resource, editable in the IDE; no runtime control construction.
+ADR-002: Windows desktop approved explicitly by owner in this chat. WP0 validates Win32 Debug only. Compiler files: dcc32.exe and dcc64.exe version 37.0.59082.6021; compiler reports version 37.0. Build uses installed Studio\37.0\bin\rsvars.bat and elevated MSBuild.
+ADR-003: SQLite/FireDAC, one knowledge store per selected project, immutable generations and preservation of human knowledge are controlling design requirements. No storage implementation before WP1 approval.
+ADR-004: Pin converter v6.0.0 at e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d. Reference checkout is local-only and ignored by DPH Git. No code copied or adapted in WP0. No reference code, scripts or executables were run or compiled.
+ADR-005: Automated Windows build/test entry point is tools\build-wp0.cmd. It instantiates DPH's own FMX form without showing it and checks resource binding and component ownership. This is a build/resource smoke test, not parser or acceptance coverage. Hosted CI cannot be claimed without a configured licensed Delphi runner.
+ADR-006: Planning inputs preserved byte-for-byte. Handoff supersedes older approval labels. Existing global AGENTS.md preserved and not copied into a generated agent bundle.
+
+Reference provenance
+Origin: https://github.com/vcl2fmx/vcl2fmx.github.io
+Tag: v6.0.0
+Commit: e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d
+License reviewed: repository LICENSE declares Apache-2.0 except files/components marked otherwise; third-party materials retain separate terms. No conclusion that every asset is reusable. Before copying any file, review its own notices, dependencies and required attribution, record exact source checksum, adaptation reason, destination and tests.
+Candidate reuse review remains pending: Converter.Parser.Pascal.pas, Converter.Parser.DFM.pas, Converter.Core.FileManager.pas, Converter.Reporting.Model.pas, Converter.Reporting.Html.pas, Converter.Reporting.Json.pas. Not imported in WP0.
+docs\reference-inventory.json fingerprints the full repository. docs\reference-project-inputs.json separates explicit DPR/DPROJ application references from test fixtures. Transitive resource/include closure and conditional variants require WP2 analysis; these manifests do not claim complete semantic scope.
+Reacquire: git -c core.longpaths=true clone --depth 1 --branch v6.0.0 https://github.com/vcl2fmx/vcl2fmx.github.io.git samples\reference-vcl2fmx-v6.0.0
+Then verify the commit and inventory hashes. Never use moving main as the baseline.
+
+Deferred decisions: exact Atlas product/API and privacy rules; source snapshot retention/exclusion policy; optional AI consent; single-user policy confirmation before role implementation; runtime instrumentation requires separate authorization. These do not block this empty build baseline.
+
+Next package proposal (requires approval): WP1 storage schema/migrations, manifest identities, revisions, status flags, evidence linkage and atomic publication/recovery primitives. Make a new pre-change D:\ backup first. No WP1 code was written.

@@ -1,0 +1,13 @@
+/bin/*
+!/bin/.gitkeep
+/dcu/*
+!/dcu/.gitkeep
+/samples/reference-vcl2fmx-v6.0.0/
+*.res
+*.dproj.local
+*.identcache
+*.stat
+*.dsk
+__history/
+__recovery/
+/docs/wp0-build-diagnostic.log

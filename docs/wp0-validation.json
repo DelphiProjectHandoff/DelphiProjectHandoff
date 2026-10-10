@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "package": "WP0",
+  "date": "2026-10-10",
+  "reviewer": "Codex automated checks; owner review pending",
+  "toolchain": "37.0.59082.6021",
+  "configuration": "Win32 Debug",
+  "reference_commit": "e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d",
+  "database_schema": "not implemented",
+  "evidence": [
+    {
+      "path": "docs\\wp0-build.log",
+      "sha256": "b5726da6d46f36641d5d657dac861c16cd61c6e37fd63243c5bd573e837294f9"
+    },
+    {
+      "path": "docs\\reference-inventory.json",
+      "sha256": "be2cda446a7429ff97cda930779e6d1e2f25f1ec3954c2f0d7dd4e321bcb80f4"
+    },
+    {
+      "path": "docs\\reference-project-inputs.json",
+      "sha256": "fc245260637b690c1eb133e5250ec699c5d213869f46e7e4a9d9403876a9d454"
+    },
+    {
+      "path": "bin\\Win32\\Debug\\DelphiProjectHandoff.exe",
+      "sha256": "94ed401b4d1194e9ecc086c7f4f694b3b92b1b027123ca1c4ae14fd4e13073c5"
+    },
+    {
+      "path": "bin\\Win32\\Debug\\DPH.Tests.Baseline.exe",
+      "sha256": "ff1ec9ae6b67016b2c93c0bded892044a7801e21c32e14798c8f186cc662389c"
+    },
+    {
+      "path": "DPH_CODEX_HANDOFF.txt",
+      "sha256": "7613f963a7cc7ac10b9408058b82a1bc12624dac47119984a160f4fa8c03b8e4"
+    },
+    {
+      "path": "DPH_Master_Development_Specification_v1.md",
+      "sha256": "0e150cb409905b10512cbd72b4edd9439eb70cb1bc7fb585f1f56f92ee2f0469"
+    }
+  ],
+  "checks": [
+    {
+      "id": "WP0-BUILD",
+      "result": "pass",
+      "expected": "Build exit 0",
+      "observed": "Exit 0"
+    },
+    {
+      "id": "WP0-TEST",
+      "result": "pass",
+      "expected": "FMX form loads and components bind",
+      "observed": "PASS WP0-TEST"
+    },
+    {
+      "id": "AT-16",
+      "result": "partial",
+      "expected": "Scanner never changes selected source",
+      "observed": "Reference clean; scanner not implemented"
+    },
+    {
+      "id": "AT-01..15,AC-17..25",
+      "result": "not-run",
+      "expected": "Product acceptance",
+      "observed": "Not implemented in WP0"
+    }
+  ]
+}

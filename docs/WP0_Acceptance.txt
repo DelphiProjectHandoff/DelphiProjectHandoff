@@ -1,0 +1,24 @@
+DPH WP0 acceptance report
+Last changed: 10 October 2026
+Reviewer: Codex automated checks; owner review pending.
+
+Changed: independent .dpr/.dproj, one design-time FMX shell, automated build/resource test, required project directories, Git exclusions, provenance/inventory/decision records and this report. Original planning files and global AGENTS.md unchanged. No helper units, parser, database, publishing or translation implementation added.
+
+Environment: Windows; installed Delphi Win32 compiler 37.0, file version 37.0.59082.6021; configuration Win32 Debug. Schema/analyzer version: not implemented. Reference revision: e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d. Exact file hashes are in reference-inventory.json and reference-project-inputs.json.
+
+WP0-BACKUP PASS: both original files copied to D:\DPH Backups\WP0_PreChange_20261010_185135 before changes; their SHA-256 values match the unchanged originals.
+WP0-BUILD PASS: elevated tools\build-wp0.cmd returned zero; executable produced at bin\Win32\Debug\DelphiProjectHandoff.exe. See wp0-build.log.
+WP0-TEST PASS: actual FMX form resource instantiation, component field binding and owner relationship succeeded. This caught and corrected invalid serialized form dimension types during development.
+WP0-INDEPENDENCE PASS: application uses only Delphi/FMX framework units and DPH.UI.Main; build and test succeed without a converter build reference.
+WP0-CORPUS PASS: tag pinned, inventory hashed, explicit project references separately inventoried. Checkout completed with local Git long-path support; no converter source edits.
+WP0-PROVENANCE PASS: license notice reviewed; no copied code. File-level reuse approval/review must occur before any later copying.
+WP0-GOVERNANCE PASS: authorization limited to WP0, decisions recorded, owner global guardrails unchanged, deferred choices visible.
+
+AT-01 through AT-15: NOT RUN. Their product functionality belongs to later packages.
+AT-16: PARTIAL foundation evidence only. Reference checkout remains clean and inventoried; there is no DPH scanner yet, so scanner source-preservation acceptance is NOT claimed.
+AC-17 through AC-25: NOT RUN. Storage, parser, export and maintenance acceptance require later implementation.
+
+Known limitations: empty shell only; no Explorer/Inspector functionality or analysis. No IDE interaction or manual visual review performed. No Win64/Release validation. No hosted CI runner configured. Build evidence is local. Standard orange/blue product styling is deferred to the approved UI package; baseline label has a design-time blue font.
+
+WP0 review gate: stop here. Owner must review this baseline and authorize WP1 separately.
+

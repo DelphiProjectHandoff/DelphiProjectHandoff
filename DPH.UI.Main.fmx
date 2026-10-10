@@ -1,0 +1,21 @@
+object DPHMainForm: TDPHMainForm
+  Caption = 'Delphi Project Handoff - Experimental Software'
+  ClientHeight = 640
+  ClientWidth = 1000
+  Fill.Color = claWhite
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  object BaselineLabel: TLabel
+    Align = Top
+    Height = 56.000000000000000000
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 20.000000000000000000
+    Margins.Right = 20.000000000000000000
+    StyledSettings = []
+    TextSettings.Font.Size = 20.000000000000000000
+    TextSettings.FontColor = claBlue
+    Text = 'Delphi Project Handoff - WP0 build baseline'
+    TabOrder = 0
+  end
+end

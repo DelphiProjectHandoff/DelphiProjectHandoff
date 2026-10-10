@@ -1,0 +1,151 @@
+# DPH — Codex Implementation Handoff
+**Document:** `DPH_CODEX_HANDOFF.md`  
+**Version:** 1.0 • 10 October 2026  
+**Status:** Planning handoff only — **NOT AUTHORIZATION TO IMPLEMENT**  
+**Owner decision:** Phases **1 through 7 are APPROVED**. The accompanying master specification predates that final approval and contains outdated “approval pending” labels. Treat those labels as superseded by this handoff and the owner's explicit approval.
+
+## 0. START HERE — Instruction precedence and authorization
+
+1. Read and obey the **existing `AGENTS.md`** in the applicable repository and any inherited parent instructions. This document is **not** an `AGENTS.md` replacement and must **never** overwrite, rename, edit, or regenerate the owner's guardrails. Where requirements conflict, stop and request clarification rather than silently overriding those guardrails.
+2. Read this handoff together with **`DPH_Master_Development_Specification_v1.md`**. That master document is the technical design baseline covering Phases 3–7 and references the approved Phase 1–2 design and 16 acceptance tests. This handoff clarifies implementation order, governance, approval state, and deliverables; it does not waive any requirements.
+3. **Do not create a repository, project, folders, source files, migrations, or builds before the owner explicitly authorizes implementation.** Receipt of this handoff is not that authorization.
+4. Once authorized, work on **WP0 only**, then present evidence and pause for owner review. Do not automatically run through WP1–WP7.
+5. Make no architectural substitution affecting scope, provenance, read-only safety, source revisions, SQLite durability, or independence without prior owner approval. Record proposed changes in a decision log.
+
+## 1. Product charter and non-negotiable boundaries
+
+**Delphi Project Handoff (DPH)** is a standalone Delphi FMX application that thoroughly documents and explains **the specifically selected Delphi program**: source, forms, controls, logic, configuration, dependencies, outputs, tests, build, maintenance, user operation, and AI agent context. The goal is to enable a new programmer (“Mr. A”) to inherit and maintain a complex business-critical Delphi application using a reliable, deeply linked engineering and user reference.
+
+- **Project-centric**: one explicitly selected Delphi `.dproj`/`.dpr` or project group per DPH knowledge store. Do **not** drift into unrelated company systems, generic corporate knowledge management, or unreferenced repos.
+- **Independence**: VCL2FMXConverter is a separate product. **Never change its repo**, use it as a build/runtime dependency, establish a shared evolving library, or merge the projects. Its useful code may be copied and adapted after license/provenance review.
+- **Read-only discovery**: do not change input project source, compile/execute input code, load untrusted packages, launch scripts, connect to production services, or capture runtime information as part of passive scanning. Special runtime instrumentation requires distinct explicit authorization.
+- **Evidence before claims**: link every technical assertion to source/configuration/test/runtime evidence, or label it attributed human knowledge / unverified inference. No invented semantic edges or false claims of analysis completeness.
+- **One authoritative knowledge store per project**, derived documentation outputs. Automatic incremental reassessment is the approved default.
+- **Privacy and confidentiality**: no credentials, tokens, cryptographic secrets, unapproved source transfer, or external translation/AI calls without consent and safeguards.
+
+## 2. Required input and reference material
+
+### Controlling design files
+- `DPH_Master_Development_Specification_v1.md` — baseline charter, Phase 3 discovery pipeline, Phase 4 logical database model, Phase 5 publishing/translation/AI packaging, Phase 6 verification, Phase 7 work packages.
+- This file: `DPH_CODEX_HANDOFF.md` — approved-phase status, work authorization gate, instructions and handoff contract.
+- The owner's **existing** `AGENTS.md` — general guardrails; leave unchanged.
+
+### Pinned complexity corpus (reference only)
+- Project site: https://vcl2fmx.github.io/
+- Public source: https://github.com/vcl2fmx/vcl2fmx.github.io
+- Pinned reference: Git tag **`v6.0.0`**, not moving `main`; resolve and record exact commit and inventory fingerprints in WP0.
+- Critical units: `VCL2FMXConverter.dpr`, `VCL2FMXConverter.dproj`, `MainForm.pas`, `MainForm.fmx`, `Converter.Core.Engine.pas`, `Converter.Core.Integration.pas`, `Converter.Parser.Pascal.pas`, `Converter.Parser.DFM.pas`, `Converter.Core.FileManager.pas`, `Converter.Core.Types.pas`, `Converter.Mapper.Component.pas`, `Converter.Mapper.Catalog.pas`, `Converter.Project.Generator.pas`, `Converter.Reporting.Model.pas`, `Converter.Reporting.Html.pas`, `Converter.Reporting.Json.pas`, `Converter.Reporting.Text.pas`.
+- Separate the actual application's source and dependencies from contract-test fixture files; never interpret “all `.pas` files in repository” as the application's true build scope.
+- Direct v6 examples: `btnConvert` → `btnConvertClick` → anonymous worker → `ConversionThreadProc` → `TConverterEngine.Convert`; dry-run conditional; mapping-pack loading/interpretation; reports from `TConversionReportModel` to HTML, JSON and text.
+
+No requirement to bundle or redistribute the entire converter into DPH. Use the pinned corpus as a **test input**, not a dependency.
+
+## 3. Approved system design
+
+### 3.1 Main technical pipeline
+```
+Selected Delphi project
+  -> boundary/manifest and fingerprints
+  -> read-only input snapshot, decoding, lexing and preprocessing
+  -> Pascal + FMX/DFM + project-file parsing
+  -> symbol resolution and typed dependency/event/call graph
+  -> control-flow and selective data/side-effect analysis
+  -> evidence, uncertainty and coverage classification
+  -> revision-consistent transaction into SQLite
+  -> Explorer/Inspector, diagrams, HTML manuals and agent bundles
+```
+
+All stages expose versioned, testable contracts and diagnostics. Prefer explicit intermediate representations and headless analyzers rather than coupling parsing directly to FMX.
+
+### 3.2 Persistence
+- **SQLite via Delphi FireDAC**, one `.dphdb` per selected project, stored outside the analyzed source tree by default.
+- Persist normalized project/file/symbol/form/control/relationship/fact/evidence/knowledge/review/export metadata; source hashes, revision/generation IDs and analyzer versions.
+- Separate automatically derived facts from manually curated knowledge. Rescanning must never destroy manually authored notes or history.
+- Maintain distinct **modification detected**, **analysis stale**, **knowledge review needed**, **analysis failed**, and **manual reassessment requested** states rather than relying on a single Boolean.
+- Open the cached project immediately, verify fingerprints in background, and analyze only changed elements plus impacted relationships. A full rescan is user-invokable.
+- Commit a new coherent generation **atomically** only when its input fingerprints are valid; preserve the previous completed generation during failures, cancellation, or mid-scan source changes.
+- Support connected/detached mode, relocatable project-relative identifiers, optional approved source snapshots, retention, integrity checks, and disaster-safe migrations.
+- SQLite relational/indexed graph model; avoid a separate graph server unless formally approved.
+
+### 3.3 FMX application and Explorer
+- Three resizable panes: hierarchical Explorer, tabbed central workspace, context-sensitive Inspector. Persistent active-project identity and stale/review status.
+- Drill down from project → unit/form → class/control → method/event → statement/property → evidence and related objects.
+- Canonical entities have multiple navigation routes, including forward/reverse references, history, search, bookmarks, breadcrumbs, and object-level actions.
+- Screen viewer modes: thumbnail gallery, fit, native size, zoom/full-screen and component inspection. **Distinguish design-time reconstruction from actual runtime screenshots.**
+- Graph types: whole-program execution, procedure CFG, caller/callee, form navigation, data flow, change impact. Collapse large graphs; show uncertain edges visually.
+- HTML panels may be hosted in FMX. Ensure embedded content is sanitized and restricted to authorized local project data.
+
+### 3.4 Documentation and AI
+- One canonical documentation/knowledge model generates engineering guide, user manual, maintenance, build/deploy, troubleshooting, orientation, contextual help, and AI handoff.
+- HTML-first, offline-capable exports with internal linking/search, responsive views, print and optional PDF. Revisions and evidence carried through all views.
+- Atlas translation via an **adapter**, with actual provider/API, transport, licensing and confidentiality reviewed before connecting. Translate prose, not code identifiers/paths/SQL/protocol keys. Cache by content/revision/locale; review translations.
+- AI bundles: project manifest, exact source/configuration hashes, `AGENTS.md` **inside a generated agent handoff bundle only when explicitly requested** (never touch the owner's project-wide file), technical narrative, source indexes, typed relationship JSONL, evidence references, build/test/run constraints, known unknowns, coverage and validation checksums.
+- Provide full and task-scoped technical bundles. Label unverified AI explanations and invalidate stale bundles.
+
+## 4. Work packages — required implementation order
+
+**WP0: Setup and governance**  
+After explicit owner authorization, verify Delphi/Windows toolchain, create a clean **independent DPH** repository/project, read existing guardrails, pin reference fixtures/tag, establish license/provenance checklist, automated test harness, decision log and build baseline. **STOP at WP0 acceptance and request approval.**
+
+**WP1: Persistence and generations**  
+SQLite schema + migrations, project manifest, revisions, statuses, evidence linkage, atomic publish, interrupted-operation recovery. Test no cross-generation mixing.
+
+**WP2: Safe inventory and syntax**  
+Project boundary, fingerprinting, encoding-aware files, lexer/preprocessor, Pascal/project/DFM/FMX parsers, diagnostics and golden fixtures. No write to analyzed source.
+
+**WP3: Semantics and impact**  
+Cross-unit resolution, direct/indirect/uncertain calls, event bindings, anonymous callbacks, CFG, basic def-use/side effects, conditional variants, provenance and impact relationships. Document hard limits.
+
+**WP4: FMX Explorer and visualization**  
+Resizable workspace, object inspector, screen modes, source navigation, six graph types, search/history, analysis status and background responsiveness.
+
+**WP5: Curated knowledge and reviews**  
+Notes, verified business/engineering rules, attribution, review workflow, stale-doc invalidation, history and linked manual content.
+
+**WP6: Publishing and AI handoff**  
+HTML/manual generators, safe translation adapter, JSONL technical indexes, evidence-linked agent bundles, validation and redaction.
+
+**WP7: Hardening and owner acceptance**  
+VCL2FMXConverter v6.0 reference run, incremental/full equivalence, negative tests, security, performance, portability and the Mr. A maintenance exercise.
+
+**At each gate:** Provide exactly what changed, compile/test evidence, pass/fail per applicable acceptance test, known gaps, source/provenance changes, next-package proposal. No silent leap to the next package.
+
+## 5. Formal acceptance baseline
+
+### Phase 2 tests — all mandatory
+AT-01 cached open; AT-02 form hierarchy; AT-03 `btnConvert` event link; AT-04 `TConverterEngine.Convert` inspector; AT-05 background conversion chain; AT-06 accurate flowchart; AT-07 report lineage; AT-08 thumbnail/fit/actual/full screen; AT-09 search and source navigation; AT-10 reverse calls; AT-11 modification flag; AT-12 incremental reassessment; AT-13 human-knowledge preservation; AT-14 explicit uncertain/unsupported analysis; AT-15 consistent HTML technical/user docs; AT-16 **no source changes**.
+
+### Architecture tests — also mandatory
+AC-17 full/incremental equivalence for same inputs; AC-18 generation-consistent source evidence; AC-19 compiler-configuration variants do not collapse into false universal claims; AC-20 scoped missing dependency reported; AC-21 interrupted analysis/migrations recover safely; AC-22 secrets/redaction and HTML injection safeguards; AC-23 source relocation preserves identities where verifiable; AC-24 human review stays pending after automated reparse; AC-25 Mr. A can learn and investigate the actual v6.0 project without help from its author.
+
+**Zero-tolerance failures:** modified selected-project source; corrupted knowledge store; false verified claims; cross-project scope leakage; unredacted secrets in export; mixed-source revisions; wrong confirmed source link.
+
+Every test output records test ID, fixture/revision/hash, toolchain and schema versions, expected and observed behavior, pass/fail/blocked/partial/not-run, evidence, defects and reviewer. No “pass” for an untested or blocked case.
+
+## 6. Implementation issues that must be explicitly resolved
+
+These are **controlled configuration decisions**, not permission for Codex to guess or redesign:
+
+1. **Delphi version**: confirm the actual installed IDE/compiler before WP0 build setup. Do not assume a version.
+2. **Target platform**: propose Windows desktop first; confirm owner preference before locking target constraints.
+3. **Atlas**: identify the exact Atlas translator and API/data-handling rules before implementation of live integration.
+4. **Source snapshots**: optional authorized baseline + retained meaningful revisions, with privacy/exclusion/size limits; confirm policy.
+5. **AI summarization**: opt-in, default off for proprietary code unless owner allows it; no silent external uploads.
+6. **Runtime instrumentation**: never in passive analysis; require a separate authorization.
+7. **User roles**: single-user local-first initially unless owner changes direction; preserve the ability to extend later.
+8. **Third-party copied code**: perform licensing/provenance/dependency review and keep attribution; no direct coupling to VCL2FMXConverter.
+
+If an open decision blocks the current package, ask only then. Do not suspend unrelated preparatory work after explicit implementation authorization.
+
+## 7. First Codex task — only when owner authorizes implementation
+
+> Read the existing `AGENTS.md` and preserve it unchanged. Read `DPH_CODEX_HANDOFF.md` and `DPH_Master_Development_Specification_v1.md`. Phases 1–7 are owner-approved, but coding is authorized only if the owner explicitly gives a separate start instruction. When that authorization is given, perform **WP0 only**: validate the Delphi toolchain, create the independent DPH project/repository and initial tests, pin VCL2FMXConverter v6.0.0 as a **reference corpus only**, document licenses/provenance, and create an architecture decision log. Do not modify VCL2FMXConverter. Do not create shared libraries between projects. Report compile/test evidence and STOP for owner review before WP1. Do not substitute inferred knowledge for verified program behavior.
+
+## 8. Required Codex response upon receiving this document before authorization
+
+Acknowledge the approved baseline, summarize the planned WP0 work, list actual blockers or decisions requiring confirmation, and **do not start implementation**. Wait for the owner's explicit coding authorization.
+
+---
+**Handoff approval state:** Designs for Phases 1–7 approved by owner. **Implementation authorization:** NOT YET GIVEN.  
+**Guardrail location:** Existing `AGENTS.md` remains independently authoritative and untouched.  
+**Reference project:** VCL2FMXConverter v6.0.0 is read-only case-study/test material, not part of DPH.
