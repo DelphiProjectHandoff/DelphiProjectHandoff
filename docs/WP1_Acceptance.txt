@@ -1,0 +1,39 @@
+DPH WP1 acceptance report
+Last changed: 10 October 2026
+Reviewer: Codex automated tests and source review; owner acceptance pending.
+
+WP1 deliverables complete for review: normalized schema and two transactional/checksummed migrations; one-project FireDAC SQLite store; manifest/configuration identities; deduplicated source revisions; separate status flags; generation/evidence linkage; coherent atomic publication; queued sole-writer access; busy handling; interrupted-operation recovery; consistent backup/restore primitives. Core implementation is headless; the original IDE-editable form remains unchanged.
+
+Pre-change backup: D:\DPH Backups\WP1_PreChange_20261010_191223, 2,536 files SHA-256 verified before any WP1 edit. No post-phase disk backup was made.
+Baseline before changes: a9e0a796854e323d0304f6cb47b312b3ccece7f4, matched local/public/private main.
+Environment: Windows, Delphi Win32 37.0, compiler file version 37.0.59082.6021, Debug; statically linked SQLite 3.42.0, schema 2, FTS5 detected.
+Validation command: tools\build-wp1.cmd, executed elevated for RAD Studio environment access.
+Result: application compile PASS; WP0 FMX resource smoke regression PASS; all 46 WP1 storage checks PASS. See wp1-build.log and wp1-validation.json for per-test evidence/hashes. No compiler warnings in the final build.
+
+Validated cases
+WP1-01..07: schema initialization, ledger, sole writer, source destination exclusion, separate flags, coherent publication/head.
+WP1-08..13: observed/revalidated fingerprint mismatch, retention of prior head, same-generation evidence constraints, successful reassessment with manual-note/review preservation.
+WP1-14..18: immutable evidence/generations/manual revisions, explicit reassessment and failure state.
+WP1-19..25: abandoned generation recovery, compiler-configuration changes, deleted-file history, backup/restore, newer schema rejection and unchanged selected-fixture source bytes.
+WP1-26..33: source byte-range enforcement, deliberate mid-publication SQL fault, incomplete captured inputs, forced child-process termination, failed migration rollback, repaired version upgrade, changed checksum and traversal rejection.
+WP1-34..41: opening cached storage starts no scan, explicit local WAL, concurrent snapshot reads, revision deduplication, owner-thread queue, bounded lock timeout/retry and graceful command draining.
+WP1-42..46: expanded manifests, exact per-file reassessment flags, manual-data survival across migration, version-1 pre-upgrade backup and explicit partial-analysis refusal.
+
+Applicable architecture gate assessment
+AC-17 PARTIAL: storage primitives and unchanged revision reuse tested; complete incremental-versus-full analyzer output equivalence requires WP2/WP3/WP7.
+AC-18 PARTIAL: captured revisions, evidence ranges, cross-generation FK rejection and immutable generations tested; UI/export source navigation not implemented.
+AC-21 PARTIAL product acceptance / PASS storage primitives: migration rollback, version upgrade/data survival, graceful and hard interrupted-transaction recovery, valid prior head and backup restore tested. No claim of completed scanner/UI failure recovery or physical power-loss testing.
+AC-24 PARTIAL: pending human review survives automated storage reassessment; full review UI is WP5.
+AT-01 PARTIAL: cached database opening does not start a scan; interactive Explorer timing is unimplemented.
+AT-11/12/13/14 PARTIAL: file flags, revision reuse, note preservation and explicit incomplete state tested at storage level; complete user-facing behavior awaits later packages.
+AT-16 PARTIAL: selected synthetic source bytes and pinned converter fingerprints unchanged; passive scanner safety cannot pass until the scanner exists.
+All remaining AT-02..10/15 and AC-19/20/22/23/25: NOT RUN as full product acceptance. Config-variant identity has storage evidence, but compiler-conditional semantics are not implemented.
+Blocked or partial product cases are not labelled Pass.
+
+Known limitations and decisions
+No live project discovery, parser, semantic analysis, automatic background scheduler, UI database integration, reviewer UI, workspace catalog, full-text search service, exports or translations yet. Empty later-stage tables are persistence contracts only. No approved source-snapshot policy was assumed or source snapshots taken.
+The producer supplies bounded manifests and must freshly revalidate physical source bytes; WP1 does not claim to perform acquisition itself. Manifest-change review invalidation is conservative. Junction/reparse paths and source relocation require explicit resolution/review. Single owning-thread storage queue is not a durable job service. Only Win32 Debug was compiled/tested.
+Final reference verification and Git commit/push details are reported with delivery. Original design files, existing reference manifests and global AGENTS.md remain unchanged.
+
+Next-package proposal: WP2 safe project inventory and parser foundations with encoding/preprocessor/DFM/FMX diagnostics and golden fixtures, using these storage contracts. No WP2 implementation started. Require separate owner approval and a fresh D:\ pre-change backup.
+STOP at the WP1 gate for owner review.

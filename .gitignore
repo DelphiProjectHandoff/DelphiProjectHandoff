@@ -11,3 +11,7 @@
 __history/
 __recovery/
 /docs/wp0-build-diagnostic.log
+*.dphdb
+*.dphdb-journal
+*.dphdb-wal
+*.dphdb-shm

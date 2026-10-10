@@ -1,0 +1,2 @@
+migrations/*.sql text eol=lf
+docs/*-validation.json text eol=lf
