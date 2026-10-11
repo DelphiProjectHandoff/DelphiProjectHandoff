@@ -1,0 +1,48 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(14) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(49) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(62) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Knowledge.dpr(63) Hint: H2077 Value assigned to 'Revision' never used
+tests\tests\DPH.Tests.Knowledge.dpr(29) Hint: H2077 Value assigned to 'Entity' never used
+8996 lines, 0.88 seconds, 9541764 bytes code, 344360 bytes data.
+PASS 1: Fixture generation publishes
+PASS 2: Anonymous authorship is rejected
+PASS 3: New rule remains pending explicit review
+PASS 4: Rule links to stable semantic identity
+PASS 5: First authored revision retained
+PASS 6: Separate project review flag is set
+PASS 7: Authored section persists stable ID, document, audience and source generation
+PASS 8: Anonymous reviewer is rejected
+PASS 9: Explicit named review verifies human content
+PASS 10: Reviewer attribution persists
+PASS 11: Verification appends rather than overwrites history
+PASS 12: Resolved review queue clears its own flag
+PASS 13: Review revision preserves document section metadata
+PASS 14: Stale editor revision cannot overwrite reviewed content
+PASS 15: Authored edit reopens human review
+PASS 16: Document reassignment retains prior revision metadata
+PASS 17: Old source generation cannot approve changed inputs
+PASS 18: Changed source generation publishes
+PASS 19: Parser publication never approves human explanation
+PASS 20: Rescan retains authored text
+PASS 21: Rescan preserves all human revisions
+PASS 22: Configuration change invalidates review without source-byte change
+PASS 23: Controlled rename publishes a distinct identity
+PASS 24: Missing or renamed entity cannot inherit verified knowledge
+PASS 25: Historical link is not reassigned to a renamed method
+PASS 26: Obsolete knowledge can be retired with history
+PASS 27: Retirement resolves the pending task
+PASS 28: FMX knowledge list shows curated records
+PASS 29: Editor loads selected authored revision
+PASS 30: Inspector exposes prior reviewer attribution
+PASS 31: Pending filter excludes resolved retired knowledge
+PASS 32: Background knowledge refresh preserves unsaved edits
+PASS 33: Close cannot silently discard authored text
+PASS 34: Displayed unsaved edit cannot approve a different persisted revision
+PASS 35: Explicit discard clears the edit
+PASS 36: Knowledge edits preserve SQLite integrity
+PASS 37: Backup/restore retains full immutable review history
+PASS WP5: 37 checks

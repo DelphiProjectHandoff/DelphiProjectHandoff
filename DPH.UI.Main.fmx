@@ -964,7 +964,32 @@ object KnowledgeTab: TTabItem
 Text = 'Knowledge'
 object KnowledgeToolbar: TLayout
 Align = Top
-Height = 150
+Height = 224
+object KnowledgeSectionLabel: TLabel
+Position.X = 4
+Position.Y = 188
+Width = 650
+Height = 30
+Text = 'New section: stable ID assigned on Save'
+end
+object KnowledgeDocumentCombo: TComboBox
+Position.X = 4
+Position.Y = 154
+Width = 250
+Height = 30
+Items.Strings = ('Automatic document by kind' 'overview' 'engineering' 'user' 'maintenance' 'build_deploy' 'troubleshooting' 'orientation' 'handoff' 'help')
+ItemIndex = 0
+OnChange = KnowledgeEdited
+end
+object KnowledgeAudienceCombo: TComboBox
+Position.X = 264
+Position.Y = 154
+Width = 200
+Height = 30
+Items.Strings = ('Automatic audience' 'all' 'engineer' 'user' 'maintainer' 'builder' 'agent')
+ItemIndex = 0
+OnChange = KnowledgeEdited
+end
 object KnowledgeTitleEdit: TEdit
 Position.X = 4
 Position.Y = 4
@@ -1116,6 +1141,16 @@ Width = 150
 Enabled = False
 Text = 'Preview offline HTML'
 OnClick = PreviewClick
+end
+object PublishAudienceCombo: TComboBox
+Position.X = 360
+Position.Y = 42
+Width = 210
+Height = 28
+Items.Strings = ('all' 'engineer' 'user' 'maintainer' 'builder' 'agent')
+ItemIndex = 0
+Hint = 'Guide audience; does not replace file exclusions'
+ShowHint = True
 end
 end
 object PublishMemo: TMemo

@@ -29,17 +29,25 @@ begin
       Entity:=Store.AddSourceEntity(Generation,'unit1.pas','unit1.work','semantic_routine','Unit1.Work','()',0,3,'{}');
       Check(Store.PublishGeneration(Generation,Manifest,'{}',True),'Fixture generation publishes');
       Failed:=False; try Store.SaveKnowledge(0,0,Generation,'Rule','Body','','business_rule','unit1.work'); except Failed:=True; end; Check(Failed,'Anonymous authorship is rejected');
-      Note:=Store.SaveKnowledge(0,0,Generation,'Dry-run intent','Author states dry run must preserve outputs.','Test Author','business_rule','unit1.work');
+      Note:=Store.SaveKnowledge(0,0,Generation,'Dry-run intent','Author states dry run must preserve outputs.','Test Author','business_rule','unit1.work','maintenance','maintainer');
       Revision:=CurrentRevision; Row:=LoadNote;
       try Check(Row.GetValue<string>('state')='needs_review','New rule remains pending explicit review'); Check(Row.GetValue<TJSONArray>('links').Count=1,'Rule links to stable semantic identity'); Check(Row.GetValue<TJSONArray>('history').Count=1,'First authored revision retained'); finally Row.Free; end;
       Check(Store.Status.KnowledgeReviewNeeded,'Separate project review flag is set');
+      Row:=LoadNote;
+      try Check((Row.GetValue<string>('section_id')='knowledge-'+IntToStr(Note)) and (Row.GetValue<string>('document_kind')='maintenance') and
+        (Row.GetValue<string>('audience')='maintainer') and (Row.GetValue<string>('source_generation')=IntToStr(Generation)),
+        'Authored section persists stable ID, document, audience and source generation'); finally Row.Free; end;
       Failed:=False; try Store.ReviewKnowledge(Note,Revision,Generation,'','verified'); except Failed:=True; end; Check(Failed,'Anonymous reviewer is rejected');
       Store.ReviewKnowledge(Note,Revision,Generation,'Named Reviewer','verified'); OldRevision:=Revision; Revision:=CurrentRevision; Row:=LoadNote;
       try Check(Row.GetValue<string>('state')='verified','Explicit named review verifies human content'); Check(Row.GetValue<string>('reviewer')='Named Reviewer','Reviewer attribution persists'); Check(Row.GetValue<TJSONArray>('history').Count=2,'Verification appends rather than overwrites history'); finally Row.Free; end;
       Check(not Store.Status.KnowledgeReviewNeeded,'Resolved review queue clears its own flag');
+      Row:=LoadNote; try Check((Row.GetValue<string>('document_kind')='maintenance') and (Row.GetValue<string>('audience')='maintainer'),
+        'Review revision preserves document section metadata'); finally Row.Free; end;
       Failed:=False; try Store.SaveKnowledge(Note,OldRevision,Generation,'Dry-run intent','Old edit','Author','business_rule',''); except Failed:=True; end; Check(Failed,'Stale editor revision cannot overwrite reviewed content');
       Store.SaveKnowledge(Note,Revision,Generation,'Dry-run intent','Revised author explanation','Second Author','business_rule',''); Revision:=CurrentRevision;
       Check(Store.Status.KnowledgeReviewNeeded,'Authored edit reopens human review');
+      Row:=LoadNote; try Check((Row.GetValue<TJSONArray>('history').Items[0].GetValue<string>('document_kind')='maintenance') and
+        (Row.GetValue<string>('document_kind')='engineering'),'Document reassignment retains prior revision metadata'); finally Row.Free; end;
       Manifest[0].SHA256:=THashSHA2.GetHashString('def'); Store.ObserveManifest(Manifest);
       Failed:=False; try Store.ReviewKnowledge(Note,Revision,Generation,'Reviewer','verified'); except Failed:=True; end; Check(Failed,'Old source generation cannot approve changed inputs');
       Next:=Store.BeginGeneration(Config,'knowledge-fixture',Manifest); Store.AddSourceEntity(Next,'unit1.pas','unit1.work','semantic_routine','Unit1.Work','()',0,3,'{}');

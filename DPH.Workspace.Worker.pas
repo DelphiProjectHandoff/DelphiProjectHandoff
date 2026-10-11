@@ -8,6 +8,7 @@ type
     Defines,ExternalRoots: TArray<string>;
     KnowledgeID,ExpectedRevision,GenerationID: Int64;
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
+    DocumentKind,Audience: string;
     OldEntityKey: string;
     SearchKind: string;
     SearchOffset: Integer;
@@ -194,7 +195,8 @@ begin
             View:=TDPHWorkspaceView.Create(Document); Knowledge:=nil; Images:=nil;
             try
               Knowledge:=Store.KnowledgeJSON; Images:=Store.ScreenshotsJSON;
-              Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.GenerationIsStale(Request.GenerationID),Images);
+              if Request.Audience='' then Request.Audience:='all';
+              Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.GenerationIsStale(Request.GenerationID),Images,False,Request.Audience);
               try TDPHPublisher.Export(Model,Store,Request.ExportDirectory);
                 Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),'{"scope":"'+Model.Document.GetValue<string>('scope')+'"}',Model.Document.GetValue<Boolean>('stale'));
               finally Model.Free; end;
@@ -204,7 +206,7 @@ begin
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin
             if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,
-              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey);
+              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience);
             if Request.Command='review_knowledge' then
             begin
               if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');

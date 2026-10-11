@@ -41,6 +41,8 @@ type
     KnowledgeList: TListBox;
     KnowledgeTitleEdit,KnowledgeAuthorEdit: TEdit;
     KnowledgeKindCombo: TComboBox;
+    KnowledgeDocumentCombo,KnowledgeAudienceCombo: TComboBox;
+    KnowledgeSectionLabel: TLabel;
     KnowledgeBodyMemo,KnowledgeHistoryMemo: TMemo;
     NewKnowledgeButton,SaveKnowledgeButton,RefreshKnowledgeButton,VerifyKnowledgeButton,RejectKnowledgeButton,RetireKnowledgeButton,DiscardKnowledgeButton: TButton;
     PendingKnowledgeCheck: TCheckBox;
@@ -48,6 +50,7 @@ type
     PublishTab: TTabItem;
     PublishToolbar: TLayout;
     PublishScopeCombo: TComboBox;
+    PublishAudienceCombo: TComboBox;
     PublishExclusionsEdit: TEdit;
     PublishButton,PreviewButton: TButton;
     PublishMemo: TMemo;
@@ -460,16 +463,19 @@ begin
     R.KnowledgeID:=FKnowledgeID; R.ExpectedRevision:=FKnowledgeRevision; R.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
     R.Title:=KnowledgeTitleEdit.Text; R.Body:=KnowledgeBodyMemo.Text; R.Editor:=KnowledgeAuthorEdit.Text;
     R.Kind:=KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]; R.EntityKey:=FKnowledgeLink; R.ReviewState:=FReviewState;
+    if KnowledgeDocumentCombo.ItemIndex>0 then R.DocumentKind:=KnowledgeDocumentCombo.Items[KnowledgeDocumentCombo.ItemIndex];
+    if KnowledgeAudienceCombo.ItemIndex>0 then R.Audience:=KnowledgeAudienceCombo.Items[KnowledgeAudienceCombo.ItemIndex];
   end;
   if ACommand='publish' then
   begin
     if FView=nil then begin StatusLabel.Text:='Open or analyze a project first'; Exit; end;
     R.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); R.ExportDirectory:=FExportDirectory;
     R.Exclusions:=PublishExclusionsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+    R.Audience:='all'; if PublishAudienceCombo.ItemIndex>=0 then R.Audience:=PublishAudienceCombo.Items[PublishAudienceCombo.ItemIndex];
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
-  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text;
+  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex);
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 var SelectedDatabase: string;
@@ -559,7 +565,7 @@ begin
       if FView=nil then HelpClick(nil);
     end;
     if R.Knowledge<>nil then begin
-      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
+      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
     if (R.SearchResults<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
@@ -1177,6 +1183,9 @@ begin
   KnowledgeTitleEdit.Text:=Row.GetValue<string>('title'); KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf(Row.GetValue<string>('kind'));
   if KnowledgeKindCombo.ItemIndex<0 then KnowledgeKindCombo.ItemIndex:=0;
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
+  KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf(Row.GetValue<string>('document_kind','engineering'));
+  KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf(Row.GetValue<string>('audience','engineer'));
+  KnowledgeSectionLabel.Text:='Section '+Row.GetValue<string>('section_id','')+' | revision '+Row.GetValue<string>('revision');
   KnowledgeHistoryMemo.Text:='Author: '+Row.GetValue<string>('owner')+' | current state: '+Row.GetValue<string>('state')+sLineBreak+
     'Links: '+Row.GetValue<TJSONArray>('links').Format(2)+sLineBreak+'Immutable revision history: '+Row.GetValue<TJSONArray>('history').Format(2);
   finally FBinding:=False; end;
@@ -1185,6 +1194,7 @@ procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
+    KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
     KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
     FKnowledgeEdited:=False; FKnowledgeLink:=FSelected; finally FBinding:=False; end;
 end;

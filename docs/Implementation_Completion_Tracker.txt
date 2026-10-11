@@ -155,8 +155,15 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     are pruned; stale inspector content is cleared with an explicit warning.
     Four focused checks pass; workspace suite 89. Graph previews now use immutable
     content-hashed filenames to avoid intermittent WebView file-sharing errors.
-5.1-5.6 Pending: structured documentation, rich links, review tasks, focused
-    questions, educational explanations and runtime observation import.
+5.1 Expanded: immutable document-section metadata per authored revision; stable
+    section IDs, document/audience selection in the editor, source generation,
+    preserved review and reassignment history. Schema five migrates old revisions.
+    Canonical guides carry deterministic section versions, authored sections and
+    audience filters. Three focused knowledge checks (37 total), four publishing
+    checks (64 total), and storage migration checks pass. Generated sections remain
+    explicitly unreviewed; publication never advances authored source provenance.
+5.2-5.6 Pending: rich links, review tasks, focused questions, educational
+    explanations and runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time

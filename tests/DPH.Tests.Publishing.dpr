@@ -61,6 +61,17 @@ begin
           try
             Check(Pos('DO_NOT_EXPORT',Model.Document.ToJSON)=0,'Credential assignment is redacted throughout canonical model');
             Check(Model.Document.GetValue<TJSONArray>('exclusions').Count=1,'Explicit source exclusion is recorded');
+            Check((Model.Document.GetValue<TJSONArray>('sections').Count=9) and
+              (Model.Document.GetValue<TJSONArray>('sections').Items[0].GetValue<string>('section_version').Length=64),
+              'Generated document sections have stable IDs and deterministic content versions');
+            Check(Model.Document.GetValue<TJSONArray>('knowledge').Items[0].GetValue<string>('source_generation')=IntToStr(Generation),
+              'Publication preserves authored section source generation');
+            Again:=TDPHDocumentModel.Create(View,Knowledge,[],[],False,False,nil,False,'engineer');
+            try
+              Check(Again.Document.GetValue<TJSONArray>('knowledge').Count=0,'Engineering audience excludes user-only authored sections');
+              Check((Again.Document.GetValue<TJSONArray>('sections').Count=4) and
+                (Again.Document.GetValue<string>('audience')='engineer'),'Audience filter includes overview and engineering-role guides');
+            finally Again.Free; end;
             for V in Model.Document.GetValue<TJSONArray>('symbols') do Check((V as TJSONObject).GetValue<string>('range.source')<>'worker.pas','Excluded file cannot leak through symbol index');
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full'));
             TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint'));

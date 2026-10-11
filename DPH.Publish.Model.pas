@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-1';
+const DPHPublishVersion = 'DPH-LEARNING-2';
 type
   TDPHDocumentModel = class
   private
@@ -9,7 +9,7 @@ type
     FLocalDisplay: Boolean;
   public
     constructor Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
-      const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray = nil; ALocalDisplay: Boolean = False);
+      const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray = nil; ALocalDisplay: Boolean = False; const AAudience: string = 'all');
     destructor Destroy; override;
     class function Redact(const AText: string): string; static;
     class function Scrub(AValue: TJSONValue): TJSONValue; static;
@@ -40,17 +40,19 @@ begin
   else if AValue is TJSONString then Result:=TJSONString.Create(Redact(AValue.Value)) else Result:=AValue.Clone as TJSONValue;
 end;
 constructor TDPHDocumentModel.Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
-  const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray; ALocalDisplay: Boolean);
+  const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray; ALocalDisplay: Boolean; const AAudience: string);
 var AllowedFiles,Selected,AllKeys,FlowIDs: TDictionary<string,Boolean>; Queue: TQueue<string>;
     V,W: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
-    Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
-    Startup,Nodes,Comments: TJSONArray; Node,FileRow: TJSONObject; Explanations: TDPHExplanationModel; CommentCount: Integer;
+    Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID,SectionAudience: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
+    Startup,Nodes,Comments,AuthoredSections: TJSONArray; Node,FileRow: TJSONObject; Explanations: TDPHExplanationModel; CommentCount: Integer;
   function CaptureValue(AValue: TJSONValue): TJSONValue;
   begin
     if ALocalDisplay then Result:=AValue.Clone as TJSONValue else Result:=Scrub(AValue);
   end;
 begin
   inherited Create; FDocument:=TJSONObject.Create; FLocalDisplay:=ALocalDisplay;
+  if not MatchText(AAudience,['all','engineer','user','maintainer','builder','agent']) then raise EArgumentException.Create('Unknown publication audience');
+  FDocument.AddPair('audience',AAudience);
   AllowedFiles:=TDictionary<string,Boolean>.Create; Selected:=TDictionary<string,Boolean>.Create;
   AllKeys:=TDictionary<string,Boolean>.Create; FlowIDs:=TDictionary<string,Boolean>.Create; Queue:=TQueue<string>.Create;
   try
@@ -136,7 +138,8 @@ begin
     end;
     if AKnowledge<>nil then for V in AKnowledge do begin R:=V as TJSONObject; Links:=R.GetValue<TJSONArray>('links'); IncludeRow:=Links.Count=0;
       if Links.Count>0 then begin IncludeRow:=True; for W in Links do if not Selected.ContainsKey((W as TJSONObject).GetValue<string>('canonical_key','')) then IncludeRow:=False; end;
-      if IncludeRow then begin J:=CaptureValue(R) as TJSONObject; J.AddPair('source_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
+      if (AAudience<>'all') and not MatchText(R.GetValue<string>('audience','engineer'),['all',AAudience]) then IncludeRow:=False;
+      if IncludeRow then begin J:=CaptureValue(R) as TJSONObject; J.AddPair('publication_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
     end;
     J:=TJSONObject.Create; FDocument.AddPair('coverage',J); J.AddPair('included_files',TJSONNumber.Create(Files.Count)); J.AddPair('excluded_files',TJSONNumber.Create(Excluded.Count));
     J.AddPair('included_symbols',TJSONNumber.Create(Symbols.Count)); J.AddPair('relationships_denominator',TJSONNumber.Create(Relations.Count));
@@ -179,8 +182,14 @@ begin
       end;
     end;
     for Kind in ['overview','engineering','user','maintenance','build_deploy','troubleshooting','orientation','handoff','help'] do begin
+      SectionAudience:=IfThen(MatchText(Kind,['user','help']),'user',
+        IfThen(Kind='maintenance','maintainer',IfThen(Kind='build_deploy','builder',IfThen(Kind='handoff','agent','engineer'))));
+      if (AAudience<>'all') and (Kind<>'overview') and (SectionAudience<>AAudience) then Continue;
       Section:=TJSONObject.Create; Sections.AddElement(Section); Section.AddPair('id',Kind); Section.AddPair('title',Kind.Replace('_',' '));
       Section.AddPair('source_generation',TJSONNumber.Create(Generation)); Section.AddPair('verification_state','source_derived_static_unreviewed');
+      Section.AddPair('document_id','document-'+Kind); Section.AddPair('section_id','generated-'+Kind);
+      Section.AddPair('last_reviewed','unknown'); Section.AddPair('audience',SectionAudience);
+      AuthoredSections:=TJSONArray.Create; Section.AddPair('authored_sections',AuthoredSections);
       Paragraphs:=TJSONArray.Create; Section.AddPair('paragraphs',Paragraphs);
       Paragraphs.Add('Project '+AView.Document.GetValue<string>('entry')+'; generation '+IntToStr(Generation)+'; '+AView.Document.GetValue<string>('configuration')+' / '+AView.Document.GetValue<string>('platform')+'.');
       if Kind='overview' then Paragraphs.Add(IntToStr(Symbols.Count)+' scoped symbols and '+IntToStr(Relations.Count)+' typed relationships. Consult each source range, hash, derivation rule and certainty before relying on an explanation.');
@@ -192,8 +201,14 @@ begin
       if Kind='orientation' then Paragraphs.Add('Start with project inventory and startup routines, then follow form events into methods and callbacks. Inspect report origins and dry-run branches where present. Ask the original author about business rationale and missing procedures.');
       if Kind='handoff' then Paragraphs.Add('Validate artifact hashes, generation and input fingerprints before use. Request authorization before modifying or executing the analyzed project. Treat AI explanations as hypotheses requiring evidence and human review.');
       Links:=TJSONArray.Create; Section.AddPair('knowledge_ids',Links);
-      for V in Knowledge do begin R:=V as TJSONObject; if (R.GetValue<string>('kind')=Kind) or ((Kind='user') and (R.GetValue<string>('kind')='user_help')) or
-        ((Kind='engineering') and MatchText(R.GetValue<string>('kind'),['engineering_rule','business_rule','decision','note'])) then Links.Add(R.GetValue<string>('id')); end;
+      for V in Knowledge do begin R:=V as TJSONObject;
+        if R.GetValue<string>('document_kind',IfThen(R.GetValue<string>('kind')='user_help','user','engineering'))<>Kind then Continue;
+        Links.Add(R.GetValue<string>('id')); AuthoredSections.AddElement(R.Clone as TJSONObject);
+        Paragraphs.Add(R.GetValue<string>('title')+' [section '+R.GetValue<string>('section_id','knowledge-'+R.GetValue<string>('id'))+
+          '; revision '+R.GetValue<string>('revision')+'; audience '+R.GetValue<string>('audience','engineer')+'; state '+R.GetValue<string>('state')+
+          '; author '+R.GetValue<string>('owner')+'; reviewed '+R.GetValue<string>('reviewed_at')+']');
+        Paragraphs.Add(R.GetValue<string>('body'));
+      end;
     end;
     Explanations:=TDPHExplanationModel.Create(FDocument);
     try
@@ -205,6 +220,7 @@ begin
         if Kind='maintenance' then Paragraphs.Add(Explanations.TopicText(7));
         if Kind='troubleshooting' then Paragraphs.Add(Explanations.TopicText(8));
         if Kind='handoff' then Paragraphs.Add(Explanations.TopicText(9));
+        Section.AddPair('section_version',THashSHA2.GetHashString(Paragraphs.ToJSON+Section.GetValue<TJSONArray>('authored_sections').ToJSON));
       end;
     finally Explanations.Free; end;
   finally Queue.Free; FlowIDs.Free; AllKeys.Free; Selected.Free; AllowedFiles.Free; end;

@@ -1,0 +1,73 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+tests\DPH.Tests.Publishing.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Publishing.dpr(64) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Publishing.dpr(67) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Publishing.dpr(107) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+7177 lines, 0.64 seconds, 4942196 bytes code, 251676 bytes data.
+PASS 1: Preview permits its blank startup page
+PASS 2: Preview permits only its local index and internal anchors
+PASS 3: Preview rejects external navigation
+PASS 4: Preview rejects unrelated local files
+PASS 5: Preview rejects encoded traversal
+PASS 6: Preview rejects script navigation
+PASS 7: Pascal quoted credential assignments are fully redacted
+PASS 8: Bearer authorization tokens are redacted
+PASS 9: JSON credential text is redacted
+PASS 10: Captured fixture has its click routine
+PASS 11: Credential assignment is redacted throughout canonical model
+PASS 12: Explicit source exclusion is recorded
+PASS 13: Generated document sections have stable IDs and deterministic content versions
+PASS 14: Publication preserves authored section source generation
+PASS 15: Engineering audience excludes user-only authored sections
+PASS 16: Audience filter includes overview and engineering-role guides
+PASS 17: Excluded file cannot leak through symbol index
+PASS 18: Excluded file cannot leak through symbol index
+PASS 19: Excluded file cannot leak through symbol index
+PASS 20: Excluded file cannot leak through symbol index
+PASS 21: Excluded file cannot leak through symbol index
+PASS 22: Excluded file cannot leak through symbol index
+PASS 23: Excluded file cannot leak through symbol index
+PASS 24: Excluded file cannot leak through symbol index
+PASS 25: Excluded file cannot leak through symbol index
+PASS 26: Excluded file cannot leak through symbol index
+PASS 27: Excluded file cannot leak through symbol index
+PASS 28: Excluded file cannot leak through symbol index
+PASS 29: Excluded file cannot leak through symbol index
+PASS 30: Excluded file cannot leak through symbol index
+PASS 31: Excluded file cannot leak through symbol index
+PASS 32: Excluded file cannot leak through symbol index
+PASS 33: Excluded file cannot leak through symbol index
+PASS 34: Excluded file cannot leak through symbol index
+PASS 35: Excluded file cannot leak through symbol index
+PASS 36: Excluded file cannot leak through symbol index
+PASS 37: Excluded file cannot leak through symbol index
+PASS 38: Excluded file cannot leak through symbol index
+PASS 39: Excluded file cannot leak through symbol index
+PASS 40: Excluded file cannot leak through symbol index
+PASS 41: Excluded file cannot leak through symbol index
+PASS 42: Excluded file cannot leak through symbol index
+PASS 43: Full handoff passes filename and SHA256 validation
+PASS 44: Owner guardrails and generated agent instructions are excluded by default
+PASS 45: Authored markup is encoded rather than executed
+PASS 46: Escaped author text remains inspectable
+PASS 47: Offline HTML blocks external connections
+PASS 48: Code identifiers are protected from translation
+PASS 49: Local bilingual language selector helper is included
+PASS 50: Canonical output is deterministic for fixed capture, scope and knowledge
+PASS 51: Task bundle records its technical scope
+PASS 52: Task bundle selects incident context rather than a blind full-export truncation
+PASS 53: Changed input fingerprint rejects a stale bundle
+PASS 54: Publishing cannot write into the analyzed source
+PASS 55: Publishing cannot overwrite an existing folder
+PASS 56: Editable engineering guide has a changeable TOC field
+PASS 57: Guide title page records last changed identity
+PASS 58: Modified artifact fails hash validation
+PASS 59: Translation preserves identifiers, paths and SQL byte for byte
+PASS 60: Translated prose requires human review
+PASS 61: Translation review is cached for exact content and revision
+PASS 62: Changed prose invalidates localized cache
+PASS 63: Old translation approval cannot carry to new prose
+PASS 64: Unconfigured external Atlas translation cannot transmit content
+PASS WP6: 64 checks
