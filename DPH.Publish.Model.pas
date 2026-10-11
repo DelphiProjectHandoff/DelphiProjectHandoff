@@ -254,7 +254,7 @@ begin
       Section:=TJSONObject.Create; Sections.AddElement(Section); Section.AddPair('id',Kind); Section.AddPair('title',Kind.Replace('_',' '));
       Section.AddPair('source_generation',TJSONNumber.Create(Generation)); Section.AddPair('verification_state','source_derived_static_unreviewed');
       Section.AddPair('document_id','document-'+Kind); Section.AddPair('section_id','generated-'+Kind);
-      Section.AddPair('last_reviewed','unknown'); Section.AddPair('audience',SectionAudience);
+      Section.AddPair('last_reviewed','unknown'); Section.AddPair('reviewer',''); Section.AddPair('audience',SectionAudience);
       AuthoredSections:=TJSONArray.Create; Section.AddPair('authored_sections',AuthoredSections);
       Paragraphs:=TJSONArray.Create; Section.AddPair('paragraphs',Paragraphs);
       Paragraphs.Add('Project '+AView.Document.GetValue<string>('entry')+'; generation '+IntToStr(Generation)+'; '+AView.Document.GetValue<string>('configuration')+' / '+AView.Document.GetValue<string>('platform')+'.');
@@ -272,7 +272,9 @@ begin
         Links.Add(R.GetValue<string>('id')); AuthoredSections.AddElement(R.Clone as TJSONObject);
         Paragraphs.Add(R.GetValue<string>('title')+' [section '+R.GetValue<string>('section_id','knowledge-'+R.GetValue<string>('id'))+
           '; revision '+R.GetValue<string>('revision')+'; audience '+R.GetValue<string>('audience','engineer')+'; state '+R.GetValue<string>('state')+
-          '; author '+R.GetValue<string>('owner')+'; reviewed '+R.GetValue<string>('reviewed_at')+']');
+          '; source generation '+R.GetValue<string>('source_generation')+'; author '+R.GetValue<string>('owner')+
+          '; reviewer '+IfThen(R.GetValue<string>('reviewer')='','unassigned',R.GetValue<string>('reviewer'))+
+          '; reviewed '+IfThen(R.GetValue<string>('reviewed_at')='','never',R.GetValue<string>('reviewed_at'))+']');
         Paragraphs.Add(R.GetValue<string>('body'));
       end;
     end;

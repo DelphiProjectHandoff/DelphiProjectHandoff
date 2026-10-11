@@ -28,13 +28,19 @@ begin
     if AUser and not MatchText(R.GetValue<string>('id'),['overview','user','troubleshooting','orientation','help']) then Continue;
     Body:=Body+P(R.GetValue<string>('title'),'Normal');
     Headings:=Headings+P(R.GetValue<string>('title'),'Heading1');
+    Headings:=Headings+P('Section '+R.GetValue<string>('section_id')+' | version '+R.GetValue<string>('section_version')+
+      ' | source generation '+R.GetValue<string>('source_generation')+' | '+R.GetValue<string>('verification_state')+
+      ' | last reviewed '+R.GetValue<string>('last_reviewed'),'Normal');
     for W in R.GetValue<TJSONArray>('paragraphs') do for Paragraph in W.Value.Split([sLineBreak]) do if Paragraph<>'' then Headings:=Headings+P(Paragraph,'Normal');
     for W in AModel.Document.GetValue<TJSONArray>('knowledge') do
     begin
       Linked:=False; for L in R.GetValue<TJSONArray>('knowledge_ids') do if L.Value=(W as TJSONObject).GetValue<string>('id') then Linked:=True;
       if Linked then
         Headings:=Headings+P((W as TJSONObject).GetValue<string>('title'),'Heading2')+
-          P('Attributed '+(W as TJSONObject).GetValue<string>('state')+' content by '+(W as TJSONObject).GetValue<string>('owner'),'Normal')+
+          P('Section '+W.GetValue<string>('section_id')+' | revision '+W.GetValue<string>('revision')+
+          ' | source generation '+W.GetValue<string>('source_generation')+' | '+W.GetValue<string>('state')+
+          ' | author '+W.GetValue<string>('owner')+' | reviewer '+IfThen(W.GetValue<string>('reviewer')='','unassigned',W.GetValue<string>('reviewer'))+
+          ' | last reviewed '+IfThen(W.GetValue<string>('reviewed_at')='','never',W.GetValue<string>('reviewed_at')),'Normal')+
           P((W as TJSONObject).GetValue<string>('body'),'Normal');
     end;
   end;
@@ -111,12 +117,20 @@ begin
       Page.Append('<figure id="screenshot_'+R.GetValue<string>('artifact_hash','')+'"><img width="640" src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' | Contributor: '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+' | user supplied, unverified | generation '+R.GetValue('generation_id').Value+'</figcaption></figure>');
     end;
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<section id="'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2>');
+      Page.Append('<p>Section '+TDPHDocumentModel.HTML(R.GetValue<string>('section_id'))+' | version <code class="notranslate" translate="no">'+
+        TDPHDocumentModel.HTML(R.GetValue<string>('section_version'))+'</code> | source generation '+R.GetValue<string>('source_generation')+
+        ' | '+TDPHDocumentModel.HTML(R.GetValue<string>('verification_state'))+' | last reviewed '+TDPHDocumentModel.HTML(R.GetValue<string>('last_reviewed'))+'</p>');
       for W in R.GetValue<TJSONArray>('paragraphs') do Page.Append('<p>'+TDPHDocumentModel.HTML(W.Value)+'</p>');
       for W in R.GetValue<TJSONArray>('knowledge_ids') do Page.Append('<p><a href="#knowledge_'+W.Value+'">Attributed knowledge '+W.Value+'</a></p>');
       Page.Append('</section>');
     end;
     for V in AModel.Document.GetValue<TJSONArray>('knowledge') do begin R:=V as TJSONObject;
-      Page.Append('<section id="knowledge_'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Attributed '+TDPHDocumentModel.HTML(R.GetValue<string>('state'))+' content by '+TDPHDocumentModel.HTML(R.GetValue<string>('owner'))+' | reviewed '+TDPHDocumentModel.HTML(R.GetValue<string>('reviewed_at'))+'</p><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</p>');
+      Page.Append('<section id="knowledge_'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Section '+
+        TDPHDocumentModel.HTML(R.GetValue<string>('section_id'))+' | revision '+R.GetValue<string>('revision')+' | source generation '+R.GetValue<string>('source_generation')+
+        ' | '+TDPHDocumentModel.HTML(R.GetValue<string>('state'))+' | author '+TDPHDocumentModel.HTML(R.GetValue<string>('owner'))+
+        ' | reviewer '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewer')='','unassigned',R.GetValue<string>('reviewer')))+
+        ' | last reviewed '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewed_at')='','never',R.GetValue<string>('reviewed_at')))+
+        '</p><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</p>');
       for RevisionValue in R.GetValue<TJSONArray>('history') do begin
         Page.Append('<details id="knowledge_revision_'+RevisionValue.GetValue<string>('revision')+'"><summary>Revision '+RevisionValue.GetValue<string>('revision')+
           ' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('verification_state'))+' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('editor'))+'</summary><p>'+

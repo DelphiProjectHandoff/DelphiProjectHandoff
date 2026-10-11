@@ -99,6 +99,10 @@ begin
             Text:=TFile.ReadAllText(TPath.Combine(Work,'full\index.html'),TEncoding.UTF8);
             Check(Pos('<script>alert(1)</script>',Text)=0,'Authored markup is encoded rather than executed');
             Check(Pos('&lt;script&gt;',Text)>0,'Escaped author text remains inspectable');
+            Check(Text.Contains('reviewer unassigned') and Text.Contains('last reviewed never') and Text.Contains('Section knowledge-'),
+              'Authored HTML exposes exact section identity and missing named review');
+            Check(Text.Contains('source_derived_static_unreviewed') and Text.Contains('last reviewed unknown'),
+              'Generated HTML sections disclose their unreviewed state separately');
             Check(Text.Contains('Open linked target') and Text.Contains('knowledge_revision_'),
               'Offline guide contains target navigation and exact revision anchors');
             Check(Pos('connect-src ''none''',Text)>0,'Offline HTML blocks external connections');

@@ -215,7 +215,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Directions cover current learning, review, runtime observations, publication,
     troubleshooting and explicit build/test commands. Selected-program business
     procedures still require attributed author input. Regenerate after later work.
-6.2-6.7 Pending: review metadata, translation workflow/cache,
+6.2 Expanded: HTML and editable generated guides expose generated section identity,
+    content version, source generation, unreviewed state and last-review status.
+    Authored sections expose exact immutable revision, source generation, author,
+    named reviewer and date (or explicit never/unassigned). Existing review queue
+    and source-invalidating review workflow remain authoritative. Two focused
+    publication checks pass (73 total); app and FMX binding build pass. Generated
+    static text does not acquire human approval merely by including reviewed notes.
+6.3-6.7 Pending: translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
