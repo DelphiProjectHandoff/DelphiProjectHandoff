@@ -286,7 +286,7 @@ begin
           Scan:=Analyzer.Scan(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.Command<>'full',Request.CodePage);
           try
             if Terminated then Continue;
-            Graph:=Semantic.Analyze(Scan);
+            Graph:=Semantic.Analyze(Scan,Request.Command<>'full');
             try
               if Terminated then Continue;
               Respond(nil,'Saving revision-consistent analysis...',True,Changed,False,False);
@@ -302,6 +302,7 @@ begin
                   Document.Free; Document:=nil; Respond(nil,MessageText,False,True,False,False); Continue;
                 end
                 else MessageText:='PARTIAL captured analysis; previous complete head retained';
+                MessageText:=MessageText+' | routines rebuilt '+IntToStr(Semantic.RecomputedRoutines)+', reused '+IntToStr(Semantic.ReusedRoutines);
                 if Store.Status.KnowledgeReviewNeeded then MessageText:=MessageText+' | human knowledge review pending';
                 Knowledge:=nil; Images:=nil;
                 try

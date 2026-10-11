@@ -4,6 +4,16 @@ interface
 uses System.SysUtils, System.Generics.Collections, DPH.Parse.Model, DPH.Project.Analysis,
   DPH.Analysis.Model;
 type
+  TDPHRoutineSummary = class
+    ValidationHash: string;
+    Relations: TArray<TDPHRelation>;
+    FromKeys,ToKeys: TArray<string>;
+    Nodes: TArray<TDPHFlowNode>;
+    Edges: TArray<TDPHFlowEdge>;
+    Diagnostics: TArray<TDPHDiagnostic>;
+    Complete: Boolean;
+    Weight: Integer;
+  end;
   TDPHSemanticAnalyzer = class
   private
     FScan: TDPHScan;
@@ -14,6 +24,9 @@ type
     FImports: TObjectDictionary<string,TList<string>>;
     FKeys: TDictionary<string,Integer>;
     FBaseTypes: TDictionary<Integer,Integer>;
+    FRoutineCache: TObjectDictionary<string,TDPHRoutineSummary>;
+    FCacheWeight: Integer;
+    FReusedRoutines,FRecomputedRoutines: Integer;
     function NodeKey(const AFile: string; ANode: Integer): string;
     function ParentSymbol(const AFile: string; IR: TDPHParseResult; ANode: Integer): Integer;
     function AddSymbol(S: TDPHSymbol): Integer;
@@ -29,12 +42,88 @@ type
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
+    procedure CachedRoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens; const ABindingHash: string);
   public
-    function Analyze(AScan: TDPHScan): TDPHSemanticGraph;
+    constructor Create;
+    destructor Destroy; override;
+    function Analyze(AScan: TDPHScan; AIncremental: Boolean = True): TDPHSemanticGraph;
+    property ReusedRoutines: Integer read FReusedRoutines;
+    property RecomputedRoutines: Integer read FRecomputedRoutines;
   end;
 implementation
 uses System.Classes, System.StrUtils, System.Hash, DPH.Storage.Types,
   DPH.Storage.Database, DPH.Analysis.Flow, DPH.Project.Inventory;
+
+constructor TDPHSemanticAnalyzer.Create;
+begin inherited; FRoutineCache:=TObjectDictionary<string,TDPHRoutineSummary>.Create([doOwnsValues]); end;
+destructor TDPHSemanticAnalyzer.Destroy;
+begin FRoutineCache.Free; inherited; end;
+
+procedure TDPHSemanticAnalyzer.CachedRoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens; const ABindingHash: string);
+var Summary,Previous: TDPHRoutineSummary; Validation: string; Routine: TDPHSymbol;
+    I,RelationStart,NodeStart,EdgeStart,DiagnosticStart,NodeOffset: Integer;
+    R: TDPHRelation; N: TDPHFlowNode; E: TDPHFlowEdge; D: TDPHDiagnostic; CompleteBefore,RoutineComplete: Boolean;
+begin
+  Routine:=FGraph.Symbols[ARoutine];
+  Validation:=THashSHA2.GetHashString(ABindingHash+#0+Routine.Key+#0+Routine.SourceHash);
+  if FRoutineCache.TryGetValue(Routine.Key,Summary) and (Summary.ValidationHash=Validation) then begin
+    if (FGraph.Relations.Count+Length(Summary.Relations)>200000) or
+      (FGraph.FlowNodes.Count+Length(Summary.Nodes)>100000) or
+      (FGraph.FlowEdges.Count+Length(Summary.Edges)>300000) then raise ERangeError.Create('Reused semantic graph exceeds analysis limits');
+    NodeOffset:=FGraph.FlowNodes.Count;
+    for I:=0 to High(Summary.Relations) do begin
+      R:=Summary.Relations[I]; R.FromSymbol:=FKeys[Summary.FromKeys[I]];
+      R.ToSymbol:=-1; if Summary.ToKeys[I]<>'' then R.ToSymbol:=FKeys[Summary.ToKeys[I]];
+      FGraph.Relations.Add(R);
+    end;
+    for I:=0 to High(Summary.Nodes) do begin N:=Summary.Nodes[I]; N.Routine:=ARoutine; FGraph.FlowNodes.Add(N); end;
+    for I:=0 to High(Summary.Edges) do begin E:=Summary.Edges[I]; Inc(E.FromNode,NodeOffset); Inc(E.ToNode,NodeOffset); FGraph.FlowEdges.Add(E); end;
+    for D in Summary.Diagnostics do if FGraph.Diagnostics.Count<10000 then FGraph.Diagnostics.Add(D);
+    FGraph.Complete:=FGraph.Complete and Summary.Complete;
+    Inc(FReusedRoutines); Exit;
+  end;
+  Inc(FRecomputedRoutines); RelationStart:=FGraph.Relations.Count; NodeStart:=FGraph.FlowNodes.Count;
+  EdgeStart:=FGraph.FlowEdges.Count; DiagnosticStart:=FGraph.Diagnostics.Count;
+  CompleteBefore:=FGraph.Complete; FGraph.Complete:=True;
+  RoutineComplete:=False;
+  try RoutineFacts(ARoutine,IR,Tokens); RoutineComplete:=FGraph.Complete;
+  finally FGraph.Complete:=FGraph.Complete and CompleteBefore; end;
+  // Do not cache exceptionally large routines or exceed a bounded session cache.
+  I:=(FGraph.Relations.Count-RelationStart)+(FGraph.FlowNodes.Count-NodeStart)+
+    (FGraph.FlowEdges.Count-EdgeStart)+(FGraph.Diagnostics.Count-DiagnosticStart);
+  if (I>512) or (FGraph.Diagnostics.Count>=10000) or
+    ((FRoutineCache.Count>=512) and not FRoutineCache.ContainsKey(Routine.Key)) then Exit;
+  Summary:=TDPHRoutineSummary.Create;
+  try
+    Summary.ValidationHash:=Validation; Summary.Weight:=I*512; Summary.Complete:=RoutineComplete;
+    SetLength(Summary.Relations,FGraph.Relations.Count-RelationStart);
+    SetLength(Summary.FromKeys,Length(Summary.Relations)); SetLength(Summary.ToKeys,Length(Summary.Relations));
+    for I:=0 to High(Summary.Relations) do begin
+      R:=FGraph.Relations[RelationStart+I]; Summary.Relations[I]:=R;
+      Summary.FromKeys[I]:=FGraph.Symbols[R.FromSymbol].Key;
+      if R.ToSymbol>=0 then Summary.ToKeys[I]:=FGraph.Symbols[R.ToSymbol].Key;
+      Inc(Summary.Weight,2*(Length(Summary.FromKeys[I])+Length(Summary.ToKeys[I])+Length(R.LabelText)+Length(R.Rule)+Length(R.Condition)+Length(R.Location.Source)));
+      if R.Resolution='unresolved' then Summary.Complete:=False;
+    end;
+    SetLength(Summary.Nodes,FGraph.FlowNodes.Count-NodeStart);
+    for I:=0 to High(Summary.Nodes) do begin
+      Summary.Nodes[I]:=FGraph.FlowNodes[NodeStart+I]; Inc(Summary.Weight,2*(Length(Summary.Nodes[I].ExpressionText)+Length(Summary.Nodes[I].Location.Source)));
+    end;
+    SetLength(Summary.Edges,FGraph.FlowEdges.Count-EdgeStart);
+    for I:=0 to High(Summary.Edges) do begin
+      E:=FGraph.FlowEdges[EdgeStart+I]; Dec(E.FromNode,NodeStart); Dec(E.ToNode,NodeStart); Summary.Edges[I]:=E;
+    end;
+    SetLength(Summary.Diagnostics,FGraph.Diagnostics.Count-DiagnosticStart);
+    for I:=0 to High(Summary.Diagnostics) do begin
+      Summary.Diagnostics[I]:=FGraph.Diagnostics[DiagnosticStart+I];
+      Inc(Summary.Weight,2*(Length(Summary.Diagnostics[I].MessageText)+Length(Summary.Diagnostics[I].Location.Source)));
+      if Summary.Diagnostics[I].Code='CFG_CONSERVATIVE_CONSTRUCT' then Summary.Complete:=False;
+    end;
+    if FCacheWeight+Summary.Weight>32*1024*1024 then Exit;
+    if FRoutineCache.TryGetValue(Routine.Key,Previous) then Dec(FCacheWeight,Previous.Weight);
+    Inc(FCacheWeight,Summary.Weight); FRoutineCache.AddOrSetValue(Routine.Key,Summary); Summary:=nil;
+  finally Summary.Free; end;
+end;
 
 function TDPHSemanticAnalyzer.NodeKey(const AFile: string; ANode: Integer): string;
 begin Result:=AFile+'#'+IntToStr(ANode); end;
@@ -600,10 +689,13 @@ begin
   finally Closures.Free; Nested.Free; Args.Free; end;
 end;
 
-function TDPHSemanticAnalyzer.Analyze(AScan: TDPHScan): TDPHSemanticGraph;
+function TDPHSemanticAnalyzer.Analyze(AScan: TDPHScan; AIncremental: Boolean): TDPHSemanticGraph;
 var Item: TDPHManifestFile; IR: TDPHParseResult; T: TDPHToken; Tokens: TList<TDPHToken>;
     S: TDPHSymbol; I,TypeIndex,Consumer,Resource: Integer; SymbolsBefore: Integer; Reference: TDPHDefinitionReference;
+    BindingHash: THashSHA2; BindingIdentity: string; Import: TPair<string,TList<string>>; BindingRelation: TDPHRelation;
 begin
+  FReusedRoutines:=0; FRecomputedRoutines:=0;
+  if not AIncremental then begin FRoutineCache.Clear; FCacheWeight:=0; end;
   FScan:=AScan; FGraph:=TDPHSemanticGraph.Create; FGraph.Complete:=AScan.Complete;
   FGraph.Diagnostics.AddRange(AScan.Inventory.Diagnostics);
   FGraph.Fingerprint:=TDPHKnowledgeStore.ManifestHash(AScan.Inventory.Manifest);
@@ -623,13 +715,26 @@ begin
       end;
       for Item in AScan.Inventory.Manifest do if AScan.Results.TryGetValue(Item.RelativePath,IR) and (Length(FTokens[Item.RelativePath])>0) then Variables(Item.RelativePath,IR);
       for Item in AScan.Inventory.Manifest do if AScan.Results.TryGetValue(Item.RelativePath,IR) and (Length(FTokens[Item.RelativePath])>0) then Dependencies(Item.RelativePath,IR);
+      BindingHash:=THashSHA2.Create;
+      BindingHash.Update(DPHSemanticVersion+#0+AScan.Inventory.Root+#0+FGraph.Configuration);
+      for S in FGraph.Symbols do begin
+        BindingHash.Update(S.Key+#0+S.TypeName+#0+S.Dispatch+#0+String.Join(';',S.ParameterTypes)+#0+IntToStr(S.MinArguments)+#0+
+          BoolToStr(S.Exported,True)+#0+BoolToStr(S.ClassMethod,True)+#0+BoolToStr(S.HasBody,True)+#0+IntToStr(S.Owner));
+      end;
+      for Import in FImports do BindingHash.Update(Import.Key+#0+String.Join(';',Import.Value.ToArray));
+      for BindingRelation in FGraph.Relations do begin
+        BindingHash.Update(FGraph.Symbols[BindingRelation.FromSymbol].Key+#0+BindingRelation.Kind+#0+BindingRelation.Resolution+#0+BindingRelation.Condition);
+        if BindingRelation.ToSymbol>=0 then BindingHash.Update(FGraph.Symbols[BindingRelation.ToSymbol].Key);
+      end;
+      for Item in AScan.Inventory.Manifest do if Item.Kind='.inc' then BindingHash.Update(Item.RelativePath+#0+Item.SHA256);
+      BindingIdentity:=BindingHash.HashAsString;
       SymbolsBefore:=FGraph.Symbols.Count;
       for I:=0 to SymbolsBefore-1 do
       begin
         S:=FGraph.Symbols[I];
         if MatchText(S.Kind,['parameter','field','property','local','variable']) then
         begin TypeIndex:=FindType(S.TypeName,S.UnitName); if TypeIndex>=0 then FGraph.AddRelation(I,TypeIndex,'uses_type','confirmed_static','declared_type',S.TypeName,S.Location); end;
-        if S.HasBody and AScan.Results.TryGetValue(S.Location.Source,IR) then RoutineFacts(I,IR,FTokens[S.Location.Source]);
+        if S.HasBody and AScan.Results.TryGetValue(S.Location.Source,IR) then CachedRoutineFacts(I,IR,FTokens[S.Location.Source],BindingIdentity);
       end;
       for Item in AScan.Inventory.Manifest do if MatchText(Item.Kind,['.fmx','.dfm']) and AScan.Results.TryGetValue(Item.RelativePath,IR) then BindForms(Item.RelativePath,IR);
       for Reference in AScan.Inventory.DefinitionReferences do begin

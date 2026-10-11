@@ -40,6 +40,33 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure CacheBindingTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan,Changed: TDPHScan;
+    Graph,Incremental,Full: TDPHSemanticGraph; Source: string;
+begin
+  Source:='unit Derivation; interface type TA=class procedure Run; virtual; end; TB=class procedure Run; virtual; end; TC=class(TA) end; '+
+    'implementation procedure TA.Run; begin end; procedure TB.Run; begin end; end.';
+  TFile.WriteAllText(TPath.Combine(Fixture,'Derivation.pas'),Source,TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Client.pas'),'unit Client; interface uses Derivation; procedure Work; implementation procedure Work; var C: TC; begin C.Run; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Binding.dpr'),'program Binding; uses Client in ''Client.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try
+    Scan:=A.Scan(TPath.Combine(Fixture,'Binding.dpr'),'Debug','Win32',[],[]);
+    try Graph:=Analyzer.Analyze(Scan); Graph.Free; finally Scan.Free; end;
+    TFile.WriteAllText(TPath.Combine(Fixture,'Derivation.pas'),Source.Replace('TC=class(TA)','TC=class(TB)'),TEncoding.UTF8);
+    Changed:=A.Scan(TPath.Combine(Fixture,'Binding.dpr'),'Debug','Win32',[],[]);
+    try
+      Incremental:=Analyzer.Analyze(Changed);
+      try
+        Check((Analyzer.ReusedRoutines=0) and (Analyzer.RecomputedRoutines>0),'INC_CACHE05','Ancestry change invalidates dependent routine bindings across unchanged files');
+        Check(Relation(Incremental,Find(Incremental,'Client.Work','*'),Find(Incremental,'Derivation.TB.Run','*'),'calls','possible_dynamic'),'INC_CACHE06','Changed ancestry resolves the unchanged caller to its new inherited method');
+        Full:=Analyzer.Analyze(Changed,False);
+        try Check(JSON(Incremental)=JSON(Full),'INC_CACHE07','Binding-invalidated semantics match a clean full rebuild'); finally Full.Free; end;
+      finally Incremental.Free; end;
+    finally Changed.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure DefinitionTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Loader,Resource,Index: Integer; Source: string; Config: Int64; Generation: Int64; Store: TDPHKnowledgeStore;
@@ -155,7 +182,10 @@ begin
         Again:=A.Scan(TPath.Combine(Fixture,'Semantic.dproj'),'Debug','Win32',['MSWINDOWS','WIN32'],[]);
         Full:=A.Scan(TPath.Combine(Fixture,'Semantic.dproj'),'Debug','Win32',['MSWINDOWS','WIN32'],[],False);
         try
-          GAgain:=S.Analyze(Again); GFull:=S.Analyze(Full);
+          GAgain:=S.Analyze(Again);
+          Check((S.ReusedRoutines>0) and (S.RecomputedRoutines=0),'INC_CACHE01','Unchanged binding context reuses routine semantics');
+          GFull:=S.Analyze(Full,False);
+          Check((S.ReusedRoutines=0) and (S.RecomputedRoutines>0),'INC_CACHE02','Explicit full analysis rebuilds semantics independently of its cache');
           try Check((Again.ReusedFiles>0) and (JSON(G)=JSON(GAgain)) and (JSON(GAgain)=JSON(GFull)),'INCR01','Full and cached syntax produce identical complete semantic graphs'); finally GFull.Free; GAgain.Free; end;
         finally Full.Free; Again.Free; end;
         Variant:=A.Scan(TPath.Combine(Fixture,'Semantic.dproj'),'Debug','Win32',['MSWINDOWS','WIN32','FEATURE'],[],False);
@@ -179,9 +209,15 @@ begin
         finally Store.Free; end;
         Check(Scan.Inventory.Revalidate,'SAFE01','Captured semantic fixture bytes remain unchanged');
         BeforeKey:=G.Symbols[Click].Key;
+        GAgain:=S.Analyze(Scan); GAgain.Free;
         TFile.WriteAllText(TPath.Combine(Fixture,'Main.pas'),'// shifted source'+#10+TFile.ReadAllText(TPath.Combine(Fixture,'Main.pas')),TEncoding.UTF8);
         Again:=A.Scan(TPath.Combine(Fixture,'Semantic.dproj'),'Debug','Win32',['MSWINDOWS','WIN32'],[]);
-        try GAgain:=S.Analyze(Again); try Check((GAgain.Symbols[Find(GAgain,'Main.TMain.Click','(integer):')].Key=BeforeKey) and (GAgain.Fingerprint<>G.Fingerprint),'IDENTITY01','Whitespace shift preserves symbol identity while changing provenance'); finally GAgain.Free; end; finally Again.Free; end;
+        try GAgain:=S.Analyze(Again); try
+          Check((GAgain.Symbols[Find(GAgain,'Main.TMain.Click','(integer):')].Key=BeforeKey) and (GAgain.Fingerprint<>G.Fingerprint),'IDENTITY01','Whitespace shift preserves symbol identity while changing provenance');
+          Check((S.ReusedRoutines>0) and (S.RecomputedRoutines>0),'INC_CACHE03','Source change rebuilds affected file routines and reuses unaffected routines');
+          GFull:=S.Analyze(Again,False);
+          try Check(JSON(GAgain)=JSON(GFull),'INC_CACHE04','Affected routine reuse exactly matches an independent clean semantic rebuild'); finally GFull.Free; end;
+        finally GAgain.Free; end; finally Again.Free; end;
       finally G.Free; end;
     finally Scan.Free; end;
     TFile.WriteAllText(TPath.Combine(Work,'Empty.dpr'),'program Empty; begin end.',TEncoding.UTF8);
@@ -293,7 +329,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; DefinitionTests; ReferenceTests;
+      FixtureTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

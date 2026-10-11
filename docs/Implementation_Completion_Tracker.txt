@@ -47,7 +47,16 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     map-pack interpretation and actual runtime precedence remain pending.
     Discovery: 87 checks; semantic execution: 60; workspace: 45; knowledge: 34;
     selection: 18; startup: 2; lifecycle: 35; catalog: 7; FMX binding passes.
-3.1-3.9 Pending: affected semantic recomputation, resolution, startup graphs,
+3.1 Implemented conservative affected-file routine reuse. Unchanged captured
+    source/includes/bindings reuse routine relations, CFG and diagnostics via
+    canonical identities. Declaration/import/ancestry/configuration changes
+    invalidate bindings conservatively across the project. Explicit Full
+    reassessment bypasses reuse. Session cache is bounded by entry/record/weighted
+    memory limits; large routines fall back to recomputation. Symbol collection
+    and resource/form links still rebuild. Seven focused cache checks plus the
+    existing semantic cases pass (67 total), including independent clean-build
+    equivalence after source and ancestry changes. Status shows reuse counts.
+3.2-3.9 Pending: resolution, startup graphs,
     additional control flow, async, data/SQL, relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
 4.1-4.10 Pending: hierarchy, detailed drill-down, execution/form/data graphs,

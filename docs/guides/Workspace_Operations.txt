@@ -40,6 +40,10 @@ Search covers captured object metadata, flow evidence, diagnostics and notes.
 It does not search arbitrary neighboring files or execute query syntax.
 
 Configurations, platforms and source encoding
+Automatic reassessment reuses unchanged routine semantics where source bytes,
+includes and bindings agree. A changed source file rebuilds its routines;
+binding changes conservatively rebuild dependents. The status line reports
+rebuilt/reused routine counts. Full reassessment bypasses routine reuse.
 Attaching a project uses its declared configuration/platform defaults. The two
 selectors then show choices discovered in its project metadata and conditions.
 Select the required configuration/platform and click Full reassessment, or let
