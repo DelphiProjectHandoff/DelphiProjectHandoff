@@ -38,6 +38,7 @@ Items.Strings = (
 'Coverage'
 'Knowledge'
 'Knowledge links'
+'Review tasks'
 'Publish')
 OnChange = WorkspacePageChange
 end
@@ -1181,6 +1182,101 @@ Width = 380
 end
 object KnowledgeLinksList: TListBox
 Align = Client
+end
+end
+object ReviewTasksTab: TTabItem
+Text = 'Review tasks'
+object ReviewTasksPurpose: TLabel
+Align = Top
+Height = 76
+WordWrap = True
+Text = 'Pending human reviews. Refresh, then select a task to compare captured generations and authored revisions. Empty baseline fields mean no recorded comparison. Change impact shows static reachability. Open knowledge to edit its content or links. Verify requires a named reviewer and revalidated current source; Retire preserves history.'
+end
+object ReviewTasksToolbar: THorzScrollBox
+Align = Top
+Height = 74
+object RefreshReviewTasksButton: TButton
+Position.X = 4
+Position.Y = 4
+Width = 120
+Height = 28
+Text = 'Refresh tasks'
+OnClick = ReviewTasksClick
+end
+object OpenReviewKnowledgeButton: TButton
+Position.X = 134
+Position.Y = 4
+Width = 140
+Height = 28
+Text = 'Open knowledge'
+OnClick = ReviewTasksClick
+end
+object ReviewImpactButton: TButton
+Position.X = 284
+Position.Y = 4
+Width = 130
+Height = 28
+Text = 'Change impact'
+OnClick = ReviewTasksClick
+end
+object ReviewAffectedCombo: TComboBox
+Position.X = 424
+Position.Y = 4
+Width = 280
+Height = 28
+Hint = 'Affected source object for Change impact'
+ShowHint = True
+end
+object ReviewReviewerEdit: TEdit
+Position.X = 4
+Position.Y = 38
+Width = 240
+Height = 28
+TextPrompt = 'Named reviewer'
+end
+object VerifyTaskButton: TButton
+Position.X = 254
+Position.Y = 38
+Width = 130
+Height = 28
+Text = 'Verify selected'
+OnClick = ReviewTasksClick
+end
+object RetireTaskButton: TButton
+Position.X = 394
+Position.Y = 38
+Width = 130
+Height = 28
+Text = 'Retire selected'
+OnClick = ReviewTasksClick
+end
+end
+object ReviewTasksList: TListBox
+Align = Top
+Height = 160
+OnChange = ReviewTaskSelectionClick
+end
+object ReviewComparison: TLayout
+Align = Client
+object ReviewBeforeMemo: TMemo
+Align = Left
+Width = 350
+ReadOnly = True
+StyledSettings = []
+TextSettings.Font.Size = 14
+WordWrap = True
+end
+object ReviewSplitter: TSplitter
+Align = Left
+Width = 6
+end
+object ReviewAfterMemo: TMemo
+Align = Client
+ReadOnly = True
+StyledSettings = []
+TextSettings.Font.Size = 14
+WordWrap = True
+end
 end
 end
 object PublishTab: TTabItem

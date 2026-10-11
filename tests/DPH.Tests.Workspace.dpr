@@ -248,7 +248,24 @@ begin
               try Check((Rows.Items[1].GetValue<string>('pending')='1') and (Rows.Items[1].GetValue<string>('revision_state')='verified'),
                 'Referenced section edit reopens separate review without rewriting prior verification');
               finally Rows.Free; end;
+              Form.LoadKnowledge(KnowledgeJSON);
+              Rows:=ReviewTasks(Generation);
+              for Members:=0 to Rows.Count-1 do if Rows.Items[Members].GetValue<Int64>('knowledge_id')=LinkNote then Break;
+              Form.LoadReviewTasks(Rows); Rows:=nil; Form.ReviewTasksList.ItemIndex:=Members; Form.ReviewTaskSelectionClick(nil);
             finally Free; end;
+            Check(Form.ReviewAfterMemo.Text.Contains('Referenced section revision changed'),'Review queue explains referenced-document change');
+            Form.WorkspaceTabs.ActiveTab:=Form.ReviewTasksTab; Application.ProcessMessages;
+            Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
+            try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
+              Bitmap.SaveToFile(TPath.Combine(Work,'review-native.png'));
+            finally Bitmap.Free; end;
+            Form.ReviewTasksClick(Form.OpenReviewKnowledgeButton);
+            Check(Form.KnowledgeBodyMemo.Text='Fixture evidence only','Review task opens affected authored content');
+            Form.ReviewTasksClick(Form.ReviewImpactButton);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.GraphTab) and (Form.GraphCombo.Items[Form.GraphCombo.ItemIndex]='Change impact'),
+              'Review task opens affected source change-impact projection');
+            Form.ReviewReviewerEdit.Text:=''; Form.ReviewTasksClick(Form.VerifyTaskButton);
+            Check(Form.StatusLabel.Text.Contains('named reviewer'),'Review task cannot record anonymous approval');
             Form.ScreenshotInspectClick(nil);
             Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
             Form.LoadView(View.Document.Clone as TJSONObject);

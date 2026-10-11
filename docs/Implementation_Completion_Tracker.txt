@@ -170,8 +170,15 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     and backlinks are omitted. Knowledge suite 44, workspace 102, publishing 69.
     Content-hashed native previews are explicitly allowed only in their owned
     directory; arbitrary pages and external navigation remain blocked.
-5.3-5.6 Pending: review tasks, focused questions, educational explanations and
-    runtime observation import.
+5.3 Expanded: pending review queue with original trigger, prior/current authored
+    text, baseline/current configuration, source presence/signature/type/hash,
+    bounded relationship comparison and affected-object impact navigation.
+    Named Verify and Retire use source/configuration revalidation and optimistic
+    revision checks. Native comparison rendered and inspected; workspace 106.
+    Knowledge suite adds baseline/content/entity and native comparison checks.
+    No baseline is labeled missing; static impact never claims runtime impact.
+5.4-5.6 Pending: focused questions, educational explanations and runtime
+    observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time

@@ -120,6 +120,18 @@ type
     CoverageList: TListBox;
     CoveragePurpose: TLabel;
     CoverageInspectButton: TButton;
+    ReviewTasksTab: TTabItem;
+    ReviewTasksPurpose: TLabel;
+    ReviewTasksToolbar: THorzScrollBox;
+    ReviewTasksList: TListBox;
+    ReviewBeforeMemo,ReviewAfterMemo: TMemo;
+    ReviewReviewerEdit: TEdit;
+    ReviewAffectedCombo: TComboBox;
+    RefreshReviewTasksButton,OpenReviewKnowledgeButton,ReviewImpactButton,VerifyTaskButton,RetireTaskButton: TButton;
+    ReviewComparison: TLayout;
+    ReviewSplitter: TSplitter;
+    procedure ReviewTasksClick(Sender: TObject);
+    procedure ReviewTaskSelectionClick(Sender: TObject);
     procedure KnowledgeLinksClick(Sender: TObject);
     procedure OpenKnowledgeLinkClick(Sender: TObject);
     procedure CoverageInspectClick(Sender: TObject);
@@ -220,6 +232,7 @@ type
     FPreviewPages: TList<string>;
     FCoverage: TJSONObject;
     FLinkTargets,FEditableLinks: TJSONArray;
+    FReviewTasks: TJSONArray;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
     procedure RefreshLearning;
@@ -238,6 +251,7 @@ type
     procedure LoadView(ADocument: TJSONObject);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
+    procedure LoadReviewTasks(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
 var DPHMainForm: TDPHMainForm;
@@ -283,7 +297,7 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free;
+  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -546,6 +560,7 @@ begin
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
   FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
+  FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
@@ -582,6 +597,8 @@ begin
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
+    if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
+    if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
     if (R.LinkCandidates<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
       FLinkTargets.Free; FLinkTargets:=R.LinkCandidates; R.LinkCandidates:=nil; LinkTargetsList.Items.Clear;
@@ -628,6 +645,7 @@ begin
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
     SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
   SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
+  FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:='Refresh tasks for this captured generation.'; ReviewAfterMemo.Text:='';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
@@ -701,6 +719,74 @@ begin
       CoverageList.Items.Add(Row.GetValue<string>('severity')+' | '+Row.GetValue<string>('code')+' | '+Row.GetValue<string>('message'));
     end;
   finally Text.Free; end;
+end;
+procedure TDPHMainForm.LoadReviewTasks(ARows: TJSONArray);
+var V: TJSONValue;
+begin
+  FReviewTasks.Free; FReviewTasks:=ARows; ReviewTasksList.Items.Clear;
+  for V in ARows do ReviewTasksList.Items.Add(V.GetValue<string>('title')+' | '+V.GetValue<string>('reason'));
+  ReviewBeforeMemo.Text:='No pending review tasks in this captured scope.'; ReviewAfterMemo.Text:='This is not proof that documentation is complete or approved.';
+  if ARows.Count>0 then begin ReviewTasksList.ItemIndex:=0; ReviewTaskSelectionClick(nil); end;
+end;
+procedure TDPHMainForm.ReviewTaskSelectionClick(Sender: TObject);
+var Row: TJSONObject; V: TJSONValue; BeforeText,AfterText: TStringBuilder;
+begin
+  if (FReviewTasks=nil) or (ReviewTasksList.ItemIndex<0) then Exit;
+  Row:=FReviewTasks.Items[ReviewTasksList.ItemIndex] as TJSONObject; BeforeText:=TStringBuilder.Create; AfterText:=TStringBuilder.Create;
+  ReviewAffectedCombo.Items.Clear;
+  try
+    BeforeText.AppendLine('BEFORE: baseline generation '+Row.GetValue<Int64>('baseline_generation').ToString);
+    BeforeText.AppendLine('Configuration: '+Row.GetValue<string>('before_configuration'));
+    BeforeText.AppendLine('Prior document revision '+Row.GetValue<Int64>('prior_revision').ToString+':'); BeforeText.AppendLine(Row.GetValue<string>('before_body'));
+    AfterText.AppendLine('AFTER: captured generation '+Row.GetValue<Int64>('current_generation').ToString);
+    AfterText.AppendLine('Original task trigger: '+Row.GetValue<string>('reason'));
+    AfterText.AppendLine('Configuration: '+Row.GetValue<string>('after_configuration'));
+    AfterText.AppendLine('Document revision '+Row.GetValue<string>('revision')+' | '+Row.GetValue<string>('revision_state')+':'); AfterText.AppendLine(Row.GetValue<string>('body'));
+    BeforeText.AppendLine('Affected source objects (first 200):'); AfterText.AppendLine('Affected source objects (first 200):');
+    for V in Row.GetValue<TJSONArray>('affected') do begin
+      ReviewAffectedCombo.Items.Add(V.GetValue<string>('display_name'));
+      BeforeText.AppendLine(V.GetValue<string>('display_name')+' | present '+V.GetValue<string>('before_present'));
+      BeforeText.AppendLine('  Source: '+V.GetValue<string>('before_source')+' | type '+V.GetValue<string>('before_type'));
+      BeforeText.AppendLine('  Signature: '+V.GetValue<string>('before_signature')); BeforeText.AppendLine('  SHA256: '+V.GetValue<string>('before_hash'));
+      AfterText.AppendLine(V.GetValue<string>('display_name')+' | present '+V.GetValue<string>('after_present'));
+      AfterText.AppendLine('  Source: '+V.GetValue<string>('after_source')+' | type '+V.GetValue<string>('after_type'));
+      AfterText.AppendLine('  Signature: '+V.GetValue<string>('after_signature')); AfterText.AppendLine('  SHA256: '+V.GetValue<string>('after_hash'));
+    end;
+    BeforeText.AppendLine('Static relationships (first 200):'); AfterText.AppendLine('Static relationships (first 200):');
+    for V in Row.GetValue<TJSONArray>('before_relationships') do BeforeText.AppendLine(V.GetValue<string>('from_key')+' -> '+V.GetValue<string>('relation_kind')+' -> '+V.GetValue<string>('to_key')+' | '+V.GetValue<string>('resolution_status'));
+    for V in Row.GetValue<TJSONArray>('after_relationships') do AfterText.AppendLine(V.GetValue<string>('from_key')+' -> '+V.GetValue<string>('relation_kind')+' -> '+V.GetValue<string>('to_key')+' | '+V.GetValue<string>('resolution_status'));
+    BeforeText.AppendLine('Empty baseline fields mean no captured comparison, not absence of behavior.');
+    AfterText.AppendLine('Reachability and source changes do not establish runtime impact. Review the source and attributed content before approval.');
+    ReviewBeforeMemo.Text:=BeforeText.ToString; ReviewAfterMemo.Text:=AfterText.ToString;
+    if ReviewAffectedCombo.Items.Count>0 then ReviewAffectedCombo.ItemIndex:=0;
+  finally AfterText.Free; BeforeText.Free; end;
+end;
+procedure TDPHMainForm.ReviewTasksClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject; V: TJSONValue; Index: Integer; Key: string;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if Sender=RefreshReviewTasksButton then begin
+    Request:=Default(TDPHWorkspaceRequest); Request.Command:='review_tasks'; Request.Database:=FDatabase; Request.Entry:=FEntry;
+    Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); FWorker.Submit(Request); FBusy:=True; FPendingCommand:='review_tasks'; Exit;
+  end;
+  if (FReviewTasks=nil) or (ReviewTasksList.ItemIndex<0) then Exit;
+  Row:=FReviewTasks.Items[ReviewTasksList.ItemIndex] as TJSONObject;
+  if Row.GetValue<Int64>('current_generation')<>FView.Document.GetValue<Int64>('generation_id') then begin StatusLabel.Text:='Refresh tasks for the current generation first.'; Exit; end;
+  if Sender=ReviewImpactButton then begin
+    Key:=''; if ReviewAffectedCombo.ItemIndex>=0 then Key:=Row.GetValue<TJSONArray>('affected').Items[ReviewAffectedCombo.ItemIndex].GetValue<string>('canonical_key');
+    if (Key='') or (FView.Symbol(Key)=nil) then begin Key:=''; for V in Row.GetValue<TJSONArray>('affected') do if FView.Symbol(V.GetValue<string>('canonical_key'))<>nil then begin Key:=V.GetValue<string>('canonical_key'); Break; end; end;
+    if Key='' then begin StatusLabel.Text:='This task has no surviving captured source object. Inspect its documentation links and before/after evidence.'; Exit; end;
+    SelectSymbol(Key); GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Change impact'); FWholeGraph:=False; RefreshGraphics; WorkspaceTabs.ActiveTab:=GraphTab; Exit;
+  end;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored edit before opening another task.'; Exit; end;
+  if Row.GetValue<Int64>('knowledge_id')=0 then begin StatusLabel.Text:='This source investigation has no authored record to approve. Inspect evidence and create attributed knowledge first.'; Exit; end;
+  PendingKnowledgeCheck.IsChecked:=False; KnowledgeFilterChange(nil);
+  for Index:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[Index].GetValue<Int64>('id')=Row.GetValue<Int64>('knowledge_id') then begin KnowledgeList.ItemIndex:=Index; KnowledgeClick(nil); Break; end;
+  if (FKnowledgeID<>Row.GetValue<Int64>('knowledge_id')) or (FKnowledgeRevision<>Row.GetValue<Int64>('revision')) then begin StatusLabel.Text:='The task revision changed. Refresh tasks and knowledge before reviewing.'; Exit; end;
+  if Sender=OpenReviewKnowledgeButton then begin WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit; end;
+  if not ((Sender=VerifyTaskButton) or (Sender=RetireTaskButton)) then Exit;
+  if Trim(ReviewReviewerEdit.Text)='' then begin StatusLabel.Text:='Enter the named reviewer before recording a disposition.'; Exit; end;
+  KnowledgeAuthorEdit.Text:=ReviewReviewerEdit.Text; FReviewState:='verified'; if Sender=RetireTaskButton then FReviewState:='retired'; Submit('review_knowledge');
 end;
 procedure TDPHMainForm.CoverageInspectClick(Sender: TObject);
 var Row: TJSONObject; Range: TJSONObject; FileRow: TJSONObject;

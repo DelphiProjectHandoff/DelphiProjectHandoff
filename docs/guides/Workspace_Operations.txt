@@ -228,6 +228,21 @@ then use Verify review. Source navigation is disabled for historical evidence.
 Offline exports include scoped links and revision anchors. Omitted target links
 are explicitly counted when their source or audience is excluded.
 
+Reviewing changed documentation
+Choose Review tasks in the top-right page selector and click Refresh tasks.
+Select a task in the list. BEFORE shows the comparison baseline and prior
+authored revision; AFTER shows the current capture, original trigger and current
+authored revision. Blank baseline fields mean no recorded comparison.
+Choose an affected source object in the toolbar list and click Change impact
+to inspect its possible dependents. Click Open knowledge to inspect or edit the
+affected section and its links. Save changes before returning to task review.
+Enter your reviewer name and click Verify selected only after inspecting the
+evidence. DPH revalidates attached source and configuration, checks the exact
+revision, and rejects obsolete rich-link targets. Click Retire selected when
+the section is obsolete; its revisions remain preserved. A resolved task is not
+proof that every operating procedure or undocumented requirement is complete.
+Drag the divider between BEFORE and AFTER to resize the comparison panes.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

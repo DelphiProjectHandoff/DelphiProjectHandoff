@@ -73,6 +73,7 @@ type
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
     function LinkCandidates(AGeneration: Int64; const AKind: string; const AQuery: string = ''): TJSONArray;
+    function ReviewTasks(AGeneration: Int64): TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
     function GenerationIsStale(AGenerationID: Int64): Boolean;
     procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
@@ -906,6 +907,59 @@ begin
   except FConnection.Rollback; raise; end;
 end;
 
+function TDPHKnowledgeStore.ReviewTasks(AGeneration: Int64): TJSONArray;
+var Query,Detail: TFDQuery; Row,Item: TJSONObject; Affected,Relations: TJSONArray;
+  Baseline,Knowledge,Entity,Revision,PriorRevision,RelationGeneration: Int64; I,Pass: Integer; Name: string;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT t.task_id,coalesce(t.knowledge_id,0) AS knowledge_id,coalesce(t.entity_id,0) AS entity_id,'+
+    'coalesce(k.title,''Source investigation'') AS title,t.reason,coalesce(t.opened_generation_id,0) AS opened_generation,'+
+    'coalesce(k.current_revision_id,0) AS revision,coalesce(r.body_md,'''') AS body,coalesce(r.verification_state,''needs_review'') AS revision_state '+
+    'FROM review_tasks t LEFT JOIN knowledge_records k ON k.knowledge_id=t.knowledge_id '+
+    'LEFT JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE t.project_id=1 AND t.state=''pending'' ORDER BY t.task_id LIMIT 1000',[]);
+  try
+    try while not Query.Eof do begin
+      Row:=TJSONObject.Create; Result.AddElement(Row); for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Knowledge:=Query.FieldByName('knowledge_id').AsLargeInt; Entity:=Query.FieldByName('entity_id').AsLargeInt; Revision:=Query.FieldByName('revision').AsLargeInt;
+      Baseline:=Scalar('SELECT coalesce(max(last_verified_generation_id),0) FROM knowledge_links WHERE knowledge_id=:id',[Knowledge]);
+      if Baseline=0 then Baseline:=Scalar('SELECT coalesce(previous_generation_id,0) FROM analysis_generations WHERE generation_id=:id',[AGeneration]);
+      Row.AddPair('baseline_generation',TJSONNumber.Create(Baseline)); Row.AddPair('current_generation',TJSONNumber.Create(AGeneration));
+      PriorRevision:=Scalar('SELECT coalesce(max(knowledge_revision_id),0) FROM knowledge_revisions WHERE knowledge_id=:id AND knowledge_revision_id<:revision',[Knowledge,Revision]);
+      Row.AddPair('prior_revision',TJSONNumber.Create(PriorRevision));
+      Row.AddPair('before_body',VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[PriorRevision])));
+      for Pass:=0 to 1 do begin
+        RelationGeneration:=Baseline; Name:='before'; if Pass=1 then begin RelationGeneration:=AGeneration; Name:='after'; end;
+        Row.AddPair(Name+'_configuration',VarToStr(Scalar('SELECT c.platform||'' / ''||c.compiler||'' / ''||c.environment_label||'' | defines ''||c.defines_json '+
+          'FROM analysis_generations g JOIN configurations c ON c.config_id=g.config_id WHERE g.generation_id=:id',[RelationGeneration])));
+      end;
+      Affected:=TJSONArray.Create; Row.AddPair('affected',Affected);
+      Detail:=NewQuery('WITH p AS (SELECT :baseline AS old_gen,:generation AS new_gen,:knowledge AS kid,:entity AS eid),ids AS ('+
+        'SELECT entity_id FROM knowledge_links,p WHERE knowledge_id=p.kid AND entity_id IS NOT NULL AND link_role<>''historical_annotation'' '+
+        'UNION SELECT from_entity_id FROM relationships r JOIN knowledge_links l ON l.relationship_id=r.relationship_id,p WHERE l.knowledge_id=p.kid '+
+        'UNION SELECT to_entity_id FROM relationships r JOIN knowledge_links l ON l.relationship_id=r.relationship_id,p WHERE l.knowledge_id=p.kid AND to_entity_id IS NOT NULL '+
+        'UNION SELECT eid FROM p WHERE eid>0) '+
+        'SELECT e.entity_id,e.canonical_key,e.display_name,coalesce(b.signature,'''') AS before_signature,coalesce(a.signature,'''') AS after_signature,'+
+        'coalesce(json_extract(b.structural_json,''$.source_hash''),'''') AS before_hash,coalesce(json_extract(a.structural_json,''$.source_hash''),'''') AS after_hash,'+
+        'coalesce(json_extract(b.structural_json,''$.type''),'''') AS before_type,coalesce(json_extract(a.structural_json,''$.type''),'''') AS after_type,'+
+        'coalesce(json_extract(b.structural_json,''$.range.source''),'''') AS before_source,coalesce(json_extract(a.structural_json,''$.range.source''),'''') AS after_source,'+
+        'CASE WHEN b.entity_version_id IS NULL THEN 0 ELSE 1 END AS before_present,CASE WHEN a.entity_version_id IS NULL THEN 0 ELSE 1 END AS after_present '+
+        'FROM ids JOIN entities e ON e.entity_id=ids.entity_id,p LEFT JOIN entity_versions b ON b.entity_id=e.entity_id AND b.generation_id=p.old_gen '+
+        'LEFT JOIN entity_versions a ON a.entity_id=e.entity_id AND a.generation_id=p.new_gen ORDER BY e.display_name LIMIT 200',[Baseline,AGeneration,Knowledge,Entity]);
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; Affected.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      for Pass:=0 to 1 do begin
+        RelationGeneration:=Baseline; Name:='before_relationships'; if Pass=1 then begin RelationGeneration:=AGeneration; Name:='after_relationships'; end;
+        Relations:=TJSONArray.Create; Row.AddPair(Name,Relations);
+        Detail:=NewQuery('SELECT a.canonical_key AS from_key,r.relation_kind,coalesce(b.canonical_key,''unresolved'') AS to_key,r.resolution_status '+
+          'FROM relationships r JOIN entities a ON a.entity_id=r.from_entity_id LEFT JOIN entities b ON b.entity_id=r.to_entity_id '+
+          'WHERE r.generation_id=:generation AND (r.from_entity_id IN (SELECT entity_id FROM knowledge_links WHERE knowledge_id=:knowledge AND entity_id IS NOT NULL) '+
+          'OR r.to_entity_id=:entity) ORDER BY r.relationship_id LIMIT 200',[RelationGeneration,Knowledge,Entity]);
+        try while not Detail.Eof do begin Item:=TJSONObject.Create; Relations.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      end;
+      Query.Next;
+    end;
+    except Result.Free; raise; end;
+  finally Query.Free; end;
+end;
 function TDPHKnowledgeStore.LinkCandidates(AGeneration: Int64; const AKind,AQuery: string): TJSONArray;
 var Query: TFDQuery; Row: TJSONObject; SQL,Search: string; I: Integer;
 begin

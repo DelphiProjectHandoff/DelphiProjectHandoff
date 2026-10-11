@@ -68,6 +68,22 @@ begin
       Failed:=False; try Store.ReviewKnowledge(Note,Revision,Generation,'Reviewer','verified'); except Failed:=True; end; Check(Failed,'Old source generation cannot approve changed inputs');
       Next:=Store.BeginGeneration(Config,'knowledge-fixture',Manifest); Store.AddSourceEntity(Next,'unit1.pas','unit1.work','semantic_routine','Unit1.Work','()',0,3,'{}');
       Check(Store.PublishGeneration(Next,Manifest,'{}',True),'Changed source generation publishes');
+      Rows:=Store.ReviewTasks(Next);
+      try Check((Rows.Count=1) and (Rows.Items[0].GetValue<Int64>('baseline_generation')=Generation) and
+        (Rows.Items[0].GetValue<Int64>('current_generation')=Next),'Review task compares last verified source generation with current capture');
+        Check((Rows.Items[0].GetValue<TJSONArray>('affected').Count=1) and
+          (Rows.Items[0].GetValue<TJSONArray>('affected').Items[0].GetValue<string>('after_present')='1'),
+          'Review task identifies affected canonical entity and before/after presence');
+        Check(Rows.Items[0].GetValue<string>('before_body').Contains('preserve outputs') and
+          Rows.Items[0].GetValue<string>('body').Contains('Revised author explanation'),
+          'Review task exposes prior and current authored content for comparison');
+      finally Rows.Free; end;
+      Form:=TDPHMainForm.Create(nil);
+      try Form.LoadReviewTasks(Store.ReviewTasks(Next));
+        Check(Form.ReviewBeforeMemo.Text.Contains('BEFORE: baseline generation') and Form.ReviewAfterMemo.Text.Contains('AFTER: captured generation'),
+          'IDE-editable task comparison labels before and after generations');
+        Check(Form.ReviewAffectedCombo.Items.Count=1,'Review queue offers affected source object selection');
+      finally Form.Free; end;
       Row:=LoadNote; try Check(Row.GetValue<string>('state')='needs_review','Parser publication never approves human explanation'); Check(Row.GetValue<string>('body')='Revised author explanation','Rescan retains authored text'); Check(Row.GetValue<TJSONArray>('history').Count=3,'Rescan preserves all human revisions'); finally Row.Free; end;
       Failed:=False; try Store.ReviewKnowledge(Note,Revision,Next,'Reviewer','verified'); except Failed:=True; end;
       Check(Failed,'Historical rich links block approval in a newer generation');

@@ -30,6 +30,7 @@ type
     SearchResults: TJSONArray;
     SearchGeneration: Int64;
     LinkCandidates: TJSONArray;
+    ReviewTasks: TJSONArray;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -55,7 +56,7 @@ uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.D
   DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -115,7 +116,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -204,6 +205,14 @@ begin
               finally Model.Free; end;
             finally Images.Free; Knowledge.Free; View.Free; end;
             Respond(nil,'Offline HTML, editable guides and technical bundle exported. Review coverage and stale status before use.',False,False,Request.Entry='',False,nil,Request.ExportDirectory); Continue;
+          end;
+          if Request.Command='review_tasks' then begin
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try LifecycleResponse.ReviewTasks:=Store.ReviewTasks(Request.GenerationID); LifecycleResponse.SearchGeneration:=Request.GenerationID;
+              LifecycleResponse.Detached:=Request.Entry=''; LifecycleResponse.MessageText:='Pending review tasks with captured before/after evidence; first 1000 tasks, 200 affected objects/relationships per task.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
           end;
           if Request.Command='link_candidates' then begin
             LifecycleResponse:=TDPHWorkspaceResponse.Create;
