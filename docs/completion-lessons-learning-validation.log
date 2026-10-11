@@ -1,0 +1,49 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+9842 lines, 1.22 seconds, 9652884 bytes code, 344604 bytes data.
+PASS 1: Object explanation identifies a real cross-unit dependency
+PASS 2: Explanation carries the actual branch condition
+PASS 3: Execution trace preserves asynchronous or dispatch uncertainty
+PASS 4: Flow diagram uses captured branch edges
+PASS 5: Attributed knowledge appears in the linked explanation
+PASS 6: Explanation is not a raw JSON dump
+PASS 7: Captured source comment is available as author documentation
+PASS 8: Beginner walkthrough ties the actual condition to both captured branch destinations
+PASS 9: Walkthrough distinguishes post-test repeat semantics from loop-exit paths
+PASS 10: Walkthrough teaches early-return cleanup and qualified exceptional alternatives
+PASS 11: Native HTML and exported text share the source lesson with escaped expressions and a concrete learning exercise
+PASS 12: An absent routine cannot acquire a fabricated walkthrough
+PASS 13: Learning topic 0 renders a complete offline page
+PASS 14: Learning topic 1 renders a complete offline page
+PASS 15: Learning topic 2 renders a complete offline page
+PASS 16: Learning topic 3 renders a complete offline page
+PASS 17: Learning topic 4 renders a complete offline page
+PASS 18: Learning topic 5 renders a complete offline page
+PASS 19: Learning topic 6 renders a complete offline page
+PASS 20: Learning topic 7 renders a complete offline page
+PASS 21: Learning topic 8 renders a complete offline page
+PASS 22: Learning topic 9 renders a complete offline page
+PASS 23: Learning topic 10 renders a complete offline page
+PASS 24: Export includes the selected object explanation
+PASS 25: Narrative export preserves generation, canonical and artifact integrity
+PASS 26: Unredacted local display projection cannot be published
+PASS 27: Preview permits only the generated object route shape
+PASS 28: Preview rejects an arbitrary local object filename
+PASS 29: Imported image persists with metadata
+PASS 30: Imported image cannot silently become runtime-verified
+PASS 31: Managed image hash matches contributor evidence
+PASS 32: Export includes matching attributed image evidence
+PASS 33: Private image storage path is absent from canonical export
+PASS 34: Excluding the linked source also excludes its screenshot
+PASS 35: Non-PNG input is rejected
+PASS 36: Image cannot be linked to an object absent from its generation
+PASS 37: Detached copy resolves its own adjacent screenshot assets
+PASS 38: Damaged managed screenshot is rejected before display or export
+PASS 39: Selected fixture source remains unchanged
+PASS 40: Large routine collapses straight-line statements into a usable diagram
+PASS 41: Collapsed flow preserves loop-back and branch-exit evidence
+PASS 42: Long source lessons disclose omitted points rather than claiming full coverage
+PASS 43: Startup explanation excludes expressions inside declared routines
+PASS Learning: 43 checks

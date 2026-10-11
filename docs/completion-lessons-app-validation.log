@@ -1,0 +1,11 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(84): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  9727 lines, 0.98 seconds, 9624860 bytes code, 344256 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+9629 lines, 0.94 seconds, 9624916 bytes code, 344236 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding

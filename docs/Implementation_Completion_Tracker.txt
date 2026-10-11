@@ -184,7 +184,17 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     rejected; unreviewed answers remain visible; only explicit verified responses
     without pending review suppress the exact question. Native evidence/draft
     workflow and scoped guide questions pass; workspace 113, publishing 71.
-5.5-5.6 Pending: deeper educational explanations and runtime observation import.
+5.5 Expanded: shared source-based walkthrough in native explanations and offline
+    exports, with actual expressions, branch destinations, loop semantics,
+    early-return/finally cleanup, qualified exception alternatives and a learning
+    exercise. Source ordering and duplicated cleanup paths are explicitly taught.
+    Lessons disclose limits (60 source points/eight paths per point). Execution
+    reachability includes startup phases and typed async lifecycle connections.
+    App/form build, 43 non-UI learning checks and 71 publishing checks pass.
+    Native learning integration failed after image checks with an access violation;
+    no native browser rendering or human comprehension pass is claimed. Inspection
+    disproved a proposed thread-constructor race; that change was fully reverted.
+5.6 Pending: attributed runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time

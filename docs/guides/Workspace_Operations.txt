@@ -256,11 +256,28 @@ and its intended scope. A verified response without a pending task hides its
 exact question. Changed evidence or renewed review can bring questions back.
 DPH never supplies the author's business rationale or runtime results itself.
 
+Learning the captured routine
+Select a routine in Explorer. Choose Explain, then scroll to SOURCE WALKTHROUGH.
+Read its captured expression and explanation. Under Possible next path, follow
+the named true/false, iteration, return or exception destination to the stated
+line in Source or the procedure CFG in Graphs. Source points are arranged by
+source location; they are not a recorded execution. Repeated cleanup points
+preserve distinct pending exits. Orange/possible_dynamic alternatives remain
+uncertain. Long lessons state how many points or paths were omitted.
+Use CHECK YOUR UNDERSTANDING to practice following an actual condition. Ask the
+author to confirm intended outcomes; a static lesson cannot supply runtime results
+or business rationale. The offline object page and document export use the same
+lesson. This does not mark the selected program tested or the explanation reviewed.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage
 migration/durability checks. A nonzero exit or FAIL indicates a failed check.
 These automated checks do not substitute for first-time-user acceptance.
+Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
+checks without native browser tests. Full build-learning.cmd additionally tests
+worker recovery and native WebView rendering; that integration currently has an
+unresolved access violation. Do not interpret --no-ui as a UI acceptance pass.
 For discovery/resource checks run tools\build-wp2.cmd no-report. For semantic
 checks run tools\build-wp3.cmd to compile, then run
 bin\Win32\Debug\DPH.Tests.Semantics.exe with this project's full folder path as

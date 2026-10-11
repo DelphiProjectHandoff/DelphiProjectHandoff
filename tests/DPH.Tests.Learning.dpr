@@ -60,6 +60,17 @@ begin
             Check(ContainsText(Explain.ObjectHTML(Key),'Fixture explanation supplied'),'Attributed knowledge appears in the linked explanation');
             Check(not ContainsText(Explain.ObjectHTML(Key),'"source_hash":'),'Explanation is not a raw JSON dump');
             Check(ContainsText(Explain.ObjectHTML(Key),'never a call'),'Captured source comment is available as author documentation');
+            FlowText:=Explain.RoutineLesson(Key);
+            Check(ContainsText(FlowText,'Sender > 0') and ContainsText(FlowText,'true ->') and ContainsText(FlowText,'false ->'),
+              'Beginner walkthrough ties the actual condition to both captured branch destinations');
+            Check(ContainsText(FlowText,'body is entered before this test') and ContainsText(FlowText,'loop_exit ->'),
+              'Walkthrough distinguishes post-test repeat semantics from loop-exit paths');
+            Check(ContainsText(FlowText,'intervening finally cleanup') and ContainsText(FlowText,'exception escaping') and ContainsText(FlowText,'possible_dynamic'),
+              'Walkthrough teaches early-return cleanup and qualified exceptional alternatives');
+            Check(ContainsText(Explain.ObjectHTML(Key),'SOURCE WALKTHROUGH') and ContainsText(Explain.ObjectHTML(Key),'Sender &gt; 0') and
+              ContainsText(Explain.ObjectText(Key),'CHECK YOUR UNDERSTANDING'),
+              'Native HTML and exported text share the source lesson with escaped expressions and a concrete learning exercise');
+            Check(Explain.RoutineLesson('absent-object')='', 'An absent routine cannot acquire a fabricated walkthrough');
             for I:=0 to 10 do Check(Length(Explain.TopicHTML(I))>1500,'Learning topic '+IntToStr(I)+' renders a complete offline page');
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'handoff'));
             Check(TFile.Exists(TPath.Combine(Work,'handoff\objects\'+THashSHA2.GetHashString(Key)+'.html')),'Export includes the selected object explanation');
@@ -102,6 +113,7 @@ begin
             finally TFile.WriteAllBytes(Path,ImageBytes); end;
             Path:=TPath.Combine(Work,'portable.dphdb.views\'+TPath.GetFileName(Path));
             TFile.WriteAllBytes(Path,TBytes.Create(1,2,3));
+            if ParamStr(2)<>'--no-ui' then begin
             Worker:=TDPHWorkspaceWorker.Create(Root);
             try Request:=Default(TDPHWorkspaceRequest); Request.Command:='open'; Request.Database:=TPath.Combine(Work,'portable.dphdb');
               Worker.Submit(Request); Watch:=TStopwatch.StartNew; Done:=False;
@@ -142,6 +154,7 @@ begin
               finally BrowserBitmap.Free; end;
               Form.Hide;
             finally Form.Free; end;
+            end;
           finally Explain.Free; Model.Free; end;
           Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=BeforeHash,'Selected fixture source remains unchanged');
         finally View.Free; end;
@@ -163,11 +176,13 @@ begin
             FlowText:=Explain.FlowSVG(Key);
             Check(ContainsText(FlowText,'statements are collapsed') and not ContainsText(FlowText,'more than 70'),'Large routine collapses straight-line statements into a usable diagram');
             Check(ContainsText(FlowText,'iterate') and ContainsText(FlowText,'loop_exit'),'Collapsed flow preserves loop-back and branch-exit evidence');
+            Check(ContainsText(Explain.RoutineLesson(Key),'source points omitted by the 60-point lesson limit'),
+              'Long source lessons disclose omitted points rather than claiming full coverage');
             Check(not ContainsText(Explain.TopicText(1),'FakeInsideRoutine'),'Startup explanation excludes expressions inside declared routines');
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
       finally Semantic.Free; Analyzer.Free; end;
-      ReferenceDB:=ParamStr(2);
+      ReferenceDB:=ParamStr(2); if ReferenceDB='--no-ui' then ReferenceDB:='';
       if ReferenceDB<>'' then begin
         ReferenceRoot:=TDPHKnowledgeStore.ProjectRoot(ReferenceDB); Store:=TDPHKnowledgeStore.Create(ReferenceDB,ReferenceRoot,TPath.Combine(Root,'migrations'));
         try View:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Store.LoadWorkspaceView) as TJSONObject); finally Store.Free; end;

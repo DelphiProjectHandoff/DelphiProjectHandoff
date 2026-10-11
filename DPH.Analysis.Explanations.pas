@@ -8,7 +8,7 @@ type
   private
     FFacts: TJSONObject;
     FSymbols: TDictionary<string,TJSONObject>;
-    FOutgoing,FIncoming,FFlow: TObjectDictionary<string,TList<TJSONObject>>;
+    FOutgoing,FIncoming,FFlow,FNext: TObjectDictionary<string,TList<TJSONObject>>;
     function Link(const AKey: string): string;
     function Citation(ARow: TJSONObject): string;
     function RelationText(ARow: TJSONObject; AReverse: Boolean): string;
@@ -20,6 +20,7 @@ type
     class function Encode(const AText: string): string; static;
     function ObjectText(const AKey: string): string;
     function ObjectHTML(const AKey: string): string;
+    function RoutineLesson(const AKey: string): string;
     function TopicText(AIndex: Integer): string;
     function TopicHTML(AIndex: Integer): string;
     function FlowSVG(const AKey: string): string;
@@ -41,6 +42,7 @@ begin
   FOutgoing:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
   FIncoming:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
   FFlow:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
+  FNext:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
   for V in FFacts.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; FSymbols.Add(R.GetValue<string>('key'),R); end;
   for V in FFacts.GetValue<TJSONArray>('relationships') do begin
     R:=V as TJSONObject; Key:=R.GetValue<string>('from');
@@ -50,6 +52,9 @@ begin
   end;
   for V in FFacts.GetValue<TJSONArray>('flow_nodes') do begin R:=V as TJSONObject; Key:=R.GetValue<string>('routine');
     if not FFlow.TryGetValue(Key,Rows) then begin Rows:=TList<TJSONObject>.Create; FFlow.Add(Key,Rows); end; Rows.Add(R);
+  end;
+  for V in FFacts.GetValue<TJSONArray>('flow_edges') do begin R:=V as TJSONObject; Key:=R.GetValue('from').Value;
+    if not FNext.TryGetValue(Key,Rows) then begin Rows:=TList<TJSONObject>.Create; FNext.Add(Key,Rows); end; Rows.Add(R);
   end;
   for Rows in FOutgoing.Values do Rows.Sort(TComparer<TJSONObject>.Construct(
     function(const L,R: TJSONObject): Integer
@@ -72,7 +77,7 @@ begin
     end));
 end;
 destructor TDPHExplanationModel.Destroy;
-begin FFlow.Free; FIncoming.Free; FOutgoing.Free; FSymbols.Free; inherited; end;
+begin FNext.Free; FFlow.Free; FIncoming.Free; FOutgoing.Free; FSymbols.Free; inherited; end;
 function TDPHExplanationModel.Link(const AKey: string): string;
 var S: TJSONObject;
 begin
@@ -145,6 +150,64 @@ begin
     9: Result:='Questions for the original author'; 10: Result:='Delphi terms explained';
   else Result:='Project learning guide'; end;
 end;
+function TDPHExplanationModel.RoutineLesson(const AKey: string): string;
+var Rows,Edges,Ordered: TList<TJSONObject>; Targets: TDictionary<string,TJSONObject>;
+    N,E,Target: TJSONObject; Text: TStringBuilder; Kind,Meaning,Path,Destination: string; I,J: Integer;
+begin
+  Result:=''; if not FFlow.TryGetValue(AKey,Rows) then Exit;
+  Ordered:=TList<TJSONObject>.Create; Targets:=TDictionary<string,TJSONObject>.Create; Text:=TStringBuilder.Create;
+  try
+    for N in Rows do begin Ordered.Add(N); Targets.Add(N.GetValue('id').Value,N); end;
+    Ordered.Sort(TComparer<TJSONObject>.Construct(function(const L,R: TJSONObject): Integer
+    var LP,RP: Integer;
+    begin
+      LP:=1; RP:=1;
+      if L.GetValue<string>('kind')='entry' then LP:=0;
+      if R.GetValue<string>('kind')='entry' then RP:=0;
+      if MatchText(L.GetValue<string>('kind'),['normal_exit','exception_exit']) then LP:=2;
+      if MatchText(R.GetValue<string>('kind'),['normal_exit','exception_exit']) then RP:=2;
+      Result:=CompareValue(LP,RP);
+      if Result=0 then Result:=CompareValue(L.GetValue<Int64>('range.start'),R.GetValue<Int64>('range.start'));
+      if Result=0 then Result:=CompareStr(L.GetValue('id').Value,R.GetValue('id').Value);
+    end));
+    Text.AppendLine('SOURCE WALKTHROUGH').AppendLine('Read the captured expressions with the possible next paths below. Entries are arranged by source location, not execution order. Cleanup statements can appear more than once because the graph preserves different pending returns, loop transfers and exceptions. A confirmed static edge describes code structure, not an observed run.');
+    for I:=0 to Min(Ordered.Count,60)-1 do begin N:=Ordered[I]; Kind:=N.GetValue<string>('kind');
+      Meaning:='This is a captured statement expression. Read its calls, inputs and possible writes in the relationships section; the expression alone does not establish the value produced or the business purpose.';
+      if Kind='entry' then Meaning:='Start reading this routine here. Follow the enter edge to its first captured statement. This boundary does not prove a caller reaches it.'
+      else if Kind='if' then Meaning:='Evaluate the condition. A true result selects the true path; a false result selects the false path. Check both outcomes when changing this condition.'
+      else if Kind='while' then Meaning:='Test the condition before another iteration. The body may run zero times. Follow loop_exit to see where work continues after the loop.'
+      else if Kind='for' then Meaning:='This counted or enumerated loop has an iteration path and a loop-exit path. Bounds, collection contents and the number of iterations require actual values.'
+      else if Kind='repeat' then Meaning:='This is the test after a repeat body. False repeats the body; true leaves it. The body is entered before this test, so source order here is not a starting path.'
+      else if Kind='case' then Meaning:='Compare the selector with the captured case arms. Follow a matching arm, the else arm, or the no-match path if present. A listed alternative is not a prediction of its value.'
+      else if Kind='case_arm' then Meaning:='These labels select this case arm. Follow case_body to inspect its statements.'
+      else if Kind='case_default' then Meaning:='This else arm handles selector values without a matching case label.'
+      else if Kind='try' then Meaning:='Enter a protected region. Follow the actual edges through cleanup or possible handlers. Finally cleanup is distinct from handling an exception; the presence of either does not guarantee successful recovery.'
+      else if Kind='exception_dispatch' then Meaning:='An exception may reach a handler here. Handler type matching remains conservative; inspect the possibly-unhandled path as well as every possible handler.'
+      else if Kind='exit' then Meaning:='Request an early return from this routine. Follow return to inspect any intervening finally cleanup before the normal exit. Evaluating a return expression may itself raise.'
+      else if Kind='raise' then Meaning:='Transfer to the exception path. A bare raise can propagate an active exception. Inspect cleanup and handlers rather than treating this as a successful return.'
+      else if Kind='break' then Meaning:='Leave the nearest loop, following any intervening cleanup. Later statements in that iteration can be skipped.'
+      else if Kind='continue' then Meaning:='Move toward the next iteration of the nearest loop, following any intervening cleanup. Later statements in this iteration can be skipped.'
+      else if Kind='goto' then Meaning:='Transfer toward the named label. An unresolved jump target is a coverage gap, not a known continuation.'
+      else if Kind='with' then Meaning:='Read the receiver and then its body. Unqualified member binding remains partial; confirm which object each name refers to before editing.'
+      else if MatchText(Kind,['asm','opaque','unresolved_jump_target']) then Meaning:='The analyzer cannot fully explain this construct. The alternatives shown are conservative; inspect the source and resolve the gap before relying on a path.'
+      else if Kind='normal_exit' then Meaning:='This boundary represents a possible normal return. It does not prove that output values satisfy the intended contract.'
+      else if Kind='exception_exit' then Meaning:='This boundary represents a possible exception escaping the routine. It does not prove that any particular run raises an exception.';
+      Text.AppendLine.AppendLine('SOURCE POINT '+IntToStr(I+1)+' | '+UpperCase(Kind)+' | LINE '+N.GetValue<Integer>('range.line').ToString);
+      if N.GetValue<string>('expression')<>'' then Text.AppendLine('Captured expression: '+N.GetValue<string>('expression'));
+      Text.AppendLine(Meaning).AppendLine('Evidence: '+Citation(N));
+      if FNext.TryGetValue(N.GetValue('id').Value,Edges) then begin
+        for J:=0 to Min(Edges.Count,8)-1 do begin E:=Edges[J]; Path:=E.GetValue<string>('kind'); Destination:='a target outside this captured routine';
+          if Targets.TryGetValue(E.GetValue('to').Value,Target) then Destination:=Target.GetValue<string>('kind')+' at line '+Target.GetValue<Integer>('range.line').ToString+' ('+Target.GetValue<string>('expression')+')';
+          Text.AppendLine('Possible next path: '+Path+' -> '+Destination+' ['+E.GetValue<string>('resolution')+'].');
+        end;
+        if Edges.Count>8 then Text.AppendLine(IntToStr(Edges.Count-8)+' further paths omitted here; inspect the full CFG.');
+      end else Text.AppendLine('No outgoing CFG edge was captured at this boundary.');
+    end;
+    if Ordered.Count>60 then Text.AppendLine(IntToStr(Ordered.Count-60)+' source points omitted by the 60-point lesson limit. Use the source and focused CFG for the remainder.');
+    Text.AppendLine.AppendLine('CHECK YOUR UNDERSTANDING').AppendLine('Choose one condition above. Identify its possible next lines, then follow each path to a return, loop or exception boundary. Explain which captured reads and writes can be reached. Record the intended outcome with its author; DPH cannot derive business intent or test results from source alone. Before changing cleanup or an early exit, inspect every incoming path to its copied cleanup nodes.');
+    Result:=Text.ToString;
+  finally Text.Free; Targets.Free; Ordered.Free; end;
+end;
 function TDPHExplanationModel.ObjectText(const AKey: string): string;
 var S,R: TJSONObject; Rows: TList<TJSONObject>; Text: TStringBuilder; V: TJSONValue; Count: Integer;
 begin
@@ -185,6 +248,7 @@ begin
     if S.GetValue('serialized_properties')<>nil then begin Text.AppendLine.AppendLine('FORM PROPERTIES');
       for V in S.GetValue<TJSONArray>('serialized_properties') do begin R:=V as TJSONObject; Text.AppendLine(R.GetValue<string>('name')+' = '+R.GetValue<string>('value')); end;
     end;
+    Text.AppendLine.AppendLine(RoutineLesson(AKey));
     Text.AppendLine.AppendLine('BEFORE CHANGING THIS OBJECT');
     Text.AppendLine('Review incoming callers, event bindings, reads/writes and compile conditions. Use Change impact for possible dependents; use the Source and Graphs tabs to inspect the actual code. Reassess after a controlled edit, then review affected notes.');
     Text.AppendLine('Business purpose, expected user results and operational rationale are not established by these static facts. Record the missing explanation as attributed knowledge. Lists above are bounded; use References for further relationships.');
@@ -202,7 +266,8 @@ begin
     while (Queue.Count>0) and (Count<60) do begin Key:=Queue.Dequeue; Depth:=Depths[Key];
       if not FOutgoing.TryGetValue(Key,Rows) then Continue;
       for R in Rows do begin
-        if not MatchText(R.GetValue<string>('kind'),['calls','binds','passes_callback','schedules','assigns_callback','owns']) then Continue;
+        if not MatchText(R.GetValue<string>('kind'),['calls','binds','passes_callback','schedules','assigns_callback','owns',
+          'enters','initializes','finalizes','prepares_callback','starts','dispatches','waits_for','requests_cancellation','signals','waits_for_signal']) then Continue;
         Target:=R.GetValue<string>('to','');
         if (R.GetValue<string>('kind')='owns') and ((not FSymbols.ContainsKey(Target)) or (FSymbols[Target].GetValue<string>('kind')<>'event')) then Continue;
         TargetLink:=Link(Target);
@@ -427,6 +492,7 @@ begin
     Text.Append('<section class="card"><h2>What still needs explanation</h2><p>The business reason, expected user outcome, operational prerequisites and recovery procedure need an attributed answer if they are not recorded above. A symbol name cannot establish them.</p><h3>Before you change it</h3><p>Inspect callers, event bindings, writes and conditional variants. Open Change impact, review linked rules, run authorized project-specific tests, then reassess and review affected notes.</p></section>');
     Body:=Text.ToString;
   finally Text.Free; end;
+  Body:=Body+Prose(RoutineLesson(AKey));
   try Body:=Body+TraceHTML(AKey); except on E: Exception do raise EReadError.Create('Trace: '+E.Message); end;
   try Body:=Body+FlowSVG(AKey); except on E: Exception do raise EReadError.Create('Flow: '+E.Message); end;
   Result:=Page(S.GetValue<string>('name'),Body);
