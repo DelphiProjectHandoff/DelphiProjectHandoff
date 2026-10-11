@@ -19,6 +19,7 @@ uses
   DPH.Analysis.Model in 'DPH.Analysis.Model.pas',
   DPH.Analysis.Symbols in 'DPH.Analysis.Symbols.pas',
   DPH.Analysis.Flow in 'DPH.Analysis.Flow.pas',
+  DPH.Analysis.Async in 'DPH.Analysis.Async.pas',
   DPH.Analysis.Persistence in 'DPH.Analysis.Persistence.pas',
   DPH.Workspace.Model in 'DPH.Workspace.Model.pas',
   DPH.Workspace.Catalog in 'DPH.Workspace.Catalog.pas',

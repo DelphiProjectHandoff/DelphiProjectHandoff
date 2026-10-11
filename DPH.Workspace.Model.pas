@@ -183,9 +183,9 @@ begin
           if (AKind='Change impact') then begin if ToKey<>Key then Continue; end
           else if (AKind='Caller / callee') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
           else if FromKey<>Key then Continue;
-          if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','binds','enters','initializes','finalizes']) then Continue;
+          if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','prepares_callback','starts','dispatches','waits_for','requests_cancellation','signals','waits_for_signal','binds','enters','initializes','finalizes','creates']) then Continue;
           if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules']) then Continue;
-          if (AKind='Data flow') and not MatchText(Kind,['reads','writes','uses_type','renders','assigns_callback']) then Continue;
+          if (AKind='Data flow') and not MatchText(Kind,['reads','writes','uses_type','renders','assigns_callback','captures','assigned_to']) then Continue;
           AddSymbolNode(FromKey); AddSymbolNode(ToKey);
           if Seen.ContainsKey(FromKey) and Seen.ContainsKey(ToKey) then Edges.AddElement(R.Clone as TJSONObject);
           if Edges.Count>=ALimit*8 then begin Truncated:=True; Queue.Clear; Break; end;

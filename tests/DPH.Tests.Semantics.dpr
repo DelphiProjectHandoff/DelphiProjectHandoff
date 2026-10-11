@@ -41,6 +41,37 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure AsyncDetailTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    WorkIndex,NamedIndex,Operation,Queued,Sync,Callback,LocalValue: Integer;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'AsyncCases.pas'),
+    'unit AsyncCases; interface procedure Work; implementation procedure Named; begin end; '+
+    'procedure Work; var H:TThread; N:Integer; E:TEvent; begin N:=1; '+
+    'H:=TThread.CreateAnonymousThread(procedure begin N:=N+1; end); H.Start; H.Terminate; H.WaitFor; '+
+    'TThread.Queue(nil,Named); TThread.Synchronize(nil,Named); E.SetEvent; E.WaitFor; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'AsyncCases.dpr'),'program AsyncCasesApp; uses AsyncCases in ''AsyncCases.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'AsyncCases.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        WorkIndex:=Find(G,'AsyncCases.Work','*'); NamedIndex:=Find(G,'AsyncCases.Named','*');
+        Operation:=Find(G,'AsyncCases.Work.$async1','*'); Queued:=Find(G,'AsyncCases.Work.$async2','*'); Sync:=Find(G,'AsyncCases.Work.$async3','*');
+        Callback:=Find(G,'AsyncCases.Work.$callback0','*'); LocalValue:=Find(G,'AsyncCases.Work.N','*');
+        Check((Operation>=0) and Relation(G,WorkIndex,Callback,'prepares_callback','possible_dynamic'),'ASYNC04','Thread creation retains a separate callback preparation fact');
+        Check(Relation(G,WorkIndex,Operation,'starts','possible_dynamic'),'ASYNC05','Known local handle Start links to its lexical creation site');
+        Check(Relation(G,WorkIndex,Operation,'requests_cancellation','possible_dynamic') and Relation(G,WorkIndex,Operation,'waits_for','possible_dynamic'),'ASYNC06','Cancellation request and blocking wait remain separate qualified actions');
+        Check(Relation(G,Queued,NamedIndex,'dispatches','possible_dynamic') and Relation(G,Sync,NamedIndex,'dispatches','possible_dynamic'),'ASYNC07','Named callbacks retain distinct main-thread queue and synchronize sites');
+        Check(Relation(G,WorkIndex,Sync,'waits_for','inferred'),'ASYNC08','Synchronize documents its normal-return completion contract with qualification');
+        Check(Relation(G,Callback,LocalValue,'captures','inferred'),'ASYNC09','Closure capture is linked to the outer local without claiming lifetime safety');
+        Check(Relation(G,WorkIndex,Find(G,'AsyncCases.Work.E','*'),'signals','inferred') and not G.Complete,'ASYNC10','Event signal and async lifetime review keep static coverage honest');
+        Cached:=Analyzer.Analyze(Scan);
+        try Check(JSON(G)=JSON(Cached),'ASYNC11','Postprocessed async facts are identical after routine cache reuse'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure FlowDetailTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
     CaseRoutine,LabelRoutine,CrossRoutine,WithRoutine,CaseNode,GotoNode,LabelNode,Count,Matches,ElseEdges,Index: Integer;
@@ -259,7 +290,7 @@ begin
         Shadow:=Find(G,'Main.Shadow','():'); LocalProc:=Find(G,'Main.Shadow.PublicWork','*');
         Check(Relation(G,Shadow,LocalProc,'calls','possible_dynamic') and not Relation(G,Shadow,PublicWork,'calls','confirmed_static'),'CALL06','Local procedural variable shadows a public routine');
         Callback:=Find(G,'Main.TMain.Click.$callback0','():');
-        Check((Callback>=0) and Relation(G,Click,Callback,'passes_callback','confirmed_static') and Relation(G,Click,Callback,'schedules','possible_dynamic'),'ASYNC01','Anonymous local-var callback passed and possibly scheduled');
+        Check((Callback>=0) and Relation(G,Click,Callback,'passes_callback','confirmed_static') and Relation(G,Click,Callback,'prepares_callback','possible_dynamic'),'ASYNC01','Anonymous thread callback is prepared without an invented Start');
         Check(Relation(G,Callback,PublicWork,'calls','confirmed_static'),'ASYNC02','Callback body uses its own local lexical scope');
         Check(Relation(G,Callback,Find(G,'Main.TMain.Click.$callback0.$callback0','():'),'schedules','possible_dynamic'),'ASYNC03','Nested queue callback retains a second asynchronous boundary');
         Found:=False; for R in G.Relations do if (R.Kind='binds') and (R.ToSymbol=Click) and (R.Resolution='confirmed_static') then Found:=True;
@@ -403,7 +434,7 @@ begin
         Callback:=Find(G,'MainForm.TfrmMain.btnConvertClick.$callback0','():');
         Bound:=False; for R in G.Relations do if (R.Kind='binds') and (R.ToSymbol=Click) and (R.Resolution='confirmed_static') then Bound:=True;
         Check((Click>=0) and Bound,'REF01','Reference btnConvert.OnClick resolves to btnConvertClick');
-        Check((Callback>=0) and Relation(G,Click,Callback,'schedules','possible_dynamic'),'REF02','Reference anonymous worker has an explicit possible asynchronous boundary');
+        Check((Callback>=0) and Relation(G,Click,Callback,'prepares_callback','possible_dynamic'),'REF02','Reference anonymous worker creation is distinct from its later handle Start');
         Check(Relation(G,Callback,Worker,'calls','confirmed_static') and Relation(G,Worker,Convert,'calls','confirmed_static'),'REF03','Reference callback resolves through ConversionThreadProc to Engine.Convert');
         DryRun:=False; for N in G.FlowNodes do if (N.Routine=Convert) and (N.Kind='if') and (Pos('DryRunPreview',N.ExpressionText)>0) then DryRun:=True;
         Check(DryRun,'REF04','DryRunPreview condition is located in engine control flow');
@@ -449,7 +480,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

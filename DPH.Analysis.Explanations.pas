@@ -94,6 +94,15 @@ begin
   if Kind='calls' then Verb:='contains a call site to';
   if Kind='binds' then Verb:='connects the serialized event to';
   if Kind='schedules' then Verb:='may schedule asynchronous work in';
+  if Kind='prepares_callback' then Verb:='attaches a callback while creating a suspended thread; this site does not prove it starts:';
+  if Kind='starts' then Verb:='contains a possible start or dispatch action for';
+  if Kind='dispatches' then Verb:='has this possible callback target:';
+  if Kind='waits_for' then Verb:='contains a wait for completion of';
+  if Kind='requests_cancellation' then Verb:='requests cancellation of; termination is not guaranteed for';
+  if Kind='captures' then Verb:='references an outer-scope value whose lifetime requires review:';
+  if Kind='assigned_to' then Verb:='is assigned to this handle; later alias state is unverified:';
+  if Kind='signals' then Verb:='contains an inferred event signal for';
+  if Kind='waits_for_signal' then Verb:='contains an inferred event wait for';
   if Kind='passes_callback' then Verb:='passes this callback as an argument:';
   if Kind='assigns_callback' then Verb:='assigns a procedure reference to';
   if Kind='reads' then Verb:='reads the value of';

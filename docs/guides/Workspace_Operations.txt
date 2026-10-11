@@ -67,6 +67,17 @@ targets where the label resolves within the same finally scope. Unknown or
 cross-finally jumps are labeled unresolved_jump_target. With bodies run in
 sequence, while ambiguous unqualified member bindings remain qualified.
 
+Background work
+In Explorer search for $async and select a result. Open its References and
+Execution graph to follow the callback, start, wait or cancellation request.
+A prepares_callback relationship means thread creation did not itself prove
+a Start. A later known-handle Start has a separate qualified link. Queue and
+Synchronize sites identify main-thread dispatch; Synchronize also shows its
+normal-return wait contract. Captures appear in Data flow and References.
+ASYNC_LIFETIME_REVIEW and ASYNC_WAIT_REVIEW diagnostics identify lifetime and
+blocking questions. None of these links claims an observed execution order,
+successful completion or safe lifetime. DPH does not run the selected app.
+
 Resources and external definitions
 Object references now include declared property read/write accessors. An indexed
 property's result type is separate from its index parameters. Alias and inherited

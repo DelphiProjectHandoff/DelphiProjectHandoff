@@ -57,7 +57,7 @@ type
   end;
 implementation
 uses System.Classes, System.StrUtils, System.Hash, DPH.Storage.Types,
-  DPH.Storage.Database, DPH.Analysis.Flow, DPH.Project.Inventory;
+  DPH.Storage.Database, DPH.Analysis.Flow, DPH.Analysis.Async, DPH.Project.Inventory;
 
 constructor TDPHSemanticAnalyzer.Create;
 begin inherited; FRoutineCache:=TObjectDictionary<string,TDPHRoutineSummary>.Create([doOwnsValues]); end;
@@ -778,6 +778,14 @@ begin
           if MatchText(Path,['TThread.CreateAnonymousThread','TThread.Queue','TThread.ForceQueue','TThread.Synchronize','TTask.Run']) then
             FGraph.AddRelation(ARoutine,Child,'schedules','possible_dynamic','recognized_async_api_spelling_not_runtime_observation',Path,L,Tokens[I].Condition);
         end;
+        if MatchText(Path,['TThread.CreateAnonymousThread','TThread.Queue','TThread.ForceQueue','TThread.Synchronize','TTask.Run']) and (Args.Count>0) then begin
+          Argument:=Args[Args.Count-1]; if Argument.StartsWith('@') then Delete(Argument,1,1);
+          Matches:=Candidates(Argument,ARoutine);
+          if (Length(Matches)=1) and (Length(FGraph.Symbols[Matches[0]].ParameterTypes)=0) then begin
+            Child:=Matches[0]; FGraph.AddRelation(ARoutine,Child,'passes_callback','inferred','named_async_callback_candidate',Path,L,Tokens[I].Condition);
+            FGraph.AddRelation(ARoutine,Child,'schedules','possible_dynamic','recognized_async_api_spelling_not_runtime_observation',Path,L,Tokens[I].Condition);
+          end;
+        end;
       end;
       Variable:=ResolveValue(Path,ARoutine);
       if (Variable>=0) and (FGraph.Symbols[Variable].Kind<>'type') then
@@ -876,6 +884,7 @@ begin
           if Resource>=0 then FGraph.AddRelation(Resource,Consumer,'configures','inferred','loader_lexical_order_not_runtime_precedence',IntToStr(Reference.Order)+': '+Reference.Loader,Reference.Location,'');
         end;
       end;
+      TDPHAsyncAnalysis.Enrich(AScan,FGraph);
       Result:=FGraph; FGraph:=nil;
     except FGraph.Free; raise; end;
   finally Tokens.Free; FImports.Free; FTokens.Free; FNames.Free; FKeys.Free; FNodeSymbols.Free; FBaseTypes.Free; end;

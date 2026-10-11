@@ -33,6 +33,7 @@
     <DCCReference Include="DPH.Analysis.Model.pas" />
     <DCCReference Include="DPH.Analysis.Symbols.pas" />
     <DCCReference Include="DPH.Analysis.Flow.pas" />
+    <DCCReference Include="DPH.Analysis.Async.pas" />
     <DCCReference Include="DPH.Analysis.Persistence.pas" />
     <DCCReference Include="DPH.Workspace.Model.pas" />
     <DCCReference Include="DPH.Workspace.Catalog.pas" />
