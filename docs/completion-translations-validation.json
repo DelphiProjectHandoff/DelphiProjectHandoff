@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-11",
+  "schema_version": 8,
+  "provider": "Atlas-DAT-offline",
+  "provider_reference": "VCL2FMXConverterV7/dependencies/DelphiAppTranslation",
+  "publishing_checks_passed": 86,
+  "workspace_checks_passed": 118,
+  "storage_checks_passed": 46,
+  "knowledge_checks_passed": 59,
+  "selection_checks_passed": 18,
+  "startup_checks_passed": 2,
+  "app_and_fmx_binding_build": "passed",
+  "native_control_render": "completion-translations-native.png",
+  "native_control_render_visually_inspected": true,
+  "database_reopen_translation_and_reviewer_persistence": "passed",
+  "source_mismatch_and_obsolete_review_rejection": "passed",
+  "terminology_and_regional_fallback_checks": "passed",
+  "full_language_catalog": "not supplied; sample has three unreviewed phrases",
+  "human_translation_review": "not performed"
+}

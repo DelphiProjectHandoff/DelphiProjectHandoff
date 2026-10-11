@@ -8,6 +8,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagno
   DPH.Workspace.Screen in '..\DPH.Workspace.Screen.pas',
   DPH.Workspace.Graphs in '..\DPH.Workspace.Graphs.pas',
   DPH.Publish.Model in '..\DPH.Publish.Model.pas',
+  DPH.Publish.Translation in '..\DPH.Publish.Translation.pas',
   DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
   DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas',
@@ -19,6 +20,8 @@ var Root,Work,Fixture,Path,Key,ComponentKey,Kind,FilterText,QuestionID: string; 
     Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation,TargetNote,LinkNote,TargetRevision,LinkRevision,AnswerID,AnswerRevision: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
     Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
     Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
+    NativeStore: TDPHKnowledgeStore; TranslationCache: TDPHTranslationCache; TranslationProvider: IDPHTranslationProvider;
+    TranslationNote,TranslationRevision: Int64; TranslationRequest: TDPHWorkspaceRequest;
 procedure Check(OK: Boolean; const MessageText: string);
 begin if not OK then raise Exception.Create('FAIL '+MessageText); Inc(Checks); Writeln('PASS ',Checks,': ',MessageText); end;
 function WaitResponse: TDPHWorkspaceResponse;
@@ -300,6 +303,36 @@ begin
               finally Free; end;
               Form.DiscardKnowledgeClick(nil);
             finally Questions.Free; end;
+            NativeStore:=TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations'));
+            try
+              TranslationNote:=NativeStore.SaveKnowledge(0,0,Generation,'Translation demonstration','Run conversion','Fixture author','note','','engineering','engineer');
+              Rows:=NativeStore.KnowledgeJSON;
+              try TranslationRevision:=0; for V in Rows do if V.GetValue<Int64>('id')=TranslationNote then TranslationRevision:=V.GetValue<Int64>('revision'); finally Rows.Free; end;
+              TranslationProvider:=TDPHAtlasAdapter.Create(TPath.Combine(Root,'samples\translation\DPH.fr.sample.json'));
+              TranslationCache:=TDPHTranslationCache.Create(NativeStore);
+              try J:=TranslationCache.Translate(TranslationRevision,'en','fr',TDPHTranslationCache.SegmentsForText('Run conversion'),TranslationProvider); J.Free;
+              finally TranslationCache.Free; TranslationProvider:=nil; end;
+              Form.LoadKnowledge(NativeStore.KnowledgeJSON);
+              for Members:=0 to Form.KnowledgeList.Count-1 do if Form.KnowledgeList.Items[Members].Contains('Translation demonstration') then Form.KnowledgeList.ItemIndex:=Members;
+              Form.KnowledgeClick(nil); Form.LoadTranslations(NativeStore.TranslationEntries(TranslationRevision));
+              Check((Form.TranslationList.Count=1) and Form.TranslationMemo.Text.Contains('LOCALIZED PROSE') and Form.TranslationMemo.Text.Contains('Atlas-DAT-offline'),
+                'Native translation view compares source and actual cached DAT prose with provider provenance');
+              Check(Form.TranslationMemo.ReadOnly and Form.TranslationMemo.WordWrap and Form.TranslationStatus.Text.Contains('needs_review'),
+                'Native translated content wraps, remains read-only and exposes review state');
+              Form.WorkspacePageCombo.ItemIndex:=Form.WorkspacePageCombo.Items.IndexOf('Translations'); Form.WorkspacePageChange(Form.WorkspacePageCombo);
+              Check(Form.WorkspaceTabs.ActiveTab=Form.TranslationTab,'Top-right page selector reaches the IDE-editable Translations page');
+              Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
+              try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
+                Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-translations-native.png'));
+              finally Bitmap.Free; end;
+              Form.NewKnowledgeClick(nil); Check(Form.TranslationList.Count=0,'New source section clears prior localized content instead of reusing its review');
+            finally NativeStore.Free; end;
+            TranslationRequest:=Request; TranslationRequest.Command:='translate'; TranslationRequest.ExpectedRevision:=TranslationRevision;
+            TranslationRequest.Kind:='en'; TranslationRequest.Audience:='fr'; TranslationRequest.LinksJSON:='{}';
+            TranslationRequest.Body:=TPath.Combine(Root,'samples\translation\DPH.fr.sample.json'); Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(not Response.Failed and (Response.Translations<>nil) and (Response.TranslationRevision=TranslationRevision),
+              'Background worker loads the exact revision translation through the DAT adapter and persistent cache'); finally Response.Free; end;
+
             Form.ScreenshotInspectClick(nil);
             Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
             Form.LoadView(View.Document.Clone as TJSONObject);

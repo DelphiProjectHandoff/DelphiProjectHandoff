@@ -1,4 +1,4 @@
-program DPH.Tests.Publishing;
+﻿program DPH.Tests.Publishing;
 {$APPTYPE CONSOLE}
 uses System.SysUtils, System.StrUtils, System.IOUtils, System.JSON, System.Hash, System.Zip, Winapi.ActiveX,
   DPH.Publish.Model in '..\DPH.Publish.Model.pas',
@@ -22,7 +22,7 @@ function TMockTranslator.TranslateProse(const AText,ASourceLocale,ATargetLocale:
 begin Result:=ATargetLocale+': '+AText; end;
 var Root,Work,Fixture,Path,Key,Text,CacheKey: string; IDValue: TGUID; Checks: Integer;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
-    Store: TDPHKnowledgeStore; Config,Generation: Int64; View: TDPHWorkspaceView; Model,Task,Again: TDPHDocumentModel;
+    Store: TDPHKnowledgeStore; Config,Generation,TranslationNote,TranslationRevision: Int64; View: TDPHWorkspaceView; Model,Task,Again: TDPHDocumentModel;
     Knowledge,Rows,RichLinks: TJSONArray; J: TJSONObject; V: TJSONValue; Failed: Boolean;
     Cache: TDPHTranslationCache; Provider: IDPHTranslationProvider; Segments: TArray<TDPHTranslationSegment>;
     Archive: TZipFile; Bytes: TBytes;
@@ -121,6 +121,55 @@ begin
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint')); except Failed:=True; end; Check(Failed,'Modified artifact fails hash validation');
             TFile.WriteAllText(TPath.Combine(Root,'docs\wp6-canonical-fixture.json'),Model.Document.Format(2),TEncoding.UTF8);
           finally Model.Free; end;
+          TranslationNote:=Store.SaveKnowledge(0,0,Generation,'Translation fixture','Run conversion','Translation author','note','','engineering','engineer');
+          Rows:=Store.KnowledgeJSON;
+          try TranslationRevision:=0; for V in Rows do if V.GetValue<Int64>('id')=TranslationNote then TranslationRevision:=V.GetValue<Int64>('revision'); finally Rows.Free; end;
+          Store.ReviewKnowledge(TranslationNote,TranslationRevision,Generation,'Source reviewer','verified');
+          Rows:=Store.KnowledgeJSON;
+          try for V in Rows do if V.GetValue<Int64>('id')=TranslationNote then TranslationRevision:=V.GetValue<Int64>('revision'); finally Rows.Free; end;
+          Provider:=TDPHAtlasAdapter.Create(TPath.Combine(Root,'samples\translation\DPH.fr.sample.json'));
+          Check(not Provider.External and (Provider.ID='Atlas-DAT-offline'),'Selected Atlas DAT pack translates offline without a network provider');
+          Cache:=TDPHTranslationCache.Create(Store);
+          try
+            Segments:=TDPHTranslationCache.SegmentsForText('Run conversion');
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
+            try CacheKey:=J.GetValue<string>('cache_key'); Check(J.GetValue<TJSONArray>('segments').Items[0].GetValue<string>('text')='Exécuter la conversion','Pinned DAT reader resolves exact source prose from a real pack'); finally J.Free; end;
+            Cache.Review(CacheKey,'French reviewer');
+          finally Cache.Free; end;
+          Store.Free; Store:=nil;
+          Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'publish.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
+          Cache:=TDPHTranslationCache.Create(Store);
+          try
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
+            try Check((J.GetValue<string>('state')='verified') and (J.GetValue<string>('reviewer')='French reviewer'),'Translation and named approval survive cache reconstruction in SQLite'); finally J.Free; end;
+            J:=Cache.Translate(TranslationRevision,'en','fr-CA',Segments,Provider);
+            try Check(J.GetValue<Boolean>('locale_fallback') and (J.GetValue<string>('resolved_locale')='fr'),'Regional locale fallback records the actual base-language pack'); finally J.Free; end;
+            Failed:=False;
+            try J:=Cache.Translate(TranslationRevision,'en','fr',TDPHTranslationCache.SegmentsForText('Wrong source'),Provider); J.Free; except Failed:=True; end;
+            Check(Failed,'Persistent cache rejects source text that differs from the saved authored revision');
+            Store.SaveKnowledge(TranslationNote,TranslationRevision,Generation,'Translation fixture','Run preview','Translation author','note','','engineering','engineer');
+            J:=Store.LoadTranslation(CacheKey);
+            try Check(J.GetValue<string>('state')='needs_review','Editing source invalidates the saved translation review state'); finally J.Free; end;
+            Failed:=False; try Store.ReviewTranslation(CacheKey,'French reviewer'); except Failed:=True; end;
+            Check(Failed,'Historical translation cannot be approved as the current authored revision');
+          finally Cache.Free; end;
+          Cache:=TDPHTranslationCache.Create;
+          try
+            Segments:=TDPHTranslationCache.SegmentsForText('Missing phrase');
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
+            try CacheKey:=J.GetValue<string>('cache_key'); Check(J.GetValue<Integer>('source_fallback_count')=1,'Missing DAT phrase retains source and counts its fallback'); finally J.Free; end;
+            Failed:=False; try Cache.Review(CacheKey,'French reviewer'); except Failed:=True; end; Check(Failed,'Missing localized prose cannot receive translation approval');
+            Segments:=TDPHTranslationCache.SegmentsForText('Inspect captured evidence');
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider,False,'{"Inspect captured evidence":"Examiner les éléments enregistrés"}');
+            try CacheKey:=J.GetValue<string>('cache_key'); Check(J.GetValue<TJSONArray>('segments').Items[0].GetValue<string>('status')='terminology','Exact prose terminology supplies a missing pack entry'); finally J.Free; end;
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider,False,'{"Inspect captured evidence":"Examiner les preuves"}');
+            try Check((J.GetValue<string>('cache_key')<>CacheKey) and (J.GetValue<string>('state')='needs_review'),'Changed terminology invalidates the derived translation and approval'); finally J.Free; end;
+            Segments:=TDPHTranslationCache.SegmentsForText('Run conversion'+sLineBreak+'```pascal'+sLineBreak+'TMain.Click;'+sLineBreak+'```'+sLineBreak+'SELECT id FROM items'+sLineBreak+'C:\project\Main.pas');
+            Text:=''; for var Segment in Segments do Text:=Text+Segment.Text;
+            Check(Text='Run conversion'+sLineBreak+'```pascal'+sLineBreak+'TMain.Click;'+sLineBreak+'```'+sLineBreak+'SELECT id FROM items'+sLineBreak+'C:\project\Main.pas','Prose segmentation preserves every source character including line endings');
+            J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
+            try Check(J.GetValue<Integer>('source_fallback_count')=0,'Fenced code, SQL and paths are protected without becoming missing prose'); finally J.Free; end;
+          finally Cache.Free; Provider:=nil; end;
         finally Knowledge.Free; end;
       finally View.Free; end;
     finally Store.Free; Semantic.Free; Analyzer.Free; end;

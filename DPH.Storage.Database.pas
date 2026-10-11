@@ -72,6 +72,10 @@ type
     procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
+    function LoadTranslation(const AKey: string): TJSONObject;
+    function TranslationEntries(ARevision: Int64): TJSONArray;
+    procedure SaveTranslation(AEntry: TJSONObject);
+    procedure ReviewTranslation(const AKey,AReviewer: string);
     function LinkCandidates(AGeneration: Int64; const AKind: string; const AQuery: string = ''): TJSONArray;
     function ReviewTasks(AGeneration: Int64): TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
@@ -102,7 +106,7 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions;
 
 const
-  CurrentSchemaVersion = 7;
+  CurrentSchemaVersion = 8;
   RichLinkProjectionSQL = 'SELECT l.target_kind,l.target_id,l.source_generation,l.link_role,l.label,'+
     'coalesce(e.canonical_key,a.canonical_key,'''') AS canonical_key,coalesce(b.canonical_key,'''') AS to_key,coalesce(ev.source_range_json,''{}'') AS source_range,'+
     'coalesce(ev.payload_ref,'''') AS evidence_payload,coalesce(rel.resolution_status,CASE WHEN ev.verification_state=''verified'' THEN ''confirmed_static'' ELSE ev.verification_state END,''inferred'') AS resolution,'+
@@ -325,7 +329,8 @@ begin
     else if Version = 4 then MigrationPath := MigrationPath + 'search.sql'
     else if Version = 5 then MigrationPath := MigrationPath + 'document_sections.sql'
     else if Version = 6 then MigrationPath := MigrationPath + 'revision_links.sql'
-    else MigrationPath := MigrationPath + 'author_questions.sql';
+    else if Version = 7 then MigrationPath := MigrationPath + 'author_questions.sql'
+    else MigrationPath := MigrationPath + 'translation_cache.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -1011,6 +1016,62 @@ begin
     end;
     except Result.Free; raise; end;
   finally Query.Free; end;
+end;
+function TDPHKnowledgeStore.TranslationEntries(ARevision: Int64): TJSONArray;
+var Query: TFDQuery; Entry: TJSONObject;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT cache_key FROM translations WHERE knowledge_revision_id=:revision AND cache_key IS NOT NULL ORDER BY translation_id DESC LIMIT 50',[ARevision]);
+  try
+    try while not Query.Eof do begin Entry:=LoadTranslation(Query.FieldByName('cache_key').AsString); if Entry<>nil then Result.AddElement(Entry); Query.Next; end;
+    except Result.Free; raise; end;
+  finally Query.Free; end;
+end;
+function TDPHKnowledgeStore.LoadTranslation(const AKey: string): TJSONObject;
+var Query: TFDQuery;
+begin
+  RequireWriter; Result:=nil;
+  Query:=NewQuery('SELECT cache_json,translation_state,coalesce(reviewer,'''') AS reviewer FROM translations WHERE cache_key=:key',[AKey]);
+  try
+    if Query.Eof then Exit;
+    Result:=TJSONObject.ParseJSONValue(Query.FieldByName('cache_json').AsString) as TJSONObject;
+    if Result=nil then raise EDPHStorage.Create('Invalid saved translation cache');
+    Result.RemovePair('state').Free; Result.AddPair('state',Query.FieldByName('translation_state').AsString);
+    Result.RemovePair('reviewer').Free; Result.AddPair('reviewer',Query.FieldByName('reviewer').AsString);
+  finally Query.Free; end;
+end;
+procedure TDPHKnowledgeStore.SaveTranslation(AEntry: TJSONObject);
+var Revision: Int64; SourceText: string; Segment: TJSONValue; Query: TFDQuery;
+begin
+  RequireWriter; Revision:=AEntry.GetValue<Int64>('revision');
+  if Scalar('SELECT count(*) FROM knowledge_records WHERE current_revision_id=:revision',[Revision])<>1 then
+    raise EDPHStorage.Create('Translate the current saved authored revision');
+  SourceText:=''; for Segment in AEntry.GetValue<TJSONArray>('segments') do SourceText:=SourceText+Segment.GetValue<string>('source_text');
+  Query:=NewQuery('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:revision',[Revision]);
+  try if Query.Eof or (Query.FieldByName('body_md').AsString<>SourceText) then raise EDPHStorage.Create('Translation source does not match the saved revision'); finally Query.Free; end;
+  if AEntry.GetValue<string>('cache_key').Length<>64 then raise EDPHStorage.Create('Invalid translation key');
+  FConnection.ExecSQL('INSERT INTO translations(knowledge_revision_id,target_locale,provider_id,provider_version,translated_body,source_hash,translation_state,reviewer,cache_key,cache_json) '+
+    'VALUES(:revision,:locale,:provider,:version,:body,:hash,''needs_review'','''',:key,:json) '+
+    'ON CONFLICT(knowledge_revision_id,target_locale,provider_id,provider_version) DO UPDATE SET translated_body=excluded.translated_body,source_hash=excluded.source_hash,'+
+    'translation_state=''needs_review'',reviewer='''',cache_key=excluded.cache_key,cache_json=excluded.cache_json',
+    [Revision,AEntry.GetValue<string>('locale'),AEntry.GetValue<string>('provider'),AEntry.GetValue<string>('provider_version'),
+    AEntry.GetValue<TJSONArray>('segments').ToJSON,AEntry.GetValue<string>('source_hash'),AEntry.GetValue<string>('cache_key'),AEntry.ToJSON]);
+end;
+procedure TDPHKnowledgeStore.ReviewTranslation(const AKey,AReviewer: string);
+var Entry: TJSONObject; Revision: Int64;
+begin
+  RequireWriter;
+  if Trim(AReviewer)='' then raise EDPHStorage.Create('Translation review requires a named reviewer');
+  Entry:=LoadTranslation(AKey);
+  try
+    if Entry=nil then raise EDPHStorage.Create('Translation cache entry is no longer available');
+    Revision:=Entry.GetValue<Int64>('revision');
+    if Entry.GetValue<Integer>('source_fallback_count',0)>0 then raise EDPHStorage.Create('Missing translations cannot be approved');
+    if Scalar('SELECT count(*) FROM knowledge_records k WHERE k.current_revision_id=:revision AND NOT EXISTS '+
+      '(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'')',[Revision])<>1 then
+      raise EDPHStorage.Create('The source section changed or requires review; refresh and review its current revision first');
+    FConnection.ExecSQL('UPDATE translations SET translation_state=''verified'',reviewer=:reviewer,cache_json=json_set(cache_json,''$.reviewed_at'',:stamp) WHERE cache_key=:key',[AReviewer,UTCNow,AKey]);
+  finally Entry.Free; end;
 end;
 function TDPHKnowledgeStore.KnowledgeJSON: TJSONArray;
 var Query,Detail,LinkDetail: TFDQuery; Row,Item,LinkItem: TJSONObject; Links,History: TJSONArray; I: Integer;

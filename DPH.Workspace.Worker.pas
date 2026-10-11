@@ -33,6 +33,8 @@ type
     LinkCandidates: TJSONArray;
     ReviewTasks: TJSONArray;
     Observations: TJSONArray;
+    Translations: TJSONArray;
+    TranslationRevision: Int64;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -55,10 +57,10 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -94,6 +96,7 @@ var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanti
     Root,Text,MessageText,SourceEntry: string; Document,Cached: TJSONObject; Config,Generation: Int64;
     Defines: TJSONArray; Value: string; JSONValue: TJSONValue; Status: TDPHProjectStatus; Changed,RunScan,OpeningCached: Boolean;
     View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray; LifecycleResponse: TDPHWorkspaceResponse;
+    TranslationCache: TDPHTranslationCache; Provider: IDPHTranslationProvider; TranslationEntry: TJSONObject; RecordValue: TJSONValue;
 begin
   CoInitializeEx(nil,COINIT_APARTMENTTHREADED); Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
   try
@@ -118,10 +121,42 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if MatchText(Request.Command,['translate','translations','review_translation']) then begin
+            if Request.Command='translate' then begin
+              Text:=''; Knowledge:=Store.KnowledgeJSON;
+              try for RecordValue in Knowledge do if RecordValue.GetValue<Int64>('revision')=Request.ExpectedRevision then Text:=RecordValue.GetValue<string>('body'); finally Knowledge.Free; end;
+              if Text='' then raise EReadError.Create('Select a current saved knowledge revision before translating');
+              Provider:=TDPHAtlasAdapter.Create(Request.Body);
+              TranslationCache:=TDPHTranslationCache.Create(Store);
+              try TranslationEntry:=TranslationCache.Translate(Request.ExpectedRevision,Request.Kind,Request.Audience,
+                TDPHTranslationCache.SegmentsForText(Text),Provider,False,Request.LinksJSON); TranslationEntry.Free;
+              finally TranslationCache.Free; Provider:=nil; end;
+            end;
+            if Request.Command='review_translation' then begin
+              if Request.Entry='' then raise EReadError.Create('Attach current source before approving a translation');
+              Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
+              try if (Cached=nil) or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage)) then
+                raise EReadError.Create('Selected configuration differs from the source evidence; reassess first'); finally Cached.Free; end;
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
+              try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end;
+              TranslationEntry:=Store.LoadTranslation(Request.Title);
+              try if (TranslationEntry=nil) or (TranslationEntry.GetValue<Int64>('revision')<>Request.ExpectedRevision) then raise EReadError.Create('Refresh translations for the selected source revision');
+              finally TranslationEntry.Free; end;
+              Store.ReviewTranslation(Request.Title,Request.Editor);
+            end;
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try LifecycleResponse.Translations:=Store.TranslationEntries(Request.ExpectedRevision);
+              LifecycleResponse.TranslationRevision:=Request.ExpectedRevision;
+              LifecycleResponse.SearchGeneration:=Request.GenerationID; LifecycleResponse.Detached:=Request.Entry='';
+              LifecycleResponse.MessageText:='Offline translations loaded for the exact saved revision. Source fallbacks remain explicit; approval is a separate named action.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
           if Request.Command='search' then begin
             LifecycleResponse:=TDPHWorkspaceResponse.Create;
             try

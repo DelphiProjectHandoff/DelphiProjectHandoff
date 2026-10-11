@@ -40,6 +40,8 @@ Items.Strings = (
 'Knowledge links'
 'Review tasks'
 'Author questions'
+'Runtime observations'
+'Translations'
 'Publish')
 OnChange = WorkspacePageChange
 end
@@ -1406,6 +1408,116 @@ StyledSettings = []
 TextSettings.Font.Size = 14
 end
 end
+object TranslationTab: TTabItem
+Text = 'Translations'
+object TranslationPurpose: TLabel
+Align = Top
+Height = 86
+WordWrap = True
+Text = 'First select a saved section in Knowledge. Enter the source and target locale matching your DAT pack, then select the local language pack. DPH translates prose offline; code, SQL, paths and identifiers remain protected. Missing entries keep the original text and cannot be approved. Optional terminology uses exact prose-to-prose JSON entries. Refresh saved translations after reopening the database. Review the source section before approving its translation.'
+end
+object TranslationToolbar: THorzScrollBox
+Align = Top
+Height = 108
+object TranslationSourceLabel: TLabel
+Position.X = 4
+Width = 140
+Height = 20
+Text = 'Source locale'
+end
+object TranslationTargetLabel: TLabel
+Position.X = 154
+Width = 140
+Height = 20
+Text = 'Target locale'
+end
+object TranslationReviewerLabel: TLabel
+Position.X = 304
+Width = 220
+Height = 20
+Text = 'Translation reviewer'
+end
+object TranslationSourceLocale: TEdit
+Position.X = 4
+Position.Y = 24
+Width = 140
+Height = 28
+Text = 'en'
+end
+object TranslationTargetLocale: TEdit
+Position.X = 154
+Position.Y = 24
+Width = 140
+Height = 28
+Text = 'fr'
+end
+object TranslationReviewer: TEdit
+Position.X = 304
+Position.Y = 24
+Width = 220
+Height = 28
+TextPrompt = 'Named reviewer'
+end
+object TranslationPackButton: TButton
+Position.X = 4
+Position.Y = 62
+Width = 190
+Height = 28
+Text = 'Select DAT pack and translate'
+OnClick = TranslationClick
+end
+object TranslationTermsResetButton: TButton
+Position.X = 534
+Position.Y = 24
+Width = 190
+Height = 28
+Text = 'Clear terminology selection'
+OnClick = TranslationClick
+end
+object TranslationRefreshButton: TButton
+Position.X = 204
+Position.Y = 62
+Width = 170
+Height = 28
+Text = 'Refresh saved translations'
+OnClick = TranslationClick
+end
+object TranslationReviewButton: TButton
+Position.X = 384
+Position.Y = 62
+Width = 170
+Height = 28
+Text = 'Approve selected translation'
+OnClick = TranslationClick
+end
+object TranslationTermsButton: TButton
+Position.X = 564
+Position.Y = 62
+Width = 180
+Height = 28
+Text = 'Select terminology dictionary'
+OnClick = TranslationClick
+end
+end
+object TranslationList: TListBox
+Align = Top
+Height = 110
+OnChange = TranslationSelectionClick
+end
+object TranslationStatus: TLabel
+Align = Top
+Height = 74
+WordWrap = True
+Text = 'Select a saved Knowledge revision, then refresh or translate it here.'
+end
+object TranslationMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 14
+end
+end
 object PublishTab: TTabItem
 Text = 'Publish'
 object PublishToolbar: TLayout
@@ -1517,6 +1629,14 @@ end
 object ObservationDialog: TOpenDialog
 Filter = 'Saved UTF-8 observations|*.txt;*.log;*.json'
 Title = 'Select an existing saved observation (up to 256 KiB); no program will run'
+end
+object TranslationDialog: TOpenDialog
+Filter = 'DAT language pack|*.json'
+Title = 'Select an offline DAT language pack for DelphiProjectHandoff'
+end
+object TerminologyDialog: TOpenDialog
+Filter = 'Exact prose terminology dictionary|*.json'
+Title = 'Select a local exact prose-to-prose JSON dictionary'
 end
 object PollTimer: TTimer
 Interval = 100

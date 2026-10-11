@@ -222,7 +222,22 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     and source-invalidating review workflow remain authoritative. Two focused
     publication checks pass (73 total); app and FMX binding build pass. Generated
     static text does not acquire human approval merely by including reviewed notes.
-6.3-6.7 Pending: translation workflow/cache,
+6.3 Expanded: actual Atlas DAT offline-pack adapter, pinned independent Apache-2.0
+    reader source with hashes/license, IDE-editable Translations page, selected
+    saved-section translation and explicit requested/base-pack/source fallbacks.
+    Sample three-phrase French pack is labeled unreviewed and incomplete. No
+    shared VCL2FMX build/runtime dependency or network translation was added.
+6.4 Expanded: schema eight persists exact revision/locale/provider-pack/terminology
+    cache identity, segments, protection state, fallback counts and named review.
+    Source/terminology changes invalidate approval; source mismatch, pending
+    source review, historical revision and missing localized prose reject approval.
+    Cache survives database reopen and ordinary managed backup. Native comparison
+    rendered and visually inspected; publishing 86, workspace 118, storage 46,
+    knowledge 59, selection 18, startup 2 and FMX binding checks pass. Inline/fenced
+    code is explicitly protected; unusual unmarked identifiers require review.
+    Full guide language catalogs and localized bundle publication remain part of
+    subsequent publishing integration; no full-language coverage claim is made.
+6.5-6.7 Pending:
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
@@ -230,7 +245,9 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
 Translation reference identified by owner: local VCL2FMX under New Delphi Projects.
 Read-only inspection found VCL2FMXConverterV7/dependencies/DelphiAppTranslation,
 an Apache-2.0 pinned DAT framework used by V7 Atlas with offline language packs.
-No source copied and no shared build/runtime dependency added.
+Only the runtime language-pack reader and its two core dependencies were copied
+into DPH with original bytes, license and SHA256 provenance. VCL2FMX is unchanged;
+there is no shared build/runtime dependency.
 
 Tests must use disposable fixtures and leave the owner's workspace preferences
 unchanged. Generated test directories are removed after the required checks.

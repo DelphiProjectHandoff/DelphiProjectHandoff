@@ -80,14 +80,14 @@ begin
     Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
     Store.InitializeProject('Storage fixture','dpr');
     Writeln('SQLite version: ' + Store.SQLiteVersion + '; FTS5 compiled: ' + BoolToStr(Store.SupportsFTS5,True));
-    Check(Store.IntegrityCheck='ok','WP1-01','fresh two-version migration and integrity');
+    Check(Store.IntegrityCheck='ok','WP1-01','fresh schema-eight migration and integrity');
     Probe := TFDConnection.Create(nil);
     Probe.LoginPrompt := False; Probe.Params.Values['DriverID'] := 'SQLite';
     Probe.Params.Values['Database'] := DatabasePath;
     Probe.Params.Values['LockingMode'] := 'Normal';
     Probe.Params.Values['ForeignKeys'] := 'On'; Probe.Connected := True;
     Probe.ExecSQL('PRAGMA foreign_keys=ON');
-    Check(Probe.ExecSQLScalar('PRAGMA user_version')=7,'WP1-02','schema ledger version 7');
+    Check(Probe.ExecSQLScalar('PRAGMA user_version')=8,'WP1-02','schema ledger version 8');
     Rejected := False;
     try SecondWriter := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
       SecondWriter.Free; except on E: EDPHStorage do Rejected := True; end;
@@ -187,7 +187,7 @@ begin
     try Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
       except on E: EDPHStorage do Rejected := True; end;
     Check(Rejected,'WP1-24','newer incompatible database rejected');
-    Probe.Open; Probe.ExecSQL('PRAGMA user_version=7'); Probe.Close;
+    Probe.Open; Probe.ExecSQL('PRAGMA user_version=8'); Probe.Close;
     Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
     Store.ObserveManifest(Files);
     ChangedFiles := Copy(Files);

@@ -1,0 +1,30 @@
+{
+  "reference": "VCL2FMXConverterV7/dependencies/DelphiAppTranslation",
+  "files": [
+    {
+      "original_path": "source\\runtime\\DAT.Runtime.LanguagePack.pas",
+      "sha256": "ED36C46DB4084A915489B60515F2BF54F90360557F41A1EA2E634FF31E237E25",
+      "file": "DAT.Runtime.LanguagePack.pas"
+    },
+    {
+      "original_path": "source\\core\\DAT.Core.AtomicFile.pas",
+      "sha256": "D4415B44A2C6E931AFC184730A6516650252E5BD61A126A9078D2CBA02ED6900",
+      "file": "DAT.Core.AtomicFile.pas"
+    },
+    {
+      "original_path": "source\\core\\DAT.Core.Diagnostics.pas",
+      "sha256": "087BB30B9881DEFA0366111954E19E95ECC71C9B35CE4487E44CED6F2122609A",
+      "file": "DAT.Core.Diagnostics.pas"
+    },
+    {
+      "original_path": "LICENSE",
+      "sha256": "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4",
+      "file": "LICENSE"
+    }
+  ],
+  "reference_snapshot": "2026-09-09",
+  "copied_on": "2026-10-11",
+  "license": "Apache-2.0",
+  "name": "Delphi App Translation",
+  "purpose": "Offline Atlas language-pack reader; independent pinned DPH source copy"
+}

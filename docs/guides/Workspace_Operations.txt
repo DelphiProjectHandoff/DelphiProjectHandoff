@@ -294,6 +294,50 @@ Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage
 migration/durability checks. A nonzero exit or FAIL indicates a failed check.
 These automated checks do not substitute for first-time-user acceptance.
+
+Offline Atlas translation of a saved section
+1. Open the project database. In Knowledge, select the saved section to translate.
+   Save any edits first, then select the saved record again. Translation reads
+   that immutable saved revision, not text still being edited.
+2. Choose Translations from the top-right page selector. Enter Source locale
+   and Target locale matching your DAT pack. A base-language pack such as fr
+   can serve fr-CA; the status explicitly shows the actual pack locale.
+3. Click Select DAT pack and translate. Choose a UTF-8 DAT JSON language pack
+   whose applicationId is DelphiProjectHandoff. The file is limited to 4 MiB.
+   The pack is read offline. DPH does not contact a translation API.
+4. Select the saved translation. Read SOURCE and LOCALIZED PROSE. Check the
+   source-fallback count, requested/actual locale, exact revision and pack hash.
+   Missing phrases keep the source text and cannot receive approval. Identical
+   source/translated wording is conservatively counted as a source fallback.
+5. Optional: Select terminology dictionary accepts a UTF-8 JSON object up to
+   256 KiB mapping exact source prose segments to localized prose. Click Clear
+   terminology selection to stop using it. Translate again after a change.
+   Changed terminology/pack/source revision requires a new review.
+6. In authored text, fence code blocks with triple backticks and enclose inline
+   code in single backticks. DPH additionally protects common SQL/Pascal lines,
+   paths, hashes, dotted/CamelCase/snake_case identifiers and JSON protocol keys.
+   Review unusual snippets; automatic token recognition cannot identify every
+   arbitrary unmarked identifier in natural-language text.
+7. Before approving a translation, review the source section in Knowledge:
+   enter the named reviewer, click Verify review and then select the new current
+   saved revision. Translate that revision. On Translations, enter Translation
+   reviewer, select its localized record and click Approve selected translation.
+   Detached, source-changed, pending-review or obsolete revisions cannot be
+   approved. This approves the localized wording; it does not establish business
+   facts or execute the selected application.
+8. After reopening the database, select the source section in Knowledge, choose
+   Translations and click Refresh saved translations. SQLite preserves the exact
+   localized content, pack/terminology hashes, reviewer and review timestamp.
+   Ordinary managed database backup/restore includes these SQLite records.
+
+Small translation practice (not a complete language pack)
+Create an attributed test note with body exactly Run conversion. Save and select
+it. Use en and fr, then select this file:
+C:\New Delphi Projects\Delphi Project Handoff\samples\translation\DPH.fr.sample.json
+The localized text should read Exécuter la conversion and remain needs_review.
+This sample has only three unreviewed phrases. It is not a complete DPH language
+catalog or a translation of the analyzed project's manuals. The separate
+terminology.fr.sample.json demonstrates an exact prose dictionary.
 Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
 checks without native browser tests. Full build-learning.cmd additionally tests
 worker recovery and native WebView rendering (49 checks pass). Do not interpret

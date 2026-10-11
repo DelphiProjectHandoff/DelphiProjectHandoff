@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "applicationId": "DelphiProjectHandoff",
+  "applicationVersion": "sample-unreviewed-1",
+  "framework": "FMX",
+  "sourceLanguage": "en",
+  "sourceCatalogChecksum": "sample-exact-prose-catalog-1",
+  "language": {"code": "fr", "nativeName": "Français", "direction": "ltr"},
+  "strings": {},
+  "sourceStrings": {
+    "Run conversion": "Exécuter la conversion",
+    "Review the source": "Examiner le code source",
+    "Open the project": "Ouvrir le projet"
+  }
+}

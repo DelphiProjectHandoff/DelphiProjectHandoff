@@ -145,6 +145,16 @@ type
     ObservationsList: TListBox;
     ObservationMemo: TMemo;
     ObservationDialog: TOpenDialog;
+    TranslationTab: TTabItem;
+    TranslationPurpose,TranslationStatus: TLabel;
+    TranslationToolbar: THorzScrollBox;
+    TranslationSourceLocale,TranslationTargetLocale,TranslationReviewer: TEdit;
+    TranslationPackButton,TranslationRefreshButton,TranslationReviewButton,TranslationTermsButton,TranslationTermsResetButton: TButton;
+    TranslationList: TListBox;
+    TranslationMemo: TMemo;
+    TranslationDialog,TerminologyDialog: TOpenDialog;
+    procedure TranslationClick(Sender: TObject);
+    procedure TranslationSelectionClick(Sender: TObject);
     procedure QuestionsClick(Sender: TObject);
     procedure QuestionSelectionClick(Sender: TObject);
     procedure ObservationsClick(Sender: TObject);
@@ -254,6 +264,8 @@ type
     FReviewTasks: TJSONArray;
     FQuestions: TJSONArray;
     FObservations: TJSONArray;
+    FTranslations: TJSONArray;
+    FTerminologyJSON: string;
     FKnowledgeQuestionJSON: string;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
@@ -275,6 +287,7 @@ type
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
+    procedure LoadTranslations(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
 var DPHMainForm: TDPHMainForm;
@@ -320,7 +333,7 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free;
+  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -587,6 +600,8 @@ begin
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
   FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Open Runtime observations and click Refresh saved records.';
+  FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:=''; FTerminologyJSON:='';
+  TranslationStatus.Text:='Select a saved Knowledge revision, then refresh or translate it here.';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
@@ -626,6 +641,9 @@ begin
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if (R.Translations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) and (R.TranslationRevision=FKnowledgeRevision) then begin
+      LoadTranslations(R.Translations); R.Translations:=nil;
+    end;
     if (R.Observations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
       FObservations.Free; FObservations:=R.Observations; R.Observations:=nil; ObservationsList.Items.Clear;
       for Value in FObservations do ObservationsList.Items.Add(Value.GetValue<string>('context')+' | generation '+Value.GetValue<Int64>('generation_id').ToString);
@@ -953,6 +971,69 @@ begin
     'Captured generation: '+Row.GetValue('generation_id').Value+sLineBreak+'Linked object: '+Row.GetValue<string>('entity_key')+sLineBreak+
     'Linked source SHA256: '+Row.GetValue<string>('linked_source_hash')+sLineBreak+'Original extract SHA256: '+Row.GetValue<string>('original_sha256')+sLineBreak+
     Row.GetValue<string>('provenance')+sLineBreak+sLineBreak+'SAVED TEXT (file order; timestamps are unverified)'+sLineBreak+Row.GetValue<string>('text');
+end;
+procedure TDPHMainForm.LoadTranslations(ARows: TJSONArray);
+var Value: TJSONValue;
+begin
+  FTranslations.Free; FTranslations:=ARows; TranslationList.Items.Clear; TranslationMemo.Text:='';
+  for Value in FTranslations do TranslationList.Items.Add(Value.GetValue<string>('locale')+' | '+Value.GetValue<string>('state')+' | reviewer '+Value.GetValue<string>('reviewer'));
+  TranslationStatus.Text:='Saved translations loaded. Select one to compare protected/source text and localized prose.';
+  if FTranslations.Count>0 then begin TranslationList.ItemIndex:=0; TranslationSelectionClick(nil); end;
+end;
+procedure TDPHMainForm.TranslationSelectionClick(Sender: TObject);
+var Row: TJSONObject; Segment: TJSONValue; SourceText,TranslatedText: string;
+begin
+  if (FTranslations=nil) or (TranslationList.ItemIndex<0) then Exit;
+  Row:=FTranslations.Items[TranslationList.ItemIndex] as TJSONObject;
+  SourceText:=''; TranslatedText:='';
+  for Segment in Row.GetValue<TJSONArray>('segments') do begin
+    SourceText:=SourceText+Segment.GetValue<string>('source_text'); TranslatedText:=TranslatedText+Segment.GetValue<string>('text');
+  end;
+  TranslationStatus.Text:='Revision '+Row.GetValue<string>('revision')+' | '+Row.GetValue<string>('source_locale')+' to '+Row.GetValue<string>('locale')+
+    ' (pack locale '+Row.GetValue<string>('resolved_locale',Row.GetValue<string>('locale'))+')'+
+    ' | '+Row.GetValue<string>('state')+' | source fallbacks '+Row.GetValue<Integer>('source_fallback_count',0).ToString+
+    ' | reviewer '+Row.GetValue<string>('reviewer')+'. Code, paths and identifiers remain unchanged.';
+  TranslationMemo.Text:='SOURCE'+sLineBreak+SourceText+sLineBreak+sLineBreak+'LOCALIZED PROSE'+sLineBreak+TranslatedText+
+    sLineBreak+sLineBreak+'EXACT CACHE ID: '+Row.GetValue<string>('cache_key')+sLineBreak+'PROVIDER: '+Row.GetValue<string>('provider')+
+    sLineBreak+'PACK VERSION: '+Row.GetValue<string>('provider_version')+sLineBreak+'TERMINOLOGY SHA256: '+Row.GetValue<string>('terminology_hash')+
+    sLineBreak+'LAST REVIEWED UTC: '+Row.GetValue<string>('reviewed_at','never');
+end;
+procedure TDPHMainForm.TranslationClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject; Terms: TJSONValue;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if Sender=TranslationTermsResetButton then begin FTerminologyJSON:='{}'; TranslationStatus.Text:='Terminology dictionary cleared for the next translation. Existing exact cache records remain available.'; Exit; end;
+  if Sender=TranslationTermsButton then begin
+    if not TerminologyDialog.Execute then Exit;
+    try
+      if TFile.GetSize(TerminologyDialog.FileName)>256*1024 then raise EReadError.Create('Terminology dictionary is limited to 256 KiB');
+      Terms:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TerminologyDialog.FileName,TEncoding.UTF8));
+      try if not (Terms is TJSONObject) then raise EReadError.Create('Terminology must be a JSON object mapping exact prose to localized prose');
+        FTerminologyJSON:=Terms.ToJSON;
+      finally Terms.Free; end;
+      TranslationStatus.Text:='Selected terminology dictionary applies to the next translation. Its hash is part of the cache identity.';
+    except on E: Exception do StatusLabel.Text:=E.Message; end;
+    Exit;
+  end;
+  if (FKnowledgeRevision<1) or FKnowledgeEdited then begin StatusLabel.Text:='In Knowledge, select a saved revision and save any edits before translating.'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='translations'; Request.Database:=FDatabase;
+  Request.Entry:=FEntry; Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex]; Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
+  Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter a valid source code page first'; Exit; end;
+  Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); Request.ExpectedRevision:=FKnowledgeRevision;
+  if Sender=TranslationPackButton then begin
+    if not TranslationDialog.Execute then Exit;
+    Request.Command:='translate'; Request.Body:=TranslationDialog.FileName; Request.Kind:=Trim(TranslationSourceLocale.Text);
+    Request.Audience:=Trim(TranslationTargetLocale.Text); Request.LinksJSON:=FTerminologyJSON; if Request.LinksJSON='' then Request.LinksJSON:='{}';
+  end;
+  if Sender=TranslationReviewButton then begin
+    if (FTranslations=nil) or (TranslationList.ItemIndex<0) then begin StatusLabel.Text:='Select a saved translation first.'; Exit; end;
+    Row:=FTranslations.Items[TranslationList.ItemIndex] as TJSONObject;
+    if Row.GetValue<Int64>('revision')<>FKnowledgeRevision then begin StatusLabel.Text:='Refresh translations for the selected source revision first.'; Exit; end;
+    Request.Command:='review_translation'; Request.Title:=Row.GetValue<string>('cache_key'); Request.Editor:=Trim(TranslationReviewer.Text);
+    if Request.Editor='' then begin StatusLabel.Text:='Enter the named translation reviewer first.'; Exit; end;
+  end;
+  FWorker.Submit(Request); FBusy:=True;
 end;
 procedure TDPHMainForm.ObservationsClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Row: TJSONObject;
@@ -1399,6 +1480,8 @@ var Row: TJSONObject; Links: TJSONArray;
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before selecting another record'; Exit; end;
   if (KnowledgeList.ItemIndex<0) or (KnowledgeList.ItemIndex>=FKnowledgeRows.Count) then Exit; Row:=FKnowledgeRows[KnowledgeList.ItemIndex];
+  FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
+  TranslationStatus.Text:='Choose Translations and refresh saved records, or select a local DAT pack for this revision.';
   FBinding:=True;
   try
   FKnowledgeID:=StrToInt64(Row.GetValue<string>('id')); FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision'));
@@ -1419,6 +1502,7 @@ end;
 procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
+  FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
     FKnowledgeQuestionJSON:='';
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
