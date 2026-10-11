@@ -8,11 +8,14 @@ type
     Defines,ExternalRoots: TArray<string>;
     KnowledgeID,ExpectedRevision,GenerationID: Int64;
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
+    ExportDirectory: string;
+    Seeds,Exclusions: TArray<string>;
   end;
   TDPHWorkspaceResponse = class
   public
     Document: TJSONObject;
     Knowledge: TJSONArray;
+    ExportDirectory: string;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -22,7 +25,7 @@ type
     FRequests: TThreadedQueue<TDPHWorkspaceRequest>;
     FResponses: TThreadedQueue<TDPHWorkspaceResponse>;
     FBaseDirectory: string;
-    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil);
+    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil; const AExportDirectory: string = '');
   protected
     procedure Execute; override;
   public
@@ -33,9 +36,9 @@ type
     procedure Stop;
   end;
 implementation
-uses System.IOUtils, System.StrUtils, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
+uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export;
 
 destructor TDPHWorkspaceResponse.Destroy;
 begin Document.Free; Knowledge.Free; inherited; end;
@@ -57,11 +60,12 @@ procedure TDPHWorkspaceWorker.Submit(const ARequest: TDPHWorkspaceRequest);
 begin if FRequests.PushItem(ARequest)<>wrSignaled then raise EInvalidOperation.Create('Workspace request queue is full'); end;
 function TDPHWorkspaceWorker.Poll(out AResponse: TDPHWorkspaceResponse): Boolean;
 begin Result:=(FResponses.PopItem(AResponse)=wrSignaled) and (AResponse<>nil); end;
-procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray);
+procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray; const AExportDirectory: string);
 var Response: TDPHWorkspaceResponse;
 begin
   Response:=TDPHWorkspaceResponse.Create; Response.Document:=ADocument; Response.MessageText:=AMessage;
   Response.Knowledge:=AKnowledge;
+  Response.ExportDirectory:=AExportDirectory;
   Response.Busy:=ABusy; Response.Changed:=AChanged; Response.Detached:=ADetached; Response.Failed:=AFailed;
   if Terminated or (FResponses.PushItem(Response)<>wrSignaled) then Response.Free;
 end;
@@ -70,6 +74,7 @@ var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanti
     Scan: TDPHScan; Graph: TDPHSemanticGraph; Store: TDPHKnowledgeStore; Inventory: TDPHInventory;
     Root,Text,MessageText: string; Document,Cached: TJSONObject; Config,Generation: Int64;
     Defines: TJSONArray; Value: string; Status: TDPHProjectStatus; Changed,RunScan: Boolean;
+    View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge: TJSONArray;
 begin
   CoInitializeEx(nil,COINIT_APARTMENTTHREADED); Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
   try
@@ -78,10 +83,24 @@ begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
         Respond(nil,'Working in background…',True,False,False,False);
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if Request.Command='publish' then
+          begin
+            if Request.Entry<>'' then begin Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end; end;
+            Document:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
+            View:=TDPHWorkspaceView.Create(Document); Knowledge:=Store.KnowledgeJSON;
+            try
+              Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.Status.AnalysisStale);
+              try TDPHPublisher.Export(Model,Store,Request.ExportDirectory);
+                Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),Model.Document.GetValue<TJSONArray>('symbols').ToJSON,Store.Status.AnalysisStale);
+              finally Model.Free; end;
+            finally Knowledge.Free; View.Free; end;
+            Respond(nil,'Offline HTML, editable guides and technical bundle exported. Review coverage and stale status before use.',False,False,Request.Entry='',False,nil,Request.ExportDirectory); Continue;
+          end;
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin
             if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,

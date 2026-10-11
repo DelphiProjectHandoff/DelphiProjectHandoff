@@ -20,7 +20,11 @@ uses
   DPH.Analysis.Persistence in 'DPH.Analysis.Persistence.pas',
   DPH.Workspace.Model in 'DPH.Workspace.Model.pas',
   DPH.Workspace.Worker in 'DPH.Workspace.Worker.pas',
-  DPH.Workspace.Screen in 'DPH.Workspace.Screen.pas';
+  DPH.Workspace.Screen in 'DPH.Workspace.Screen.pas',
+  DPH.Publish.Model in 'DPH.Publish.Model.pas',
+  DPH.Publish.Export in 'DPH.Publish.Export.pas',
+  DPH.Publish.Translation in 'DPH.Publish.Translation.pas',
+  DPH.Publish.BrowserPolicy in 'DPH.Publish.BrowserPolicy.pas';
 
 begin
   Application.Initialize;

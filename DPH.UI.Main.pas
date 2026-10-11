@@ -3,7 +3,7 @@ interface
 uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
-  FMX.Objects, FMX.Graphics, DPH.Workspace.Model, DPH.Workspace.Worker;
+  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DPH.Workspace.Model, DPH.Workspace.Worker;
 type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend: TLabel;
@@ -31,6 +31,14 @@ type
     NewKnowledgeButton,SaveKnowledgeButton,RefreshKnowledgeButton,VerifyKnowledgeButton,RejectKnowledgeButton,RetireKnowledgeButton,DiscardKnowledgeButton: TButton;
     PendingKnowledgeCheck: TCheckBox;
     KnowledgeWarning: TLabel;
+    PublishTab: TTabItem;
+    PublishToolbar: TLayout;
+    PublishScopeCombo: TComboBox;
+    PublishExclusionsEdit: TEdit;
+    PublishButton,PreviewButton: TButton;
+    PublishMemo: TMemo;
+    PublishBrowser: TWebBrowser;
+    ExportDialog: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -61,6 +69,9 @@ type
     procedure KnowledgeFilterChange(Sender: TObject);
     procedure KnowledgeEdited(Sender: TObject);
     procedure DiscardKnowledgeClick(Sender: TObject);
+    procedure PublishClick(Sender: TObject);
+    procedure PreviewClick(Sender: TObject);
+    procedure BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
   private
     FWorker: TDPHWorkspaceWorker;
     FView: TDPHWorkspaceView;
@@ -76,10 +87,12 @@ type
     FReviewState: string;
     FKnowledgeEdited: Boolean;
     FPendingCommand,FSavedKnowledgeText,FKnowledgeLink: string;
+    FExportDirectory: string;
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
     procedure RefreshGraphics;
+    procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
   public
     procedure LoadView(ADocument: TJSONObject);
@@ -89,7 +102,7 @@ type
 var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math,
-  DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model;
+  Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; Pref: TJSONObject; PrefPath: string;
@@ -141,6 +154,13 @@ begin
     R.Title:=KnowledgeTitleEdit.Text; R.Body:=KnowledgeBodyMemo.Text; R.Editor:=KnowledgeAuthorEdit.Text;
     R.Kind:=KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]; R.EntityKey:=FKnowledgeLink; R.ReviewState:=FReviewState;
   end;
+  if ACommand='publish' then
+  begin
+    if FView=nil then begin StatusLabel.Text:='Open or analyze a project first'; Exit; end;
+    R.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); R.ExportDirectory:=FExportDirectory;
+    R.Exclusions:=PublishExclusionsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+    if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
+  end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background…';
   FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text;
 end;
@@ -148,14 +168,24 @@ procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenProjectDialog.Execute then Exit;
-  if (FDatabase='') or ((FView<>nil) and not SameFileName(FView.Document.GetValue<string>('root'),ExtractFilePath(OpenProjectDialog.FileName))) then
+  if (FDatabase='') or ((FView<>nil) and not SameFileName(ExcludeTrailingPathDelimiter(FView.Document.GetValue<string>('root')),ExcludeTrailingPathDelimiter(ExtractFilePath(OpenProjectDialog.FileName)))) then
   begin if not DatabaseDialog.Execute then Exit; FDatabase:=DatabaseDialog.FileName; end;
-  FEntry:=OpenProjectDialog.FileName; FDetached:=False; Submit('incremental');
+  ClearWorkspace; FEntry:=OpenProjectDialog.FileName; FDetached:=False; Submit('incremental');
 end;
 procedure TDPHMainForm.OpenCacheClick(Sender: TObject);
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
-  if FBusy or not OpenCacheDialog.Execute then Exit; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open');
+  if FBusy or not OpenCacheDialog.Execute then Exit; ClearWorkspace; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open');
+end;
+procedure TDPHMainForm.ClearWorkspace;
+begin
+  FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
+  FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
+  ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
+  SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
+  NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
 begin if FEntry='' then StatusLabel.Text:='Attach the source project first' else Submit('full'); end;
@@ -170,6 +200,8 @@ begin
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
+    if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
+      PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
     StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
   finally R.Free; end;
 end;
@@ -383,4 +415,20 @@ begin
   if FKnowledgeID=0 then begin StatusLabel.Text:='Select a saved knowledge revision first'; Exit; end;
   FReviewState:='verified'; if Sender=RejectKnowledgeButton then FReviewState:='rejected'; if Sender=RetireKnowledgeButton then FReviewState:='retired'; Submit('review_knowledge');
 end;
+procedure TDPHMainForm.PublishClick(Sender: TObject);
+begin
+  if FBusy or (FView=nil) then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored edit before publishing'; Exit; end;
+  if not ExportDialog.Execute then Exit; FExportDirectory:=ExportDialog.FileName; Submit('publish');
+end;
+procedure TDPHMainForm.PreviewClick(Sender: TObject);
+begin
+  if FExportDirectory='' then Exit;
+  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file:///'+TPath.Combine(FExportDirectory,'index.html').Replace('\','/'));
+  except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'The offline index.html remains available in '+FExportDirectory; end; end;
+end;
+procedure TDPHMainForm.BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
+begin ACancel:=not TDPHBrowserPolicy.Allowed(AURL,FExportDirectory); end;
+initialization
+  SetWebView2Path(TPath.Combine(ExtractFilePath(ParamStr(0)),'WebView2Loader.dll'));
 end.

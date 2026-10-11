@@ -19,7 +19,6 @@ type
     FReady: Boolean;
     FClosing: Integer;
     procedure RequireWriter;
-    procedure CheckOutsideSource(const APath: string);
     procedure ApplyMigrations(const AMigrationDirectory: string);
     function NewQuery(const ASQL: string; const AValues: array of Variant): TFDQuery;
     function Scalar(const ASQL: string; const AValues: array of Variant): Variant;
@@ -27,6 +26,7 @@ type
     procedure RequireRunning(AGenerationID: Int64);
     function ReadManifest(AGenerationID: Int64 = 0): TDPHManifest;
   public
+    procedure CheckOutsideSource(const APath: string);
     constructor Create(const ADatabasePath, ASourceRoot, AMigrationDirectory: string;
       AUseWAL: Boolean = False);
     destructor Destroy; override;
@@ -71,6 +71,7 @@ type
     procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
+    procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -839,6 +840,22 @@ begin
     end;
   except Query.Free; Result.Free; raise; end;
   Query.Free;
+end;
+
+procedure TDPHKnowledgeStore.RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
+var BuildState: string;
+begin
+  RequireWriter; CheckOutsideSource(ADirectory);
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGenerationID])<>1 then raise EDPHStorage.Create('Export generation is not captured');
+  BuildState:='validated'; if AStale then BuildState:='stale';
+  FConnection.StartTransaction;
+  try
+    FConnection.ExecSQL('INSERT INTO artifacts(project_id,generation_id,kind,artifact_path,content_hash,locale,template_version,build_state) '+
+      'VALUES(1,:generation,''handoff'',:path,:hash,''en'',''DPH-WP6-1'',:state)',[AGenerationID,ADirectory,ACanonicalHash,BuildState]);
+    FConnection.ExecSQL('INSERT INTO export_jobs(project_id,generation_id,format,scope_json,started_at,finished_at,manifest_hash,status) '+
+      'VALUES(1,:generation,''html_docx_jsonl'',:scope,:started,:finished,:hash,:state)',[AGenerationID,AScope,UTCNow,UTCNow,THashSHA2.GetHashStringFromFile(TPath.Combine(ADirectory,'manifest.json')),BuildState]);
+    FConnection.Commit;
+  except FConnection.Rollback; raise; end;
 end;
 
 function TDPHKnowledgeStore.Status: TDPHProjectStatus;

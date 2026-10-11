@@ -1,0 +1,182 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(830): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(834): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(838): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  5261 lines, 0.88 seconds, 9154192 bytes code, 344236 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Storage.Database.pas(830) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(834) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(838) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+5169 lines, 0.84 seconds, 9153972 bytes code, 344212 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(830): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(834): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Storage.Database.pas(838): Hint warning H2443: Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  5261 lines, 0.91 seconds, 9154192 bytes code, 344236 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Storage.Database.pas(830) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(834) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(838) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+5169 lines, 0.83 seconds, 9153972 bytes code, 344212 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Storage.Database.pas(830) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(834) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(838) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+1348 lines, 0.16 seconds, 3495488 bytes code, 148228 bytes data.
+Test database: C:\New Delphi Projects\Delphi Project Handoff\bin\wp1-tests-{24567FCE-5EF4-428B-BDAA-D30118410A2D}\project.dphdb
+SQLite version: 3.42.0; FTS5 compiled: True
+PASS WP1-01: fresh two-version migration and integrity
+PASS WP1-02: schema ledger version 2
+PASS WP1-03: second DPH writer is rejected
+PASS WP1-04: database cannot be created in selected source
+PASS WP1-05: observation sets separate dirty/stale flags
+PASS WP1-26: evidence outside captured bytes is rejected
+PASS WP1-27: mid-publication SQL fault rolls back both generation and head
+PASS WP1-06: coherent generation published atomically
+PASS WP1-07: head and exact-input flags updated
+PASS WP1-08: observed change rejects old captured generation
+PASS WP1-09: old head survives; manual review is pending
+PASS WP1-10: revalidation mismatch rejects publish
+PASS WP1-11: cross-generation evidence rejected by foreign key
+PASS WP1-12: fresh captured generation publishes
+PASS WP1-13: reparse preserves note and pending human review
+PASS WP1-14: database rejects invalid mutation
+PASS WP1-15: database rejects invalid mutation
+PASS WP1-16: database rejects invalid mutation
+PASS WP1-17: manual reassessment has its own flag
+PASS WP1-18: failure retains previous published head
+PASS WP1-19: abandoned generation recovers with diagnostic
+PASS WP1-34: opening cached data does not start a new analysis
+PASS WP1-20: configuration change supersedes capture
+PASS WP1-21: deleted source retains entity/knowledge history
+PASS WP1-22: consistent SQLite backup produced
+PASS WP1-23: backup restores with intact head
+PASS WP1-24: newer incompatible database rejected
+PASS WP1-28: incomplete captured input cannot replace completed head
+PASS WP1-29: forced process termination recovers prior committed state
+PASS WP1-30: failed second migration rolls back DDL and ledger to version 1
+PASS WP1-31: version 1 database upgrades successfully after repair
+PASS WP1-44: existing manual knowledge survives schema 1 to 2 upgrade
+PASS WP1-45: pre-migration backup retains version 1 and existing notes
+PASS WP1-32: modified applied migration checksum is rejected
+PASS WP1-33: manifest path cannot traverse outside project
+PASS WP1-35: explicit local WAL configuration publishes
+PASS WP1-36: WAL reader retains consistent snapshot while writer publishes
+PASS WP1-37: reader sees new generation after releasing snapshot
+PASS WP1-38: unchanged source revision reused across generations
+PASS WP1-39: worker commands queue to owner; direct cross-thread writes rejected
+PASS WP1-40: busy writer times out safely and succeeds after lock release
+PASS WP1-42: expanded file manifest publishes
+PASS WP1-46: explicit partial analyzer coverage cannot clear stale state
+PASS WP1-43: only changed files are flagged for incremental reassessment
+PASS WP1-41: graceful store shutdown drains accepted write commands
+PASS WP1-25: selected fixture source bytes unchanged
+PASS WP1-SUITE
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Storage.Database.pas(830) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(834) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(838) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(51) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(52) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+5251 lines, 0.83 seconds, 9165888 bytes code, 344452 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Reverse references retain event evidence
+PASS 8: Execution graph is bounded
+PASS 9: Execution graph has static provenance
+PASS 10: Procedure CFG graph is bounded
+PASS 11: Procedure CFG graph has static provenance
+PASS 12: Caller / callee graph is bounded
+PASS 13: Caller / callee graph has static provenance
+PASS 14: Form navigation graph is bounded
+PASS 15: Form navigation graph has static provenance
+PASS 16: Data flow graph is bounded
+PASS 17: Data flow graph has static provenance
+PASS 18: Change impact graph is bounded
+PASS 19: Change impact graph has static provenance
+PASS 20: Design-time screen contains form and button
+PASS 21: Screen reconstruction never claims runtime capture
+PASS 22: FMX Explorer displays canonical cached objects
+PASS 23: Explorer selection populates source-backed inspector
+PASS 24: Detached source view does not follow cached filesystem paths
+PASS 25: Canonical selection can be bookmarked
+PASS 26: Render screen mode Thumbnail
+PASS 27: Render screen mode Fit
+PASS 28: Render screen mode Native
+PASS 29: Render screen mode Zoom 200%
+PASS 30: Render screen mode Full screen
+PASS 31: Cached database opens without analysis
+PASS 32: Cached open requires explicit source attachment
+PASS 33: Cached open preserves generation
+PASS 34: Fixture cached open completes within 5 seconds
+PASS 35: Unchanged connected check skips analysis
+PASS 36: Configuration change reassesses unchanged source bytes
+PASS 37: Source modification triggers background reassessment
+PASS 38: Controlled edit changes its input fingerprint
+PASS 39: Updated cached workspace can reopen
+PASS 40: Artifact tampering is rejected
+PASS 41: Idle worker shutdown returns without a queue loop
+PASS WP4: 41 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Storage.Database.pas(830) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(834) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+DPH.Storage.Database.pas(838) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(14) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(54) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Knowledge.dpr(55) Hint: H2077 Value assigned to 'Revision' never used
+tests\tests\DPH.Tests.Knowledge.dpr(29) Hint: H2077 Value assigned to 'Entity' never used
+5222 lines, 1.09 seconds, 9164688 bytes code, 344336 bytes data.
+PASS 1: Fixture generation publishes
+PASS 2: Anonymous authorship is rejected
+PASS 3: New rule remains pending explicit review
+PASS 4: Rule links to stable semantic identity
+PASS 5: First authored revision retained
+PASS 6: Separate project review flag is set
+PASS 7: Anonymous reviewer is rejected
+PASS 8: Explicit named review verifies human content
+PASS 9: Reviewer attribution persists
+PASS 10: Verification appends rather than overwrites history
+PASS 11: Resolved review queue clears its own flag
+PASS 12: Stale editor revision cannot overwrite reviewed content
+PASS 13: Authored edit reopens human review
+PASS 14: Old source generation cannot approve changed inputs
+PASS 15: Changed source generation publishes
+PASS 16: Parser publication never approves human explanation
+PASS 17: Rescan retains authored text
+PASS 18: Rescan preserves all human revisions
+PASS 19: Configuration change invalidates review without source-byte change
+PASS 20: Controlled rename publishes a distinct identity
+PASS 21: Missing or renamed entity cannot inherit verified knowledge
+PASS 22: Historical link is not reassigned to a renamed method
+PASS 23: Obsolete knowledge can be retired with history
+PASS 24: Retirement resolves the pending task
+PASS 25: FMX knowledge list shows curated records
+PASS 26: Editor loads selected authored revision
+PASS 27: Inspector exposes prior reviewer attribution
+PASS 28: Pending filter excludes resolved retired knowledge
+PASS 29: Background knowledge refresh preserves unsaved edits
+PASS 30: Close cannot silently discard authored text
+PASS 31: Displayed unsaved edit cannot approve a different persisted revision
+PASS 32: Explicit discard clears the edit
+PASS 33: Knowledge edits preserve SQLite integrity
+PASS 34: Backup/restore retains full immutable review history
+PASS WP5: 34 checks

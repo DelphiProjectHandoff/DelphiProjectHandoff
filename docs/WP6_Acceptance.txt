@@ -1,0 +1,48 @@
+WP6 Publishing and AI handoff
+Authorized by the owner's explicit WP4-WP7 pre-approval through completion.
+Pre-change backup: D:\DPH Backups\WP6_PreChange_20261010_211856
+Verified 3,538 files / 1,558,124,304 bytes before WP6 changes.
+
+Implemented one revision-aware canonical documentation model, offline HTML,
+local search/internal links/print CSS, full and selected-object task bundles,
+JSONL indexes, evidence references, coverage, source/configuration fingerprints,
+hash validation, default sensitive/external exclusions, credential redaction,
+editable engineering/user DOCX exports and optional LibreOffice PDF conversion.
+Export destinations must be new and outside selected source. Owner AGENTS.md,
+source snapshots and generated agent instructions are not included. Unsaved
+knowledge blocks publishing. Source changes invalidate export records.
+
+Preview uses an explicit executable-folder WebView2 loader and activates Edge
+on request. Navigation permits the local index and internal anchors only.
+All application controls remain design-time FMX resources. Switching projects
+clears prior views before a new database identity can be used, including failure.
+
+Translation adapter contract protects identifiers/paths/SQL, caches exact prose
+and revision/locale/provider identity, and requires named review. The current
+translation cache is session-local. Atlas remains unconfigured; no live provider
+or external translation/AI calls. Offline GTranslate region is disabled pending
+the separately required confidentiality/provider decision.
+
+Validation: 54 publishing checks PASS; FMX baseline PASS; 46 storage checks PASS;
+41 workspace checks PASS; 34 knowledge checks PASS. See wp6-build.log and
+wp6-regression.log. Full and task exports validate; tampering, stale expected
+fingerprint, source-tree output, existing destination and unsafe navigation
+are rejected. Optional PDF tool produced 5-page engineering and 4-page user
+fixture companions, updating cached editable TOC results and bundle checksums.
+
+DPH guides: docs/guides/DPH_Engineering_Guide.docx (9 pages) and
+DPH_User_Guide.docx (8 pages), with matching PDFs in docs/pdf. Rendered through
+LibreOffice; all pages inspected for readability, wrapping, headings and TOC.
+Title borders removed after visual review. Source hash appendix identifies the
+actual implementation. No Microsoft Word was used.
+
+AT-15/AC-22 publishing safeguards exercised on controlled fixtures. This is not
+a claim that arbitrary confidential secrets can always be detected: explicit
+exclusions and disclosure review remain necessary. Unsigned checksum indexes
+provide integrity relative to the index, not author authenticity. Unavailable
+runtime/business procedures and conservative semantic gaps remain explicit.
+Actual WebView2 rendering, relocation, large-corpus performance and independent
+first-time-programmer acceptance are WP7 checks, not claimed passed here.
+
+Next: already-authorized WP7 hardening, pinned reference integration, measured
+performance, portability, negative cases, packaging and acceptance accounting.

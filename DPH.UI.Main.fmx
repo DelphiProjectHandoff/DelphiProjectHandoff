@@ -2,6 +2,8 @@ object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
+Constraints.MinWidth = 1100
+Constraints.MinHeight = 700
   Fill.Color = claWhite
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -436,6 +438,55 @@ OnChange = KnowledgeEdited
 end
 end
 end
+object PublishTab: TTabItem
+Text = 'Publish'
+object PublishToolbar: TLayout
+Align = Top
+Height = 80
+object PublishScopeCombo: TComboBox
+Position.X = 4
+Position.Y = 4
+Width = 190
+Height = 28
+Items.Strings = ('Full project' 'Selected object and context')
+ItemIndex = 0
+end
+object PublishExclusionsEdit: TEdit
+Position.X = 200
+Position.Y = 4
+Width = 380
+Height = 28
+TextPrompt = 'Exclude relative files or folders; separated'
+end
+object PublishButton: TButton
+Position.X = 4
+Position.Y = 42
+Width = 180
+Text = 'Export HTML guides and AI bundle'
+OnClick = PublishClick
+end
+object PreviewButton: TButton
+Position.X = 200
+Position.Y = 42
+Width = 150
+Enabled = False
+Text = 'Preview offline HTML'
+OnClick = PreviewClick
+end
+end
+object PublishMemo: TMemo
+Align = Top
+Height = 140
+ReadOnly = True
+end
+object PublishBrowser: TWebBrowser
+Align = Client
+Visible = False
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = BrowserShouldLoad
+end
+end
 end
 object GraphNodeStyle: TRectangle
 Visible = False
@@ -474,6 +525,10 @@ object DatabaseDialog: TSaveDialog
 DefaultExt = 'dphdb'
 Filter = 'DPH knowledge database|*.dphdb'
 Title = 'Save knowledge database outside the analyzed source folder'
+end
+object ExportDialog: TSaveDialog
+Title = 'Choose a new export folder name outside the analyzed source'
+Filter = 'Handoff folder name|*.*'
 end
 object PollTimer: TTimer
 Interval = 100

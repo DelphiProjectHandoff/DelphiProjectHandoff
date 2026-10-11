@@ -24,7 +24,7 @@ type
     property Document: TJSONObject read FDocument;
   end;
 implementation
-uses System.StrUtils, System.IOUtils, System.Hash;
+uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils;
 
 class function TDPHWorkspaceView.SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): string;
 begin Result:=THashSHA2.GetHashString(AConfig+#0+APlatform+#0+String.Join(#0,ADefines)+#1+String.Join(#0,AExternalRoots)); end;
@@ -34,6 +34,7 @@ class function TDPHWorkspaceView.Capture(AScan: TDPHScan; AGraph: TDPHSemanticGr
 var A: TJSONArray; Value: string;
 begin
   Result:=TJSONObject.Create; Result.AddPair('workspace_schema',TJSONNumber.Create(1));
+  Result.AddPair('captured_utc',DateToISO8601(TTimeZone.Local.ToUniversalTime(Now),True));
   Result.AddPair('generation_id',TJSONNumber.Create(AGeneration)); Result.AddPair('entry',ExtractFileName(AEntry));
   Result.AddPair('root',AScan.Inventory.Root); Result.AddPair('configuration',AConfig); Result.AddPair('platform',APlatform);
   Result.AddPair('configuration_identity',AScan.Inventory.ConfigurationIdentity);
