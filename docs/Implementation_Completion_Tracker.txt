@@ -248,7 +248,15 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     owner AGENTS is never copied. Provenance/index consistency is validated.
     Eight new publishing checks pass (94 total); app/form build passes. Exact target
     toolchain, prerequisites and procedures remain unknown without reviewed input.
-6.6-6.7 Pending: bundle-validation UI and offline source navigation.
+6.6 Implemented: design-time Validate bundle page, explicit trusted expected
+    fingerprint, use-opened-capture command, root-manifest picker, default stale
+    rejection and clearly qualified opt-in historical/partial inspection. Validation
+    runs in the worker without requiring an open database and reports integrity,
+    canonical provenance, indexes and evidence consistency separately from approval.
+    Eight native/worker checks added (126 workspace total); app/form build passes.
+    Valid, stale, wrong-fingerprint and tampered bundles are exercised. Native
+    report rendering is inspected; integrity does not establish author identity.
+6.7 Pending: offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
 

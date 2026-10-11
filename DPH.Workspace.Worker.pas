@@ -18,6 +18,7 @@ type
     ExportDirectory: string;
     Seeds,Exclusions: TArray<string>;
     IncludeAgentInstructions: Boolean;
+    AllowStaleBundle: Boolean;
   end;
   TDPHWorkspaceResponse = class
   public
@@ -36,6 +37,7 @@ type
     Observations: TJSONArray;
     Translations: TJSONArray;
     TranslationRevision: Int64;
+    ValidationReport: string;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -112,6 +114,18 @@ begin
           LifecycleResponse:=TDPHWorkspaceResponse.Create;
           LifecycleResponse.RestoredDatabase:=Request.ExportDirectory;
           LifecycleResponse.MessageText:='Backup restored to a new database; opening the verified copy';
+          if FResponses.PushItem(LifecycleResponse)<>wrSignaled then LifecycleResponse.Free;
+          Continue;
+        end;
+        if Request.Command='validate_bundle' then begin
+          TDPHPublisher.Validate(Request.ExportDirectory,Request.Title,not Request.AllowStaleBundle);
+          LifecycleResponse:=TDPHWorkspaceResponse.Create;
+          LifecycleResponse.ValidationReport:='PASS: bundle filenames, SHA256 values, canonical provenance, technical indexes and evidence references agree with the supplied capture fingerprint.'+sLineBreak+
+            'Expected fingerprint: '+Request.Title+sLineBreak+'Bundle: '+Request.ExportDirectory+sLineBreak;
+          if Request.AllowStaleBundle then LifecycleResponse.ValidationReport:=LifecycleResponse.ValidationReport+
+            'Historical/partial inspection enabled. This result does not establish current source, complete analysis or reviewed procedures.'+sLineBreak;
+          LifecycleResponse.ValidationReport:=LifecycleResponse.ValidationReport+'Integrity is relative to the supplied trusted fingerprint and manifest; it is not author authentication or permission to execute the project.';
+          LifecycleResponse.MessageText:='Bundle validation passed. Read the report and any historical/partial qualification.';
           if FResponses.PushItem(LifecycleResponse)<>wrSignaled then LifecycleResponse.Free;
           Continue;
         end;

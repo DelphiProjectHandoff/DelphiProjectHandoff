@@ -19,7 +19,7 @@ var Root,Work,Fixture,Path,Key,ComponentKey,Kind,FilterText,QuestionID: string; 
     View: TDPHWorkspaceView; Rows,RichLinks,Questions: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
     Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation,TargetNote,LinkNote,TargetRevision,LinkRevision,AnswerID,AnswerRevision: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
     Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
-    Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
+    Before,After,RootKey,ValidationReportText: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
     NativeStore: TDPHKnowledgeStore; TranslationCache: TDPHTranslationCache; TranslationProvider: IDPHTranslationProvider;
     TranslationNote,TranslationRevision: Int64; TranslationRequest: TDPHWorkspaceRequest;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -332,6 +332,39 @@ begin
             TranslationRequest.Body:=TPath.Combine(Root,'samples\translation\DPH.fr.sample.json'); Worker.Submit(TranslationRequest); Response:=WaitResponse;
             try Check(not Response.Failed and (Response.Translations<>nil) and (Response.TranslationRevision=TranslationRevision),
               'Background worker loads the exact revision translation through the DAT adapter and persistent cache'); finally Response.Free; end;
+            TranslationRequest:=Request; TranslationRequest.Command:='publish'; TranslationRequest.GenerationID:=Generation;
+            TranslationRequest.ExportDirectory:=TPath.Combine(Work,'validation-bundle'); TranslationRequest.Audience:='all';
+            Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(not Response.Failed and (Response.ExportDirectory<>''),'Background publisher creates a fixture bundle for native validation'); finally Response.Free; end;
+            TranslationRequest:=Default(TDPHWorkspaceRequest); TranslationRequest.Command:='validate_bundle';
+            TranslationRequest.ExportDirectory:=TPath.Combine(Work,'validation-bundle'); TranslationRequest.Title:=View.Document.GetValue<string>('semantics.input_fingerprint');
+            TranslationRequest.AllowStaleBundle:=True; Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(not Response.Failed and Response.ValidationReport.Contains('Historical/partial inspection enabled'),
+              'Standalone background bundle validation works without opening a database and qualifies historical inspection');
+              ValidationReportText:=Response.ValidationReport; Form.ValidationMemo.Text:=ValidationReportText;
+            finally Response.Free; end;
+            Form.ValidateBundleClick(Form.ValidationUseCaptureButton);
+            Check(Form.ValidationFingerprintEdit.Text=View.Document.GetValue<string>('semantics.input_fingerprint'),
+              'Native validation explicitly copies expected identity from the opened capture');
+            Form.WorkspacePageCombo.ItemIndex:=Form.WorkspacePageCombo.Items.IndexOf('Validate bundle'); Form.WorkspacePageChange(Form.WorkspacePageCombo);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.ValidationTab) and not Form.ValidationAllowStale.IsChecked and Form.ValidationMemo.ReadOnly,
+              'Native validation is reachable, defaults to current-only and displays read-only reports');
+            Form.ValidationMemo.Text:=ValidationReportText;
+            Form.ValidationAllowStale.IsChecked:=True;
+            Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
+            try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
+              Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-bundle-validation-native.png'));
+            finally Bitmap.Free; end;
+            TranslationRequest.AllowStaleBundle:=False; Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(Response.Failed,'Default bundle validation rejects a partial/stale capture'); finally Response.Free; end;
+            TranslationRequest.AllowStaleBundle:=True; TranslationRequest.Title:=StringOfChar('0',64); Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(Response.Failed,'Background validation rejects a different expected fingerprint'); finally Response.Free; end;
+            TranslationRequest.Title:=View.Document.GetValue<string>('semantics.input_fingerprint');
+            TFile.AppendAllText(TPath.Combine(Work,'validation-bundle\indexes\symbols.jsonl'),'tamper',TEncoding.UTF8);
+            Worker.Submit(TranslationRequest); Response:=WaitResponse;
+            try Check(Response.Failed,'Background validation rejects changed bundle bytes'); finally Response.Free; end;
+            Form.ValidationFingerprintEdit.Text:='invalid'; Form.ValidateBundleClick(Form.ValidationSelectButton);
+            Check(Form.ValidationMemo.Text.Contains('64-character'),'Native validation explains malformed expected fingerprints before file selection');
 
             Form.ScreenshotInspectClick(nil);
             Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;

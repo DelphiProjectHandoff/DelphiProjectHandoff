@@ -60,6 +60,14 @@ type
     PublishScopeCombo: TComboBox;
     PublishAudienceCombo: TComboBox;
     PublishAgentInstructions: TCheckBox;
+    ValidationTab: TTabItem;
+    ValidationPurpose,ValidationFingerprintLabel: TLabel;
+    ValidationToolbar: THorzScrollBox;
+    ValidationFingerprintEdit: TEdit;
+    ValidationSelectButton,ValidationUseCaptureButton: TButton;
+    ValidationAllowStale: TCheckBox;
+    ValidationMemo: TMemo;
+    ValidationDialog: TOpenDialog;
     PublishExclusionsEdit: TEdit;
     PublishButton,PreviewButton: TButton;
     PublishMemo: TMemo;
@@ -156,6 +164,7 @@ type
     TranslationDialog,TerminologyDialog: TOpenDialog;
     procedure TranslationClick(Sender: TObject);
     procedure TranslationSelectionClick(Sender: TObject);
+    procedure ValidateBundleClick(Sender: TObject);
     procedure QuestionsClick(Sender: TObject);
     procedure QuestionSelectionClick(Sender: TObject);
     procedure ObservationsClick(Sender: TObject);
@@ -633,6 +642,8 @@ begin
       LoadView(R.Document); R.Document:=nil;
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
+    if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
+    if R.Failed and (FPendingCommand='validate_bundle') then ValidationMemo.Text:='FAILED: '+R.MessageText+sLineBreak+'The bundle has not passed validation. Correct the reported mismatch before using it.';
     if R.Failed then begin
       FPendingEntry:=''; FPendingDatabase:='';
       if FView=nil then HelpClick(nil);
@@ -1036,6 +1047,25 @@ begin
     if Request.Editor='' then begin StatusLabel.Text:='Enter the named translation reviewer first.'; Exit; end;
   end;
   FWorker.Submit(Request); FBusy:=True;
+end;
+procedure TDPHMainForm.ValidateBundleClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Fingerprint: string; Character: Char;
+begin
+  if FBusy then Exit;
+  if Sender=ValidationUseCaptureButton then begin
+    if FView=nil then begin ValidationMemo.Text:='Open a trusted project capture first, or enter its separately retained expected fingerprint.'; Exit; end;
+    ValidationFingerprintEdit.Text:=FView.Document.GetValue<string>('semantics.input_fingerprint');
+    ValidationMemo.Text:='Expected fingerprint copied from the opened capture. Select the bundle manifest to validate it against this identity.'; Exit;
+  end;
+  Fingerprint:=LowerCase(Trim(ValidationFingerprintEdit.Text));
+  if Length(Fingerprint)<>64 then begin ValidationMemo.Text:='Enter the separately trusted 64-character capture fingerprint, or click Use opened capture fingerprint.'; Exit; end;
+  for Character in Fingerprint do if not CharInSet(Character,['0'..'9','a'..'f']) then begin ValidationMemo.Text:='The expected fingerprint must contain exactly 64 hexadecimal characters.'; Exit; end;
+  if not ValidationDialog.Execute then Exit;
+  if not SameText(ExtractFileName(ValidationDialog.FileName),'manifest.json') then begin ValidationMemo.Text:='Select manifest.json in the root of the intended handoff bundle.'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='validate_bundle'; Request.ExportDirectory:=ExtractFileDir(ValidationDialog.FileName);
+  Request.Title:=Fingerprint; Request.AllowStaleBundle:=ValidationAllowStale.IsChecked;
+  FWorker.Submit(Request); FBusy:=True; FPendingCommand:=Request.Command;
+  ValidationMemo.Text:='Checking bundle integrity and source identity in the background...';
 end;
 procedure TDPHMainForm.ObservationsClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Row: TJSONObject;

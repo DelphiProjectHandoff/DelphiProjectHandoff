@@ -352,6 +352,23 @@ audience, task seeds, capture time, toolchain unknowns and disclosure limitation
 indexes/configuration.jsonl holds actual analysis selection; indexes/files.jsonl
 holds source inventory. A VCS commit and exact target compiler are explicitly
 unrecorded unless separately supplied; the capture fingerprint is not a Git SHA.
+
+Validate a handoff inside DPH
+1. Choose Validate bundle in the top-right page selector. An open database is
+   optional. Validation does not compile, execute or modify the selected program.
+2. Paste the expected 64-character input fingerprint retained from a trusted
+   capture. Alternatively, open the trusted project database first, return here
+   and click Use opened capture fingerprint. A fingerprint found only inside an
+   untrusted bundle cannot establish its origin.
+3. Click Select manifest and validate bundle. Choose manifest.json in the root
+   of the intended handoff folder. Wait for the background check to finish.
+4. Read PASS or FAILED in the report. Names, hashes, canonical identity, technical
+   indexes, source ranges and evidence links must agree. A failure is not approval
+   to ignore the difference; investigate the stated reason.
+5. Stale/partial bundles are rejected by default. For deliberate historical or
+   incomplete inspection only, check Allow historical/partial inspection and
+   select the same manifest again. A qualified PASS still does not establish
+   current source, complete analysis, reviewed procedures or author identity.
 Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
 checks without native browser tests. Full build-learning.cmd additionally tests
 worker recovery and native WebView rendering (49 checks pass). Do not interpret

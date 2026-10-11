@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-11",
+  "workspace_checks_passed": 126,
+  "new_validation_checks": 8,
+  "app_and_fmx_binding_build": "passed",
+  "without_open_database": "passed",
+  "historical_partial_qualification": "passed",
+  "default_stale_rejection": "passed",
+  "wrong_expected_fingerprint_rejection": "passed",
+  "tampered_artifact_rejection": "passed",
+  "native_render": "completion-bundle-validation-native.png",
+  "native_render_visually_inspected": true,
+  "human_acceptance": "pending"
+}

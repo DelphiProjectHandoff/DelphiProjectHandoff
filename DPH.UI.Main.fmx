@@ -42,6 +42,7 @@ Items.Strings = (
 'Author questions'
 'Runtime observations'
 'Translations'
+'Validate bundle'
 'Publish')
 OnChange = WorkspacePageChange
 end
@@ -1414,7 +1415,7 @@ object TranslationPurpose: TLabel
 Align = Top
 Height = 86
 WordWrap = True
-Text = 'First select a saved section in Knowledge. Enter the source and target locale matching your DAT pack, then select the local language pack. DPH translates prose offline; code, SQL, paths and identifiers remain protected. Missing entries keep the original text and cannot be approved. Optional terminology uses exact prose-to-prose JSON entries. Refresh saved translations after reopening the database. Review the source section before approving its translation.'
+Text = 'In Knowledge, select a saved section. Here, enter the pack locales and select its local DAT JSON file. Translation is offline. Missing phrases retain source text. Review the source before approving its translation. Refresh retrieves saved translations after reopening.'
 end
 object TranslationToolbar: THorzScrollBox
 Align = Top
@@ -1516,6 +1517,64 @@ ReadOnly = True
 WordWrap = True
 StyledSettings = []
 TextSettings.Font.Size = 14
+end
+end
+object ValidationTab: TTabItem
+Text = 'Validate bundle'
+object ValidationPurpose: TLabel
+Align = Top
+Height = 96
+WordWrap = True
+Text = 'Enter a fingerprint retained from a trusted capture, then select the bundle root manifest.json. Do not trust a fingerprint solely because it appears inside the bundle. Validation checks integrity and evidence references; it does not execute the project or grant approval.'
+end
+object ValidationToolbar: THorzScrollBox
+Align = Top
+Height = 140
+object ValidationFingerprintLabel: TLabel
+Position.X = 4
+Width = 680
+Height = 20
+Text = 'Expected capture fingerprint (64 hexadecimal characters from a trusted source)'
+end
+object ValidationFingerprintEdit: TEdit
+Position.X = 4
+Position.Y = 24
+Width = 680
+Height = 28
+TextPrompt = 'Paste the separately trusted expected input fingerprint'
+end
+object ValidationUseCaptureButton: TButton
+Position.X = 4
+Position.Y = 62
+Width = 240
+Height = 28
+Text = 'Use opened capture fingerprint'
+OnClick = ValidateBundleClick
+end
+object ValidationSelectButton: TButton
+Position.X = 254
+Position.Y = 62
+Width = 240
+Height = 28
+Text = 'Select manifest and validate bundle'
+OnClick = ValidateBundleClick
+end
+object ValidationAllowStale: TCheckBox
+Position.X = 4
+Position.Y = 98
+Width = 680
+Height = 28
+Text = 'Allow historical/partial inspection (does not establish current or complete source)'
+IsChecked = False
+end
+end
+object ValidationMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 14
+Lines.Strings = ('1. Enter the separately retained expected input fingerprint, or click Use opened capture fingerprint after opening a trusted project database.' '2. Click Select manifest and validate bundle. Select manifest.json at the root of the intended bundle.' '3. Read PASS or FAILED and the reason. Stale/partial bundles are rejected by default.' '4. Enable historical/partial inspection only when deliberately inspecting an older or incomplete capture. This does not establish source currency, complete analysis, human review or author identity.')
 end
 end
 object PublishTab: TTabItem
@@ -1637,6 +1696,10 @@ end
 object ObservationDialog: TOpenDialog
 Filter = 'Saved UTF-8 observations|*.txt;*.log;*.json'
 Title = 'Select an existing saved observation (up to 256 KiB); no program will run'
+end
+object ValidationDialog: TOpenDialog
+Filter = 'Handoff manifest|manifest.json'
+Title = 'Select manifest.json in the handoff bundle root'
 end
 object TranslationDialog: TOpenDialog
 Filter = 'DAT language pack|*.json'
