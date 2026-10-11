@@ -1,0 +1,59 @@
+DPH WP3 acceptance record: semantics, flow and possible impact
+Last changed: 10 October 2026
+
+Status: implementation and validation complete; submitted for owner review.
+WP4 has not started and requires separate explicit approval.
+
+Authorization and backup
+The owner approved WP2 and explicitly approved continuing with WP3. The Windows desktop target remains in force. Global agents.md, the master specification and the handoff were read and understood; document instructions were distinguished from implementation authorization.
+
+Pre-change full backup: D:\DPH Backups\WP3_PreChange_20261010_201133.
+DPH_Backup_Verification.json records 3,077 verified files, including Git and ignored/reference files, verified at 2026-10-11T00:12:32.2752609Z before the first change. No post-phase disk backup was made. Before WP3 and again before commit, local main, origin/main and private/main matched the approved WP2 commit 29a14d83fbde69211615a6f8ee1dabf3448c698c.
+
+Delivered
+- Cross-unit symbol/type index, method declaration/implementation continuity, overload and lexical-scope identities, declared class/interface ancestry and explicit inherited-call resolution.
+- Direct calls, possible virtual/interface/procedural targets, unresolved calls/reads/writes, serialized form events, anonymous arguments and possible asynchronous scheduling boundaries.
+- Per-routine control flow for structured conditions and loops, return/raise/break/continue, source-linked finally paths and conservative exception handlers/opaque constructs.
+- Basic reads/writes, callback assignments, typed report-model/renderer relationships and conservative literal-SQL facts.
+- Conditional symbol variants, source/context fingerprints, evidence-bearing reverse references and bounded possible-change-impact traversal.
+- Same-generation semantic entity/evidence/relationship and normalized CFG persistence using the unchanged SQLite schema 2. Partial work retains the previous completed head; changed captures request reassessment.
+- An anonymous-procedure parser correction needed for the reference worker's local-variable declarations.
+
+Validation
+Final reproduction: elevated powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\validate-wp3.ps1.
+Compiler: RAD Studio 37.0.59082.6021, Win32 Debug. Application build and design-time FMX instantiation passed. The existing Windows-specific GetFinalPathNameByHandle warning remains expected for this Windows-targeted implementation; no new compiler warnings/hints remain.
+
+WP0: baseline build and FMX resource/component-binding smoke test passed.
+WP1: all 46 storage checks passed.
+WP2: all 68 acquisition/parser/storage/regression checks passed, including the exact golden syntax fixture. Historical WP2 result files were preserved by the no-report regression option.
+WP3: all 55 semantic and reference checks passed. They cover scope/prototype/overload identity; public/private visibility; virtual/interface/inherited dispatch; procedural-variable shadowing; anonymous/nested callbacks; serialized events; non-code false positives; unknown no-argument calls and reads; structured CFG and finally transfers; conservative case/exception matching; evidence-bearing bounded impact; source/context isolation; complete/partial/superseded head behavior; CFG byte/routine/generation guards; and full/incremental equality.
+
+Read-only proof: all 2,430 pinned reference files, 14 committed fixture files and three instruction files were SHA-256 checked before and after final validation: 2,447 unchanged inputs, zero changed inputs. Deliberate edit scenarios used isolated fixture copies under bin. Implementation-source hashes and compiler hash are recorded in wp3-input-validation.json.
+
+Reference demonstration
+Pinned VCL2FMXConverter v6.0.0 commit: e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d.
+The analyzed graph contains 4,909 symbols, 38,735 relationships and 19,386 CFG nodes. It resolves btnConvert.OnClick -> TfrmMain.btnConvertClick, identifies the possible asynchronous anonymous-worker boundary, and resolves that callback -> ConversionThreadProc -> TConverterEngine.Convert. The nested TThread.Queue callback remains a separate possible asynchronous boundary. The engine DryRunPreview condition is located in control flow. GenerateReport's typed model-to-renderer relationships remain inferred, with their actual source calls represented separately. Source ranges, hashes, derivation rules and certainty are recorded in wp3-reference-validation.json.
+
+The reference remains partial. Unavailable framework declarations, opaque syntax and unresolved accesses are not converted into verified runtime facts. The graph reaches its 10,000-record diagnostic limit; diagnostic_limit_reached is exposed in the full graph. Relationship records retain unresolved facts even after diagnostic-message retention reaches the cap. The large reference exceeds the bounded syntax cache budget and may use full-parse fallback; its full and incremental-request graph outputs are exactly equal. The small fixture separately proves actual cache reuse.
+
+WP3 gate mapping
+AT-04: procedure-inspector data is available through routine signatures, scoped parameters/locals, occurrence/source ranges and typed relationships. Inspector UI belongs to WP4.
+AT-05: event -> worker boundary -> callback -> conversion routine -> engine chain is demonstrated with explicit uncertainty.
+AT-06: structured CFG plus finally/exception uncertainty is validated. Diagram rendering belongs to WP4.
+AT-10: reverse references and bounded, evidence-linked possible impact are validated.
+AT-14: missing/opaque/unresolved/module-entry coverage stays partial; partial work cannot replace a complete head.
+Additional checks cover condition-context separation, unchanged source, and full/incremental graph equivalence.
+
+Limits and follow-on work
+The detailed API, evidence meanings, hard bounds and known gaps are in WP3_Semantic_Contract.txt. This is bounded static analysis, not a full Delphi compiler, alias/exception solver or runtime trace. Anonymous ordinal continuity is not rename proof. Advanced constructs retain conservative/partial treatment; module-entry executable code is diagnosed rather than synthesized into routines. Full semantic recomputation follows selected cached/new syntax; a persistent semantic delta engine is not claimed. Runtime instrumentation, FMX Explorer/viewers, curated notes/review, publishing and end-to-end hardening remain their separately approved packages.
+
+Review artifacts
+- docs\WP3_Semantic_Contract.txt
+- docs\wp3-validation.json
+- docs\wp3-reference-validation.json
+- docs\wp3-input-validation.json
+- docs\wp3-build.log
+Large diagnostic graphs and test databases are ignored under bin. The main FMX form and Object Inspector settings were unchanged. No Pascal class helpers were added.
+
+Change log
+WP2 approval recorded by the owner; WP3 implemented and validated. The corresponding Git commit contains only the intended WP3 domain units, integration, fixtures/tests/tools and this evidence. Pushes to both public origin and private remotes are authorized by the global directives and verified after commit.

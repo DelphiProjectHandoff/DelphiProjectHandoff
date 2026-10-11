@@ -23,6 +23,7 @@ type
     procedure ProjectXML(ASource: TDPHSource; ADepth: Integer);
     procedure Discover(ASource: TDPHSource; ADepth: Integer);
     function Allowed(const APath: string): Boolean;
+    function GetConfigurationIdentity: string;
   public
     Sources: TObjectDictionary<string,TDPHSource>;
     ProjectIR: TObjectDictionary<string,TDPHParseResult>;
@@ -38,11 +39,15 @@ type
     function CurrentManifest: TDPHManifest;
     function Revalidate: Boolean;
     property Root: string read FRoot;
+    property ConfigurationIdentity: string read GetConfigurationIdentity;
   end;
 implementation
 uses System.IOUtils, System.Classes, System.StrUtils, System.Variants,
   System.Generics.Defaults, Xml.XMLDoc, Xml.XMLIntf, Winapi.Windows,
   DPH.Parse.Lexer, DPH.Parse.Preprocessor;
+
+function TDPHInventory.GetConfigurationIdentity: string;
+begin Result:=FConfig+'/'+FPlatform; end;
 
 function TDPHInventory.Allowed(const APath: string): Boolean;
 var Boundary,Ancestor: string; Attributes: Cardinal;

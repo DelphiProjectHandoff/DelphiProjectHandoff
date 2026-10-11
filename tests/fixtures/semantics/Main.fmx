@@ -1,0 +1,5 @@
+object MainForm: TMain
+  object btnConvert: TButton
+    OnClick = Click
+  end
+end

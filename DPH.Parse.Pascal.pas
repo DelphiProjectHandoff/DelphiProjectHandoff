@@ -212,14 +212,14 @@ procedure TDPHPascalParser.Routine(AParent: Integer; APrototype: Boolean);
 var Start,Node,Depth,Before: Integer; Name,Kind: string; IsForward,Anonymous: Boolean;
 begin
   Start:=FPosition; Take('class'); Kind:=Current; Inc(FPosition); Name:='';
-  Anonymous:=IsToken('(') or IsToken('begin') or IsToken(':');
+  Anonymous:=MatchText(Current,['(','begin',':','var','const','type']);
   if not Anonymous then
     while (FTokens[FPosition].Kind=tkIdentifier) or MatchText(Current,['.','<','>',',']) do
     begin Name:=Name+FTokens[FPosition].Text; Inc(FPosition); end;
   if (FScope<>'') and not Name.Contains('.') and (Name<>'') then Name:=FScope+'.'+Name;
   if Anonymous then Kind:='anonymous_'+Kind else Kind:='routine_'+Kind;
   Node:=AddNode(Kind,Name,AParent,Start); Depth:=0;
-  while (FTokens[FPosition].Kind<>tkEOF) and not ((Depth=0) and (IsToken(';') or (Anonymous and IsToken('begin')))) do
+  while (FTokens[FPosition].Kind<>tkEOF) and not ((Depth=0) and (IsToken(';') or (Anonymous and MatchText(Current,['begin','var','const','type'])))) do
   begin if IsToken('(') then Inc(Depth) else if IsToken(')') then Dec(Depth); Inc(FPosition); end;
   if not Anonymous then Expect(';') else Take(';');
   Finish(Node);

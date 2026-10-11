@@ -1,0 +1,195 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  3756 lines, 0.58 seconds, 8157648 bytes code, 322980 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+48 lines, 0.31 seconds, 5812068 bytes code, 221000 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+1144 lines, 0.22 seconds, 3467988 bytes code, 148224 bytes data.
+Test database: C:\New Delphi Projects\Delphi Project Handoff\bin\wp1-tests-{6EA9A7C2-6CEF-4CBF-A7D1-FEDDC157A2DD}\project.dphdb
+SQLite version: 3.42.0; FTS5 compiled: True
+PASS WP1-01: fresh two-version migration and integrity
+PASS WP1-02: schema ledger version 2
+PASS WP1-03: second DPH writer is rejected
+PASS WP1-04: database cannot be created in selected source
+PASS WP1-05: observation sets separate dirty/stale flags
+PASS WP1-26: evidence outside captured bytes is rejected
+PASS WP1-27: mid-publication SQL fault rolls back both generation and head
+PASS WP1-06: coherent generation published atomically
+PASS WP1-07: head and exact-input flags updated
+PASS WP1-08: observed change rejects old captured generation
+PASS WP1-09: old head survives; manual review is pending
+PASS WP1-10: revalidation mismatch rejects publish
+PASS WP1-11: cross-generation evidence rejected by foreign key
+PASS WP1-12: fresh captured generation publishes
+PASS WP1-13: reparse preserves note and pending human review
+PASS WP1-14: database rejects invalid mutation
+PASS WP1-15: database rejects invalid mutation
+PASS WP1-16: database rejects invalid mutation
+PASS WP1-17: manual reassessment has its own flag
+PASS WP1-18: failure retains previous published head
+PASS WP1-19: abandoned generation recovers with diagnostic
+PASS WP1-34: opening cached data does not start a new analysis
+PASS WP1-20: configuration change supersedes capture
+PASS WP1-21: deleted source retains entity/knowledge history
+PASS WP1-22: consistent SQLite backup produced
+PASS WP1-23: backup restores with intact head
+PASS WP1-24: newer incompatible database rejected
+PASS WP1-28: incomplete captured input cannot replace completed head
+PASS WP1-29: forced process termination recovers prior committed state
+PASS WP1-30: failed second migration rolls back DDL and ledger to version 1
+PASS WP1-31: version 1 database upgrades successfully after repair
+PASS WP1-44: existing manual knowledge survives schema 1 to 2 upgrade
+PASS WP1-45: pre-migration backup retains version 1 and existing notes
+PASS WP1-32: modified applied migration checksum is rejected
+PASS WP1-33: manifest path cannot traverse outside project
+PASS WP1-35: explicit local WAL configuration publishes
+PASS WP1-36: WAL reader retains consistent snapshot while writer publishes
+PASS WP1-37: reader sees new generation after releasing snapshot
+PASS WP1-38: unchanged source revision reused across generations
+PASS WP1-39: worker commands queue to owner; direct cross-thread writes rejected
+PASS WP1-40: busy writer times out safely and succeeds after lock release
+PASS WP1-42: expanded file manifest publishes
+PASS WP1-46: explicit partial analyzer coverage cannot clear stale state
+PASS WP1-43: only changed files are flagged for incremental reassessment
+PASS WP1-41: graceful store shutdown drains accepted write commands
+PASS WP1-25: selected fixture source bytes unchanged
+PASS WP1-SUITE
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+2981 lines, 0.25 seconds, 3812952 bytes code, 148496 bytes data.
+PASS ENC01: UTF-8 BOM and multibyte offsets
+PASS ENC02: Line ending metadata retained
+PASS LEX01: Token starts after BOM
+PASS LEXRANGE3: Token byte range inside captured source
+PASS LEXRANGE7: Token byte range inside captured source
+PASS LEXRANGE8: Token byte range inside captured source
+PASS LEXRANGE12: Token byte range inside captured source
+PASS LEXRANGE13: Token byte range inside captured source
+PASS LEXRANGE14: Token byte range inside captured source
+PASS LEXRANGE19: Token byte range inside captured source
+PASS LEXRANGE21: Token byte range inside captured source
+PASS LEXRANGE24: Token byte range inside captured source
+PASS LEXRANGE25: Token byte range inside captured source
+PASS ENC03: UTF-16 LE byte mapping
+PASS ENC04: UTF-16 BE round trip
+PASS ENC05: Malformed UTF-8 never silently treated as ANSI
+PASS ENC06: Explicit legacy code page round trips
+PASS ENC07: Supplementary Unicode scalar byte range
+PASS COND01: Supported project expression
+PASS COND02: Compiler symbols require explicit known value
+PASS COND03: Conditional recursion is bounded
+PASS PAS01: Declaration and implementation stay separate
+PASS PAS02: Generic type structural discovery
+PASS PAS03: Nested routines and anonymous callback syntax
+PASS PAS04: Assembler stays opaque and partial
+PASS PAS05: Malformed source yields diagnostics and partial IR
+PASS COND04: Unknown branches and conditional definitions remain uncertain
+PASS LEX02: Comments, whitespace and escaped strings preserved
+PASS LEX03: Malformed binary numeric literal is diagnosed
+PASS PAS06: Package terminator and dependency clauses
+PASS PAS07: Unsupported class storage syntax cannot be mistaken for a routine
+PASS FORM01: Direct binary form parser requires no component classes
+PASS FORM02: Truncated binary form is partial
+PASS FORM03: Inherited text form and binary property range
+FIXTURE IMPORT_NOT_EXECUTED: Build imports are not executed or acquired
+PASS INV01: Golden inventory file count
+PASS INV02: Golden narrow project has complete syntax coverage
+PASS INV03: Golden hierarchy and event binding
+PASS INV04: Overload prototypes and implementations
+PASS INV06: Published Pascal property name retained
+PASS GOLD01: Exact versioned golden IR including ranges, manifests and diagnostics
+PASS COND05: Release and Debug select distinct known branches
+PASS INV05: All captured source hashes remain unchanged
+PASS INC01: Incremental parse reuse equals clean full IR and diagnostics
+PASS STORE01: Complete syntax generation publishes atomically
+PASS STORE02: Mid-analysis source edit keeps the previous head and requests reassessment
+PASS INC02: Edited include incremental/full equivalence
+PASS STORE03: Syntax evidence and entity storage preserve integrity
+PASS STORE04: Changed include generation publishes after revalidation
+PASS STORE05: Shifted source publishes valid new ranges
+PASS STORE06: Syntax entity identities survive source offset shifts
+PASS STORE07: Manual note retained across parser generations
+PASS SAFE01: Traversal outside selected root is excluded
+PASS SAFE02: Project DTD rejected before XML parsing
+PASS SAFE03: Include cycles are bounded and diagnosed
+PASS SAFE04: Build targets remain passive and missing references visible
+PASS SAFE05: Explicit external root uses traversal-free canonical manifest
+PASS SAFE06: Unprovided path macro cannot collapse into an unintended filename
+PASS INV07: Project-group member graph parsed without executing its targets
+PASS SAFE07: Project graph cycle terminates
+PASS INV08: Explicit project search paths, include paths and unit scopes retained during parsing
+PASS SAFE08: Oversized input rejected before token allocation
+PASS REF01: Pinned reference FMX acquired
+PASS REF02: Pinned form hierarchy and event values extracted
+PASS REF03: Pinned reference MainForm acquired
+PASS REF04: btnConvertClick declaration and implementation ranges found
+PASS REF05: btnConvert event names btnConvertClick; semantic resolution reserved for WP3
+PASS REF06: Unavailable framework dependencies and unsupported syntax visibly partial
+PASS REF07: Reference captured bytes unchanged after analysis
+PASS ALL: 68 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+tests\DPH.Tests.Semantics.dpr(114) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+3978 lines, 0.39 seconds, 3997980 bytes code, 148508 bytes data.
+PASS SYM01: Method prototype and implementation share one identity
+PASS SYM02: Overload identities retain parameter types
+PASS SYM03: Cross-unit class and interface ancestry
+PASS CALL01: Literal argument types select separate overloads
+PASS CALL02: Public routine resolved through uses
+PASS CALL03: Implementation-private cross-unit routine stays unresolved
+PASS CALL04: Virtual receiver is a possible dynamic target
+PASS CALL05: Interface dispatch is a possible dynamic target
+PASS CALL07: Explicit inherited invocation resolves to the ancestor implementation
+PASS UNCERTAIN01: Unknown overload argument retains multiple possible targets
+PASS UNCERTAIN02: Known incompatible argument does not become a confirmed call
+PASS UNCERTAIN04: Unknown parameterless invocation remains an explicit unresolved call
+PASS UNCERTAIN05: Unknown read on an assignment right-hand side remains explicit
+PASS CALL06: Local procedural variable shadows a public routine
+PASS ASYNC01: Anonymous local-var callback passed and possibly scheduled
+PASS ASYNC02: Callback body uses its own local lexical scope
+PASS ASYNC03: Nested queue callback retains a second asynchronous boundary
+PASS EVENT01: Serialized event binds to its form method
+PASS NEG01: Comment containing a fake call produces no semantic call
+PASS CFG_SCOPE: CFG edges never enter another routine or callback
+PASS CFG01: Branch, loop, break and continue transfers
+PASS CFG02: Return and raise traverse finally before their destinations
+PASS CFG03: Loop break crosses its finally body before leaving the loop
+PASS CFG04: Typed exception matching remains a possible handler edge
+PASS CFG05: Case dispatch is explicitly conservative and keeps analysis partial
+PASS IMPACT01: Reverse references include direct calls and callbacks
+PASS IMPACT02: Bounded reverse traversal reaches possible dependents
+PASS IMPACT04: Each non-seed impact result links its derivation evidence
+PASS IMPACT03: Impact budget also bounds multiple seeds
+PASS DEF01: Def-use facts coexist with explicit unresolved coverage
+PASS PROVENANCE: Every relation has a captured source range and hash
+PASS INCR01: Full and cached syntax produce identical complete semantic graphs
+PASS VAR01: Same source under changed defines has distinct conditional semantic identities
+PASS STORE_CONTEXT: Same byte manifest cannot mix semantic facts from different defines
+PASS STORE01: Partial semantic generation cannot become published head
+PASS STORE02: Semantic entities, evidence, relations and normalized CFG satisfy SQLite constraints
+PASS SAFE01: Captured semantic fixture bytes remain unchanged
+PASS IDENTITY01: Whitespace shift preserves symbol identity while changing provenance
+PASS STORE03: Complete empty fixture publishes atomically
+PASS STORE04: Published head points to the matching semantic generation
+PASS STORE05: Partial reassessment retains the previous complete head
+PASS STORE_CFG01: CFG API rejects an edge between different routines
+PASS STORE_CFG02: CFG API rejects an out-of-capture byte range
+PASS STORE_CFG03: CFG API rejects a routine without a version in this generation
+PASS STORE06: Mid-analysis source change supersedes semantics and requests reassessment
+PASS STORE07: Negative generation and CFG checks preserve database integrity
+PASS UNCERTAIN03: Executable module entry outside routine coverage is explicitly partial
+PASS REF01: Reference btnConvert.OnClick resolves to btnConvertClick
+PASS REF02: Reference anonymous worker has an explicit possible asynchronous boundary
+PASS REF03: Reference callback resolves through ConversionThreadProc to Engine.Convert
+PASS REF04: DryRunPreview condition is located in engine control flow
+PASS REF05: Report model-to-renderer relationship has typed static evidence
+PASS REF06: Missing framework and opaque constructs keep reference analysis partial
+PASS REF07: Full and incremental reference graphs are exactly equivalent, including bounded cache fallback
+PASS REF08: Reference capture rehashes unchanged after semantics
+PASS WP3: 55 checks; evidence: C:\New Delphi Projects\Delphi Project Handoff\bin\wp3-tests-{AAC2DFA5-E6D0-4E67-9C63-F9A4E2A79A0C}

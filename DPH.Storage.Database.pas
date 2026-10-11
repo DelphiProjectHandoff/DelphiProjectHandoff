@@ -48,6 +48,8 @@ type
       AKind, APayload, AVerification: string): Int64;
     procedure AddRelationship(AGenerationID, AFromEntityID, AToEntityID,
       AEvidenceID: Int64; const AKind, AResolution, ACondition: string);
+    function AddFlowNode(AGenerationID,ARoutineEntityID: Int64; const AKind,ARangeJSON,AExpression: string): Int64;
+    procedure AddFlowEdge(AGenerationID,AFromNode,AToNode: Int64; const AKind,AResolution: string);
     function PublishGeneration(AGenerationID: Int64; const ARevalidatedFiles: TDPHManifest;
       const ACompletenessJSON: string; AAnalysisComplete: Boolean): Boolean;
     procedure FailGeneration(AGenerationID: Int64; const AReason: string);
@@ -592,6 +594,37 @@ begin
   FConnection.ExecSQL('INSERT INTO relationships(project_id,generation_id,from_entity_id,to_entity_id,'+
     'relation_kind,resolution_status,evidence_id,condition_variant) VALUES(1,:generation,:fromid,NULLIF(:toid,0),:kind,:resolution,:evidence,:condition)',
     [AGenerationID,AFromEntityID,AToEntityID,AKind,AResolution,AEvidenceID,ACondition]);
+end;
+
+function TDPHKnowledgeStore.AddFlowNode(AGenerationID,ARoutineEntityID: Int64; const AKind,ARangeJSON,AExpression: string): Int64;
+var VersionID: Variant;
+begin
+  RequireRunning(AGenerationID);
+  if Scalar('SELECT json_valid(:range)',[ARangeJSON])<>1 then raise EDPHStorage.Create('Invalid CFG range JSON');
+  if Scalar('SELECT count(*) FROM generation_files gf JOIN source_files sf ON sf.file_id=gf.file_id '+
+    'JOIN file_revisions fr ON fr.file_revision_id=gf.file_revision_id WHERE gf.generation_id=:generation '+
+    'AND sf.canonical_relpath=json_extract(:range,''$.source'') AND json_type(:range,''$.start'')=''integer'' '+
+    'AND json_type(:range,''$.end'')=''integer'' AND json_extract(:range,''$.start'')>=0 '+
+    'AND json_extract(:range,''$.end'')>=json_extract(:range,''$.start'') AND json_extract(:range,''$.end'')<=fr.size_bytes',
+    [AGenerationID,ARangeJSON])<>1 then
+    raise EDPHStorage.Create('CFG range is outside captured source bytes');
+  VersionID:=Scalar('SELECT entity_version_id FROM entity_versions WHERE entity_id=:entity AND generation_id=:generation',[ARoutineEntityID,AGenerationID]);
+  if VarIsNull(VersionID) then raise EDPHStorage.Create('CFG routine does not belong to generation');
+  FConnection.ExecSQL('INSERT INTO control_flow_nodes(routine_version_id,generation_id,node_kind,source_range_json,expression_ref) '+
+    'VALUES(:routine,:generation,:kind,:range,:expression)',[VersionID,AGenerationID,AKind,ARangeJSON,AExpression]);
+  Result:=Scalar('SELECT last_insert_rowid()',[]);
+end;
+
+procedure TDPHKnowledgeStore.AddFlowEdge(AGenerationID,AFromNode,AToNode: Int64; const AKind,AResolution: string);
+begin
+  RequireRunning(AGenerationID);
+  if Scalar('SELECT count(*) FROM control_flow_nodes f JOIN control_flow_nodes t ON t.cfg_node_id=:toid '+
+    'WHERE f.cfg_node_id=:fromid AND f.generation_id=:generation AND t.generation_id=f.generation_id '+
+    'AND t.routine_version_id=f.routine_version_id',[AToNode,AFromNode,AGenerationID])<>1 then
+    raise EDPHStorage.Create('CFG edge must stay within its routine and generation');
+  if not MatchText(AResolution,['confirmed_static','possible_dynamic','inferred','unresolved']) then raise EDPHStorage.Create('Invalid CFG resolution');
+  FConnection.ExecSQL('INSERT INTO control_flow_edges(generation_id,from_cfg_node_id,to_cfg_node_id,edge_kind,condition_ref) '+
+    'VALUES(:generation,:fromid,:toid,:kind,:resolution)',[AGenerationID,AFromNode,AToNode,AKind,AResolution]);
 end;
 
 function TDPHKnowledgeStore.PublishGeneration(AGenerationID: Int64;

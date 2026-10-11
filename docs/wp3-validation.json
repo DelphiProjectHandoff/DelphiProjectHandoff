@@ -1,0 +1,281 @@
+﻿{
+    "analyzer": "DPH-WP3-1",
+    "checks_passed": 55,
+    "checks": [
+        {
+            "id": "SYM01",
+            "result": "pass",
+            "message": "Method prototype and implementation share one identity"
+        },
+        {
+            "id": "SYM02",
+            "result": "pass",
+            "message": "Overload identities retain parameter types"
+        },
+        {
+            "id": "SYM03",
+            "result": "pass",
+            "message": "Cross-unit class and interface ancestry"
+        },
+        {
+            "id": "CALL01",
+            "result": "pass",
+            "message": "Literal argument types select separate overloads"
+        },
+        {
+            "id": "CALL02",
+            "result": "pass",
+            "message": "Public routine resolved through uses"
+        },
+        {
+            "id": "CALL03",
+            "result": "pass",
+            "message": "Implementation-private cross-unit routine stays unresolved"
+        },
+        {
+            "id": "CALL04",
+            "result": "pass",
+            "message": "Virtual receiver is a possible dynamic target"
+        },
+        {
+            "id": "CALL05",
+            "result": "pass",
+            "message": "Interface dispatch is a possible dynamic target"
+        },
+        {
+            "id": "CALL07",
+            "result": "pass",
+            "message": "Explicit inherited invocation resolves to the ancestor implementation"
+        },
+        {
+            "id": "UNCERTAIN01",
+            "result": "pass",
+            "message": "Unknown overload argument retains multiple possible targets"
+        },
+        {
+            "id": "UNCERTAIN02",
+            "result": "pass",
+            "message": "Known incompatible argument does not become a confirmed call"
+        },
+        {
+            "id": "UNCERTAIN04",
+            "result": "pass",
+            "message": "Unknown parameterless invocation remains an explicit unresolved call"
+        },
+        {
+            "id": "UNCERTAIN05",
+            "result": "pass",
+            "message": "Unknown read on an assignment right-hand side remains explicit"
+        },
+        {
+            "id": "CALL06",
+            "result": "pass",
+            "message": "Local procedural variable shadows a public routine"
+        },
+        {
+            "id": "ASYNC01",
+            "result": "pass",
+            "message": "Anonymous local-var callback passed and possibly scheduled"
+        },
+        {
+            "id": "ASYNC02",
+            "result": "pass",
+            "message": "Callback body uses its own local lexical scope"
+        },
+        {
+            "id": "ASYNC03",
+            "result": "pass",
+            "message": "Nested queue callback retains a second asynchronous boundary"
+        },
+        {
+            "id": "EVENT01",
+            "result": "pass",
+            "message": "Serialized event binds to its form method"
+        },
+        {
+            "id": "NEG01",
+            "result": "pass",
+            "message": "Comment containing a fake call produces no semantic call"
+        },
+        {
+            "id": "CFG_SCOPE",
+            "result": "pass",
+            "message": "CFG edges never enter another routine or callback"
+        },
+        {
+            "id": "CFG01",
+            "result": "pass",
+            "message": "Branch, loop, break and continue transfers"
+        },
+        {
+            "id": "CFG02",
+            "result": "pass",
+            "message": "Return and raise traverse finally before their destinations"
+        },
+        {
+            "id": "CFG03",
+            "result": "pass",
+            "message": "Loop break crosses its finally body before leaving the loop"
+        },
+        {
+            "id": "CFG04",
+            "result": "pass",
+            "message": "Typed exception matching remains a possible handler edge"
+        },
+        {
+            "id": "CFG05",
+            "result": "pass",
+            "message": "Case dispatch is explicitly conservative and keeps analysis partial"
+        },
+        {
+            "id": "IMPACT01",
+            "result": "pass",
+            "message": "Reverse references include direct calls and callbacks"
+        },
+        {
+            "id": "IMPACT02",
+            "result": "pass",
+            "message": "Bounded reverse traversal reaches possible dependents"
+        },
+        {
+            "id": "IMPACT04",
+            "result": "pass",
+            "message": "Each non-seed impact result links its derivation evidence"
+        },
+        {
+            "id": "IMPACT03",
+            "result": "pass",
+            "message": "Impact budget also bounds multiple seeds"
+        },
+        {
+            "id": "DEF01",
+            "result": "pass",
+            "message": "Def-use facts coexist with explicit unresolved coverage"
+        },
+        {
+            "id": "PROVENANCE",
+            "result": "pass",
+            "message": "Every relation has a captured source range and hash"
+        },
+        {
+            "id": "INCR01",
+            "result": "pass",
+            "message": "Full and cached syntax produce identical complete semantic graphs"
+        },
+        {
+            "id": "VAR01",
+            "result": "pass",
+            "message": "Same source under changed defines has distinct conditional semantic identities"
+        },
+        {
+            "id": "STORE_CONTEXT",
+            "result": "pass",
+            "message": "Same byte manifest cannot mix semantic facts from different defines"
+        },
+        {
+            "id": "STORE01",
+            "result": "pass",
+            "message": "Partial semantic generation cannot become published head"
+        },
+        {
+            "id": "STORE02",
+            "result": "pass",
+            "message": "Semantic entities, evidence, relations and normalized CFG satisfy SQLite constraints"
+        },
+        {
+            "id": "SAFE01",
+            "result": "pass",
+            "message": "Captured semantic fixture bytes remain unchanged"
+        },
+        {
+            "id": "IDENTITY01",
+            "result": "pass",
+            "message": "Whitespace shift preserves symbol identity while changing provenance"
+        },
+        {
+            "id": "STORE03",
+            "result": "pass",
+            "message": "Complete empty fixture publishes atomically"
+        },
+        {
+            "id": "STORE04",
+            "result": "pass",
+            "message": "Published head points to the matching semantic generation"
+        },
+        {
+            "id": "STORE05",
+            "result": "pass",
+            "message": "Partial reassessment retains the previous complete head"
+        },
+        {
+            "id": "STORE_CFG01",
+            "result": "pass",
+            "message": "CFG API rejects an edge between different routines"
+        },
+        {
+            "id": "STORE_CFG02",
+            "result": "pass",
+            "message": "CFG API rejects an out-of-capture byte range"
+        },
+        {
+            "id": "STORE_CFG03",
+            "result": "pass",
+            "message": "CFG API rejects a routine without a version in this generation"
+        },
+        {
+            "id": "STORE06",
+            "result": "pass",
+            "message": "Mid-analysis source change supersedes semantics and requests reassessment"
+        },
+        {
+            "id": "STORE07",
+            "result": "pass",
+            "message": "Negative generation and CFG checks preserve database integrity"
+        },
+        {
+            "id": "UNCERTAIN03",
+            "result": "pass",
+            "message": "Executable module entry outside routine coverage is explicitly partial"
+        },
+        {
+            "id": "REF01",
+            "result": "pass",
+            "message": "Reference btnConvert.OnClick resolves to btnConvertClick"
+        },
+        {
+            "id": "REF02",
+            "result": "pass",
+            "message": "Reference anonymous worker has an explicit possible asynchronous boundary"
+        },
+        {
+            "id": "REF03",
+            "result": "pass",
+            "message": "Reference callback resolves through ConversionThreadProc to Engine.Convert"
+        },
+        {
+            "id": "REF04",
+            "result": "pass",
+            "message": "DryRunPreview condition is located in engine control flow"
+        },
+        {
+            "id": "REF05",
+            "result": "pass",
+            "message": "Report model-to-renderer relationship has typed static evidence"
+        },
+        {
+            "id": "REF06",
+            "result": "pass",
+            "message": "Missing framework and opaque constructs keep reference analysis partial"
+        },
+        {
+            "id": "REF07",
+            "result": "pass",
+            "message": "Full and incremental reference graphs are exactly equivalent, including bounded cache fallback"
+        },
+        {
+            "id": "REF08",
+            "result": "pass",
+            "message": "Reference capture rehashes unchanged after semantics"
+        }
+    ]
+}

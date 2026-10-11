@@ -1,0 +1,116 @@
+﻿{
+    "reference_commit": "e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d",
+    "input_fingerprint": "85af5e4f63dbf775e6b1dc70b03c53cf33d91f1cb8c5d203118d0b6c7b3490d3",
+    "complete": false,
+    "symbol_count": 4909,
+    "relationship_count": 38735,
+    "cfg_nodes": 19386,
+    "diagnostics": 10000,
+    "demonstration_trace": [
+        {
+            "from": "mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "to": "mainform.tfrmmain.btnconvertclick.$callback0|anonymous|():|debug/win32;mswindows;win32;debug|scope=mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "kind": "owns",
+            "resolution": "confirmed_static",
+            "rule": "lexical_declaration",
+            "range": {
+                "source": "mainform.pas",
+                "start": 75880,
+                "end": 76695,
+                "line": 2079,
+                "column": 5
+            },
+            "source_hash": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4"
+        },
+        {
+            "from": "converter.core.engine.tconverterengine.generatereport|routine|():|debug/win32;mswindows;win32;debug",
+            "to": "converter.core.engine.tconverterengine.generatereport.reportmodel|local||debug/win32;mswindows;win32;debug|scope=converter.core.engine.tconverterengine.generatereport|routine|():|debug/win32;mswindows;win32;debug",
+            "kind": "renders",
+            "resolution": "inferred",
+            "rule": "typed_model_passed_to_resolved_renderer",
+            "range": {
+                "source": "converter.core.engine.pas",
+                "start": 103840,
+                "end": 103874,
+                "line": 2883,
+                "column": 5
+            },
+            "source_hash": "073a64a09113e0a3dc41c1dbe8e723a436de7e1135d2079634cc37a63fa1552b"
+        },
+        {
+            "from": "mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "to": "mainform.tfrmmain.btnconvertclick.$callback0|anonymous|():|debug/win32;mswindows;win32;debug|scope=mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "kind": "passes_callback",
+            "resolution": "confirmed_static",
+            "rule": "anonymous_argument",
+            "range": {
+                "source": "mainform.pas",
+                "start": 75880,
+                "end": 76695,
+                "line": 2079,
+                "column": 5
+            },
+            "source_hash": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4"
+        },
+        {
+            "from": "mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "to": "mainform.tfrmmain.btnconvertclick.$callback0|anonymous|():|debug/win32;mswindows;win32;debug|scope=mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "kind": "schedules",
+            "resolution": "possible_dynamic",
+            "rule": "recognized_async_api_spelling_not_runtime_observation",
+            "range": {
+                "source": "mainform.pas",
+                "start": 75844,
+                "end": 75873,
+                "line": 2078,
+                "column": 24
+            },
+            "source_hash": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4"
+        },
+        {
+            "from": "mainform.tfrmmain.conversionthreadproc|routine|(string;string;integer;boolean;boolean;boolean;boolean;boolean;boolean;tconversioncompletionsnapshot):string|debug/win32;mswindows;win32;debug",
+            "to": "converter.core.engine.tconverterengine.convert|routine|(tconversioncontext):boolean|debug/win32;mswindows;win32;debug",
+            "kind": "calls",
+            "resolution": "confirmed_static",
+            "rule": "lexical_scope_declared_receiver_and_signature",
+            "range": {
+                "source": "mainform.pas",
+                "start": 78460,
+                "end": 78474,
+                "line": 2157,
+                "column": 9
+            },
+            "source_hash": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4"
+        },
+        {
+            "from": "mainform.tfrmmain.btnconvertclick.$callback0|anonymous|():|debug/win32;mswindows;win32;debug|scope=mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "to": "mainform.tfrmmain.conversionthreadproc|routine|(string;string;integer;boolean;boolean;boolean;boolean;boolean;boolean;tconversioncompletionsnapshot):string|debug/win32;mswindows;win32;debug",
+            "kind": "calls",
+            "resolution": "confirmed_static",
+            "rule": "lexical_scope_declared_receiver_and_signature",
+            "range": {
+                "source": "mainform.pas",
+                "start": 76161,
+                "end": 76181,
+                "line": 2088,
+                "column": 23
+            },
+            "source_hash": "05a8f9f33cadb88804577b81654cde2ad83e694a471617f813d083f2153a31c4"
+        },
+        {
+            "from": "mainform.fmx.frmmain.rootlayout.herocard.btnconvert.onclick|event||debug/win32",
+            "to": "mainform.tfrmmain.btnconvertclick|routine|(tobject):|debug/win32;mswindows;win32;debug",
+            "kind": "binds",
+            "resolution": "confirmed_static",
+            "rule": "serialized_event_own_form_method",
+            "range": {
+                "source": "mainform.fmx",
+                "start": 24974,
+                "end": 25007,
+                "line": 420,
+                "column": 1
+            },
+            "source_hash": "4641a33a481ab0412695624277d741639f2869310f86afb2ca1934b2b7b1799a"
+        }
+    ]
+}

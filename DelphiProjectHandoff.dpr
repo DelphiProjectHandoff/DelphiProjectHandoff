@@ -13,7 +13,11 @@ uses
   DPH.Parse.Pascal in 'DPH.Parse.Pascal.pas',
   DPH.Parse.Forms in 'DPH.Parse.Forms.pas',
   DPH.Project.Inventory in 'DPH.Project.Inventory.pas',
-  DPH.Project.Analysis in 'DPH.Project.Analysis.pas';
+  DPH.Project.Analysis in 'DPH.Project.Analysis.pas',
+  DPH.Analysis.Model in 'DPH.Analysis.Model.pas',
+  DPH.Analysis.Symbols in 'DPH.Analysis.Symbols.pas',
+  DPH.Analysis.Flow in 'DPH.Analysis.Flow.pas',
+  DPH.Analysis.Persistence in 'DPH.Analysis.Persistence.pas';
 
 begin
   Application.Initialize;

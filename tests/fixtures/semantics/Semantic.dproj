@@ -1,0 +1,1 @@
+<Project><PropertyGroup><MainSource>Semantic.dpr</MainSource></PropertyGroup><ItemGroup><DelphiCompile Include="Semantic.dpr"/><DCCReference Include="Worker.pas"/><DCCReference Include="Main.pas"/><DCCReference Include="Main.fmx"/></ItemGroup></Project>

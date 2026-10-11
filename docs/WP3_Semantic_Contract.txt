@@ -1,0 +1,53 @@
+DPH WP3 semantic analysis and impact contract
+Last changed: 10 October 2026
+
+Scope and authorization
+The owner approved WP2 and explicitly approved proceeding with WP3. The verified pre-change backup is D:\DPH Backups\WP3_PreChange_20261010_201133 (3,077 files). No post-change disk backup is made. The immutable specification and handoff remain inputs; their future work packages are not current implementation authorization.
+
+The application links four domain units: DPH.Analysis.Model, Symbols, Flow and Persistence. Its FMX form and Object Inspector settings remain unchanged. No runtime UI construction, Pascal class helpers, monitoring, analyzed-project build or analyzed binary execution is introduced. WP4 provides the interactive Explorer and diagram presentation; WP3 supplies their data. Full Engineering/User Guides and publishing remain outside this package.
+
+API and identity
+TDPHAnalyzer.Scan captures and parses an explicitly selected project using the WP2 boundary and compiler-condition rules. TDPHSemanticAnalyzer.Analyze consumes that immutable scan. It returns a caller-owned TDPHSemanticGraph with symbols, typed relationships, per-routine CFG, diagnostics, completeness and original-byte ranges.
+
+Symbols use case-insensitive qualified names, kinds, normalized parameter/return signatures and the file's configuration/platform/defines variant. Locals, parameters, nested routines and anonymous callbacks also include their containing routine's identity. Matching prototypes and implementations share an identity and preserve their separate occurrence ranges. A source offset shift preserves identity. Signature/name changes produce different identities; rename/move continuity is not guessed. Anonymous identities use their ordinal within their lexical owner, so inserting/reordering callbacks can change those identities. A later review workflow must not treat ordinal continuity as proof of human intent.
+
+The manifest fingerprint identifies captured bytes. A separate context fingerprint includes the syntax analyzer version, selected root, configuration/platform and each file's define set. Persistence rejects a graph from another capture or context before staging. Configuration variants coexist through distinct symbol identities and generation configuration IDs. Unknown conditional branches remain partial according to WP2; no universal claim is made from one selected variant.
+
+Resolution and uncertainty
+The resolver indexes own-unit and imported public declarations, local/parameter scopes, declared receiver types, ancestors and interfaces. Method prototypes supply virtual/override and visibility information. Literal/declared argument types and argument counts narrow overload candidates. A local procedural variable shadows a same-named global routine. Explicit named inherited calls select an ancestor rather than the override.
+
+confirmed_static means a source relationship established by the stated lexical/type/signature rule. It is neither runtime execution nor human approval of business meaning. Virtual/interface targets and unresolved procedural variables are possible_dynamic. Multiple compatible overloads remain possible targets. Missing declarations and incompatible known arguments are unresolved. Typed report-model arguments passed to resolved class renderer methods yield inferred renders edges, with the actual call kept separately.
+
+Serialized event bindings identify a matching method of the owning form class in its associated Pascal file. This establishes the source binding; it does not establish that the binding survives runtime reassignment. Anonymous arguments create passes_callback edges. Recognized TThread/TTask API spellings also create possible scheduling edges. Framework calls themselves remain unresolved when their declarations are unavailable. Callback bodies have separate routine/CFG identities and are never inserted into the caller's synchronous CFG.
+
+Reads/writes refer to resolved lexical storage locations. Property access is inferred because accessors may execute code. Assignments of routine references and intrinsic Inc/Dec updates are recorded. These are basic def-use and side-effect indicators, not SSA, alias analysis or a proof of values, purity, ownership or race freedom. Static SQL is retained only for a single string-literal argument to an ExecSQL-spelled call; API semantics and SQL execution remain unverified. Comments and strings are not searched for executable calls.
+
+Control flow
+Each routine with a parsed body has entry, normal-exit and exception-exit nodes. Structured if/else, while/for, repeat/until, Exit, raise, break and continue transfers are represented. for is an abstract iteration decision; the model does not prove iteration counts or perform arithmetic evaluation. Potential expression/statement exceptions have possible edges.
+
+try/finally creates separate source-linked copies of the finalizer for normal, return, exceptional, break and continue destinations. A pending transfer passes through its copy before reaching its destination. A new transfer from inside a finalizer supersedes the pending transfer. Typed except matching uses possible handler alternatives and a possible unhandled edge; precise exception class propagation is not proved. case, with, goto, assembler and opaque constructs produce conservative alternatives and a partial-coverage diagnostic. Their diagrams must retain that uncertainty rather than display an exact execution trace. Unit initialization/finalization and program-entry executable statements are not currently promoted to synthesized routines; they require explicit partial-coverage diagnostics when present.
+
+Provenance and storage
+Every semantic relationship records its derivation rule, resolution, condition, captured source hash and original-byte range. Symbols retain occurrence ranges. CFG nodes retain source ranges/hashes and routine identities; CFG edges refer to nodes in that routine. The in-memory graph has no database generation ID until it is staged.
+
+TDPHSemanticPersistence.Stage first stages the scan with analyzer DPH-WP3-1, then writes semantic entity versions, relationship evidence and normalized control_flow_nodes/control_flow_edges in that same running generation. Evidence is verified only in the limited source-derivation sense for confirmed_static edges; inferred/dynamic/unresolved edges are not promoted. SQLite schema remains version 2; existing migration files are unchanged. CFG APIs validate capture ranges, generation ownership and same-routine edges. Existing append-only and foreign-key rules remain enforced.
+
+TDPHSemanticPersistence.Publish requires both syntax and semantic completeness, then rehashes inputs through the existing atomic publication path. Partial/failed/superseded work cannot replace a completed head. Source modification requests reassessment. A graph may still be inspected as partial evidence even when it cannot become the complete published head.
+
+Reverse references and possible impact
+ReverseReferences returns referencing relationships with their rule, range, hash and edge index. Impact performs bounded breadth-first reverse traversal with cycle suppression. Results identify distance and the relationship that led to each possible dependent, including resolution and source evidence. The result includes both input/context fingerprints, truncation and an explicit runtime_impact_proved=false marker. Unresolved edges without targets cannot be traversed and are explicitly reported as omitted. Ownership/import/type edges make the result deliberately broad; this is a possible-change-impact set, not a minimal or guaranteed runtime impact set.
+
+Hard limits and known gaps
+- WP2 acquisition/parser limits remain in force: 16 MiB per source, 128 MiB inventory, 10,000 files, 128 syntax nesting, 250,000 tokens and 100,000 IR nodes.
+- Semantic graph: 50,000 symbols, 200,000 relationships, 100,000 CFG nodes, 300,000 CFG edges; ancestor walk 32; CFG recursion 128. Identity/name/signature limits are 16,384/8,192/8,192 characters. Exceeding a semantic limit fails analysis rather than publishing truncated complete facts.
+- Diagnostics retain up to 10,000 records; diagnostic_limit_reached exposes a reached cap. Unresolved relationship records remain in the graph even when repeated diagnostic messages cannot all be retained.
+- Impact defaults to depth 32 and 10,000 nodes; caller limits must be depth 0..128 and nodes 1..100,000. Multiple seeds share the same node budget.
+- The WP2 syntax cache retains at most 64 entries and 250,000 token/node weight. An oversized working set may fall back to full parsing with zero cache hits. Semantics are rebuilt from the selected parsed snapshot; no persistent semantic delta engine is claimed.
+- No full Delphi compiler type checker: generic specialization, implicit conversion ranking, aliases, extension/class helpers, advanced record/operator semantics, indexed storage and arbitrary expression typing may remain unresolved. Opaque syntax and unavailable dependencies keep coverage partial. Exception classes, aliasing and dynamic values are not solved.
+- Interface visibility is honored for imported declarations and private/protected method prototypes are excluded from cross-unit calls. Complex visibility, class-private field access and deep property chains are not a compiler-level accessibility proof. Unsupported access must be presented with the model's partial status.
+- No runtime_observed or human-approved facts are manufactured. Performance and adversarial hardening remain WP7 gates.
+
+Validation and reproduction
+Run tools\validate-wp3.ps1 from an elevated PowerShell with ExecutionPolicy Bypass. It builds the application, checks design-time FMX instantiation, runs WP1/WP2 regressions and WP3 semantic tests, and verifies all pinned reference files, committed fixtures and instruction files before/after. Test-generated files and deliberate source-edit scenarios use isolated copies under bin. WP2 historical reports are preserved using the regression suite's no-report option.
+
+Machine-readable evidence: docs\wp3-validation.json, wp3-reference-validation.json and wp3-input-validation.json; build transcript: docs\wp3-build.log. Large full/cached graphs and test databases remain ignored under bin; no converter source is copied into DPH implementation units.

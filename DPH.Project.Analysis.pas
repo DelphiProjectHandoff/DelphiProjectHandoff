@@ -13,8 +13,9 @@ type
     constructor Create(AInventory: TDPHInventory);
     destructor Destroy; override;
     function AsJSON: TJSONObject;
-    function Stage(AStore: TDPHKnowledgeStore; AConfiguration: Int64): Int64;
-    function Publish(AStore: TDPHKnowledgeStore; AGeneration: Int64): Boolean;
+    function ContextHash: string;
+    function Stage(AStore: TDPHKnowledgeStore; AConfiguration: Int64; const AAnalyzerVersion: string = DPHAnalyzerVersion): Int64;
+    function Publish(AStore: TDPHKnowledgeStore; AGeneration: Int64; AAdditionalComplete: Boolean = True): Boolean;
   end;
   TDPHAnalyzer = class
   private
@@ -71,13 +72,22 @@ begin
   end;
 end;
 
-function TDPHScan.Stage(AStore: TDPHKnowledgeStore; AConfiguration: Int64): Int64;
+function TDPHScan.ContextHash: string;
+var Item: TDPHManifestFile; Value: string; Defines: TArray<string>;
+begin
+  Value:=DPHAnalyzerVersion+'|'+Inventory.Root+'|'+Inventory.ConfigurationIdentity+'|'+TDPHKnowledgeStore.ManifestHash(Inventory.Manifest);
+  for Item in Inventory.Manifest do if Inventory.SourceDefines.TryGetValue(Item.RelativePath,Defines) then
+    Value:=Value+'|'+Item.RelativePath+'='+String.Join(';',Defines);
+  Result:=THashSHA2.GetHashString(Value);
+end;
+
+function TDPHScan.Stage(AStore: TDPHKnowledgeStore; AConfiguration: Int64; const AAnalyzerVersion: string): Int64;
 var Item: TDPHManifestFile; Parsed: TDPHParseResult; J: TJSONObject; D: TDPHDiagnostic;
     Node,ParentNode: TDPHIRNode; Key,Structure,Scope: string;
     Occurrences: TDictionary<string,Integer>; Ordinal,ParentIndex: Integer; Source: TDPHSource;
 begin
   AStore.ObserveManifest(Inventory.Manifest);
-  Result:=AStore.BeginGeneration(AConfiguration,DPHAnalyzerVersion,Inventory.Manifest);
+  Result:=AStore.BeginGeneration(AConfiguration,AAnalyzerVersion,Inventory.Manifest);
   Occurrences:=TDictionary<string,Integer>.Create;
   try
     try
@@ -119,7 +129,7 @@ begin
   finally Occurrences.Free; end;
 end;
 
-function TDPHScan.Publish(AStore: TDPHKnowledgeStore; AGeneration: Int64): Boolean;
+function TDPHScan.Publish(AStore: TDPHKnowledgeStore; AGeneration: Int64; AAdditionalComplete: Boolean): Boolean;
 var Revalidated: TDPHManifest;
 begin
   Revalidated:=Inventory.CurrentManifest;
@@ -131,7 +141,7 @@ begin
     AStore.RequestReassessment; Exit(False);
   end;
   Result:=AStore.PublishGeneration(AGeneration,Revalidated,
-    Format('{"ir_version":%d,"parsed_files":%d,"diagnostics":%d}',[DPHIRVersion,Results.Count,Inventory.Diagnostics.Count]),Complete);
+    Format('{"ir_version":%d,"parsed_files":%d,"diagnostics":%d}',[DPHIRVersion,Results.Count,Inventory.Diagnostics.Count]),Complete and AAdditionalComplete);
 end;
 
 constructor TDPHAnalyzer.Create;
