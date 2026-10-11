@@ -127,7 +127,15 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     focused semantic checks pass (131 total); two native command checks added.
     Runtime routing, dynamically loaded forms and unresolved factories remain
     qualified gaps rather than invented screen transitions.
-4.5-4.10 Pending: data graphs, graph
+4.5 Expanded: data projection traverses producers and consumers in both
+    directions, includes assignment inputs, formal-argument and candidate
+    function-result derivation, captures, SQL/resource configuration and output
+    artifacts. IDE-editable Project data command preserves inspected context;
+    graph toolbar scrolls on smaller windows. Context-sensitive alias/value
+    propagation and unknown call side effects remain qualified limitations.
+    Three focused data checks pass (134 semantic total); native command checks
+    added to workspace suite.
+4.6-4.10 Pending: graph
     collapse, screen modes, screenshot viewing, coverage dashboard and navigation
     continuity.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused

@@ -165,11 +165,12 @@ end;
 
 procedure DataDetailTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
-    WorkIndex,OutputIndex,InputIndex,SQLIndex,TableIndex: Integer; R: TDPHRelation; D: TDPHDiagnostic; Found: Boolean;
+    WorkIndex,OutputIndex,InputIndex,SQLIndex,TableIndex: Integer; R: TDPHRelation; D: TDPHDiagnostic; Found: Boolean; View: TDPHWorkspaceView; Projection: TJSONObject; V: TJSONValue;
 begin
   TFile.WriteAllText(TPath.Combine(Fixture,'DataCases.pas'),
-    'unit DataCases; interface procedure Work(Input:Integer); implementation '+
-    'procedure Work(Input:Integer); var Output:Integer; Query:TQuery; begin Output:=Input+1; '+
+    'unit DataCases; interface procedure Work(Input:Integer); function Convert(Value:Integer):Integer; implementation '+
+    'function Convert(Value:Integer):Integer; begin Result:=Value+1; end; '+
+    'procedure Work(Input:Integer); var Output:Integer; Query:TQuery; begin Output:=Input+1; Output:=Convert(Input); '+
     'Query.ExecSQL(''SELECT id,name FROM customers''); '+
     'Query.ExecSQL(''SELECT a.id FROM customers a JOIN orders b ON a.id=b.id''); '+
     'Query.ExecSQL(''UPDATE customers SET name=''''new'''' WHERE id=1''); '+
@@ -183,6 +184,13 @@ begin
       try
         WorkIndex:=Find(G,'DataCases.Work','*'); OutputIndex:=Find(G,'DataCases.Work.Output','*'); InputIndex:=Find(G,'DataCases.Work.Input','*');
         Check(Relation(G,OutputIndex,InputIndex,'derives_from','inferred'),'DATA01','Assignment output links to its parameter input without claiming a runtime value');
+        Check(Relation(G,Find(G,'DataCases.Convert.Value','*'),InputIndex,'derives_from','inferred'),'DATA03','Captured call argument links to its formal parameter with context uncertainty');
+        Check(Relation(G,OutputIndex,Find(G,'DataCases.Convert','*'),'derives_from','possible_dynamic'),'DATA04','Assignment links to its candidate function-result producer');
+        View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,G,1,TPath.Combine(Fixture,'DataCases.dpr'),'Debug','Win32',[],[]));
+        try Projection:=View.Graph('Data flow',G.Symbols[InputIndex].Key); try
+          Found:=False; for V in Projection.GetValue<TJSONArray>('nodes') do if V.GetValue<string>('id')=G.Symbols[OutputIndex].Key then Found:=True;
+          Check(Found,'DATA05','Input-focused data graph includes dependent output consumers');
+        finally Projection.Free; end; finally View.Free; end;
         SQLIndex:=Find(G,'DataCases.Work.$sql1','*'); TableIndex:=Find(G,'DataCases.Work.$sql1.customers','*');
         Check((SQLIndex>=0) and Relation(G,SQLIndex,TableIndex,'reads','inferred'),'SQL01','Simple literal SELECT identifies its sole table with schema qualification');
         Check(Relation(G,SQLIndex,Find(G,'DataCases.Work.$sql1.customers.name','*'),'reads','inferred'),'SQL02','Explicit SELECT projection identifies a column in the sole table');

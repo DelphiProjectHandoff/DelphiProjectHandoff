@@ -233,7 +233,7 @@ var Nodes,Edges,AllNodes,AllEdges: TJSONArray; V: TJSONValue; R,S,N: TJSONObject
     if (K='') or Seen.ContainsKey(K) then Exit;
     if Seen.Count>=ALimit then begin Truncated:=True; Exit; end;
     Seen.Add(K,True); Sym:=Symbol(K); Row:=TJSONObject.Create; Row.AddPair('id',K);
-    if Sym<>nil then begin Row.AddPair('label',Sym.GetValue<string>('name')); Row.AddPair('range',Sym.GetValue<TJSONObject>('range').Clone as TJSONObject); end
+    if Sym<>nil then begin Row.AddPair('label',Sym.GetValue<string>('name')); Row.AddPair('kind',Sym.GetValue<string>('kind')); Row.AddPair('type',Sym.GetValue<string>('type')); Row.AddPair('range',Sym.GetValue<TJSONObject>('range').Clone as TJSONObject); end
     else Row.AddPair('label',K); Nodes.AddElement(Row); Queue.Enqueue(K);
   end;
 begin
@@ -273,6 +273,10 @@ begin
               (R.GetValue<TJSONArray>('ir.nodes').Items[0].GetValue<Int64>('start')=N.GetValue<Int64>('range.start')) then AddSymbolNode(N.GetValue<string>('key'));
           end;
         end;
+      if (AKey='') and (AKind='Data flow') then
+        for V in S.GetValue<TJSONArray>('symbols') do begin N:=V as TJSONObject;
+          if MatchText(N.GetValue<string>('kind'),['parameter','local','field','property','variable','resource','definition','sql_statement','sql_table','sql_column','output_artifact']) then AddSymbolNode(N.GetValue<string>('key'));
+        end;
       if (AKey='') and (Nodes.Count=0) then for V in S.GetValue<TJSONArray>('symbols') do
       begin N:=V as TJSONObject; if N.GetValue<Boolean>('has_body') then begin AddSymbolNode(N.GetValue<string>('key')); Break; end; end;
       while Queue.Count>0 do
@@ -283,11 +287,12 @@ begin
           R:=V as TJSONObject; Kind:=R.GetValue<string>('kind'); FromKey:=R.GetValue<string>('from'); ToKey:=R.GetValue<string>('to','');
           if (AKind='Change impact') then begin if ToKey<>Key then Continue; end
           else if (AKind='Caller / callee') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
+          else if (AKind='Data flow') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
           else if (AKind='Form navigation') and MatchText(Kind,['represents','form_instance','component_field','binds']) then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
           else if FromKey<>Key then Continue;
           if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','prepares_callback','starts','dispatches','waits_for','requests_cancellation','signals','waits_for_signal','binds','enters','initializes','finalizes','creates']) then Continue;
           if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules','creates','assigned_to','mutates_property','assigns_callback','uses_type','represents','form_instance','component_field','shows_form','shows_modal_form','hides_form','closes_form']) then Continue;
-          if (AKind='Data flow') and not MatchText(Kind,['reads','writes','uses_type','renders','assigns_callback','captures','assigned_to','derives_from','configures','owns','static_sql','dynamic_sql']) then Continue;
+          if (AKind='Data flow') and not MatchText(Kind,['reads','writes','renders','captures','assigned_to','derives_from','configures','static_sql','dynamic_sql','mutates_property']) then Continue;
           AddSymbolNode(FromKey); AddSymbolNode(ToKey);
           if Seen.ContainsKey(FromKey) and Seen.ContainsKey(ToKey) then begin
             EdgeKey:=FromKey+#0+ToKey+#0+Kind+#0+R.GetValue<string>('range.source')+#0+R.GetValue<Int64>('range.start').ToString+#0+R.GetValue<string>('rule')+#0+R.GetValue<string>('condition');

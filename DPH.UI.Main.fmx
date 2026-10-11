@@ -661,9 +661,9 @@ end
 end
 object GraphTab: TTabItem
 Text = 'Graphs'
-object GraphToolbar: TLayout
+object GraphToolbar: THorzScrollBox
 Align = Top
-Height = 75
+Height = 96
 object GraphCombo: TComboBox
 Position.X = 4
 Position.Y = 4
@@ -695,6 +695,14 @@ Width = 130
 Height = 28
 Text = 'All forms'
 OnClick = AllFormsGraphClick
+end
+object AllDataGraphButton: TButton
+Position.X = 564
+Position.Y = 4
+Width = 130
+Height = 28
+Text = 'Project data'
+OnClick = AllDataGraphClick
 end
 object GraphLegend: TLabel
 Text = 'Static graph | blue: confirmed | orange dash: uncertain | click for evidence | bounded to 120 nodes'

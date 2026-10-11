@@ -9,12 +9,13 @@ type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
     CommandScroll: THorzScrollBox;
-    HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout,ScreenToolbar,GraphToolbar: TLayout;
+    HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout,ScreenToolbar: TLayout;
+    GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
-    WholeProgramGraphButton,AllFormsGraphButton,ExplorerExpandButton: TButton;
+    WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
     ExplorerList,RelationsList: TListBox;
     DetailsList: TListBox;
@@ -98,6 +99,7 @@ type
     procedure WorkspacePageChange(Sender: TObject);
     procedure WholeProgramGraphClick(Sender: TObject);
     procedure AllFormsGraphClick(Sender: TObject);
+    procedure AllDataGraphClick(Sender: TObject);
     procedure ProjectSearchClick(Sender: TObject);
     procedure ProjectSearchSelectionClick(Sender: TObject);
     procedure RetentionClick(Sender: TObject);
@@ -832,7 +834,15 @@ begin
   WorkspaceTabs.ActiveTab:=GraphTab;
   StatusLabel.Text:='Form navigation from captured forms and declared instances. Show/Hide/Close actions are static possibilities; runtime screens and order are unobserved.';
 end;
+procedure TDPHMainForm.AllDataGraphClick(Sender: TObject);
+begin
+  if FView=nil then Exit;
+  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Data flow'); FWholeGraph:=True; RefreshGraphics;
+  WorkspaceTabs.ActiveTab:=GraphTab;
+  StatusLabel.Text:='Project data: source input/output dependencies, resources, SQL and artifacts. Arrow labels retain their rules; runtime values and context are unverified.';
+end;
 procedure TDPHMainForm.RefreshGraphics;
+const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data flow');
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
@@ -842,7 +852,7 @@ begin
       FlowBrowser.Navigate('file://'+TPath.Combine(FFlowDirectory,'index.html'));
     except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML flow view unavailable; native graph retained: '+E.Message; end; end;
   end;
-  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],['Execution','Form navigation']) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'')
+  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'')
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected);
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
   else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);

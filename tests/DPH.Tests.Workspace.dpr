@@ -101,6 +101,9 @@ begin
             Form.AllFormsGraphClick(nil);
             Check((Form.GraphCombo.ItemIndex=Form.GraphCombo.Items.IndexOf('Form navigation')) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'All forms command selects the whole form navigation projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'All forms graph preserves the inspected object context');
+            Form.AllDataGraphClick(nil);
+            Check((Form.GraphCombo.ItemIndex=Form.GraphCombo.Items.IndexOf('Data flow')) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Project data command opens the whole captured data projection');
+            Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Project data projection preserves the inspected object context');
             Form.BookmarkClick(nil); Form.BookmarksClick(nil); Check(Form.ExplorerList.Items.Count=1,'Canonical selection can be bookmarked');
             for Kind in ['Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact'] do begin Form.GraphCombo.ItemIndex:=Form.GraphCombo.Items.IndexOf(Kind); Form.ViewChange(nil); end;
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;

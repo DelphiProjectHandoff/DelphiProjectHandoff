@@ -1,0 +1,220 @@
+Removed disposable validation outputs: 2
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(84): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  8567 lines, 1.06 seconds, 9482796 bytes code, 344256 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+8470 lines, 0.83 seconds, 9482856 bytes code, 344236 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+158 lines, 0.12 seconds, 1017016 bytes code, 44140 bytes data.
+PASS: Legacy last database migrates
+PASS: Multiple entries persist without case duplicates
+PASS: Last successful project persists
+PASS: Forget never deletes database contents
+PASS: Forgotten active entry is not reopened
+PASS: Missing database entries remain discoverable
+PASS: Atomic save leaves no temporary preferences
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+tests\DPH.Tests.Lifecycle.dpr(46) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(56) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(65) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(66) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(67) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(67) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(68) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(69) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(76) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(80) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(81) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Lifecycle.dpr(105) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+1609 lines, 0.20 seconds, 3961620 bytes code, 231440 bytes data.
+PASS 1: Captured coherent generation 1
+PASS 2: Captured coherent generation 2
+PASS 3: Captured coherent generation 3
+PASS 4: Captured coherent generation 4
+PASS 5: Captured coherent generation 5
+PASS 6: Captured coherent generation 6
+PASS 7: Preview accounts for all immutable generations
+PASS 8: Baseline, retained release and current head survive; three old views removed
+PASS 9: Retention never destroys generation provenance
+PASS 10: Authored knowledge remains intact
+PASS 11: Retention preserves SQLite and foreign-key integrity
+PASS 12: Invalid retention policy is rejected
+PASS 13: Repeated retention is idempotent
+PASS 14: Retention policy persists independently of its preview
+PASS 15: Missing identity produces a filtered same-kind proposal
+PASS 16: Identity continuity cannot approve itself without reviewer
+PASS 17: Stale knowledge revision cannot approve continuity
+PASS 18: Reviewed rename preserves authored content
+PASS 19: Identity approval does not approve knowledge content
+PASS 20: Reviewed replacement becomes active annotation link
+PASS 21: Continuity appends a revision instead of overwriting history
+PASS 22: Historical link does not reopen completed continuity work
+PASS 23: Reviewed continuity preserves relational integrity
+PASS 24: Indexed object search returns current canonical identity
+PASS 25: Full-text search matches authored note content
+PASS 26: Knowledge edits invalidate and refresh the search index
+PASS 27: Search never mixes retired identities into the current generation
+PASS 28: Search syntax is tokenized rather than executed as query operators
+PASS 29: Project backup includes a checksum manifest
+PASS 30: Backup refuses to overwrite an existing file
+PASS 31: Restore refuses to overwrite the active database
+PASS 32: Restored database passes SQLite integrity validation
+PASS 33: Restore preserves notes, continuity and complete review history
+PASS 34: Restore includes screenshot metadata and image data
+PASS 35: Damaged backup is rejected before creating destination
+PASS Lifecycle: 35 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(54) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(55) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(59) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(59) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(62) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+8605 lines, 0.86 seconds, 9501652 bytes code, 344504 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Component details distinguish serialized values from unknown defaults
+PASS 8: Routine details retain statement text and immutable source evidence
+PASS 9: Reverse references retain event evidence
+PASS 10: Collapsed hierarchy shows only ownership roots
+PASS 11: Expanding a module reveals its immediate owned objects
+PASS 12: Collapsing a branch restores root rows without changing the source model
+PASS 13: Hierarchy pagination is applied after branch visibility
+PASS 14: Execution graph is bounded
+PASS 15: Execution graph has static provenance
+PASS 16: Procedure CFG graph is bounded
+PASS 17: Procedure CFG graph has static provenance
+PASS 18: Caller / callee graph is bounded
+PASS 19: Caller / callee graph has static provenance
+PASS 20: Form navigation graph is bounded
+PASS 21: Form navigation graph has static provenance
+PASS 22: Data flow graph is bounded
+PASS 23: Data flow graph has static provenance
+PASS 24: Change impact graph is bounded
+PASS 25: Change impact graph has static provenance
+PASS 26: Design-time screen contains form and button
+PASS 27: Screen reconstruction never claims runtime capture
+PASS 28: FMX Explorer displays canonical cached objects
+PASS 29: IDE-editable expand button opens the selected Explorer branch
+PASS 30: Explorer branch collapse preserves other roots
+PASS 31: FMX choices come from captured project options
+PASS 32: Captured code page is visible in the source settings
+PASS 33: Explorer selection populates source-backed inspector
+PASS 34: Detached source view does not follow cached filesystem paths
+PASS 35: Selected routine populates IDE-editable statement/evidence rows
+PASS 36: Evidence pane labels certainty, rule and source hash
+PASS 37: Detached evidence command retains cached details without following filesystem paths
+PASS 38: Whole program command opens startup execution projection
+PASS 39: Whole program projection preserves the inspected object context
+PASS 40: All forms command selects the whole form navigation projection
+PASS 41: All forms graph preserves the inspected object context
+PASS 42: Project data command opens the whole captured data projection
+PASS 43: Project data projection preserves the inspected object context
+PASS 44: Canonical selection can be bookmarked
+PASS 45: Render screen mode Thumbnail
+PASS 46: Render screen mode Fit
+PASS 47: Render screen mode Native
+PASS 48: Render screen mode Zoom 200%
+PASS 49: Render screen mode Full screen
+PASS 50: Cached database opens without analysis
+PASS 51: Cached open verifies available source automatically
+PASS 52: Cached open preserves generation
+PASS 53: Fixture cached open completes within 5 seconds
+PASS 54: Cached document is delivered before background verification completes
+PASS 55: Unavailable source opens safely detached
+PASS 56: Unchanged connected check skips analysis
+PASS 57: Configuration change reassesses unchanged source bytes
+PASS 58: Source modification triggers background reassessment
+PASS 59: Controlled edit changes its input fingerprint
+PASS 60: Updated cached workspace can reopen
+PASS 61: Artifact tampering is rejected
+PASS 62: Idle worker shutdown returns without a queue loop
+PASS WP4: 62 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(14) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(54) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Knowledge.dpr(55) Hint: H2077 Value assigned to 'Revision' never used
+tests\tests\DPH.Tests.Knowledge.dpr(29) Hint: H2077 Value assigned to 'Entity' never used
+8523 lines, 0.88 seconds, 9493568 bytes code, 344360 bytes data.
+PASS 1: Fixture generation publishes
+PASS 2: Anonymous authorship is rejected
+PASS 3: New rule remains pending explicit review
+PASS 4: Rule links to stable semantic identity
+PASS 5: First authored revision retained
+PASS 6: Separate project review flag is set
+PASS 7: Anonymous reviewer is rejected
+PASS 8: Explicit named review verifies human content
+PASS 9: Reviewer attribution persists
+PASS 10: Verification appends rather than overwrites history
+PASS 11: Resolved review queue clears its own flag
+PASS 12: Stale editor revision cannot overwrite reviewed content
+PASS 13: Authored edit reopens human review
+PASS 14: Old source generation cannot approve changed inputs
+PASS 15: Changed source generation publishes
+PASS 16: Parser publication never approves human explanation
+PASS 17: Rescan retains authored text
+PASS 18: Rescan preserves all human revisions
+PASS 19: Configuration change invalidates review without source-byte change
+PASS 20: Controlled rename publishes a distinct identity
+PASS 21: Missing or renamed entity cannot inherit verified knowledge
+PASS 22: Historical link is not reassigned to a renamed method
+PASS 23: Obsolete knowledge can be retired with history
+PASS 24: Retirement resolves the pending task
+PASS 25: FMX knowledge list shows curated records
+PASS 26: Editor loads selected authored revision
+PASS 27: Inspector exposes prior reviewer attribution
+PASS 28: Pending filter excludes resolved retired knowledge
+PASS 29: Background knowledge refresh preserves unsaved edits
+PASS 30: Close cannot silently discard authored text
+PASS 31: Displayed unsaved edit cannot approve a different persisted revision
+PASS 32: Explicit discard clears the edit
+PASS 33: Knowledge edits preserve SQLite integrity
+PASS 34: Backup/restore retains full immutable review history
+PASS WP5: 34 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+8596 lines, 1.00 seconds, 9493024 bytes code, 344372 bytes data.
+PASS 1: Renamed and relocated project is recognized by GUID
+PASS 2: Renamed DPR is recognized by its program declaration
+PASS 3: Unrelated project with the same filename is allowed
+PASS 4: A project group containing DPH is recognized
+PASS 5: Actual DPH project is recognized
+PASS 6: Historical cache identifies self from captured GUID
+PASS 7: Save database dialog defaults to the app Databases folder
+PASS 8: Open cache dialog defaults to the same folder
+PASS 9: Default Databases folder exists
+PASS 10: Unrelated project attaches successfully despite matching filename
+PASS 11: Rejected self-project keeps the current workspace
+PASS 12: Rejected self-project keeps the selected object details
+PASS 13: Rejected self-project does not create a database
+PASS 14: DPR rejection also preserves the workspace
+PASS 15: Rejected self-cache keeps the current workspace
+PASS 16: Rejected self-cache keeps the selected object details
+PASS 17: An ordinary cache remains usable after rejected selections
+PASS 18: Identity checks leave selected source unchanged
+PASS Selection: 18 checks
+PASS 1: Startup does not load a self-analysis cache
+PASS 2: Rejected startup selection shows Getting started
+Removed disposable validation outputs: 4

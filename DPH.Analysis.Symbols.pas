@@ -61,7 +61,7 @@ type
     property RecomputedRoutines: Integer read FRecomputedRoutines;
   end;
 implementation
-uses System.Classes, System.StrUtils, System.Hash, DPH.Storage.Types,
+uses System.Classes, System.StrUtils, System.Hash, System.Math, DPH.Storage.Types,
   DPH.Storage.Database, DPH.Analysis.Flow, DPH.Analysis.Async, DPH.Analysis.SQL, DPH.Project.Inventory;
 
 constructor TDPHSemanticAnalyzer.Create;
@@ -948,6 +948,11 @@ begin
           if WithinWith and not Path.Contains('.') then Resolution:='possible_dynamic';
           if (S.Owner>=0) and SameText(FGraph.Symbols[S.Owner].TypeName,'interface') then Resolution:='possible_dynamic';
           FGraph.AddRelation(ARoutine,Target,'calls',Resolution,'lexical_scope_declared_receiver_and_signature',Path,L,Tokens[I].Condition);
+          for K:=0 to Min(Args.Count-1,High(S.ParameterNames)) do begin
+            InputSymbol:=ResolveValue(Args[K],ARoutine); InputIndex:=FindVariable(S.ParameterNames[K],Target);
+            if (InputSymbol>=0) and (InputIndex>=0) then
+              FGraph.AddRelation(InputIndex,InputSymbol,'derives_from','inferred','call_argument_binding_candidate_context_and_runtime_value_unverified',S.QualifiedName+'('+S.ParameterNames[K]+' := '+Args[K]+')',L,Tokens[I].Condition);
+          end;
           if MatchText(S.Name.Substring(LastDelimiter('.',S.Name)),['Render','RenderBody','Save']) and (Args.Count>0) then
           begin
             Variable:=ResolveValue(Args[0],ARoutine);
@@ -1007,6 +1012,11 @@ begin
             InputSymbol:=ResolveValue(InputPath,ARoutine);
             if (InputSymbol>=0) and not (WithinWith and not InputPath.Contains('.')) and MatchText(FGraph.Symbols[InputSymbol].Kind,['local','parameter','variable','field','property']) then
               FGraph.AddRelation(Variable,InputSymbol,'derives_from','inferred','lexical_assignment_input_not_reaching_definition_or_runtime_value',Path+' := ... '+InputPath,Tokens[InputIndex].Location,Tokens[I].Condition);
+            if (InputStop+1<ExpressionEnd) and (Tokens[InputStop+1].Text='(') then begin
+              Matches:=Candidates(InputPath,ARoutine);
+              for Target in Matches do if (FGraph.Symbols[Target].TypeName<>'') and (FGraph.Symbols[Target].Kind='routine') then
+                FGraph.AddRelation(Variable,Target,'derives_from','possible_dynamic','assignment_call_result_candidate_no_return_value_or_side_effect_proof',Path+' := ... '+InputPath+'(...)',Tokens[InputIndex].Location,Tokens[I].Condition);
+            end;
             InputIndex:=InputStop+1;
           end;
         end;
