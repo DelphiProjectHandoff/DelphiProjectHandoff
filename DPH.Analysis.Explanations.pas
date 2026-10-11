@@ -112,6 +112,7 @@ begin
   if Kind='static_sql' then Verb:='contains static SQL text associated with';
   if Kind='dynamic_sql' then Verb:='builds SQL from inputs that require review for';
   if Kind='renders' then Verb:='has an inferred model-to-renderer connection with';
+  if Kind='output_candidate' then Verb:='contains a candidate file-writing site associated with';
   if Kind='imports' then Verb:='declares a unit dependency on';
   if Kind='owns' then Verb:='declares or contains';
   if Kind='creates' then Verb:='has an inferred creation site for';

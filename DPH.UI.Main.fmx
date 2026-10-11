@@ -234,6 +234,7 @@ Items.Strings = (
 'definition'
 'async_operation'
 'dynamic_control'
+'output_artifact'
 'sql_statement'
 'sql_table'
 'sql_column'

@@ -47,6 +47,7 @@ type
     procedure ModulePhases;
     procedure TestCoverage;
     procedure VisualSites;
+    procedure OutputSites;
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
@@ -724,6 +725,28 @@ begin
   finally Ordinals.Free; end;
 end;
 
+procedure TDPHSemanticAnalyzer.OutputSites;
+var I,Count,Ordinal,Index: Integer; R: TDPHRelation; S,Owner: TDPHSymbol; Ordinals: TDictionary<Integer,Integer>;
+begin
+  Ordinals:=TDictionary<Integer,Integer>.Create;
+  try
+    Count:=FGraph.Relations.Count;
+    for I:=0 to Count-1 do begin
+      R:=FGraph.Relations[I]; if R.Kind<>'output_candidate' then Continue;
+      if not Ordinals.TryGetValue(R.FromSymbol,Ordinal) then Ordinal:=0; Inc(Ordinal); Ordinals.AddOrSetValue(R.FromSymbol,Ordinal);
+      Owner:=FGraph.Symbols[R.FromSymbol]; S:=TDPHSymbol.Create; S.Kind:='output_artifact'; S.Owner:=R.FromSymbol;
+      S.Name:='$output'+IntToStr(Ordinal); S.QualifiedName:=Owner.QualifiedName+'.'+S.Name; S.UnitName:=Owner.UnitName;
+      S.Signature:=R.LabelText; S.TypeName:=R.Rule; S.Variant:=Owner.Variant; S.Location:=R.Location;
+      S.SourceHash:=FGraph.SourceHashes[R.Location.Source]; S.Dispatch:='inferred'; Index:=AddSymbol(S);
+      FGraph.AddRelation(R.FromSymbol,Index,'renders','inferred','recognized_file_writer_spelling_not_success_or_format_proof',R.LabelText,R.Location,R.Condition);
+      if R.ToSymbol>=0 then FGraph.AddRelation(Index,R.ToSymbol,'derives_from','inferred','file_writer_content_or_receiver_not_runtime_value',FGraph.Symbols[R.ToSymbol].QualifiedName,R.Location,R.Condition);
+      if R.Rule='dynamic_output_path' then begin
+        FGraph.Complete:=False; FGraph.Diagnostics.Report('OUTPUT_PATH_DYNAMIC','File-writing site retained; destination requires runtime evaluation: '+R.LabelText,R.Location);
+      end;
+    end;
+  finally Ordinals.Free; end;
+end;
+
 procedure TDPHSemanticAnalyzer.TestCoverage;
 var S: TDPHSymbol; Imports: TList<string>; Tokens: TDPHTokens; L: TDPHRange;
     I,J,Count: Integer; DeclaredTest,UsesDUnitX: Boolean; R: TDPHRelation; ImportName: string;
@@ -834,6 +857,16 @@ begin
         MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
         ((FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName)>=0) or
          IsVisualType(Copy(Path,1,Length(Path)-7),Routine.UnitName)) then IsCall:=True;
+      if IsCall and (Args.Count>0) and
+        (EndsText('.WriteAllText',Path) or EndsText('.WriteAllBytes',Path) or EndsText('.WriteAllLines',Path) or EndsText('.SaveToFile',Path)) then begin
+        InputSymbol:=-1;
+        if EndsText('.SaveToFile',Path) then InputSymbol:=ResolveValue(Copy(Path,1,LastDelimiter('.',Path)-1),ARoutine)
+        else if Args.Count>1 then InputSymbol:=ResolveValue(Args[1],ARoutine);
+        Kind:='dynamic_output_path';
+        if (Stop+2<=Body.LastToken) and (Tokens[Stop+2].Kind=tkString) and
+          (Stop+3<=Body.LastToken) and MatchText(Tokens[Stop+3].Text,[',',')']) then Kind:='literal_output_path';
+        FGraph.AddRelation(ARoutine,InputSymbol,'output_candidate','inferred',Kind,Path+' -> '+Args[0],L,Tokens[I].Condition);
+      end;
       if IsCall and EndsText('.Create',Path) then begin
         InputSymbol:=FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName);
         if InputSymbol>=0 then FGraph.AddRelation(ARoutine,InputSymbol,'creates','inferred','declared_type_create_spelling_allocation_and_ownership_unverified',Path,L,Tokens[I].Condition);
@@ -1022,6 +1055,7 @@ begin
       ModulePhases;
       TestCoverage;
       VisualSites;
+      OutputSites;
       for Reference in AScan.Inventory.DefinitionReferences do begin
         Consumer:=-1; Resource:=-1;
         for I:=0 to FGraph.Symbols.Count-1 do begin S:=FGraph.Symbols[I];

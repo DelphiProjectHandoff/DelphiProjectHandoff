@@ -121,6 +121,14 @@ a source creation site, not a reconstructed runtime instance. Its count,
 parent, geometry, visibility and lifetime require runtime or authored evidence.
 DYNAMIC_CONTROL_REVIEW identifies these remaining questions.
 
+Outputs
+Choose output_artifact in the Explorer kind selector. Select a $output site
+and read its signature for the writer and destination expression. References
+links it to the producing routine and identifiable content parameter or source
+collection. Data flow shows derives_from connections. A literal filename does
+not verify the file format or prove the write succeeded. OUTPUT_PATH_DYNAMIC
+means the destination still needs runtime or authored explanation.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

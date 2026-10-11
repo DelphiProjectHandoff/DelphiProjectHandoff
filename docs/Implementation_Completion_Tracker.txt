@@ -101,7 +101,12 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     unresolved/custom factories and runtime instance count/layout/ownership
     remain explicit gaps. Six focused checks pass; semantic suite 119 and app/
     workspace regressions pass. No source-only site becomes a screenshot.
-3.9 Pending: fuller output lineage.
+3.9 Expanded: separate output-artifact sites for recognized file-writing calls,
+    literal/dynamic destinations, content-parameter or collection-receiver
+    derivation, and existing typed model-to-renderer links. No output is created
+    or opened during analysis. Dynamic formats, indirect serializers, SQL/report
+    transforms and runtime production success remain qualified gaps. Six focused
+    checks pass; semantic suite 125 and app/workspace regressions pass.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
     execution projection and preservation of inspected object context. Workspace
     suite now 47 checks. Selecting a graph object returns to focused navigation.

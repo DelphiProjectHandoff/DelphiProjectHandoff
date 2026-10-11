@@ -41,6 +41,34 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure OutputTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    WriteIndex,ArtifactIndex,InputIndex: Integer; D: TDPHDiagnostic; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'OutputCases.pas'),
+    'unit OutputCases; interface procedure WriteReport(Body:string; Destination:string); implementation '+
+    'procedure WriteReport(Body:string; Destination:string); var Lines:TStrings; begin '+
+    'TFile.WriteAllText(''report.html'',Body); Lines.SaveToFile(Destination); end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'OutputCases.dpr'),'program OutputCasesApp; uses OutputCases in ''OutputCases.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'OutputCases.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        WriteIndex:=Find(G,'OutputCases.WriteReport','*'); ArtifactIndex:=Find(G,'OutputCases.WriteReport.$output1','*');
+        InputIndex:=Find(G,'OutputCases.WriteReport.Body','*');
+        Check((ArtifactIndex>=0) and Relation(G,WriteIndex,ArtifactIndex,'renders','inferred'),'OUT01','File writing has a separate source-backed output artifact');
+        Check(Relation(G,ArtifactIndex,InputIndex,'derives_from','inferred'),'OUT02','Output artifact links to its declared content parameter');
+        Check(G.Symbols[ArtifactIndex].Signature.Contains('report.html') and (G.Symbols[ArtifactIndex].TypeName='literal_output_path'),'OUT03','Literal destination is retained without creating or opening the output file');
+        ArtifactIndex:=Find(G,'OutputCases.WriteReport.$output2','*');
+        Check(Relation(G,ArtifactIndex,Find(G,'OutputCases.WriteReport.Lines','*'),'derives_from','inferred'),'OUT04','SaveToFile output links to its source collection receiver');
+        Found:=False; for D in G.Diagnostics do if D.Code='OUTPUT_PATH_DYNAMIC' then Found:=True;
+        Check(Found and not G.Complete,'OUT05','Dynamic output destination remains an explicit coverage question');
+        Cached:=Analyzer.Analyze(Scan); try Check(JSON(G)=JSON(Cached),'OUT06','Output lineage agrees across routine cache reuse'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure VisualTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
     BuildIndex,SiteIndex,HandleIndex,HandlerIndex: Integer; R: TDPHRelation; Found: Boolean;
@@ -583,7 +611,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; OutputTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);
