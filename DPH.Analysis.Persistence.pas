@@ -19,6 +19,7 @@ begin
   if AGraph.Fingerprint<>TDPHKnowledgeStore.ManifestHash(AScan.Inventory.Manifest) then raise EArgumentException.Create('Semantic graph does not match capture');
   if AGraph.ContextHash<>AScan.ContextHash then raise EArgumentException.Create('Semantic graph does not match configuration context');
   Result:=AScan.Stage(AStore,AConfiguration,DPHSemanticVersion);
+  AStore.BeginFacts(Result);
   try
     SetLength(Entities,AGraph.Symbols.Count); SetLength(Nodes,AGraph.FlowNodes.Count);
     for I:=0 to AGraph.Symbols.Count-1 do
@@ -55,7 +56,8 @@ begin
     for E in AGraph.FlowEdges do AStore.AddFlowEdge(Result,Nodes[E.FromNode],Nodes[E.ToNode],E.Kind,E.Resolution);
     for D in AGraph.Diagnostics do
     begin Range:=DPHRangeJSON(D.Location); try AStore.AddDiagnostic(Result,D.Severity,D.Code,D.MessageText,Range.ToJSON); finally Range.Free; end; end;
-  except on E: Exception do begin AStore.FailGeneration(Result,E.Message); raise; end; end;
+    AStore.CommitFacts;
+  except on E: Exception do begin AStore.RollbackFacts; AStore.FailGeneration(Result,E.Message); raise; end; end;
 end;
 class function TDPHSemanticPersistence.Publish(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore; AGeneration: Int64): Boolean;
 begin

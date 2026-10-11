@@ -88,6 +88,7 @@ var Item: TDPHManifestFile; Parsed: TDPHParseResult; J: TJSONObject; D: TDPHDiag
 begin
   AStore.ObserveManifest(Inventory.Manifest);
   Result:=AStore.BeginGeneration(AConfiguration,AAnalyzerVersion,Inventory.Manifest);
+  AStore.BeginFacts(Result);
   Occurrences:=TDictionary<string,Integer>.Create;
   try
     try
@@ -125,7 +126,8 @@ begin
         end;
       end;
       for D in Inventory.Diagnostics do AStore.AddDiagnostic(Result,D.Severity,D.Code,D.MessageText,RangeJSON(D.Location));
-    except on E: Exception do begin AStore.FailGeneration(Result,E.Message); raise; end; end;
+      AStore.CommitFacts;
+    except on E: Exception do begin AStore.RollbackFacts; AStore.FailGeneration(Result,E.Message); raise; end; end;
   finally Occurrences.Free; end;
 end;
 

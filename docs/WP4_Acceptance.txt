@@ -1,0 +1,42 @@
+WP4 - FMX Explorer and visualization
+Owner authorization: phases 4-7 pre-approved through completion, 10 October 2026.
+Pre-change backup: D:\DPH Backups\WP4_PreChange_20261010_205016
+Verified: 3,351 files / 1,456,621,331 bytes. No post-change disk backup.
+
+Implemented:
+- Three IDE-editable resizable panes; Explorer drill-down, breadcrumb, search,
+  paging, forward/reverse evidence, history and generation-local bookmarks.
+- Cached workspace artifact, content-addressed SHA256 validation and matching
+  generation. Last project identity retained locally; cached open is detached
+  until the owner explicitly attaches its source. No analyzed program runs.
+- Background worker owns SQLite writes and analyzers. UI polls bounded queues.
+  Connected fingerprint checks every ten seconds; configuration changes also
+  invalidate. Full reassessment is explicit. Old published head survives partial
+  or superseded capture. Syntax and semantic facts batch within transactions.
+- Source reads revalidate captured hash before displaying or positioning caret.
+- Six bounded static graph views, certainty styling and evidence inspection.
+- Thumbnail gallery, fit, native, zoom and full-screen design-time screen view.
+  Serialized controls are drawn as data; untrusted component classes never load.
+- All UI controls and palette/layout values reside in the FMX resource.
+
+Validation:
+WP0 resource instantiation PASS; WP1 46 regressions PASS; WP2 68 PASS.
+WP4 41 integration checks PASS, including cache integrity, stopped queue exit,
+configuration/source changes, detached navigation and five rendered screen modes.
+See wp4-build.log, wp4-ui-build.log, wp4-validation.json, wp4-workspace.png.
+AT-01/08/09/11/12 implemented and exercised on the copied semantic fixture.
+Pinned reference end-to-end UI/performance is reserved for WP7; this is not a
+claim that all final acceptance cases or independent human review have passed.
+
+Limits:
+Screen reconstruction is approximate: unknown custom painting, style effects,
+inherited resources and runtime geometry are visibly unobserved. Graphs show
+at most 120 nodes and 960 edges; select a narrower scope when truncated.
+Form navigation displays static ownership/event/call evidence, not inferred
+runtime window activation. Bookmarks reset when the captured generation changes.
+Syntax is incrementally reused; semantic graph rebuilding remains conservative.
+Cancellation is checked between analysis stages, not inside every parser loop.
+Five-second cached-open check is a fixture regression budget on this machine,
+not a release guarantee for all hardware. No external service is contacted.
+
+Next: WP5 curated knowledge and human review, already authorized.

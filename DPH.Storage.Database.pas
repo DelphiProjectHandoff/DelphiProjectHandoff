@@ -60,6 +60,12 @@ type
     function IntegrityCheck: string;
     function SQLiteVersion: string;
     function SupportsFTS5: Boolean;
+    class function ProjectRoot(const ADatabasePath: string): string; static;
+    procedure SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
+    function LoadWorkspaceView(AGenerationID: Int64 = 0): string;
+    procedure BeginFacts(AGenerationID: Int64);
+    procedure CommitFacts;
+    procedure RollbackFacts;
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -536,6 +542,7 @@ function TDPHKnowledgeStore.AddSourceEntity(AGenerationID: Int64;
 var
   Query: TFDQuery;
   FileID, RevisionID: Int64;
+    OwnTransaction: Boolean;
 begin
   RequireRunning(AGenerationID);
   if Scalar('SELECT json_valid(:value)',[AStructuralJSON])<>1 then raise EDPHStorage.Create('Invalid structural JSON');
@@ -548,7 +555,8 @@ begin
       raise EDPHStorage.Create('Entity source range is outside captured bytes');
     FileID := Query.Fields[0].AsLargeInt; RevisionID := Query.Fields[1].AsLargeInt;
   finally Query.Free; end;
-  FConnection.StartTransaction;
+  OwnTransaction:=not FConnection.InTransaction;
+  if OwnTransaction then FConnection.StartTransaction;
   try
     FConnection.ExecSQL('INSERT OR IGNORE INTO entities(project_id,entity_kind,canonical_key,display_name,owner_file_id) '+
       'VALUES(1,:kind,:key,:name,:file)',[AKind,AKey,AName,FileID]);
@@ -558,8 +566,8 @@ begin
     FConnection.ExecSQL('INSERT INTO entity_versions(entity_id,project_id,generation_id,signature,structural_json,'+
       'source_revision_id,start_offset,end_offset,analysis_status) VALUES(:entity,1,:generation,:signature,:structure,:revision,:start,:finish,''partial'')',
       [Result,AGenerationID,ASignature,AStructuralJSON,RevisionID,AStartOffset,AEndOffset]);
-    FConnection.Commit;
-  except FConnection.Rollback; raise; end;
+    if OwnTransaction then FConnection.Commit;
+  except if OwnTransaction then FConnection.Rollback; raise; end;
 end;
 
 procedure TDPHKnowledgeStore.AddDiagnostic(AGenerationID: Int64;
@@ -743,6 +751,63 @@ begin
   Result := VarToStr(Scalar('PRAGMA integrity_check',[]));
   Query := NewQuery('PRAGMA foreign_key_check',[]);
   try if not Query.Eof then Result := 'foreign key violation'; finally Query.Free; end;
+end;
+
+procedure TDPHKnowledgeStore.BeginFacts(AGenerationID: Int64);
+begin RequireRunning(AGenerationID); if FConnection.InTransaction then raise EDPHStorage.Create('Fact batch already active'); FConnection.StartTransaction; end;
+procedure TDPHKnowledgeStore.CommitFacts;
+begin RequireWriter; FConnection.Commit; end;
+procedure TDPHKnowledgeStore.RollbackFacts;
+begin RequireWriter; if FConnection.InTransaction then FConnection.Rollback; end;
+
+class function TDPHKnowledgeStore.ProjectRoot(const ADatabasePath: string): string;
+var Connection: TFDConnection; Query: TFDQuery;
+begin
+  if not TFile.Exists(ADatabasePath) then raise EDPHStorage.Create('Knowledge database does not exist');
+  Connection:=TFDConnection.Create(nil); Query:=TFDQuery.Create(nil);
+  try
+    Connection.LoginPrompt:=False; Connection.Params.Values['DriverID']:='SQLite';
+    Connection.Params.Values['Database']:=ADatabasePath; Connection.Params.Values['OpenMode']:='ReadOnly';
+    Connection.Connected:=True; Query.Connection:=Connection; Query.SQL.Text:='SELECT root_uri FROM projects WHERE project_id=1'; Query.Open;
+    if Query.Eof then raise EDPHStorage.Create('Knowledge project is not initialized'); Result:=Query.Fields[0].AsString;
+  finally Query.Free; Connection.Free; end;
+end;
+
+procedure TDPHKnowledgeStore.SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
+var Bytes: TBytes; Hash,Directory,Path: string; Hasher: THashSHA2;
+begin
+  RequireRunning(AGenerationID);
+  Bytes:=TEncoding.UTF8.GetBytes(AJSON);
+  if Length(Bytes)>128*1024*1024 then raise EDPHStorage.Create('Workspace view exceeds 128 MiB');
+  Hasher:=THashSHA2.Create; Hasher.Update(Bytes); Hash:=Hasher.HashAsString;
+  Directory:=FDatabasePath+'.views'; CheckOutsideSource(Directory);
+  TDirectory.CreateDirectory(Directory); Path:=TPath.Combine(Directory,Hash+'.json');
+  if not TFile.Exists(Path) then TFile.WriteAllBytes(Path,Bytes);
+  if THashSHA2.GetHashStringFromFile(Path)<>Hash then raise EDPHStorage.Create('Workspace artifact hash mismatch');
+  FConnection.ExecSQL('INSERT INTO artifacts(project_id,generation_id,kind,artifact_path,content_hash,locale,template_version,build_state) '+
+    'VALUES(1,:generation,''workspace_view'',:path,:hash,''en'',''DPH-WP4-1'',''captured'')',[AGenerationID,Path,Hash]);
+end;
+
+function TDPHKnowledgeStore.LoadWorkspaceView(AGenerationID: Int64): string;
+var Query: TFDQuery; Path,Hash: string; Parsed: TJSONValue;
+begin
+  RequireWriter; Result:='';
+  if AGenerationID=0 then
+  begin
+    AGenerationID:=Status.PublishedGeneration;
+    if AGenerationID=0 then AGenerationID:=Scalar('SELECT coalesce(max(generation_id),0) FROM analysis_generations WHERE status=''partial''',[]);
+  end;
+  Query:=NewQuery('SELECT artifact_path,content_hash FROM artifacts WHERE generation_id=:generation AND kind=''workspace_view'' ORDER BY artifact_id DESC LIMIT 1',[AGenerationID]);
+  try
+    if Query.Eof then Exit; Path:=Query.Fields[0].AsString; Hash:=Query.Fields[1].AsString;
+    if not SameFileName(TPath.GetFullPath(Path),TPath.Combine(FDatabasePath+'.views',Hash+'.json')) then raise EDPHStorage.Create('Workspace artifact path is not managed');
+    if not TFile.Exists(Path) then raise EDPHStorage.Create('Workspace artifact is missing');
+    if (TFile.GetSize(Path)>128*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>Hash) then raise EDPHStorage.Create('Workspace artifact is damaged');
+    Result:=TEncoding.UTF8.GetString(TFile.ReadAllBytes(Path)); Parsed:=TJSONObject.ParseJSONValue(Result);
+    try
+      if not (Parsed is TJSONObject) or ((Parsed as TJSONObject).GetValue<Int64>('generation_id')<>AGenerationID) then raise EDPHStorage.Create('Workspace artifact generation mismatch');
+    finally Parsed.Free; end;
+  finally Query.Free; end;
 end;
 
 function TDPHKnowledgeStore.SQLiteVersion: string;

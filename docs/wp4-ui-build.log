@@ -1,0 +1,48 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+tests\DPH.Tests.Workspace.dpr(51) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(52) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+4566 lines, 0.62 seconds, 8938420 bytes code, 324584 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Reverse references retain event evidence
+PASS 8: Execution graph is bounded
+PASS 9: Execution graph has static provenance
+PASS 10: Procedure CFG graph is bounded
+PASS 11: Procedure CFG graph has static provenance
+PASS 12: Caller / callee graph is bounded
+PASS 13: Caller / callee graph has static provenance
+PASS 14: Form navigation graph is bounded
+PASS 15: Form navigation graph has static provenance
+PASS 16: Data flow graph is bounded
+PASS 17: Data flow graph has static provenance
+PASS 18: Change impact graph is bounded
+PASS 19: Change impact graph has static provenance
+PASS 20: Design-time screen contains form and button
+PASS 21: Screen reconstruction never claims runtime capture
+PASS 22: FMX Explorer displays canonical cached objects
+PASS 23: Explorer selection populates source-backed inspector
+PASS 24: Detached source view does not follow cached filesystem paths
+PASS 25: Canonical selection can be bookmarked
+PASS 26: Render screen mode Thumbnail
+PASS 27: Render screen mode Fit
+PASS 28: Render screen mode Native
+PASS 29: Render screen mode Zoom 200%
+PASS 30: Render screen mode Full screen
+PASS 31: Cached database opens without analysis
+PASS 32: Cached open requires explicit source attachment
+PASS 33: Cached open preserves generation
+PASS 34: Fixture cached open completes within 5 seconds
+PASS 35: Unchanged connected check skips analysis
+PASS 36: Configuration change reassesses unchanged source bytes
+PASS 37: Source modification triggers background reassessment
+PASS 38: Controlled edit changes its input fingerprint
+PASS 39: Updated cached workspace can reopen
+PASS 40: Artifact tampering is rejected
+PASS 41: Idle worker shutdown returns without a queue loop
+PASS WP4: 41 checks

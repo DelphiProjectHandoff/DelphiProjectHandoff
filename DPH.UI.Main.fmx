@@ -1,21 +1,364 @@
 object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
-  ClientHeight = 640
-  ClientWidth = 1000
+  ClientWidth = 1400
+  ClientHeight = 850
   Fill.Color = claWhite
-  FormFactor.Width = 320
-  FormFactor.Height = 480
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnCloseQuery = FormCloseQuery
   FormFactor.Devices = [Desktop]
-  object BaselineLabel: TLabel
-    Align = Top
-    Height = 56.000000000000000000
-    Margins.Left = 20.000000000000000000
-    Margins.Top = 20.000000000000000000
-    Margins.Right = 20.000000000000000000
-    StyledSettings = []
-    TextSettings.Font.Size = 20.000000000000000000
-    TextSettings.FontColor = claBlue
-    Text = 'Delphi Project Handoff - WP0 build baseline'
-    TabOrder = 0
-  end
+object HeaderLayout: TLayout
+Align = Top
+Height = 56
+object BaselineLabel: TLabel
+Text = 'Delphi Project Handoff'
+Align = Client
+Margins.Left = 16
+StyledSettings = []
+TextSettings.Font.Size = 24
+TextSettings.FontColor = xFF146CB4
+end
+end
+object CommandLayout: TLayout
+Align = Top
+Height = 100
+object OpenProjectButton: TButton
+Text = 'Attach project'
+Position.X = 8
+Position.Y = 4
+Width = 120
+Height = 28
+OnClick = OpenProjectClick
+end
+object OpenCacheButton: TButton
+Text = 'Open cache'
+Position.X = 136
+Position.Y = 4
+Width = 120
+Height = 28
+OnClick = OpenCacheClick
+end
+object FullScanButton: TButton
+Text = 'Full reassessment'
+Position.X = 264
+Position.Y = 4
+Width = 145
+Height = 28
+OnClick = FullScanClick
+end
+object ConfigurationCombo: TComboBox
+Position.X = 420
+Position.Y = 4
+Width = 120
+Height = 28
+Items.Strings = (
+'Debug'
+'Release'
+)
+ItemIndex = 0
+end
+object PlatformCombo: TComboBox
+Position.X = 550
+Position.Y = 4
+Width = 100
+Height = 28
+Items.Strings = (
+'Win32'
+'Win64'
+)
+ItemIndex = 0
+end
+object DefinesEdit: TEdit
+Position.X = 660
+Position.Y = 4
+Width = 260
+Height = 28
+TextPrompt = 'Additional defines; separated'
+end
+object ExternalRootsEdit: TEdit
+Position.X = 930
+Position.Y = 4
+Width = 350
+Height = 28
+TextPrompt = 'Explicit dependency roots; separated'
+end
+object BackButton: TButton
+Text = 'Back'
+Position.X = 8
+Position.Y = 42
+Width = 80
+Height = 28
+OnClick = BackClick
+end
+object ParentButton: TButton
+Text = 'Parent'
+Position.X = 96
+Position.Y = 42
+Width = 80
+Height = 28
+OnClick = ParentClick
+end
+object BookmarkButton: TButton
+Text = 'Bookmark'
+Position.X = 184
+Position.Y = 42
+Width = 100
+Height = 28
+OnClick = BookmarkClick
+end
+object BookmarksButton: TButton
+Text = 'Bookmarks'
+Position.X = 292
+Position.Y = 42
+Width = 100
+Height = 28
+OnClick = BookmarksClick
+end
+object NextPageButton: TButton
+Text = 'Next page'
+Position.X = 400
+Position.Y = 42
+Width = 100
+Height = 28
+OnClick = NextPageClick
+end
+object BreadcrumbLabel: TLabel
+Text = 'Select a Delphi project or cached database'
+Position.X = 510
+Position.Y = 42
+Width = 800
+Height = 40
+end
+end
+object StatusLabel: TLabel
+Text = 'Ready | source projects are read only'
+Align = Bottom
+Height = 48
+WordWrap = True
+Margins.Left = 8
+end
+object ExplorerLayout: TLayout
+Align = Left
+Width = 300
+object FilterLayout: TLayout
+Align = Top
+Height = 76
+object SearchEdit: TEdit
+Align = Top
+Height = 32
+TextPrompt = 'Search all objects'
+OnChange = SearchChange
+end
+object KindCombo: TComboBox
+Position.X = 0
+Position.Y = 38
+Width = 280
+Height = 28
+Items.Strings = (
+'All'
+'unit'
+'type'
+'routine'
+'anonymous'
+'component'
+'event'
+'field'
+'property'
+'local'
+)
+ItemIndex = 0
+OnChange = SearchChange
+end
+end
+object ExplorerList: TListBox
+Align = Client
+OnDblClick = ExplorerClick
+end
+end
+object ExplorerSplitter: TSplitter
+Align = Left
+Width = 6
+end
+object InspectorLayout: TLayout
+Align = Right
+Width = 350
+object InspectorMemo: TMemo
+Align = Client
+ReadOnly = True
+end
+end
+object InspectorSplitter: TSplitter
+Align = Right
+Width = 6
+end
+object WorkspaceTabs: TTabControl
+Align = Client
+TabPosition = Top
+ActiveTab = OverviewTab
+object OverviewTab: TTabItem
+Text = 'Overview'
+object OverviewMemo: TMemo
+Align = Client
+ReadOnly = True
+end
+end
+object SourceTab: TTabItem
+Text = 'Source'
+object SourceMemo: TMemo
+Align = Client
+ReadOnly = True
+StyledSettings = []
+TextSettings.Font.Family = 'Consolas'
+TextSettings.Font.Size = 13
+end
+end
+object GraphTab: TTabItem
+Text = 'Graphs'
+object GraphToolbar: TLayout
+Align = Top
+Height = 75
+object GraphCombo: TComboBox
+Position.X = 4
+Position.Y = 4
+Width = 250
+Height = 28
+Items.Strings = (
+'Execution'
+'Procedure CFG'
+'Caller / callee'
+'Form navigation'
+'Data flow'
+'Change impact'
+)
+ItemIndex = 0
+OnChange = ViewChange
+end
+object GraphLegend: TLabel
+Text = 'Static graph | blue: confirmed | orange dash: uncertain | click for evidence | bounded to 120 nodes'
+Position.Y = 35
+Width = 650
+Height = 38
+WordWrap = True
+end
+end
+object GraphScroll: TScrollBox
+Align = Client
+object GraphPaint: TPaintBox
+Width = 1200
+Height = 4500
+OnPaint = GraphPaintPaint
+OnMouseDown = GraphMouseDown
+end
+end
+end
+object ScreenTab: TTabItem
+Text = 'Screens'
+object ScreenToolbar: TLayout
+Align = Top
+Height = 78
+object FormCombo: TComboBox
+Position.X = 4
+Position.Y = 4
+Width = 300
+Height = 28
+Items.Strings = (
+)
+ItemIndex = 0
+OnChange = ViewChange
+end
+object ScreenModeCombo: TComboBox
+Position.X = 310
+Position.Y = 4
+Width = 170
+Height = 28
+Items.Strings = (
+'Thumbnail'
+'Fit'
+'Native'
+'Zoom 200%'
+'Full screen'
+)
+ItemIndex = 0
+OnChange = ViewChange
+end
+object FullscreenButton: TButton
+Text = 'Full screen'
+Position.X = 485
+Position.Y = 4
+Width = 100
+Height = 28
+OnClick = FullscreenClick
+end
+object ScreenWarning: TLabel
+Text = 'Approximate design-time reconstruction. Runtime layout, styles and custom painting are unobserved.'
+Position.Y = 36
+Width = 650
+Height = 40
+WordWrap = True
+end
+end
+object ScreenScroll: TScrollBox
+Align = Client
+object ScreenPaint: TPaintBox
+Width = 2400
+Height = 2000
+OnPaint = ScreenPaintPaint
+OnMouseDown = ScreenMouseDown
+end
+end
+end
+object RelationsTab: TTabItem
+Text = 'References'
+object RelationsList: TListBox
+Align = Client
+OnDblClick = RelationsClick
+end
+end
+end
+object GraphNodeStyle: TRectangle
+Visible = False
+Width = 190
+Height = 52
+Margins.Right = 30
+Margins.Bottom = 36
+Fill.Color = xFFEAF3FC
+Stroke.Color = xFF146CB4
+end
+object ScreenNodeStyle: TRectangle
+Visible = False
+Width = 120
+Height = 32
+Margins.Right = 30
+Margins.Bottom = 36
+Fill.Color = xFFF7F7F7
+Stroke.Color = xFF146CB4
+end
+object HeaderStyle: TRectangle
+Visible = False
+Width = 20
+Height = 20
+Margins.Right = 30
+Margins.Bottom = 36
+Fill.Color = xFFF28C28
+Stroke.Color = xFFF28C28
+end
+object OpenProjectDialog: TOpenDialog
+Filter = 'Delphi projects|*.dproj;*.dpr;*.groupproj'
+end
+object OpenCacheDialog: TOpenDialog
+Filter = 'DPH knowledge database|*.dphdb'
+end
+object DatabaseDialog: TSaveDialog
+DefaultExt = 'dphdb'
+Filter = 'DPH knowledge database|*.dphdb'
+Title = 'Save knowledge database outside the analyzed source folder'
+end
+object PollTimer: TTimer
+Interval = 100
+OnTimer = PollTimerTimer
+end
+object ChangeTimer: TTimer
+Interval = 10000
+OnTimer = ChangeTimerTimer
+end
 end
