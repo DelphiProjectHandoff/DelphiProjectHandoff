@@ -1,0 +1,21 @@
+{
+  "version": "DPH-0.3.0-experimental-Win32",
+  "binary": "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.3.0-experimental-Win32.zip",
+  "binary_sha256": "315bef1ce22644fab67137b5f005d2a36551f40a5f74e06ce721938d9c20ed5a",
+  "source": "C:\\New Delphi Projects\\Delphi Project Handoff\\source distributions\\DPH-0.3.0-experimental-source.zip",
+  "source_sha256": "6651b416089f5d7f92ce5beca6fd40d3dad48c665f11c6bd7995992aed757a5e",
+  "extracted_files": 42,
+  "validated_utc": "2026-10-11T21:08:14.8613456Z",
+  "verification_directory": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\distribution-verify-3eebee8abbfc4a2cabd9a8ea7c12e364",
+  "acceptance": "experimental expanded implementation; see current item tracker and unresolved human acceptance gates",
+  "smoke": {
+    "native_startup": "pass",
+    "window_title": "Delphi Project Handoff - Experimental Software",
+    "normal_close": "pass",
+    "prior_preferences_unchanged": true,
+    "extracted_validator": "pass",
+    "inspection": "historical/partial explicitly allowed",
+    "source_commit": "beedc04"
+  },
+  "temporary_extraction_and_staging_removed": true
+}
