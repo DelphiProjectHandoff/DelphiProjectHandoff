@@ -225,7 +225,7 @@ end;
 
 function TDPHWorkspaceView.Graph(const AKind,AKey: string; ALimit: Integer): TJSONObject;
 var Nodes,Edges,AllNodes,AllEdges: TJSONArray; V: TJSONValue; R,S,N: TJSONObject;
-    Seen: TDictionary<string,Boolean>; Queue: TQueue<string>; Key,FromKey,ToKey,Kind: string;
+    Seen,EdgeKeys: TDictionary<string,Boolean>; Queue: TQueue<string>; Key,FromKey,ToKey,Kind,EdgeKey: string;
     I: Integer; Truncated: Boolean;
   procedure AddSymbolNode(const K: string);
   var Row,Sym: TJSONObject;
@@ -242,7 +242,7 @@ begin
   Result.AddPair('kind',AKind); Result.AddPair('nodes',Nodes); Result.AddPair('edges',Edges);
   Result.AddPair('generation_id',TJSONNumber.Create(FDocument.GetValue<Int64>('generation_id')));
   Result.AddPair('runtime_trace',TJSONBool.Create(False)); Truncated:=False;
-  Seen:=TDictionary<string,Boolean>.Create; Queue:=TQueue<string>.Create;
+  Seen:=TDictionary<string,Boolean>.Create; EdgeKeys:=TDictionary<string,Boolean>.Create; Queue:=TQueue<string>.Create;
   try
     S:=FDocument.GetValue<TJSONObject>('semantics');
     if AKind='Procedure CFG' then
@@ -265,6 +265,14 @@ begin
         for V in S.GetValue<TJSONArray>('symbols') do begin N:=V as TJSONObject;
           if (N.GetValue<string>('kind')='unit') and MatchText(N.GetValue<string>('type'),['program','library','package']) then AddSymbolNode(N.GetValue<string>('key'));
         end;
+      if (AKey='') and (AKind='Form navigation') then
+        for V in S.GetValue<TJSONArray>('symbols') do begin N:=V as TJSONObject;
+          if (N.GetValue<string>('kind')='component') and MatchText(ExtractFileExt(N.GetValue<string>('range.source')),['.fmx','.dfm']) then begin
+            R:=SourceFile(N.GetValue<string>('range.source'));
+            if (R<>nil) and (R.GetValue<TJSONArray>('ir.nodes').Count>0) and
+              (R.GetValue<TJSONArray>('ir.nodes').Items[0].GetValue<Int64>('start')=N.GetValue<Int64>('range.start')) then AddSymbolNode(N.GetValue<string>('key'));
+          end;
+        end;
       if (AKey='') and (Nodes.Count=0) then for V in S.GetValue<TJSONArray>('symbols') do
       begin N:=V as TJSONObject; if N.GetValue<Boolean>('has_body') then begin AddSymbolNode(N.GetValue<string>('key')); Break; end; end;
       while Queue.Count>0 do
@@ -275,18 +283,22 @@ begin
           R:=V as TJSONObject; Kind:=R.GetValue<string>('kind'); FromKey:=R.GetValue<string>('from'); ToKey:=R.GetValue<string>('to','');
           if (AKind='Change impact') then begin if ToKey<>Key then Continue; end
           else if (AKind='Caller / callee') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
+          else if (AKind='Form navigation') and MatchText(Kind,['represents','form_instance','component_field','binds']) then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
           else if FromKey<>Key then Continue;
           if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','prepares_callback','starts','dispatches','waits_for','requests_cancellation','signals','waits_for_signal','binds','enters','initializes','finalizes','creates']) then Continue;
-          if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules','creates','assigned_to','mutates_property','assigns_callback']) then Continue;
+          if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules','creates','assigned_to','mutates_property','assigns_callback','uses_type','represents','form_instance','component_field','shows_form','shows_modal_form','hides_form','closes_form']) then Continue;
           if (AKind='Data flow') and not MatchText(Kind,['reads','writes','uses_type','renders','assigns_callback','captures','assigned_to','derives_from','configures','owns','static_sql','dynamic_sql']) then Continue;
           AddSymbolNode(FromKey); AddSymbolNode(ToKey);
-          if Seen.ContainsKey(FromKey) and Seen.ContainsKey(ToKey) then Edges.AddElement(R.Clone as TJSONObject);
+          if Seen.ContainsKey(FromKey) and Seen.ContainsKey(ToKey) then begin
+            EdgeKey:=FromKey+#0+ToKey+#0+Kind+#0+R.GetValue<string>('range.source')+#0+R.GetValue<Int64>('range.start').ToString+#0+R.GetValue<string>('rule')+#0+R.GetValue<string>('condition');
+            if not EdgeKeys.ContainsKey(EdgeKey) then begin EdgeKeys.Add(EdgeKey,True); Edges.AddElement(R.Clone as TJSONObject); end;
+          end;
           if Edges.Count>=ALimit*8 then begin Truncated:=True; Queue.Clear; Break; end;
         end;
       end;
     end;
     Result.AddPair('truncated',TJSONBool.Create(Truncated));
-  finally Queue.Free; Seen.Free; end;
+  finally Queue.Free; EdgeKeys.Free; Seen.Free; end;
 end;
 function TDPHWorkspaceView.FlagsText: string;
 begin

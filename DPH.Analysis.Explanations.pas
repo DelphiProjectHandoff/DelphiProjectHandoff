@@ -93,6 +93,13 @@ begin
   Verb:=Kind.Replace('_',' ');
   if Kind='calls' then Verb:='contains a call site to';
   if Kind='binds' then Verb:='connects the serialized event to';
+  if Kind='shows_form' then Verb:='contains a possible Show action on';
+  if Kind='shows_modal_form' then Verb:='contains a possible modal Show action on';
+  if Kind='hides_form' then Verb:='contains a possible Hide action on';
+  if Kind='closes_form' then Verb:='contains a possible Close request for';
+  if Kind='represents' then Verb:='serializes an instance of this declared form class:';
+  if Kind='form_instance' then Verb:='has a matching declaration for this serialized form; runtime identity is unverified:';
+  if Kind='component_field' then Verb:='matches this declared form field:';
   if Kind='schedules' then Verb:='may schedule asynchronous work in';
   if Kind='prepares_callback' then Verb:='attaches a callback while creating a suspended thread; this site does not prove it starts:';
   if Kind='starts' then Verb:='contains a possible start or dispatch action for';

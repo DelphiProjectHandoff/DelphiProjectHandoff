@@ -40,6 +40,7 @@ type
     function SelectCall(const APath: string; ARoutine: Integer; const Arguments: TArray<string>): TArray<Integer>;
     function ExpressionType(const AText: string; ARoutine: Integer): string;
     function IsVisualType(const AName,AUnit: string): Boolean;
+    function IsFormType(const AName,AUnit: string): Boolean;
     procedure Header(S: TDPHSymbol; const Tokens: TDPHTokens; AStart,AEnd: Integer);
     procedure Collect(const AFile: string; IR: TDPHParseResult);
     procedure Variables(const AFile: string; IR: TDPHParseResult);
@@ -673,9 +674,22 @@ begin
       if Owner>=0 then S.QualifiedName:=FGraph.Symbols[Owner].QualifiedName+'.'+N.Name;
       S.TypeName:=N.Value; S.Location:=N.Location; S.SourceHash:=FGraph.SourceHashes[AFile]; S.Variant:=FGraph.Configuration; S.Owner:=Owner;
       Index:=AddSymbol(S); FNodeSymbols.AddOrSetValue(NodeKey(AFile,I),Index);
-      if N.Kind<>'event_binding' then Continue;
       Root:=I; while IR.Nodes[Root].Parent>=0 do Root:=IR.Nodes[Root].Parent;
       RootNode:=IR.Nodes[Root]; ClassName:=RootNode.Value; CandidatesFound.Clear;
+      if N.Kind<>'event_binding' then begin
+        for Target:=0 to FGraph.Symbols.Count-1 do begin
+          S:=FGraph.Symbols[Target];
+          if not SameText(ChangeFileExt(S.Location.Source,''),ChangeFileExt(AFile,'')) then Continue;
+          if (I=Root) and (S.Kind='type') and SameText(S.Name,ClassName) then
+            FGraph.AddRelation(Index,Target,'represents','confirmed_static','serialized_root_class_declaration',ClassName,N.Location,N.Condition);
+          if (I=Root) and (S.Kind='variable') and SameText(S.Name,N.Name) and SameText(S.TypeName,ClassName) then
+            FGraph.AddRelation(Target,Index,'form_instance','inferred','declared_global_matches_serialized_root_not_runtime_instance_proof',N.Name,N.Location,N.Condition);
+          if (I<>Root) and (S.Kind='field') and (S.Owner>=0) and SameText(S.Name,N.Name) and SameText(S.TypeName,N.Value) and
+            SameText(FGraph.Symbols[S.Owner].Name,ClassName) then
+            FGraph.AddRelation(Index,Target,'component_field','confirmed_static','serialized_component_matches_declared_form_field',N.Name,N.Location,N.Condition);
+        end;
+        Continue;
+      end;
       for Target:=0 to FGraph.Symbols.Count-1 do
       begin
         S:=FGraph.Symbols[Target];
@@ -687,6 +701,28 @@ begin
       if Target<0 then FGraph.Diagnostics.Report('EVENT_TARGET_UNRESOLVED',N.Value,N.Location);
     end;
   finally CandidatesFound.Free; end;
+end;
+
+function TDPHSemanticAnalyzer.IsFormType(const AName,AUnit: string): Boolean;
+var Index,Base,Depth: Integer; R: TDPHRelation; Name,UnitName,ImportName: string; Imports: TList<string>; Framework: Boolean;
+begin
+  Index:=FindType(AName,AUnit); Name:=AName; UnitName:=AUnit;
+  for Depth:=0 to 31 do begin
+    if Index>=0 then begin Name:=FGraph.Symbols[Index].Name; UnitName:=FGraph.Symbols[Index].UnitName; end;
+    Framework:=StartsText('FMX.Forms',UnitName) or StartsText('Vcl.Forms',UnitName);
+    if FImports.TryGetValue(LowerCase(UnitName),Imports) then for ImportName in Imports do
+      if SameText(ImportName,'FMX.Forms') or SameText(ImportName,'Vcl.Forms') then Framework:=True;
+    if Framework and ((Index<0) or StartsText('FMX.Forms',UnitName) or StartsText('Vcl.Forms',UnitName)) and
+      MatchText(Name,['TForm','TCustomForm','FMX.Forms.TForm','Vcl.Forms.TForm']) then Exit(True);
+    if Index<0 then Exit(False);
+    if FBaseTypes.TryGetValue(Index,Base) then Index:=Base
+    else begin
+      for R in FGraph.Relations do if (R.FromSymbol=Index) and (R.Kind='inherits') and (R.ToSymbol<0) and Framework and
+        MatchText(R.LabelText,['TForm','TCustomForm','FMX.Forms.TForm','Vcl.Forms.TForm']) then Exit(True);
+      Exit(False);
+    end;
+  end;
+  Result:=False;
 end;
 
 function TDPHSemanticAnalyzer.IsVisualType(const AName,AUnit: string): Boolean;
@@ -881,6 +917,18 @@ begin
         if SameText(Path,'FreeAndNil') then begin if Args.Count=1 then InputSymbol:=ResolveValue(Args[0],ARoutine); end
         else InputSymbol:=ResolveValue(Copy(Path,1,LastDelimiter('.',Path)-1),ARoutine);
         if InputSymbol>=0 then FGraph.AddRelation(ARoutine,InputSymbol,'destroys','possible_dynamic','lifetime_action_spelling_not_success_or_alias_proof',Path,L,Tokens[I].Condition);
+      end;
+      InputIndex:=LastDelimiter('.',Path);
+      if InputIndex>0 then begin
+        InputPath:=Copy(Path,InputIndex+1,MaxInt);
+        if MatchText(InputPath,['Show','ShowModal','Hide','Close']) then begin
+          InputSymbol:=ResolveValue(Copy(Path,1,InputIndex-1),ARoutine);
+          if (InputSymbol>=0) and IsFormType(FGraph.Symbols[InputSymbol].TypeName,Routine.UnitName) then begin
+            Kind:='shows_form'; if SameText(InputPath,'ShowModal') then Kind:='shows_modal_form';
+            if SameText(InputPath,'Hide') then Kind:='hides_form'; if SameText(InputPath,'Close') then Kind:='closes_form';
+            FGraph.AddRelation(ARoutine,InputSymbol,Kind,'possible_dynamic','declared_form_receiver_navigation_api_not_observed_screen_transition',Path,L,Tokens[I].Condition);
+          end;
+        end;
       end;
       if IsCall and not MatchText(Path,['Assigned','Default','Length','SetLength','High','Low','Ord','Chr','Inc','Dec','SizeOf','New','Dispose','Include','Exclude']) and (FindType(Path,Routine.UnitName)<0) then
       begin

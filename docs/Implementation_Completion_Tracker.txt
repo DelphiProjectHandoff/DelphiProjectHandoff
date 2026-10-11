@@ -120,7 +120,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Six hierarchy and five detail checks pass; workspace suite 58. Native FMX
     rendering inspected, evidence font increased and clipped tab strip replaced
     by the complete top-right page selector.
-4.4-4.10 Pending: form/data graphs, graph
+4.4 Expanded: declared form Show/ShowModal/Hide/Close transitions, matching
+    serialized root/class/global-instance and component/field bindings, whole-
+    form projection with an IDE-editable All forms command and duplicate-edge
+    suppression. Ordinary control Show does not become form navigation. Six
+    focused semantic checks pass (131 total); two native command checks added.
+    Runtime routing, dynamically loaded forms and unresolved factories remain
+    qualified gaps rather than invented screen transitions.
+4.5-4.10 Pending: data graphs, graph
     collapse, screen modes, screenshot viewing, coverage dashboard and navigation
     continuity.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused

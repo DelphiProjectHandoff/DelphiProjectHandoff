@@ -14,7 +14,7 @@ type
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
-    WholeProgramGraphButton,ExplorerExpandButton: TButton;
+    WholeProgramGraphButton,AllFormsGraphButton,ExplorerExpandButton: TButton;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
     ExplorerList,RelationsList: TListBox;
     DetailsList: TListBox;
@@ -97,6 +97,7 @@ type
     WorkspacePageCombo: TComboBox;
     procedure WorkspacePageChange(Sender: TObject);
     procedure WholeProgramGraphClick(Sender: TObject);
+    procedure AllFormsGraphClick(Sender: TObject);
     procedure ProjectSearchClick(Sender: TObject);
     procedure ProjectSearchSelectionClick(Sender: TObject);
     procedure RetentionClick(Sender: TObject);
@@ -178,7 +179,7 @@ type
     FSearchOffset: Integer;
     FSearchQuery: string;
     FSearchKind: string;
-    FWholeProgramGraph: Boolean;
+    FWholeGraph: Boolean;
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure RefreshLearning;
     procedure ShowExplanation;
@@ -757,7 +758,7 @@ procedure TDPHMainForm.SelectSymbol(const AKey: string; AHistory: Boolean);
 var S,Range,Row: TJSONObject; Rows,Props: TJSONArray; V: TJSONValue; Path,Direction,Target: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
 begin
   if FView=nil then Exit; S:=FView.Symbol(AKey); if S=nil then Exit;
-  FWholeProgramGraph:=False;
+  FWholeGraph:=False;
   if AHistory and (FSelected<>'') and (FSelected<>AKey) then FHistory.Add(FSelected); FSelected:=AKey;
   InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+'Kind: '+S.GetValue<string>('kind')+sLineBreak+
     'Signature: '+S.GetValue<string>('signature')+sLineBreak+'Declared type: '+S.GetValue<string>('type')+sLineBreak+sLineBreak+
@@ -816,13 +817,20 @@ begin
   BreadcrumbLabel.Text:='Bookmarks for this captured generation';
 end;
 procedure TDPHMainForm.ViewChange(Sender: TObject);
-begin if Sender=GraphCombo then FWholeProgramGraph:=False; if not FBinding then RefreshGraphics; end;
+begin if Sender=GraphCombo then FWholeGraph:=False; if not FBinding then RefreshGraphics; end;
 procedure TDPHMainForm.WholeProgramGraphClick(Sender: TObject);
 begin
   if FView=nil then Exit;
-  GraphCombo.ItemIndex:=0; FWholeProgramGraph:=True; RefreshGraphics;
+  GraphCombo.ItemIndex:=0; FWholeGraph:=True; RefreshGraphics;
   WorkspaceTabs.ActiveTab:=GraphTab;
   StatusLabel.Text:='Whole-program static startup graph; phase links show qualified reachability, not a runtime trace.';
+end;
+procedure TDPHMainForm.AllFormsGraphClick(Sender: TObject);
+begin
+  if FView=nil then Exit;
+  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Form navigation'); FWholeGraph:=True; RefreshGraphics;
+  WorkspaceTabs.ActiveTab:=GraphTab;
+  StatusLabel.Text:='Form navigation from captured forms and declared instances. Show/Hide/Close actions are static possibilities; runtime screens and order are unobserved.';
 end;
 procedure TDPHMainForm.RefreshGraphics;
 begin
@@ -834,7 +842,7 @@ begin
       FlowBrowser.Navigate('file://'+TPath.Combine(FFlowDirectory,'index.html'));
     except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML flow view unavailable; native graph retained: '+E.Message; end; end;
   end;
-  if FWholeProgramGraph and (GraphCombo.ItemIndex=0) then FGraph:=FView.Graph('Execution','')
+  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],['Execution','Form navigation']) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'')
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected);
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
   else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);

@@ -41,6 +41,39 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure FormNavigationTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    GoIndex,InstanceIndex,RootIndex,ClassIndex,FieldIndex: Integer; R: TDPHRelation; Found: Boolean; View: TDPHWorkspaceView; Projection: TJSONObject; V: TJSONValue;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'FormsBase.pas'),
+    'unit FMX.Forms; interface type TForm=class end; TButton=class end; implementation end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'FormNav.pas'),
+    'unit FormNav; interface uses FMX.Forms; type TNavForm=class(TForm) Button:TButton; procedure Go; end; '+
+    'var Other:TNavForm; implementation {$R *.fmx} procedure TNavForm.Go; begin Other.Show; Other.ShowModal; Other.Hide; Other.Close; Button.Show; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'FormNav.fmx'),'object Other: TNavForm'+sLineBreak+'  object Button: TButton'+sLineBreak+'    OnClick = Go'+sLineBreak+'  end'+sLineBreak+'end',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'FormNav.dpr'),'program FormNavApp; uses FormNav in ''FormNav.pas'', FMX.Forms in ''FormsBase.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'FormNav.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        GoIndex:=Find(G,'FormNav.TNavForm.Go','*'); InstanceIndex:=Find(G,'FormNav.Other','*'); ClassIndex:=Find(G,'FormNav.TNavForm','*');
+        RootIndex:=Find(G,'FormNav.fmx.Other','*'); FieldIndex:=Find(G,'FormNav.TNavForm.Button','*');
+        Check(Relation(G,GoIndex,InstanceIndex,'shows_form','possible_dynamic') and Relation(G,GoIndex,InstanceIndex,'shows_modal_form','possible_dynamic'),'NAV01','Declared form Show and ShowModal retain separate qualified actions');
+        Check(Relation(G,GoIndex,InstanceIndex,'hides_form','possible_dynamic') and Relation(G,GoIndex,InstanceIndex,'closes_form','possible_dynamic'),'NAV02','Hide and Close retain distinct source transitions');
+        Check(Relation(G,RootIndex,ClassIndex,'represents','confirmed_static') and Relation(G,InstanceIndex,RootIndex,'form_instance','inferred'),'NAV03','Serialized form links to its declared class and matching global instance');
+        Found:=False; for R in G.Relations do if (R.Kind='component_field') and (R.ToSymbol=FieldIndex) then Found:=True;
+        Check(Found and not Relation(G,GoIndex,FieldIndex,'shows_form','possible_dynamic'),'NAV04','Serialized child matches its field while ordinary control Show is not form navigation');
+        View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,G,1,TPath.Combine(Fixture,'FormNav.dpr'),'Debug','Win32',[],[]));
+        try Projection:=View.Graph('Form navigation',''); try
+          Found:=False; for V in Projection.GetValue<TJSONArray>('edges') do if V.GetValue<string>('kind')='shows_modal_form' then Found:=True;
+          Check((Projection.GetValue<TJSONArray>('nodes').Count>1) and Found,'NAV05','Unselected form navigation starts at captured forms and follows source transitions');
+        finally Projection.Free; end; finally View.Free; end;
+        Cached:=Analyzer.Analyze(Scan); try Check(JSON(G)=JSON(Cached),'NAV06','Form transition and binding facts agree across cache reuse'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure OutputTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
     WriteIndex,ArtifactIndex,InputIndex: Integer; D: TDPHDiagnostic; Found: Boolean;
@@ -611,7 +644,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; OutputTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; FormNavigationTests; OutputTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);
