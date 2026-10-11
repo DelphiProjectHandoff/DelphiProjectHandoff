@@ -1,0 +1,319 @@
+{
+  "result": "PASS",
+  "checked_at_utc": "2026-10-11T23:44:08.646105+00:00",
+  "baseline_commit": "6736d00df6d76be957b11797e5ea56e864e3da43",
+  "requirements": 533,
+  "newly_reconciled": 510,
+  "previously_assessed": 23,
+  "unassessed": 0,
+  "audit_batches": 21,
+  "batch_sizes": [
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    10
+  ],
+  "implementation_counts": {
+    "implemented_manual_capture": 17,
+    "partial": 242,
+    "implemented": 170,
+    "missing": 104
+  },
+  "incomplete_requirement_records": 346,
+  "domain_counts": {
+    "DPH-01": {
+      "implemented_manual_capture": 10,
+      "partial": 4
+    },
+    "DPH-02": {
+      "implemented": 7,
+      "partial": 13
+    },
+    "DPH-03": {
+      "partial": 10,
+      "implemented": 6,
+      "missing": 2
+    },
+    "DPH-04": {
+      "implemented": 9,
+      "partial": 11
+    },
+    "DPH-05": {
+      "partial": 8,
+      "missing": 11,
+      "implemented": 1
+    },
+    "DPH-06": {
+      "missing": 11,
+      "partial": 4,
+      "implemented_manual_capture": 1
+    },
+    "DPH-07": {
+      "implemented": 1,
+      "partial": 8,
+      "missing": 6
+    },
+    "DPH-08": {
+      "partial": 12,
+      "implemented": 2,
+      "missing": 4
+    },
+    "DPH-09": {
+      "partial": 10,
+      "missing": 8
+    },
+    "DPH-10": {
+      "missing": 13,
+      "partial": 2,
+      "implemented": 1
+    },
+    "DPH-11": {
+      "implemented_manual_capture": 5,
+      "partial": 9,
+      "missing": 2
+    },
+    "DPH-12": {
+      "implemented": 3,
+      "partial": 11,
+      "missing": 2
+    },
+    "DPH-13": {
+      "implemented": 10,
+      "missing": 3,
+      "partial": 5
+    },
+    "DPH-14": {
+      "partial": 9,
+      "implemented": 5,
+      "missing": 2
+    },
+    "DPH-15": {
+      "implemented": 12,
+      "partial": 5,
+      "missing": 3
+    },
+    "DPH-16": {
+      "implemented": 10,
+      "partial": 7,
+      "missing": 1
+    },
+    "DPH-17": {
+      "implemented": 14,
+      "partial": 4
+    },
+    "DPH-18": {
+      "implemented": 10,
+      "partial": 8,
+      "missing": 2
+    },
+    "DPH-19": {
+      "partial": 9,
+      "implemented": 2,
+      "missing": 5
+    },
+    "DPH-20": {
+      "implemented": 7,
+      "partial": 8,
+      "missing": 3
+    },
+    "DPH-21": {
+      "partial": 6,
+      "missing": 6
+    },
+    "DPH-22": {
+      "missing": 6,
+      "partial": 6
+    },
+    "DPH-23": {
+      "partial": 6,
+      "missing": 6
+    },
+    "EX": {
+      "partial": 60,
+      "implemented": 27,
+      "missing": 6,
+      "implemented_manual_capture": 1
+    },
+    "SC": {
+      "implemented": 11,
+      "partial": 1
+    },
+    "DB": {
+      "implemented": 32,
+      "partial": 6,
+      "missing": 2
+    }
+  },
+  "checks": {
+    "all_original_ids_domains_and_requirement_text_preserved": true,
+    "all_533_requirements_match_master_document_in_original_order": true,
+    "master_document_hash_matches_original_ledger": true,
+    "all_510_decisions_present_exactly_once": true,
+    "previous_23_statuses_preserved": true,
+    "all_21_batches_complete_and_disjoint": true,
+    "no_unassessed_status_remains": true,
+    "all_evidence_paths_anchors_lines_and_hashes_valid": true,
+    "all_partial_missing_records_have_specific_remaining_work": true,
+    "backlog_matches_all_346_incomplete_records": true,
+    "report_contains_all_533_requirement_findings": true,
+    "bounded_next_batch_has_scope_dependencies_and_completion_criteria": true,
+    "git_diff_check_passed": true,
+    "only_requested_audit_artifacts_changed_or_untracked": true,
+    "tracked_product_source_forms_projects_migrations_and_help_unchanged": true
+  },
+  "artifact_sha256": {
+    "docs/Phase1_Implementation_Backlog.csv": "3e343bd2e1e35ac64dd064224861496ade8e88e085260495b94315db24bf6984",
+    "docs/Phase1_Reconciliation_Batches.json": "f1ce3959de865272fd0ec406775860aa33e1e5d842c04f3b8ba91ecac0fa4e11",
+    "docs/Phase1_Reconciliation_Report.txt": "ec1443287d13d79ae16e52bc7948aa991cc5e768676f8b909f7bcb432aa0f4a6",
+    "docs/Phase1_Requirements_Traceability.json": "ae2b9b0dd4a98ee463b4d99720d7d4bd77dc7297043e7343ffc0b1c111e83d7e"
+  },
+  "evidence_file_sha256": {
+    "DPH.Project.Inventory.pas": "061736891f0fab486996ff5d8132af1cf5e25a2f93a74fb3e03ad8fa04e2c266",
+    "DPH.Project.Analysis.pas": "5af3808df19a7c403b456342e45b9e2c8c63195368847b151f3c57ed461b5c2a",
+    "tests/DPH.Tests.Discovery.dpr": "215d046d9d1d93a9052afb4388a0442bee7ba5f819cb11070e2e83b904665032",
+    "DPH.Parse.Pascal.pas": "016adbe9ba24b90d457455722782cdbbc657233bd1a07ba1bcdcd77f3340587e",
+    "DPH.Analysis.Symbols.pas": "a362f3a2b46bdc77883c129efd1c14192d6128ecb616f82915222df370d2d006",
+    "DPH.Analysis.Model.pas": "67383aae374aabba6832526e9d373827a5133e4369a61eaad9cffef9f239ecdb",
+    "tests/DPH.Tests.Semantics.dpr": "626e1e0431e06d7777c0806b999a3e122466af38e03216b3a8045f20ae846b64",
+    "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
+    "DPH.Workspace.Model.pas": "03bbe5a9dc0943758be56898659bff9381ccb0707cf22a449e5c8e158a8b82bf",
+    "DPH.Analysis.Explanations.pas": "be976f2199be2c8e86a0cf8be936d008aa83739cf116c3e81ca68bf3692fc8e7",
+    "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
+    "DPH.Parse.Forms.pas": "8b0a82186f7831bd1c27bf377409ac6e49b77c228666e6087fca8758c85d4cc7",
+    "DPH.Workspace.Screen.pas": "68305e6ec36664e76d05b8c9af21416dd51a32116d47ea55156977b4c10855de",
+    "DPH.UI.Main.fmx": "134c4bcbe68b7056ea09b2e73696749bf4ab5e91a37287811f9d57d2e62fa3aa",
+    "DPH.Analysis.SQL.pas": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e",
+    "DPH.Parse.Resources.pas": "f63153edba8656b315956fdd8ccf52e45b1446d8192f9b84c96c153bf676258f",
+    "DPH.Storage.Database.pas": "1eb84775bb84acd3d0fa4c437f1144ea615aaba29ce345dee45279d11f7d942c",
+    "tests/DPH.Tests.Knowledge.dpr": "0afe6c1b12f73d5990f5eda5f25d784ffb1e901043c4a58fc6ed8d164d2d1bef",
+    "help/index.html": "4c3a564f40e4073ad1d255a821c37202a238b2e6d445d9b259b62ac4961edf72",
+    "tests/DPH.Tests.Learning.dpr": "f6e7b738c22140e82b3296abf6b998948e1f6fe62fb317fc9d2d5a87b3a913e2",
+    "DPH.UI.Main.pas": "c7d1b02548f4817015d87cc44a6dfba5616826b7a97eb2802e75a7384f1b0a61",
+    "tests/DPH.Tests.Workspace.dpr": "56ad1aa8d2427224f9c800c9ccd7a9a0de50b6a33ec72be26a923dde92df3188",
+    "tests/DPH.Tests.Lifecycle.dpr": "dbb44bfe5e03bc8a55cc2ec3ff8a4a0360a78cac1b3d6c84da5694efa0cb9529",
+    "DPH.Publish.Model.pas": "0735d735071144464f0d35d6a5886d4a3d6a04e09f7276f2d26306f8451797d0",
+    "DPH.Publish.Export.pas": "2de922c043eba74c1bbd9079373b23e9c33d1d534da6b48b084d6dca96cfd4fe",
+    "tests/DPH.Tests.Publishing.dpr": "68bb55c5d968bde902bc3b61166ec23b0fb2209f2fa0e6078a890cd4384de228",
+    "DPH.Publish.Translation.pas": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20",
+    "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
+    "tests/DPH.Tests.Storage.dpr": "0767fefb2327dd1b28311987f40f78ba3a8c6fe3c2756ed0a4140334f40139dc",
+    "DPH.Workspace.Worker.pas": "3818fff9f49e530546653f7ad39108a9ee83f79de69ead6306894ef8ddc1e2ab",
+    "DPH.Storage.Backup.pas": "78e8c8de8af5120f8ce453793f947c5e2918e51dafc66f9e129c964fe28697bc",
+    "tests/DPH.Tests.Selection.dpr": "47d6763e3fbc97a1d68fea4524c0403a03179e71376f5e387f87643e8613aded",
+    "DPH.Knowledge.ProjectProfile.pas": "e901a58b02c2aafe2cc21df4da7dced2807a9cc8840c325c72d9db64cedc44bd",
+    "DPH.UI.ProjectProfile.fmx": "62e7fef97972fdb29f1a878e70a99d8284b6f7d8cfbddb9f625bb535728c2142",
+    "tests/DPH.Tests.Phase1.dpr": "facc539b0fad0fe7fd576440d3b7d421210337f365f0d8ffac9eb635c68f73a1",
+    "tests/DPH.Tests.ProjectCatalog.dpr": "4133a6ef054b5a25d41bfff9b81e92b85e650ac81757ad5d056960b804bea546",
+    "DPH.Workspace.Comparison.pas": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce",
+    "tests/DPH.Tests.Comparison.dpr": "f3e5094dd86a2c42278ee67a5fd8fc4d3a6c2252d07fdd500eae3946b0212aa1",
+    "DPH.Analysis.Quality.pas": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82",
+    "tests/DPH.Tests.SourceQuality.dpr": "2cc3569f0e89485480b4a52a3221c2d879eaf06baa2d0eb2855d0bbc6e86a11d"
+  },
+  "unchanged_product_file_sha256": {
+    "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
+    "DPH.Analysis.Explanations.pas": "be976f2199be2c8e86a0cf8be936d008aa83739cf116c3e81ca68bf3692fc8e7",
+    "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
+    "DPH.Analysis.Model.pas": "67383aae374aabba6832526e9d373827a5133e4369a61eaad9cffef9f239ecdb",
+    "DPH.Analysis.Persistence.pas": "08609c3df54250a8f6712e22e991f7ad8d444352e7103ba0959d2feba4a2b3c7",
+    "DPH.Analysis.Quality.pas": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82",
+    "DPH.Analysis.SQL.pas": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e",
+    "DPH.Analysis.Symbols.pas": "a362f3a2b46bdc77883c129efd1c14192d6128ecb616f82915222df370d2d006",
+    "DPH.Knowledge.ProjectProfile.pas": "e901a58b02c2aafe2cc21df4da7dced2807a9cc8840c325c72d9db64cedc44bd",
+    "DPH.Parse.Forms.pas": "8b0a82186f7831bd1c27bf377409ac6e49b77c228666e6087fca8758c85d4cc7",
+    "DPH.Parse.Lexer.pas": "6ce5bbc66f8170b17eaeda536b8e500ca9992131477c09bc8e1a33bb6dd1c7f0",
+    "DPH.Parse.Model.pas": "1bc634e14dbc4d2b2b94d566fcca9eae7911fd1299b70ef7378dcba577c80778",
+    "DPH.Parse.Pascal.pas": "016adbe9ba24b90d457455722782cdbbc657233bd1a07ba1bcdcd77f3340587e",
+    "DPH.Parse.Preprocessor.pas": "34b7513019a41bc9911babfda72041addd563959ee54c54d0759b8cc9fa7fefc",
+    "DPH.Parse.Resources.pas": "f63153edba8656b315956fdd8ccf52e45b1446d8192f9b84c96c153bf676258f",
+    "DPH.Project.Analysis.pas": "5af3808df19a7c403b456342e45b9e2c8c63195368847b151f3c57ed461b5c2a",
+    "DPH.Project.Inventory.pas": "061736891f0fab486996ff5d8132af1cf5e25a2f93a74fb3e03ad8fa04e2c266",
+    "DPH.Project.Source.pas": "8efa444743f0e90831631df963f26a2542561efab63b26f1c5b41fff6b96994e",
+    "DPH.Publish.BrowserPolicy.pas": "74d2f36c879f1b7b55133241c3e1abc28ce113c4d9f581a5123be83f94d705ce",
+    "DPH.Publish.Export.pas": "2de922c043eba74c1bbd9079373b23e9c33d1d534da6b48b084d6dca96cfd4fe",
+    "DPH.Publish.Model.pas": "0735d735071144464f0d35d6a5886d4a3d6a04e09f7276f2d26306f8451797d0",
+    "DPH.Publish.Translation.pas": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20",
+    "DPH.Storage.Backup.pas": "78e8c8de8af5120f8ce453793f947c5e2918e51dafc66f9e129c964fe28697bc",
+    "DPH.Storage.Database.pas": "1eb84775bb84acd3d0fa4c437f1144ea615aaba29ce345dee45279d11f7d942c",
+    "DPH.Storage.Types.pas": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219",
+    "DPH.UI.Main.fmx": "134c4bcbe68b7056ea09b2e73696749bf4ab5e91a37287811f9d57d2e62fa3aa",
+    "DPH.UI.Main.pas": "c7d1b02548f4817015d87cc44a6dfba5616826b7a97eb2802e75a7384f1b0a61",
+    "DPH.UI.ProjectProfile.fmx": "62e7fef97972fdb29f1a878e70a99d8284b6f7d8cfbddb9f625bb535728c2142",
+    "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
+    "DPH.Workspace.Catalog.pas": "5fed34d1919dfd5b34216be36f92fc1764847a65d62112613b2a0e1d44a05940",
+    "DPH.Workspace.Comparison.pas": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce",
+    "DPH.Workspace.Graphs.pas": "6fd8b84644df65a0746aaad3598dad9406fa2d55e637e1e30f2175cefd1be911",
+    "DPH.Workspace.Model.pas": "03bbe5a9dc0943758be56898659bff9381ccb0707cf22a449e5c8e158a8b82bf",
+    "DPH.Workspace.Screen.pas": "68305e6ec36664e76d05b8c9af21416dd51a32116d47ea55156977b4c10855de",
+    "DPH.Workspace.Worker.pas": "3818fff9f49e530546653f7ad39108a9ee83f79de69ead6306894ef8ddc1e2ab",
+    "DelphiProjectHandoff.dpr": "2b922d5561c2ab3e2b65590583f646e29fc12c8b5c36a08fe401a6ebed90d3f9",
+    "DelphiProjectHandoff.dproj": "450da3418a6581ba50d250b9c7d7e7db1ac9ad0b6756a3a66182852c6df02a05",
+    "dependencies/DelphiAppTranslation/DAT.Core.AtomicFile.pas": "d4415b44a2c6e931afc184730a6516650252e5bd61a126a9078d2cba02ed6900",
+    "dependencies/DelphiAppTranslation/DAT.Core.Diagnostics.pas": "087bb30b9881defa0366111954e19e95ecc71c9b35ce4487e44ced6f2122609a",
+    "dependencies/DelphiAppTranslation/DAT.Runtime.LanguagePack.pas": "ed36c46db4084a915489b60515f2bf54f90360557f41a1ea2e634ff31e237e25",
+    "help/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "help/index.html": "4c3a564f40e4073ad1d255a821c37202a238b2e6d445d9b259b62ac4961edf72",
+    "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
+    "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
+    "migrations/003_lifecycle.sql": "1f895f1e960915bd6eae491f03d0afd395bafcb4723864ac2ea953e86cbb3b8c",
+    "migrations/004_search.sql": "7fa68cf214821a1a57077a3a6b3e69e029e709bc8f69a0257eb6fd2e18e6dd98",
+    "migrations/005_document_sections.sql": "f5921c2d6bdb6ef9e708a40a078c958f133386267686b115d58e5409caaf9040",
+    "migrations/006_revision_links.sql": "8d3acd723a6b9e1adffcc8a02d0bc11ed80307981e0a00ca5bdc6e7490a9ba60",
+    "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
+    "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
+    "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
+    "tests/DPH.Tests.Baseline.dpr": "017194e8acb13f116b89a7d5dc45572ac387a13e596376a088cd7a886180ed34",
+    "tests/DPH.Tests.Catalog.dpr": "f36ec22a47371c39d5e5ac2a523055a6400eb0ad6470ef9ed833de85cb68e080",
+    "tests/DPH.Tests.Comparison.dpr": "f3e5094dd86a2c42278ee67a5fd8fc4d3a6c2252d07fdd500eae3946b0212aa1",
+    "tests/DPH.Tests.Discovery.dpr": "215d046d9d1d93a9052afb4388a0442bee7ba5f819cb11070e2e83b904665032",
+    "tests/DPH.Tests.Hardening.dpr": "b87b11b748ffe4bed6be25de788b8b0a5f32390e3f70f7947cfbd36bf7418d98",
+    "tests/DPH.Tests.Knowledge.dpr": "0afe6c1b12f73d5990f5eda5f25d784ffb1e901043c4a58fc6ed8d164d2d1bef",
+    "tests/DPH.Tests.Layout.dpr": "69ecbffff7ef33f547ffe028a32f26f5ba2906004f417275ad19f5facc47bacd",
+    "tests/DPH.Tests.Learning.dpr": "f6e7b738c22140e82b3296abf6b998948e1f6fe62fb317fc9d2d5a87b3a913e2",
+    "tests/DPH.Tests.Lifecycle.dpr": "dbb44bfe5e03bc8a55cc2ec3ff8a4a0360a78cac1b3d6c84da5694efa0cb9529",
+    "tests/DPH.Tests.Phase1.dpr": "facc539b0fad0fe7fd576440d3b7d421210337f365f0d8ffac9eb635c68f73a1",
+    "tests/DPH.Tests.Preview.dpr": "1bc4e20ac498de85aa83f29e1f6b11cac92055982c7b9e635b2b62497c21100b",
+    "tests/DPH.Tests.ProjectCatalog.dpr": "4133a6ef054b5a25d41bfff9b81e92b85e650ac81757ad5d056960b804bea546",
+    "tests/DPH.Tests.Publishing.dpr": "68bb55c5d968bde902bc3b61166ec23b0fb2209f2fa0e6078a890cd4384de228",
+    "tests/DPH.Tests.Selection.dpr": "47d6763e3fbc97a1d68fea4524c0403a03179e71376f5e387f87643e8613aded",
+    "tests/DPH.Tests.Semantics.dpr": "626e1e0431e06d7777c0806b999a3e122466af38e03216b3a8045f20ae846b64",
+    "tests/DPH.Tests.SourceQuality.dpr": "2cc3569f0e89485480b4a52a3221c2d879eaf06baa2d0eb2855d0bbc6e86a11d",
+    "tests/DPH.Tests.Storage.dpr": "0767fefb2327dd1b28311987f40f78ba3a8c6fe3c2756ed0a4140334f40139dc",
+    "tests/DPH.Tests.Workspace.dpr": "56ad1aa8d2427224f9c800c9ccd7a9a0de50b6a33ec72be26a923dde92df3188",
+    "tests/fixtures/Conditional.pas": "d92286d9907831afdf29fe77ae251c96206b443a1cef43d4487a3b2352c3c38b",
+    "tests/fixtures/Malformed.pas": "630a3ac51d5219157038b6784016b6c608575696c39460b34286e0dcd15cc5e1",
+    "tests/fixtures/semantics/Main.fmx": "aacd226c515b337d334b0bb239490ed78d636a8a50eb81c9dbe1a847284914cc",
+    "tests/fixtures/semantics/Main.pas": "6906f3326f9b6126af75a3236d61a25db9da43ca9046d8976b36c5dc70e70f88",
+    "tests/fixtures/semantics/Semantic.dpr": "85d96bdc01bab85bb33acf68247752075bbf693c6675b3caee0a7633b5e48bac",
+    "tests/fixtures/semantics/Semantic.dproj": "d9ddc6edd74607cd17a96c15ea8721f721dfae083ba280cb463a06d4fc94d194",
+    "tests/fixtures/semantics/Worker.pas": "8782e62f84325d02e3b44894d3a13f0767de45d5a131018b0014b3a3095a019d",
+    "tests/fixtures/syntax/Fixture.dpr": "ca279f38eb213f6cc904191afa82f32c717d1ed6882d65152d2a2cc5119a1c53",
+    "tests/fixtures/syntax/Fixture.dproj": "78958902845fb161cbb9fbb8fdebec2dc977a7f43cdb0db3bf06e2981eb51f5c",
+    "tests/fixtures/syntax/Model.fmx": "9ec3646a451f5f3ce70232a6ebda22f999513f5ed1afb143e78d629597c74580",
+    "tests/fixtures/syntax/Model.pas": "264ca63f3485b1e9bcc68c58931d5f272137c82f44651f1508bff71fe2b9773e",
+    "tools/DPH.ValidateHandoff.dpr": "732dc088f6946eaa4c3738bc2a5cca59d48cd38e8e3bffb5bb4427e845abdaf4"
+  },
+  "limits": [
+    "Source/form/schema/test-definition audit, not new application runtime testing.",
+    "Historical test reports are retained evidence, not claimed as fresh passes.",
+    "Missing-item citations point to reviewed nearest foundations, not implementations of the absent feature.",
+    "Named review and manual capture do not authenticate users or establish actual project content accuracy.",
+    "Incomplete counts are requirement records; overlapping records can be completed by one coherent feature implementation."
+  ]
+}
