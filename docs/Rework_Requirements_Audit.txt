@@ -1,0 +1,63 @@
+DPH plan alignment audit - 11 October 2026
+Owner rejected the WP7 interface as an inadequate learning/handoff product.
+The earlier statement that implementation through WP7 was complete is withdrawn.
+Primitive graph/storage tests do not demonstrate useful explanations or onboarding.
+Original planning files and owner guardrails remain unchanged.
+
+Authorized remediation: reread the plan, preserve the source/read-only boundaries,
+rework the actual product, validate against the pinned project, update both remotes.
+Pre-change backup D:\DPH Backups\Rework_PreChange_20261011_072412:
+4,595 files / 2,417,309,988 bytes, SHA256 verified before changes.
+
+Requirement / prior gap / remediation and acceptance evidence needed
+Discovery and generations / implemented bounded foundation / retain regression proof.
+Knowledge derivation and explanations / generic boilerplate and raw JSON /
+  deterministic project-specific role/call/branch/effect explanations, exact citations.
+New-programmer orientation / no actual in-app learning route /
+  first-launch Getting started page, ten-minute exercise and Delphi glossary;
+  guided startup, screens, event trace, logic, data, architecture, maintenance,
+  troubleshooting, author questions and glossary, with navigable source objects.
+Inspector / JSON presented as user guidance / readable explanation and evidence;
+  raw technical bundle remains available for machine inspection.
+Startup / arbitrary first-routine graph is not startup /
+  parsed program-body expressions with exact source provenance; no guessed entry.
+Event and async trace / relationship lines without interpretation /
+  bounded transitive trace showing from/to, certainty, rule, location and limits.
+Procedure flowchart / unlabeled grid and difficult branch interpretation /
+  captured CFG arrows, edge labels, source statements, uncertain exception paths.
+Data and report lineage / uncontextualized indexes /
+  producer/consumer explanations and links; inferred renders stays inferred.
+Screens / approximate rectangle reconstruction only /
+  preserve explicit design-time label; separate attributed imported screenshots.
+  Passive scanning cannot capture a running application's screen. Do not run input.
+Manuals / generic paragraphs plus index dumps /
+  canonical project-specific learning content and object explanations in HTML/DOCX;
+  preserve editable TOC and optional PDF workflow, verify rendered documents.
+Coverage / diagnostics dump and optimistic acceptance labels /
+  human-readable gaps, honest bounded evidence, and independent usefulness review.
+Curated knowledge / foundation exists / integrate authored answers into learning views.
+Search/navigation / flat list with unexplained kinds /
+  provide guided routes and meaningful selections; retain paged technical search.
+Incremental semantics / full semantic rebuild / not compliant with minimal affected-
+  relationship recomputation. Track as outstanding; do not rename full work incremental.
+Collapse large graphs / bounds only / procedure CFG now collapses straight-line
+  statements through captured edges, retaining branches/loops/exits and showing
+  omitted counts. Other graphs remain bounded rather than hierarchy-collapsed.
+Binary resources / diagnostics rather than full parsing / not complete.
+Referenced external definitions / limited literals and inventory / not complete loader,
+  precedence and cache analysis. Do not infer behavior from filenames.
+Retention and rename review UI / primitives/limited continuity only / not complete.
+Runtime logs/screenshots / disabled / attributed PNG import now implemented;
+  generation scope, managed image/metadata hashes and detached portability tested.
+  General runtime-log import remains absent. Runtime
+  instrumentation still needs the separately required authorization.
+Translation / neutral adapter and mock only / live Atlas depends on provider choice.
+External AI / off / source-based deterministic explanations do not require AI consent.
+Build/deploy and operating procedures / no invented runtime/user facts /
+  source-derived facts plus attributed missing procedures, not a finished user manual.
+Mr. A / automated tests substituted for usability / first-time human still required.
+
+Definition of done: code presence is insufficient. Demonstrate the new user route,
+sample complex explanations against source, verify exported/native agreement,
+preserve selected-input hashes, and report remaining plan gaps without claiming
+that partial/not-run acceptance is complete. No blanket completion claim permitted.

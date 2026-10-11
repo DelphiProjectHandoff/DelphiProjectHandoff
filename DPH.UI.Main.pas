@@ -3,7 +3,8 @@ interface
 uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
-  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DPH.Workspace.Model, DPH.Workspace.Worker;
+  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DPH.Workspace.Model, DPH.Workspace.Worker,
+  DPH.Publish.Model, DPH.Analysis.Explanations;
 type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend: TLabel;
@@ -40,6 +41,27 @@ type
     PublishBrowser: TWebBrowser;
     ExportDialog: TSaveDialog;
     RelocateButton: TButton;
+    LearningTopics: TListBox;
+    LearningBrowser,ExplainBrowser,FlowBrowser: TWebBrowser;
+    ExplainTab: TTabItem;
+    ExplainFallback: TMemo;
+    ScreenshotTab: TTabItem;
+    ScreenshotToolbar: TLayout;
+    ScreenshotAuthor,ScreenshotCaption: TEdit;
+    ImportScreenshotButton: TButton;
+    ScreenshotList: TListBox;
+    ScreenshotImage: TImage;
+    ScreenshotEvidence: TMemo;
+    ScreenshotDialog: TOpenDialog;
+    HelpButton: TButton;
+    HelpTab: TTabItem;
+    HelpBrowser: TWebBrowser;
+    HelpFallback: TMemo;
+    procedure HelpClick(Sender: TObject);
+    procedure ImportScreenshotClick(Sender: TObject);
+    procedure ScreenshotClick(Sender: TObject);
+    procedure LearningClick(Sender: TObject);
+    procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -90,6 +112,13 @@ type
     FKnowledgeEdited: Boolean;
     FPendingCommand,FSavedKnowledgeText,FKnowledgeLink: string;
     FExportDirectory: string;
+    FLearningFacts: TDPHDocumentModel;
+    FExplanations: TDPHExplanationModel;
+    FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
+    FImages: TJSONArray;
+    procedure LoadScreenshots(ARows: TJSONArray);
+    procedure RefreshLearning;
+    procedure ShowExplanation;
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
@@ -103,7 +132,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
@@ -115,6 +144,10 @@ begin
   FBaseDirectory:=ExtractFilePath(ParamStr(0));
   for I:=0 to 5 do begin if TDirectory.Exists(TPath.Combine(FBaseDirectory,'migrations')) then Break; FBaseDirectory:=ExtractFileDir(ExcludeTrailingPathDelimiter(FBaseDirectory)); end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
+  for I:=0 to 10 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
+  LearningTopics.ItemIndex:=0;
+  OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
+  HelpClick(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then begin FDatabase:=ParamStr(1); Submit('open'); end;
   if ParamCount=0 then
   begin
@@ -126,7 +159,7 @@ begin
   end;
 end;
 procedure TDPHMainForm.FormDestroy(Sender: TObject);
-var Pref: TJSONObject; PrefPath: string;
+var Pref: TJSONObject; PrefPath,Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   if (FDatabase<>'') and (FView<>nil) then
@@ -134,13 +167,22 @@ begin
     PrefPath:=TPath.Combine(TPath.GetHomePath,'AppData\Local\DPH'); TDirectory.CreateDirectory(PrefPath);
     Pref:=TJSONObject.Create; try Pref.AddPair('database',FDatabase); TFile.WriteAllText(TPath.Combine(PrefPath,'workspace.json'),Pref.ToJSON,TEncoding.UTF8); finally Pref.Free; end;
   except end;
+  FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
+  // Remove only this form's three generated preview files, never a recursive tree.
+  if FLearningDirectory<>'' then
+  try
+    for Directory in [FExplainDirectory,FFlowDirectory,FLearningDirectory] do begin
+      if TFile.Exists(TPath.Combine(Directory,'index.html')) then TFile.Delete(TPath.Combine(Directory,'index.html'));
+      if TDirectory.Exists(Directory) then TDirectory.Delete(Directory,False);
+    end;
+  except end;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
-  CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary…'; end;
+  CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; end;
 end;
 procedure TDPHMainForm.Submit(const ACommand: string);
 var R: TDPHWorkspaceRequest;
@@ -163,7 +205,7 @@ begin
     R.Exclusions:=PublishExclusionsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
-  FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background…';
+  FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
   FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
@@ -190,10 +232,12 @@ begin
   Request.Configuration:=FView.Document.GetValue<string>('configuration'); Request.Platform:=FView.Document.GetValue<string>('platform');
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   ClearWorkspace; FEntry:=Request.Entry; FDetached:=True; FBusy:=True;
-  FWorker.Submit(Request); StatusLabel.Text:='Verifying relocated project hashes before reassessment…';
+  FWorker.Submit(Request); StatusLabel.Text:='Verifying relocated project hashes before reassessment...';
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
+  FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
@@ -215,6 +259,7 @@ begin
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
+    if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
     StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
@@ -239,12 +284,93 @@ begin
       if MatchText(ExtractFileExt(Path),['.fmx','.dfm']) and (Row.GetValue('ir')<>nil) then FormCombo.Items.Add(Path);
     end;
     if FormCombo.Items.Count>0 then FormCombo.ItemIndex:=0;
-    OverviewMemo.Text:=FView.FlagsText+sLineBreak+'Selected project: '+ADocument.GetValue<string>('entry')+sLineBreak+
-      'Configuration: '+ADocument.GetValue<string>('configuration')+' / '+ADocument.GetValue<string>('platform')+sLineBreak+
-      'Technical evidence is static. Business rationale and user procedures require attributed human review.'+sLineBreak+
-      ADocument.GetValue<TJSONObject>('semantics').GetValue<TJSONArray>('diagnostics').Format(2);
+    OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshGraphics;
+  RefreshExplorer; RefreshGraphics; RefreshLearning;
+end;
+procedure TDPHMainForm.RefreshLearning;
+var ID: TGUID;
+begin
+  FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); if FView=nil then Exit;
+  FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,not FView.Document.GetValue<Boolean>('analysis_complete'),nil,True);
+  FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
+  if FLearningDirectory='' then begin CreateGUID(ID);
+    FLearningDirectory:=TPath.Combine(TPath.GetTempPath,'DPH-Learning-'+GUIDToString(ID));
+    FExplainDirectory:=TPath.Combine(FLearningDirectory,'object');
+    FFlowDirectory:=TPath.Combine(FLearningDirectory,'flow');
+    TDirectory.CreateDirectory(FLearningDirectory); TDirectory.CreateDirectory(FExplainDirectory); TDirectory.CreateDirectory(FFlowDirectory);
+  end;
+  LearningClick(nil); ShowExplanation; RefreshGraphics;
+end;
+procedure TDPHMainForm.LearningClick(Sender: TObject);
+begin
+  if FExplanations=nil then Exit;
+  OverviewMemo.Text:=FExplanations.TopicText(Max(0,LearningTopics.ItemIndex));
+  TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.TopicHTML(Max(0,LearningTopics.ItemIndex))));
+  try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
+    LearningBrowser.Navigate('file://'+TPath.Combine(FLearningDirectory,'index.html'));
+  except on E: Exception do begin LearningBrowser.Visible:=False; StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.ShowExplanation;
+begin
+  if FExplanations=nil then Exit;
+  ExplainFallback.Text:=FExplanations.ObjectText(FSelected);
+  TFile.WriteAllBytes(TPath.Combine(FExplainDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.ObjectHTML(FSelected)));
+  try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
+    ExplainBrowser.Navigate('file://'+TPath.Combine(FExplainDirectory,'index.html'));
+  except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
+var Directory,Fragment: string; P: Integer; V: TJSONValue; S: TJSONObject;
+begin
+  Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
+  if Sender=FlowBrowser then Directory:=FFlowDirectory;
+  if Sender=HelpBrowser then Directory:=TPath.Combine(FBaseDirectory,'help');
+  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory); if ACancel then Exit;
+  P:=Pos('#s_',AURL); if (P=0) or (FView=nil) then Exit; ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
+  for V in FView.Document.GetValue<TJSONArray>('semantics.symbols') do begin S:=V as TJSONObject;
+    if SameText(THashSHA2.GetHashString(S.GetValue<string>('key')),Fragment) then begin SelectSymbol(S.GetValue<string>('key')); WorkspaceTabs.ActiveTab:=ExplainTab; Break; end;
+  end;
+end;
+procedure TDPHMainForm.HelpClick(Sender: TObject);
+begin
+  WorkspaceTabs.ActiveTab:=HelpTab;
+  if not TFile.Exists(TPath.Combine(FBaseDirectory,'help\index.html')) then begin StatusLabel.Text:='Getting started HTML is missing; use the displayed quick-start directions'; Exit; end;
+  try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
+    HelpBrowser.Navigate('file://'+TPath.Combine(FBaseDirectory,'help\index.html'));
+  except on E: Exception do begin HelpBrowser.Visible:=False; StatusLabel.Text:='Getting started preview unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.ImportScreenshotClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if (Trim(ScreenshotAuthor.Text)='') or (Trim(ScreenshotCaption.Text)='') then begin StatusLabel.Text:='Enter contributor and capture/environment description before importing a PNG'; Exit; end;
+  if not ScreenshotDialog.Execute then Exit;
+  Request.Command:='import_screenshot'; Request.Database:=FDatabase; Request.Entry:=FEntry;
+  Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); Request.Body:=ScreenshotDialog.FileName;
+  Request.Editor:=ScreenshotAuthor.Text; Request.Title:=ScreenshotCaption.Text; Request.EntityKey:=FSelected;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
+end;
+procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
+var V: TJSONValue; R: TJSONObject;
+begin
+  FImages.Free; FImages:=ARows; ScreenshotList.Items.Clear;
+  for V in ARows do begin R:=V as TJSONObject; ScreenshotList.Items.Add(R.GetValue<string>('caption')+' | generation '+R.GetValue('generation_id').Value); end;
+  ScreenshotEvidence.Text:='Imported images are contributor evidence, separate from the design-time reconstruction. Capture time and runtime origin require review.';
+  ScreenshotImage.Bitmap.Clear(TAlphaColors.Null);
+end;
+procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
+var R: TJSONObject; Path: string;
+begin
+  if (FImages=nil) or (ScreenshotList.ItemIndex<0) then Exit;
+  R:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject; Path:=R.GetValue<string>('managed_path');
+  try
+    if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Screenshot changed after validation');
+    ScreenshotImage.Bitmap.LoadFromFile(Path);
+    ScreenshotEvidence.Text:=R.GetValue<string>('caption')+sLineBreak+'Contributor: '+R.GetValue<string>('author')+sLineBreak+
+      'Imported: '+R.GetValue<string>('imported_utc')+' | generation '+R.GetValue('generation_id').Value+sLineBreak+
+      R.GetValue<string>('provenance')+sLineBreak+'Status: '+R.GetValue<string>('verification_state')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
+  except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.RefreshExplorer;
 var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind: string;
@@ -262,13 +388,18 @@ end;
 procedure TDPHMainForm.SearchChange(Sender: TObject);
 begin if FBinding then Exit; FScope:=''; FPage:=0; RefreshExplorer; end;
 procedure TDPHMainForm.ExplorerClick(Sender: TObject);
-begin if (ExplorerList.ItemIndex>=0) and (ExplorerList.ItemIndex<FExplorerKeys.Count) then SelectSymbol(FExplorerKeys[ExplorerList.ItemIndex]); end;
+begin if (ExplorerList.ItemIndex>=0) and (ExplorerList.ItemIndex<FExplorerKeys.Count) then begin SelectSymbol(FExplorerKeys[ExplorerList.ItemIndex]); WorkspaceTabs.ActiveTab:=ExplainTab; end; end;
 procedure TDPHMainForm.SelectSymbol(const AKey: string; AHistory: Boolean);
 var S,Range,Row: TJSONObject; Rows,Props: TJSONArray; V: TJSONValue; Path,Direction,Target: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
 begin
   if FView=nil then Exit; S:=FView.Symbol(AKey); if S=nil then Exit;
   if AHistory and (FSelected<>'') and (FSelected<>AKey) then FHistory.Add(FSelected); FSelected:=AKey;
-  Props:=FView.Properties(AKey); try InspectorMemo.Text:=S.Format(2)+sLineBreak+'Serialized properties:'+sLineBreak+Props.Format(2); finally Props.Free; end;
+  InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+'Kind: '+S.GetValue<string>('kind')+sLineBreak+
+    'Signature: '+S.GetValue<string>('signature')+sLineBreak+'Declared type: '+S.GetValue<string>('type')+sLineBreak+sLineBreak+
+    'Source: '+S.GetValue<string>('range.source')+':'+S.GetValue<Integer>('range.line').ToString+sLineBreak+
+    'Generation: '+FView.Document.GetValue('generation_id').Value+sLineBreak+sLineBreak+
+    'Read Explain for the role, callers, effects and execution trace. Open Source to inspect the attached code. References contains the direct forward and reverse links.'+sLineBreak+sLineBreak+
+    'Evidence SHA256:'+sLineBreak+S.GetValue<string>('source_hash');
   RelationsList.Items.Clear; FRelationKeys.Clear;
   for Direction in ['forward','reverse'] do begin Rows:=FView.Neighbors(AKey,Direction); try for V in Rows do begin Row:=V as TJSONObject;
     Target:=Row.GetValue<string>('to',''); if Direction='reverse' then Target:=Row.GetValue<string>('from');
@@ -286,13 +417,13 @@ begin
         try Source:=TDPHSource.Create(Path,Range.GetValue<string>('source'),Diagnostics);
           try if Source.Decoded and SameText(Source.SHA256,Row.GetValue<string>('sha256')) then begin SourceMemo.Text:=Source.Text;
             SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1)); end
-            else SourceMemo.Text:='STALE or undecodable source — cached range not applied.'; finally Source.Free; end;
+            else SourceMemo.Text:='STALE or undecodable source - cached range not applied.'; finally Source.Free; end;
         except on E: Exception do SourceMemo.Text:='Source unavailable: '+E.Message; end;
       finally Diagnostics.Free; end;
     end;
   end;
   if MatchText(S.GetValue<string>('kind'),['unit','type','component','routine','anonymous']) then begin FScope:=S.GetValue<string>('name'); FPage:=0; RefreshExplorer; end;
-  RefreshGraphics;
+  RefreshGraphics; ShowExplanation;
 end;
 procedure TDPHMainForm.RelationsClick(Sender: TObject);
 begin if (RelationsList.ItemIndex>=0) and (RelationsList.ItemIndex<FRelationKeys.Count) then SelectSymbol(FRelationKeys[RelationsList.ItemIndex]); end;
@@ -318,6 +449,13 @@ begin if not FBinding then RefreshGraphics; end;
 procedure TDPHMainForm.RefreshGraphics;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
+  FlowBrowser.Visible:=False;
+  if (GraphCombo.ItemIndex=1) and (FExplanations<>nil) then begin
+    TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.FlowHTML(FSelected)));
+    try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
+      FlowBrowser.Navigate('file://'+TPath.Combine(FFlowDirectory,'index.html'));
+    except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML flow view unavailable; native graph retained: '+E.Message; end; end;
+  end;
   if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected);
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
   else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);
@@ -384,7 +522,7 @@ end;
 procedure TDPHMainForm.FullscreenClick(Sender: TObject);
 begin if WindowState=TWindowState.wsMaximized then WindowState:=TWindowState.wsNormal else WindowState:=TWindowState.wsMaximized; end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -443,7 +581,7 @@ begin
   except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'The offline index.html remains available in '+FExportDirectory; end; end;
 end;
 procedure TDPHMainForm.BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
-begin ACancel:=not TDPHBrowserPolicy.Allowed(AURL,FExportDirectory); end;
+begin ACancel:=not TDPHBrowserPolicy.Allowed(AURL,FExportDirectory,True); end;
 initialization
   SetWebView2Path(TPath.Combine(ExtractFilePath(ParamStr(0)),'WebView2Loader.dll'));
 end.

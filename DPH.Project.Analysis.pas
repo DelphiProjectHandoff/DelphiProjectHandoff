@@ -12,7 +12,7 @@ type
     ReusedFiles: Integer;
     constructor Create(AInventory: TDPHInventory);
     destructor Destroy; override;
-    function AsJSON: TJSONObject;
+    function AsJSON(AIncludeComments: Boolean = False): TJSONObject;
     function ContextHash: string;
     function Stage(AStore: TDPHKnowledgeStore; AConfiguration: Int64; const AAnalyzerVersion: string = DPHAnalyzerVersion): Int64;
     function Publish(AStore: TDPHKnowledgeStore; AGeneration: Int64; AAdditionalComplete: Boolean = True): Boolean;
@@ -48,8 +48,8 @@ begin
   finally J.Free; end;
 end;
 
-function TDPHScan.AsJSON: TJSONObject;
-var Files,DiagnosticsArray: TJSONArray; Item: TDPHManifestFile; Row,IR: TJSONObject;
+function TDPHScan.AsJSON(AIncludeComments: Boolean): TJSONObject;
+var Files,DiagnosticsArray,Comments: TJSONArray; Item: TDPHManifestFile; Row,IR,CommentRow: TJSONObject; Token: TDPHToken; CommentCount: Integer;
     Source: TDPHSource; Parsed: TDPHParseResult; D: TDPHDiagnostic;
 begin
   Result:=TJSONObject.Create; Result.AddPair('analyzer',DPHAnalyzerVersion);
@@ -61,7 +61,17 @@ begin
     Row.AddPair('sha256',Item.SHA256); Row.AddPair('bytes',TJSONNumber.Create(Item.SizeBytes));
     Row.AddPair('kind',Item.Kind); Row.AddPair('encoding',Item.Encoding); Row.AddPair('availability',Item.Availability);
     if Inventory.Sources.TryGetValue(Item.RelativePath,Source) then Row.AddPair('line_endings',Source.LineEndings);
-    if Results.TryGetValue(Item.RelativePath,Parsed) then begin IR:=Parsed.AsJSON; Row.AddPair('ir',IR); end;
+    if Results.TryGetValue(Item.RelativePath,Parsed) then begin
+      IR:=Parsed.AsJSON; Row.AddPair('ir',IR);
+      if AIncludeComments then begin
+      Comments:=TJSONArray.Create; Row.AddPair('comments',Comments); CommentCount:=0;
+      for Token in Parsed.Tokens do if (Token.Kind=tkComment) and (Token.Location.Source=Item.RelativePath) then begin
+        CommentRow:=TJSONObject.Create; CommentRow.AddPair('text',Copy(Token.Text,1,4000));
+        CommentRow.AddPair('range',TJSONObject.ParseJSONValue(RangeJSON(Token.Location))); CommentRow.AddPair('source_hash',Item.SHA256); Comments.AddElement(CommentRow);
+        Inc(CommentCount); if CommentCount>=200 then Break;
+      end;
+      end;
+    end;
   end;
   DiagnosticsArray:=TJSONArray.Create; Result.AddPair('diagnostics',DiagnosticsArray);
   for D in Inventory.Diagnostics do

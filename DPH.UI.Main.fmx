@@ -12,6 +12,15 @@ Constraints.MinHeight = 700
 object HeaderLayout: TLayout
 Align = Top
 Height = 56
+object HelpButton: TButton
+Align = Right
+Width = 130
+Margins.Right = 12
+Margins.Top = 12
+Margins.Bottom = 12
+Text = 'Getting started'
+OnClick = HelpClick
+end
 object BaselineLabel: TLabel
 Text = 'Delphi Project Handoff'
 Align = Client
@@ -206,10 +215,72 @@ Align = Client
 TabPosition = Top
 ActiveTab = OverviewTab
 object OverviewTab: TTabItem
-Text = 'Overview'
+Text = 'Learn the project'
+object LearningTopics: TListBox
+Align = Left
+Width = 220
+OnChange = LearningClick
+end
 object OverviewMemo: TMemo
 Align = Client
 ReadOnly = True
+TextSettings.Font.Size = 15
+end
+object LearningBrowser: TWebBrowser
+Align = Client
+Visible = False
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = LearningShouldLoad
+end
+end
+object HelpTab: TTabItem
+Text = 'Getting started'
+object HelpFallback: TMemo
+Align = Client
+ReadOnly = True
+TextSettings.Font.Size = 16
+Lines.Strings = (
+'Welcome to Delphi Project Handoff'
+''
+'1. Choose Debug / Win32 and enter required compiler defines.'
+'2. Choose Attach project; select a .dproj, .dpr or .groupproj.'
+'3. Save its .dphdb knowledge database outside the source folder.'
+'4. Wait for the captured generation; check PARTIAL and coverage gaps.'
+'5. Open Learn the project, then How the program starts.'
+'6. Choose a familiar control in Screens and user actions.'
+'7. Follow its event into Explain; inspect callers, branches and outputs.'
+'8. Use Source for exact code, Knowledge for attributed author answers.'
+'9. Publish an offline bundle after reviewing exclusions and privacy.'
+''
+'Open cache shows saved historical evidence without executing the program.'
+'Form designs are approximate reconstructions. Screenshots imports actual PNG images you supply.'
+'DPH never compiles or executes the selected application during analysis.'
+''
+'Full directions: docs/guides/DPH_User_Guide.docx and docs/pdf/DPH_User_Guide.pdf.'
+)
+end
+object HelpBrowser: TWebBrowser
+Align = Client
+Visible = False
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = LearningShouldLoad
+end
+end
+object ExplainTab: TTabItem
+Text = 'Explain'
+object ExplainFallback: TMemo
+Align = Client
+ReadOnly = True
+TextSettings.Font.Size = 15
+end
+object ExplainBrowser: TWebBrowser
+Align = Client
+Visible = False
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = LearningShouldLoad
 end
 end
 object SourceTab: TTabItem
@@ -260,9 +331,16 @@ OnPaint = GraphPaintPaint
 OnMouseDown = GraphMouseDown
 end
 end
+object FlowBrowser: TWebBrowser
+Align = Client
+Visible = False
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = LearningShouldLoad
+end
 end
 object ScreenTab: TTabItem
-Text = 'Screens'
+Text = 'Form designs'
 object ScreenToolbar: TLayout
 Align = Top
 Height = 78
@@ -315,6 +393,49 @@ Height = 2000
 OnPaint = ScreenPaintPaint
 OnMouseDown = ScreenMouseDown
 end
+end
+end
+object ScreenshotTab: TTabItem
+Text = 'Screenshots'
+object ScreenshotToolbar: TLayout
+Align = Top
+Height = 118
+object ScreenshotAuthor: TEdit
+Position.X = 8
+Position.Y = 8
+Width = 300
+Height = 30
+TextPrompt = 'Named screenshot contributor'
+end
+object ScreenshotCaption: TEdit
+Position.X = 8
+Position.Y = 45
+Width = 500
+Height = 30
+TextPrompt = 'Capture date, environment and what this image shows'
+end
+object ImportScreenshotButton: TButton
+Position.X = 8
+Position.Y = 82
+Width = 240
+Height = 30
+Text = 'Import an existing PNG screenshot'
+OnClick = ImportScreenshotClick
+end
+end
+object ScreenshotEvidence: TMemo
+Align = Bottom
+Height = 150
+ReadOnly = True
+end
+object ScreenshotList: TListBox
+Align = Left
+Width = 200
+OnChange = ScreenshotClick
+end
+object ScreenshotImage: TImage
+Align = Client
+WrapMode = Fit
 end
 end
 object RelationsTab: TTabItem
@@ -537,6 +658,10 @@ end
 object ExportDialog: TSaveDialog
 Title = 'Choose a new export folder name outside the analyzed source'
 Filter = 'Handoff folder name|*.*'
+end
+object ScreenshotDialog: TOpenDialog
+Filter = 'PNG screenshot|*.png'
+Title = 'Select an existing screenshot; DPH does not run the selected application'
 end
 object PollTimer: TTimer
 Interval = 100

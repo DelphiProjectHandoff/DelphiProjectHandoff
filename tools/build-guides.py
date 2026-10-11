@@ -19,6 +19,7 @@ USER = [
 ]),
 ('Start DPH', [
 'Start DelphiProjectHandoff.exe from its deployed folder. Keep the migrations folder and Microsoft WebView2 loader with the deployment. WebView2 Runtime supports the optional embedded HTML preview. An unavailable preview must leave the exported HTML usable independently. The initial validated target is Windows Win32; another operating system has not been validated.',
+'The Getting started page opens before a project is loaded. It explains the first ten minutes, each workspace tab, a small learning exercise, Delphi terms and repeatable checks. The header Getting started button returns to it at any time. Its native text fallback remains available without WebView2. Keep the help folder with the deployment.',
 'The workspace has a left Explorer, central tabs and right Inspector. Drag either vertical splitter to resize the panes. The header contains project selection, cache opening, full reassessment, configuration, platform, extra defines and explicit dependency roots. The status area shows work in progress and the captured analysis status. The last successfully opened database identity is remembered in the local user profile and reopens detached.'
 ]),
 ('Attach a source project', [
@@ -30,7 +31,14 @@ USER = [
 ('Open cached work', [
 'Choose Open cache to inspect a saved dphdb database. DPH validates the cached workspace artifact against its SHA256 and generation before displaying it. Cached opening does not start a source scan. The cache opens detached until you explicitly attach its source project.',
 'Detached mode allows historical inspection and authored notes. It does not follow cached filesystem paths to display source text or approve a current-source review. Attach the source when you want live hash checks, source navigation and human verification against current evidence. A missing or damaged cached artifact is reported rather than silently treated as a current view.'
+,'A damaged supplemental screenshot does not block opening valid cached analysis. DPH reports Screenshot evidence unavailable and omits the rejected image from display. Repair or restore its managed evidence before publishing a bundle that uses it; do not replace its hash to disguise damaged content.'
 ,'Keep a copied database with its adjacent database.dphdb.views folder. DPH resolves cache files beside the opened database and verifies their hashes instead of following old absolute artifact paths. To move the source project, choose Relocate verified source and select the same project entry. Exact file identities, content hashes, availability and analysis selection must match the captured generation. A different copy is rejected. Accepted relocation preserves logical symbols and notes, requests human review and reassesses the new context.'
+]),
+('Learn the selected project', [
+'Begin with Learn the project rather than trying to interpret the complete symbol index. Start here gives a six-step route: read actual startup statements, identify a familiar screen control, follow its event into code, inspect decisions and data, check gaps, then plan a controlled maintenance change. Each topic describes how to read the evidence and supplies project-specific starting points.',
+'How the program starts quotes parsed program-body expressions with source locations and hashes. It does not substitute the first routine in a graph for the entry point. Screens and user actions links declared components. Follow an event explains binds, calls, callbacks and possible scheduling. Architecture, data and maintenance topics explain what their relationship kinds mean and where conclusions remain unsupported.',
+'Double-click an Explorer object or follow a learning link to open Explain. It presents the declared contract, nearby source-author comments when captured, callers and consumers, outgoing interactions, decisions, attributed knowledge and a bounded execution trace. Source comments remain author documentation, not independently verified behavior. Expand a connection to see the precise evidence and derivation rule.',
+'The learning and Explain pages run locally through WebView2. If the runtime is unavailable, a readable text fallback remains. Local learning projections avoid export-only redaction work; the publisher refuses to export them. A separately constructed publication model always applies redaction and exclusions.'
 ]),
 ('Explore and search', [
 'Double-click an Explorer row to select its canonical object. The Inspector shows its identity, signature, condition, source range, source hash and serialized properties when available. Units, types, components and routines provide drill-down scopes. The breadcrumb reports the active scope and page. Parent moves upward; Back restores a prior selection.',
@@ -40,11 +48,16 @@ USER = [
 ('Read source and graph evidence', [
 'The Source tab reads the attached source file and compares its bytes with the captured SHA256 before applying the source range. If the live file changed or cannot be decoded, DPH displays a stale or unavailable message instead of presenting the old range as a confirmed live location. External dependencies remain in the evidence model but are not followed by the local source viewer through an invented path.',
 'The Graphs tab offers Execution, Procedure CFG, Caller / callee, Form navigation, Data flow and Change impact. Select a relevant routine or component before choosing a narrow graph. Graphs show at most 120 nodes and 960 edges. A narrower selection is preferable to interpreting a truncated large view as the complete program.',
-'Confirmed static edges use blue. Uncertain edges use orange dashes. A procedure control-flow graph shows the implemented static branches and source ranges. Form navigation is ownership, event and call evidence; it does not prove runtime window activation. Change impact is possible reachability through typed relationships, not proved runtime impact. Click a node to inspect its evidence.'
+'Confirmed static edges use blue. Uncertain edges use orange. Procedure CFG opens a labeled source-derived diagram when WebView2 is available, with a native graph fallback. Large routines collapse ordinary straight-line statements while retaining control nodes; arrows identify omitted statements. More than 70 retained control nodes produces an explicit limit instead of a misleading complete diagram. Other graph views retain their 120-node bound. Form navigation does not prove runtime window activation; Change impact is possible reachability. Click a native graph node to inspect its evidence.'
 ]),
 ('Inspect screens', [
-'The Screens tab reconstructs rectangles and text from serialized FMX or DFM data. It never creates untrusted component classes. The result is explicitly an approximate design-time view, not an actual runtime screenshot. Custom painting, runtime geometry, styles and unavailable inherited resources may differ from the running program.',
+'The Form designs tab reconstructs rectangles and text from serialized FMX or DFM data. It never creates untrusted component classes. The result is explicitly an approximate design-time view, not an actual runtime screenshot. Custom painting, runtime geometry, styles and unavailable inherited resources may differ from the running program.',
 'Thumbnail displays a gallery of up to 60 forms. Fit scales the selected form to the viewport, Native uses its reconstructed size, Zoom displays 200 percent, and Full screen uses the larger window. The Full screen button toggles the DPH window size. Click a component rectangle to navigate to the corresponding canonical object when a source association is available.'
+]),
+('Import actual screenshot evidence', [
+'Open Screenshots, enter the named contributor and a description including capture date and environment, then choose Import an existing PNG screenshot. Select an image you already captured and are authorized to preserve. DPH does not launch the selected application. PNG files are bounded to 20 MiB, 8192 pixels per dimension and 32 million pixels.',
+'The managed image and its metadata are checksummed beside the knowledge database. Select a row to view the actual image and attribution. Runtime origin, capture time and environment are contributor claims and remain user supplied unverified. The associated generation is displayed, including when it is historical. Copy the adjacent views folder when moving the database.',
+'Publishing includes only imported images matching the exported generation and included object scope. Excluding a linked source excludes its screenshot. The exported caption identifies the contributor and unverified state; private storage paths are omitted. Review screenshots for confidential material before sharing.'
 ]),
 ('Write attributed knowledge', [
 'Use the Knowledge tab for notes, business rules, engineering rules, user help, maintenance, build and deployment details, troubleshooting, orientation, decisions and unknowns. Select the relevant Explorer object before starting New to link the record to that object. With no selected object, a new record applies to the project.',
@@ -59,7 +72,7 @@ USER = [
 ('Publish manuals and handoffs', [
 'Open Publish. Choose Full project or Selected object and context. The task choice requires a selected canonical object and includes its incident technical context rather than a blind truncation of a full export. Enter explicit relative file or folder exclusions separated by semicolons. External source roots and sensitive filename categories are excluded by default.',
 'Choose a new export folder name outside the source tree. DPH refuses an existing destination to avoid overwriting unrelated files. It creates offline index.html, local assets, canonical.json, editable engineering and user guides, technical JSONL indexes, evidence references, coverage and a checksum manifest. Generated AGENTS.md and source snapshots are excluded unless a separate explicit request is implemented and authorized.',
-'Preview offline HTML opens only the approved local index through Edge. External addresses and arbitrary file navigation are blocked. Offline search and internal links work without a translation service. Atlas is unconfigured. The GTranslate region is disabled in the offline edition, and the language-label helper is local. No external translation or AI service receives source through this feature.',
+'Preview offline HTML opens the approved local index and generated hash-named object explanation pages through Edge. External addresses and arbitrary file navigation are blocked. Offline search and internal links work without a translation service. Atlas is unconfigured. The GTranslate region is disabled in the offline edition, and the language-label helper is local. No external translation or AI service receives source through this feature.',
 'Run tools/export-pdf.ps1 with the BundleDirectory parameter for optional PDF companions. It uses LibreOffice and the approved Python 3.13 with pypdf, populates cached TOC page numbers while retaining changeable fields, and refreshes bundle checksums. Read coverage and known unknowns before treating an export as a final operating manual. Automatic documentation cannot invent missing end-user procedures.'
 ]),
 ('Validate and preserve exports', [
@@ -84,10 +97,15 @@ ENGINEERING = [
 'The pipeline is selected project, bounded inventory, read-only byte acquisition, lexical and conditional processing, Pascal and form IR, semantic relationships and control flow, revision-consistent SQLite capture, cached workspace projection, curated knowledge and derived publication. Contract data remains separate from FMX. Every unsupported construct or unavailable dependency must remain diagnosable rather than being promoted into false completeness.',
 'All application controls are serialized in DPH.UI.Main.fmx and editable in the IDE. List contents and paint-box geometry are data projections. No scanned component class is instantiated. Avoid adding runtime-only controls, Pascal class helpers or an alternative authoritative store without explicit authorization.'
 ]),
+('Rework and acceptance status', [
+'The owner rejected the earlier WP7 delivery as inadequate for learning and handoff. The statement that implementation through WP7 was complete has been withdrawn. docs/Rework_Requirements_Audit.txt compares the original plan with the implemented product and outstanding work. Historical WP reports remain historical evidence, not acceptance of the reworked experience.',
+'The rework adds a first-launch Getting started course, deterministic explanation engine, guided learning workspace, source-comment context, event traces, labeled and collapsed procedure-flow views, attributed screenshot imports and richer project-specific publication. Run tools/build-learning.cmd with an optional pinned reference database path for dedicated learning and real-WebView2 tests. The source-based first-time-programmer exercise still needs a human participant.',
+'Affected-only semantic recomputation, broader external-definition interpretation and retention/continuity controls remain incomplete. Source safety, privacy, attribution and exact generation links are retained. Do not turn an automated pass count into a claim that every requirement or the human onboarding goal is finished.'
+]),
 ('Build and deployment', [
 'The installed compiler is RAD Studio 37.0.59082.6021. Load C:\\Program Files (x86)\\Embarcadero\\Studio\\37.0\\bin\\rsvars.bat before compiling. tools/build-wp0.cmd builds DelphiProjectHandoff.dproj with elevated MSBuild and runs the FMX resource smoke test. Output is bin/Win32/Debug, with DCUs in dcu/Win32/Debug. The initial executable target is Windows Win32.',
 'Deploy the executable, migrations 001_foundation.sql and 002_constraints.sql, and the architecture-matched WebView2Loader.dll. The reviewed Microsoft WebView2 SDK package is pinned to 1.0.4258.31; retain tools/WebView2/LICENSE.txt with binary redistribution. The browser loads the DLL by its absolute executable-folder path and activates Edge only when preview is requested. There is no intended IE fallback.',
-'The repository standard folders include bin, dcu, docs/guides, docs/pdf, export, help, images and icons, samples, source distributions and tools. Reference source and generated test databases remain ignored. Use the explicitly approved Python 3.13 executable for project tooling and the installed LibreOffice, never Microsoft Word.'
+'The repository standard folders include bin, dcu, docs/guides, docs/pdf, export, help, images and icons, samples, source distributions and tools. Deploy help/index.html for first-launch education. Reference source and generated test databases remain ignored. Use the explicitly approved Python 3.13 executable for project tooling and the installed LibreOffice, never Microsoft Word.'
 ]),
 ('Input acquisition and project scope', [
 'DPH.Project.Inventory follows the selected project, explicit references, uses clauses, include paths and approved external roots. Project XML is passive: targets and imported build scripts are not executed. Canonical paths are project relative and normalized; traversal, ambiguous macros, reparse paths, cycles and oversized acquisition are rejected or diagnosed. A repository-wide count of Pascal files is not the build scope.',
@@ -139,7 +157,7 @@ ENGINEERING = [
 'Redaction recognizes common credential assignments, private keys, AWS access keys and JWT-shaped tokens throughout string data. It is defense in depth, not a guarantee that every project-specific secret format is recognizable. Require explicit exclusions and a disclosure review for sensitive content. No translation or AI provider is contacted by normal publishing.'
 ]),
 ('HTML guides and bundle validation', [
-'DPH.Publish.Export writes a new destination outside source. The offline HTML uses encoded imported text, local search and styles, internal anchors, print CSS and a restrictive content security policy. The WebView2 navigation policy permits only the authorized local index and about:blank, with no arbitrary native bridge. Data does not supply executable markup.',
+'DPH.Publish.Export writes a new destination outside source. The offline HTML uses encoded imported text, local search and styles, internal anchors, print CSS and a restrictive content security policy. The default WebView2 policy permits only the authorized local index and about:blank; publication explicitly enables hash-named object pages in its managed objects folder. Learning and help retain the index-only policy. There is no arbitrary native bridge. Data does not supply executable markup.',
 'JSONL indexes contain symbols, relationships, forms/events, data usage, configuration, flow nodes, knowledge and evidence references. Manifest and checksum files accompany canonical.json. The validator checks filenames, hashes, expected input fingerprint, canonical identity, source hash/range, generation and cross-reference integrity. A stale manifest is rejected by default. Unsigned hashes establish integrity relative to the index, not author authenticity.',
 'Editable engineering and user DOCX guides derive from the same sections and evidence model. They include title, last changed capture identity and a changeable TOC field. LibreOffice provides companion PDFs; the project rendering tool verifies cached page numbers and renders page images for layout inspection. Missing business procedures stay explicitly absent rather than being invented.'
 ]),
@@ -186,7 +204,7 @@ def build(filename, title, audience, sections):
     doc.add_paragraph(title, 'Title')
     doc.add_paragraph('Delphi Project Handoff', 'Subtitle')
     doc.add_paragraph('Windows desktop experimental software')
-    doc.add_paragraph('Last changed 10 October 2026')
+    doc.add_paragraph('Last changed 11 October 2026')
     doc.add_paragraph(audience)
     doc.add_paragraph('This guide describes the implemented application and its evidence limits. Use the phase acceptance records for exact measured results and unresolved release gates.')
     doc.add_page_break()
@@ -202,6 +220,20 @@ def build(filename, title, audience, sections):
         doc.add_heading(heading, 1)
         for paragraph in paragraphs:
             doc.add_paragraph(paragraph)
+        if filename == 'DPH_User_Guide.docx' and heading == 'Learn the selected project':
+            doc.add_page_break()
+            doc.add_heading('The displayed learning pages', 2)
+            doc.add_paragraph('These images are direct WebView2 captures from the running DPH test application, not proposed interface mockups. They show the visible portion of scrollable pages.')
+            for image_name, caption in [
+                ('rework-getting-started.png', 'Getting started: first-launch education before a project is loaded.'),
+                ('rework-reference-trace.png', 'Explain: actual event/callback reachability in the pinned converter, retaining certainty and evidence.')
+            ]:
+                image_path = ROOT / 'docs' / image_name
+                if not image_path.exists():
+                    raise RuntimeError(f'Missing actual UI capture: {image_path}')
+                doc.add_picture(str(image_path), width=Inches(5.0))
+                doc.add_paragraph(caption)
+            doc.add_page_break()
     doc.add_heading('Source and revision evidence', 1)
     doc.add_paragraph('The following source files and resources define this guide. SHA256 values identify the inspected implementation. Rebuild the guides after validated changes and retain the associated acceptance evidence.')
     evidence = []
@@ -244,5 +276,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 1, 'sources': evidence, 'last_changed': '2026-10-10'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 2, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

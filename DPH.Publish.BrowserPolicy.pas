@@ -1,12 +1,12 @@
 unit DPH.Publish.BrowserPolicy;
 interface
 type TDPHBrowserPolicy = class
-  class function Allowed(const AURL,ADirectory: string): Boolean; static;
+  class function Allowed(const AURL,ADirectory: string; AObjectPages: Boolean = False): Boolean; static;
 end;
 implementation
 uses System.SysUtils, System.StrUtils, System.IOUtils, System.NetEncoding;
-class function TDPHBrowserPolicy.Allowed(const AURL,ADirectory: string): Boolean;
-var Path: string; P: Integer;
+class function TDPHBrowserPolicy.Allowed(const AURL,ADirectory: string; AObjectPages: Boolean): Boolean;
+var Path,Name: string; P: Integer; C: Char;
 begin
   Result:=SameText(AURL,'about:blank'); if Result then Exit;
   if (ADirectory='') or not StartsText('file://',AURL) then Exit(False);
@@ -15,6 +15,13 @@ begin
   Path:=TNetEncoding.URL.Decode(Path); P:=Pos('#',Path); if P>0 then SetLength(Path,P-1);
   if Path.Contains('?') or Path.Contains('..') or Path.Contains(#0) then Exit(False);
   Path:=Path.Replace('/',PathDelim);
-  try Result:=SameFileName(TPath.GetFullPath(Path),TPath.Combine(TPath.GetFullPath(ADirectory),'index.html')); except Result:=False; end;
+  try
+    Path:=TPath.GetFullPath(Path);
+    Result:=SameFileName(Path,TPath.Combine(TPath.GetFullPath(ADirectory),'index.html'));
+    if not Result and AObjectPages and SameFileName(ExtractFileDir(Path),TPath.Combine(TPath.GetFullPath(ADirectory),'objects')) then begin
+      Name:=TPath.GetFileNameWithoutExtension(Path); Result:=(Length(Name)=64) and SameText(ExtractFileExt(Path),'.html');
+      for C in Name do if not CharInSet(C,['0'..'9','a'..'f','A'..'F']) then Result:=False;
+    end;
+  except Result:=False; end;
 end;
 end.

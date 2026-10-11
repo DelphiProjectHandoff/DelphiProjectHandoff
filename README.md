@@ -1,17 +1,34 @@
-# Delphi Project Handoff (DPH)
+# Delphi Project Handoff
 
-Experimental software. WP0 through WP2 foundations are implemented: FMX shell, SQLite generations, and a headless read-only Delphi inventory/parser.
+Experimental Windows desktop software for understanding one selected Delphi application through captured source evidence and attributed knowledge. DPH reads the selected project without compiling or executing it. The converter reference is passive test input, never a build or runtime dependency.
 
-Independent Delphi FMX application for evidence-linked understanding and handoff of one selected Delphi project. VCL2FMXConverter is read-only reference material, never a runtime or build dependency.
+The owner rejected the original WP7 experience as inadequate. The 11 October 2026 rework adds first-launch education, eleven project learning topics, readable object explanations, source comments, event/callback traces, labeled procedure diagrams, attributed screenshot imports and corresponding publication. The previous blanket completion statement is withdrawn. [The plan comparison](docs/Rework_Requirements_Audit.txt) identifies the remaining requirements; historical WP reports are not acceptance of the rework.
 
-Open DelphiProjectHandoff.dproj in RAD Studio. All initial controls and properties are serialized in DPH.UI.Main.fmx and editable in the Object Inspector.
+## Run
 
-From an elevated Windows command prompt, run tools\build-wp0.cmd. This builds the Windows 32-bit Debug application and runs the initial baseline test. Delphi's installed environment is loaded by rsvars.bat. The GUI is not automatically launched.
+1. Run `bin\Win32\Debug\DelphiProjectHandoff.exe`, or extract the latest experimental binary ZIP from `export` to a writable folder and run its executable.
+2. Read **Getting started**, which opens at launch. Keep the deployed `help`, `migrations` and `WebView2Loader.dll` files with the executable. Microsoft WebView2 Runtime enables embedded pages; native text remains available as a fallback.
+3. Choose the intended configuration and platform; enter required compiler defines. Choose **Attach project**, select its project file and save its `.dphdb` database outside the selected source tree.
+4. Start with **Learn the project → How the program starts**. Choose a control under **Screens and user actions**, follow its event, and read **Explain**. Compare its decisions and connections with **Source** and **Graphs**.
+5. Preserve missing business explanations in **Knowledge** with a named author. Use **Publish** to create a scoped offline handoff after reviewing exclusions and private information.
 
-The owner's global AGENTS.md remains unchanged and independently authoritative. DPH_CODEX_HANDOFF.txt supersedes older approval labels in the master specification. Implementation authorization is granted separately for each work package.
+**Form designs** are approximate serialized reconstructions. **Screenshots** displays actual PNG images explicitly imported by a contributor, retaining their generation and unverified attribution. DPH does not run the input application to obtain screenshots.
 
-WP0 was reviewed and approved by the owner, who separately authorized WP1. WP1 adds a headless FireDAC SQLite store, two checksum-validated migrations, manifests and revisions, generation/evidence constraints, separate status flags, queued writes, interruption recovery and consistent backups. Run tools\build-wp1.cmd from an elevated command prompt to build the application, rerun the FMX smoke test, and run the storage suite. Tests create disposable fixtures under ignored bin directories; they never scan or execute the converter.
+For the pinned converter example, select `samples\reference-vcl2fmx-v6.0.0\VCL2FMXConverter.dproj`, Debug / Win32, with extra defines `MSWINDOWS;WIN32`. The reference remains PARTIAL; missing dependencies and unsupported syntax are visible gaps.
 
-WP1 was reviewed and approved by the owner, who separately authorized WP2. Run tools\validate-wp2.ps1 using PowerShell -ExecutionPolicy Bypass from an elevated prompt for the application build, WP0/WP1 regressions, WP2 fixtures and complete pinned-reference source hash verification. tools\build-wp2.cmd runs the discovery suite alone after the baseline output directories exist. The reference project is acquired as passive input and is never built or executed.
+Full directions and exercises: [User Guide DOCX](docs/guides/DPH_User_Guide.docx), [User Guide PDF](docs/pdf/DPH_User_Guide.pdf), and [local HTML help](help/index.html). Developers should also read the [Engineering Guide](docs/guides/DPH_Engineering_Guide.docx).
 
-See docs\WP2_Acceptance.txt and docs\WP2_Parser_Contract.txt for measured coverage, API responsibilities and hard limits. The reference FMX hierarchy is parsed, while the overall reference analysis remains explicitly partial. The UI is still the original design-time shell. WP3 requires separate owner authorization and a new pre-change backup on D:\.
+## Build and test
+
+Open `DelphiProjectHandoff.dproj` in RAD Studio. Controls and properties are serialized in `DPH.UI.Main.fmx` and editable in the Object Inspector. From an elevated PowerShell prompt in this folder:
+
+```powershell
+cmd /c tools\build-wp0.cmd
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\validate-rework.ps1
+```
+
+The first command builds the Win32 Debug application and checks its FMX resource. The second runs the serial storage, discovery, semantics, workspace, knowledge, publishing, hardening and learning suites. It preserves historical phase reports, writes `docs/rework-*` evidence and verifies the pinned source and original instructions remain unchanged. It needs the pinned reference already present and may take several minutes. Test data stays under ignored `bin` directories.
+
+For focused learning tests, use `cmd /c tools\build-learning.cmd`, optionally followed by a saved pinned-reference `.dphdb` path. To validate a bundle, run `DPH.ValidateHandoff.exe <bundle> <trusted fingerprint>`; `--allow-stale` permits integrity inspection of explicitly historical/partial bundles.
+
+The installed RAD Studio toolchain is `C:\Program Files (x86)\Embarcadero\Studio\37.0\bin`; scripts load its `rsvars.bat`. Guide generation uses the owner's Python 3.13 and LibreOffice. Online translation, external AI and runtime instrumentation remain disabled pending their distinct decisions and authorization.

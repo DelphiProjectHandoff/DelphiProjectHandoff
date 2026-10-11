@@ -1,0 +1,21 @@
+{
+  "sources_verified": 26,
+  "guides": [
+    {
+      "guide": "DPH_Engineering_Guide",
+      "pages": 10,
+      "docx_sha256": "5a17616b8193197df1cbc3448688bdd592976116d260750aa2bed90b3fa1222e",
+      "pdf_sha256": "0b415b1cf73bf794e2c857e9f446c4bdbb3864e82609eacf27171d83241f2a49",
+      "editable_toc": true
+    },
+    {
+      "guide": "DPH_User_Guide",
+      "pages": 12,
+      "docx_sha256": "8c51b2ff2b3627fe936fe3b10e671b7b65a060cd8db3e153d68a0f8c18fff0f8",
+      "pdf_sha256": "2c2d5bc9eb53a74ddb90290c5a6ea117133ea20747316194c230dd2b9b3be2fd",
+      "editable_toc": true
+    }
+  ],
+  "renderer": "LibreOffice; all pages rendered for visual review",
+  "visual_review": "All 22 final rendered pages inspected; no clipping, overlap or broken images found"
+}

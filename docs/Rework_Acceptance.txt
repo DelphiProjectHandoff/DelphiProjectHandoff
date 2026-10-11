@@ -1,0 +1,87 @@
+DPH 0.2 experimental rework - 11 October 2026
+
+The owner rejected the earlier experience as inadequate for explanation and
+handoff. The previous blanket statement that implementation through WP7 was
+complete is withdrawn. This delivery materially reworks the product; it is not
+acceptance of every requirement in the original plan.
+
+Pre-change protection
+D:\DPH Backups\Rework_PreChange_20261011_072412
+4,595 files / 2,417,309,988 bytes, SHA256 verified before edits.
+Original planning documents and global agents.md remain unchanged.
+
+Implemented experience
+- Getting started opens before a project is loaded: ten-minute instructions,
+  a learning exercise, workspace explanations, Delphi terms and test directions.
+- Eleven learning topics use captured startup, components, events, dependencies,
+  data, decisions and coverage; navigation opens the corresponding real object.
+- Explain replaces raw JSON with a declared contract, source-author comments,
+  incoming and outgoing connections, decision explanations, linked authored
+  knowledge, maintenance guidance and exact expandable source evidence.
+- Event/callback reachability follows captured relationships. Callbacks and
+  resolved connections are prioritized for readability; it does not claim
+  observed runtime order. Unresolved targets and scheduling remain explicit.
+- Procedure CFG uses captured edges with labels and source statements. Large
+  bodies collapse ordinary statements while retaining control nodes and exits.
+  The diagram reports omitted statements and its remaining bound.
+- Form designs remain explicitly approximate. Screenshots imports existing
+  attributed PNG images without executing the input application. Managed image
+  and metadata hashes, generation links, scope exclusions and portability are
+  enforced. Contributor runtime claims remain unverified.
+- Offline publication includes object explanation pages, project-specific
+  learning prose, attributed image evidence and editable engineering/user DOCX
+  guides. Local unredacted display projections cannot be exported.
+- Status text uses plain punctuation to avoid the reported garbled characters.
+  Controls remain serialized in FMX and editable in the Object Inspector.
+
+Evidence
+Complete serial regression passed: FMX resource/build, 46 storage checks,
+68 discovery/parser checks, 55 semantic checks, 41 workspace checks,
+34 knowledge checks, 57 publishing checks and 29 hardening checks.
+Learning suite: 53 checks, including actual FMX/WebView2 rendering of startup,
+the conversion callback route and procedure CFG; large-body collapse; attributed
+image import/exclusion/hash damage/portability; recovery of valid cached analysis
+when a supplemental image is damaged; and rejection of unredacted local
+publication. The discovery suite retains its original parser golden contract.
+Final visual corrections were
+followed by affected application, publication and learning validation.
+2,447 selected inputs/instructions unchanged during the complete regression.
+
+The pinned converter retains 4,909 symbols and its approved input fingerprint:
+85af5e4f63dbf775e6b1dc70b03c53cf33d91f1cb8c5d203118d0b6c7b3490d3
+Reference commit: e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d
+Full capture 84.458 s; cache open 2.839 s; reassessment 79.084 s;
+maximum worker message-pump gap 67 ms; peak test process 1,437,843,456 bytes.
+These measurements are not agreed release budgets. See the JSON/log evidence.
+
+Visual QA
+rework-getting-started.png, rework-reference-explain.png,
+rework-reference-startup.png, rework-reference-trace.png and
+rework-reference-flow.png are direct captures of rendered native WebView2 views.
+rework-learning-workspace.png is a QA composite of the actual FMX PaintTo result
+and its native browser capture; it is not represented as an operating-system
+desktop screenshot. No reference program was run to manufacture screen evidence.
+The User Guide includes real rendered page captures. Both DOCX guides retain
+editable TOCs; companion PDFs are rendered through LibreOffice and inspected.
+
+Run and test
+Launch bin\Win32\Debug\DelphiProjectHandoff.exe, or extract the 0.2 binary ZIP
+from export and launch its executable. Keep help, migrations and loader beside it.
+Read Getting started, then the User Guide in docs\guides or docs\pdf.
+For the pinned example choose samples\reference-vcl2fmx-v6.0.0\
+VCL2FMXConverter.dproj, Debug / Win32, extra defines MSWINDOWS;WIN32.
+Store its .dphdb outside the selected source folder. Begin with Learn the project,
+How the program starts, a familiar control and its event into Explain.
+Use tools\validate-rework.ps1 from elevated PowerShell with ExecutionPolicy Bypass
+for reproducible serial regressions and selected-input hash verification.
+
+Remaining original-plan work
+See Rework_Requirements_Audit.txt. Minimal affected-only semantic recomputation,
+broader external-definition/resource interpretation, hierarchy collapse for the
+other graph types, retention controls, rename-review UI and general runtime-log
+import remain incomplete. Reference coverage remains PARTIAL. Business rationale
+and operating procedures need attributed author input; static analysis cannot
+invent them. Independent first-time-programmer acceptance has not been run.
+Live Atlas depends on the provider decision. External AI, runtime instrumentation
+and network translation remain disabled under their distinct consent boundaries.
+The current tests do not establish that all original product requirements are done.

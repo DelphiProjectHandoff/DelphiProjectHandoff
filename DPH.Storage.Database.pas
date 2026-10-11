@@ -74,6 +74,8 @@ type
     function KnowledgeJSON: TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
     function GenerationIsStale(AGenerationID: Int64): Boolean;
+    procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
+    function ScreenshotsJSON: TJSONArray;
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -992,6 +994,69 @@ begin
   except FConnection.Rollback; FSourceRoot:=OldRoot; raise; end;
 end;
 
+procedure TDPHKnowledgeStore.ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
+var Bytes: TBytes; Hash,Directory,Path,MetadataHash: string; Metadata: TJSONObject; Hasher: THashSHA2; Width,Height: Int64;
+begin
+  RequireWriter;
+  if (Trim(AAuthor)='') or (Trim(ACaption)='') or (Length(AAuthor)>256) or (Length(ACaption)>4096) then raise EDPHStorage.Create('Screenshot requires a named contributor (up to 256 characters) and capture/environment description (up to 4096)');
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'',''superseded'')',[AGenerationID])<>1 then raise EDPHStorage.Create('Screenshot requires a captured generation');
+  if (AEntityKey<>'') and (Scalar('SELECT count(*) FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id '+
+    'WHERE e.project_id=1 AND e.canonical_key=:key AND v.generation_id=:generation',[AEntityKey,AGenerationID])<>1) then
+    raise EDPHStorage.Create('Screenshot link does not exist in the selected generation');
+  if (TFile.GetSize(AFile)>20*1024*1024) then raise EDPHStorage.Create('Screenshot exceeds 20 MiB');
+  Bytes:=TFile.ReadAllBytes(AFile);
+  if Length(Bytes)>20*1024*1024 then raise EDPHStorage.Create('Screenshot changed beyond the supported size limit');
+  if (Length(Bytes)<33) or (Bytes[0]<>137) or (Bytes[1]<>80) or (Bytes[2]<>78) or (Bytes[3]<>71) or (Bytes[4]<>13) or (Bytes[5]<>10) or (Bytes[6]<>26) or (Bytes[7]<>10) or
+    (Bytes[12]<>73) or (Bytes[13]<>72) or (Bytes[14]<>68) or (Bytes[15]<>82) then raise EDPHStorage.Create('Select a PNG screenshot with a valid IHDR header');
+  Width:=Int64(Bytes[16])*16777216+Int64(Bytes[17])*65536+Int64(Bytes[18])*256+Bytes[19];
+  Height:=Int64(Bytes[20])*16777216+Int64(Bytes[21])*65536+Int64(Bytes[22])*256+Bytes[23];
+  if (Width<1) or (Height<1) or (Width>8192) or (Height>8192) or (Width*Height>32000000) then raise EDPHStorage.Create('Screenshot dimensions exceed the supported bound');
+  Hasher:=THashSHA2.Create; Hasher.Update(Bytes); Hash:=Hasher.HashAsString;
+  Directory:=FDatabasePath+'.views'; CheckOutsideSource(Directory); TDirectory.CreateDirectory(Directory);
+  Path:=TPath.Combine(Directory,Hash+'.png'); if not TFile.Exists(Path) then TFile.WriteAllBytes(Path,Bytes);
+  if THashSHA2.GetHashStringFromFile(Path)<>Hash then raise EDPHStorage.Create('Screenshot content hash mismatch');
+  Metadata:=TJSONObject.Create;
+  try
+    Metadata.AddPair('image',Hash+'.png'); Metadata.AddPair('image_sha256',Hash); Metadata.AddPair('generation_id',TJSONNumber.Create(AGenerationID));
+    Metadata.AddPair('author',AAuthor); Metadata.AddPair('caption',ACaption); Metadata.AddPair('entity_key',AEntityKey);
+    Metadata.AddPair('imported_utc',UTCNow); Metadata.AddPair('verification_state','user_supplied_unverified');
+    Metadata.AddPair('provenance','User-selected image; capture time, environment and runtime origin are contributor claims, not observed by DPH');
+    Bytes:=TEncoding.UTF8.GetBytes(Metadata.ToJSON); Hasher:=THashSHA2.Create; Hasher.Update(Bytes); MetadataHash:=Hasher.HashAsString;
+    Path:=TPath.Combine(Directory,MetadataHash+'.json'); if not TFile.Exists(Path) then TFile.WriteAllBytes(Path,Bytes);
+    if THashSHA2.GetHashStringFromFile(Path)<>MetadataHash then raise EDPHStorage.Create('Screenshot metadata hash mismatch');
+    FConnection.ExecSQL('INSERT INTO artifacts(project_id,generation_id,kind,artifact_path,content_hash,locale,template_version,build_state) '+
+      'VALUES(1,:generation,''user_screenshot'',:path,:hash,''en'',''DPH-LEARNING-1'',''needs_review'')',[AGenerationID,Path,MetadataHash]);
+  finally Metadata.Free; end;
+end;
+function TDPHKnowledgeStore.ScreenshotsJSON: TJSONArray;
+var Query: TFDQuery; Hash,Path,Image,ImageHash: string; Row: TJSONObject; C: Char;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT content_hash FROM artifacts WHERE kind=''user_screenshot'' ORDER BY artifact_id DESC LIMIT 200',[]);
+  try
+  try
+    while not Query.Eof do begin
+      Hash:=Query.Fields[0].AsString;
+      if Length(Hash)<>64 then raise EDPHStorage.Create('Screenshot metadata hash is invalid');
+      for C in Hash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Screenshot metadata hash is invalid');
+      Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
+      if (Length(Hash)<>64) or not TFile.Exists(Path) or (TFile.GetSize(Path)>1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>Hash) then raise EDPHStorage.Create('Screenshot metadata is missing or damaged');
+      Row:=TJSONObject.ParseJSONValue(TFile.ReadAllText(Path,TEncoding.UTF8)) as TJSONObject;
+      try
+        if Row=nil then raise EDPHStorage.Create('Screenshot metadata is invalid JSON');
+        Image:=Row.GetValue<string>('image'); ImageHash:=Row.GetValue<string>('image_sha256');
+        if (Length(ImageHash)<>64) or (Image<>ImageHash+'.png') then raise EDPHStorage.Create('Screenshot image path is not managed');
+        for C in ImageHash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Screenshot image hash is invalid');
+        Path:=TPath.Combine(FDatabasePath+'.views',Image); CheckOutsideSource(Path);
+        if not TFile.Exists(Path) or (TFile.GetSize(Path)>20*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>ImageHash) then raise EDPHStorage.Create('Screenshot image is missing or damaged');
+        Row.AddPair('managed_path',Path); Result.AddElement(Row); Row:=nil;
+      finally Row.Free; end;
+      Query.Next;
+    end;
+  except Result.Free; raise;
+  end;
+  finally Query.Free; end;
+end;
 function TDPHKnowledgeStore.SQLiteVersion: string;
 begin RequireWriter; Result := VarToStr(Scalar('SELECT sqlite_version()',[])); end;
 

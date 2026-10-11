@@ -1,0 +1,11 @@
+{
+  "executable": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\distribution-verify-74e3b80127ec4123b4bd385f8db564df\\DelphiProjectHandoff.exe",
+  "sha256": "8be576e3cd166221d2cf6915ed177d54359d0b1fc35771b643eec5437721e1d8",
+  "window_title": "Delphi Project Handoff - Experimental Software",
+  "responding": true,
+  "close_requested": true,
+  "normal_exit": 0,
+  "packaged_validator_exit": 0,
+  "validator_output": "PASS: checksums, source ranges, generation and technical indexes agree with the trusted fingerprint\nHistorical/partial inspection explicitly allowed; this does not establish current complete source evidence.",
+  "checked_utc": "2026-10-11T12:39:13.6903330Z"
+}

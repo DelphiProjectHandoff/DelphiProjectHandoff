@@ -41,7 +41,7 @@ begin
   Result.AddPair('selection_hash',SelectionHash(AConfig,APlatform,ADefines,AExternalRoots));
   A:=TJSONArray.Create; Result.AddPair('defines',A); for Value in ADefines do A.Add(Value);
   A:=TJSONArray.Create; Result.AddPair('external_roots',A); for Value in AExternalRoots do A.Add(Value);
-  Result.AddPair('syntax',AScan.AsJSON); Result.AddPair('semantics',AGraph.AsJSON);
+  Result.AddPair('syntax',AScan.AsJSON(True)); Result.AddPair('semantics',AGraph.AsJSON);
   Result.AddPair('analysis_complete',TJSONBool.Create(AScan.Complete and AGraph.Complete));
   Result.AddPair('runtime_observed',TJSONBool.Create(False));
 end;
@@ -164,7 +164,7 @@ end;
 function TDPHWorkspaceView.FlagsText: string;
 begin
   Result:='Generation '+FDocument.GetValue<Int64>('generation_id').ToString+' | ';
-  if FDocument.GetValue<Boolean>('analysis_complete') then Result:=Result+'complete captured analysis' else Result:=Result+'PARTIAL analysis — inspect diagnostics';
+  if FDocument.GetValue<Boolean>('analysis_complete') then Result:=Result+'complete captured analysis' else Result:=Result+'PARTIAL analysis - inspect diagnostics';
   Result:=Result+' | static evidence; runtime behavior unobserved';
 end;
 end.

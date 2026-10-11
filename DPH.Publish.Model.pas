@@ -1,22 +1,24 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-WP7-1';
+const DPHPublishVersion = 'DPH-LEARNING-1';
 type
   TDPHDocumentModel = class
   private
     FDocument: TJSONObject;
+    FLocalDisplay: Boolean;
   public
     constructor Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
-      const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean);
+      const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray = nil; ALocalDisplay: Boolean = False);
     destructor Destroy; override;
     class function Redact(const AText: string): string; static;
     class function Scrub(AValue: TJSONValue): TJSONValue; static;
     class function HTML(const AText: string): string; static;
     property Document: TJSONObject read FDocument;
+    property LocalDisplay: Boolean read FLocalDisplay;
   end;
 implementation
-uses System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections;
+uses System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations;
 class function TDPHDocumentModel.HTML(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
 class function TDPHDocumentModel.Redact(const AText: string): string;
@@ -38,12 +40,17 @@ begin
   else if AValue is TJSONString then Result:=TJSONString.Create(Redact(AValue.Value)) else Result:=AValue.Clone as TJSONValue;
 end;
 constructor TDPHDocumentModel.Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
-  const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean);
+  const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray; ALocalDisplay: Boolean);
 var AllowedFiles,Selected,AllKeys,FlowIDs: TDictionary<string,Boolean>; Queue: TQueue<string>;
     V,W: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
-    Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved: Integer;
+    Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
+    Startup,Nodes,Comments: TJSONArray; Node,FileRow: TJSONObject; Explanations: TDPHExplanationModel; CommentCount: Integer;
+  function CaptureValue(AValue: TJSONValue): TJSONValue;
+  begin
+    if ALocalDisplay then Result:=AValue.Clone as TJSONValue else Result:=Scrub(AValue);
+  end;
 begin
-  inherited Create; FDocument:=TJSONObject.Create;
+  inherited Create; FDocument:=TJSONObject.Create; FLocalDisplay:=ALocalDisplay;
   AllowedFiles:=TDictionary<string,Boolean>.Create; Selected:=TDictionary<string,Boolean>.Create;
   AllKeys:=TDictionary<string,Boolean>.Create; FlowIDs:=TDictionary<string,Boolean>.Create; Queue:=TQueue<string>.Create;
   try
@@ -91,12 +98,22 @@ begin
     if Selected.Count>5000 then raise EArgumentException.Create('Task scope exceeds 5000 symbols; choose a narrower seed');
     if Length(ASeeds)=0 then for Key in AllKeys.Keys do Selected.AddOrSetValue(Key,True);
     for V in S.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; if not Selected.ContainsKey(R.GetValue<string>('key')) then Continue;
-      J:=Scrub(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); Symbols.AddElement(J);
+      J:=CaptureValue(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation));
+      FileRow:=AView.SourceFile(R.GetValue<string>('range.source')); Comments:=TJSONArray.Create; J.AddPair('source_comments',Comments); CommentCount:=0;
+      if (FileRow<>nil) and (FileRow.GetValue('comments')<>nil) then for W in FileRow.GetValue<TJSONArray>('comments') do begin Node:=W as TJSONObject;
+        if ((Node.GetValue<Int64>('range.start')>=R.GetValue<Int64>('range.start')) and (Node.GetValue<Int64>('range.end')<=R.GetValue<Int64>('range.end'))) or
+          ((Node.GetValue<Integer>('range.line')<R.GetValue<Integer>('range.line')) and (R.GetValue<Integer>('range.line')-Node.GetValue<Integer>('range.line')<=3)) then begin
+          Range:=CaptureValue(Node) as TJSONObject; Range.AddPair('generation_id',TJSONNumber.Create(Generation));
+          Comments.AddElement(Range); Inc(CommentCount); if CommentCount>=12 then Break;
+        end;
+      end;
+      if R.GetValue<string>('kind')='component' then begin Links:=AView.Properties(R.GetValue<string>('key')); try J.AddPair('serialized_properties',CaptureValue(Links)); finally Links.Free; end; end;
+      Symbols.AddElement(J);
     end;
     Confirmed:=0; Unresolved:=0;
     for V in S.GetValue<TJSONArray>('relationships') do begin R:=V as TJSONObject; FromKey:=R.GetValue<string>('from'); ToKey:=R.GetValue<string>('to','');
       if not Selected.ContainsKey(FromKey) or ((ToKey<>'') and not Selected.ContainsKey(ToKey)) or not AllowedFiles.ContainsKey(R.GetValue<string>('range.source')) then Continue;
-      J:=Scrub(R) as TJSONObject; EvidenceID:='e_'+THashSHA2.GetHashString(IntToStr(Generation)+R.ToJSON);
+      J:=CaptureValue(R) as TJSONObject; EvidenceID:='e_'+THashSHA2.GetHashString(IntToStr(Generation)+R.ToJSON);
       J.AddPair('evidence_id',EvidenceID); J.AddPair('generation_id',TJSONNumber.Create(Generation)); Relations.AddElement(J);
       Range:=TJSONObject.Create; Range.AddPair('id',EvidenceID); Range.AddPair('generation_id',TJSONNumber.Create(Generation));
       Range.AddPair('range',R.GetValue<TJSONObject>('range').Clone as TJSONObject); Range.AddPair('source_hash',R.GetValue<string>('source_hash'));
@@ -106,11 +123,11 @@ begin
     end;
     for V in S.GetValue<TJSONArray>('flow_nodes') do begin R:=V as TJSONObject;
       if not Selected.ContainsKey(R.GetValue<string>('routine')) or not AllowedFiles.ContainsKey(R.GetValue<string>('range.source')) then Continue;
-      J:=Scrub(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowNodes.AddElement(J); FlowIDs.Add(R.GetValue('id').Value,True);
+      J:=CaptureValue(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowNodes.AddElement(J); FlowIDs.Add(R.GetValue('id').Value,True);
     end;
     for V in S.GetValue<TJSONArray>('flow_edges') do begin R:=V as TJSONObject;
       if FlowIDs.ContainsKey(R.GetValue('from').Value) and FlowIDs.ContainsKey(R.GetValue('to').Value) then begin
-        J:=Scrub(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowEdges.AddElement(J);
+        J:=CaptureValue(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowEdges.AddElement(J);
       end;
     end;
     for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin R:=V as TJSONObject; Path:=R.GetValue<string>('path'); if not AllowedFiles.ContainsKey(Path) then Continue;
@@ -119,13 +136,48 @@ begin
     end;
     if AKnowledge<>nil then for V in AKnowledge do begin R:=V as TJSONObject; Links:=R.GetValue<TJSONArray>('links'); IncludeRow:=Links.Count=0;
       if Links.Count>0 then begin IncludeRow:=True; for W in Links do if not Selected.ContainsKey((W as TJSONObject).GetValue<string>('canonical_key','')) then IncludeRow:=False; end;
-      if IncludeRow then begin J:=Scrub(R) as TJSONObject; J.AddPair('source_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
+      if IncludeRow then begin J:=CaptureValue(R) as TJSONObject; J.AddPair('source_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
     end;
     J:=TJSONObject.Create; FDocument.AddPair('coverage',J); J.AddPair('included_files',TJSONNumber.Create(Files.Count)); J.AddPair('excluded_files',TJSONNumber.Create(Excluded.Count));
     J.AddPair('included_symbols',TJSONNumber.Create(Symbols.Count)); J.AddPair('relationships_denominator',TJSONNumber.Create(Relations.Count));
     J.AddPair('confirmed_static_numerator',TJSONNumber.Create(Confirmed)); J.AddPair('unresolved_relationships',TJSONNumber.Create(Unresolved));
     J.AddPair('human_records',TJSONNumber.Create(Knowledge.Count)); J.AddPair('human_review','Separate record state and reviewer; not combined with parser coverage');
     FDocument.AddPair('known_unknowns','Runtime behavior unobserved. Missing dependencies and unsupported syntax remain partial. Business intent, operational procedures and historical rationale require attributed review. No analyzed-project build or execution was performed.');
+    Links:=TJSONArray.Create; FDocument.AddPair('screenshots',Links);
+    if AImages<>nil then for V in AImages do begin R:=V as TJSONObject;
+      if R.GetValue<Int64>('generation_id')<>Generation then Continue;
+      Key:=R.GetValue<string>('entity_key',''); if (Key<>'') and not Selected.ContainsKey(Key) then Continue;
+      J:=CaptureValue(R) as TJSONObject; J.RemovePair('managed_path').Free; Links.AddElement(J);
+    end;
+    Links:=TJSONArray.Create; FDocument.AddPair('diagnostics',Links);
+    for V in S.GetValue<TJSONArray>('diagnostics') do begin R:=V as TJSONObject;
+      Path:=R.GetValue<string>('range.source',''); IncludeRow:=Path='';
+      for W in Files do if (W as TJSONObject).GetValue<string>('path')=Path then IncludeRow:=True;
+      if IncludeRow then Links.AddElement(CaptureValue(R));
+    end;
+    Startup:=TJSONArray.Create; FDocument.AddPair('startup',Startup);
+    for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin FileRow:=V as TJSONObject;
+      if not AllowedFiles.ContainsKey(FileRow.GetValue<string>('path')) or not FileRow.TryGetValue<TJSONArray>('ir.nodes',Nodes) or (Nodes.Count=0) then Continue;
+      if not MatchText((Nodes.Items[0] as TJSONObject).GetValue<string>('kind'),['program','library']) then Continue;
+      IncludeRow:=False; for W in Files do if (W as TJSONObject).GetValue<string>('path')=FileRow.GetValue<string>('path') then IncludeRow:=True;
+      if not IncludeRow then Continue;
+      for W in Nodes do begin Node:=W as TJSONObject;
+        if Node.GetValue<string>('kind')<>'expression' then Continue;
+        Parent:=Node.GetValue<Integer>('parent'); Depth:=0; IncludeRow:=False;
+        while (Parent>0) and (Parent<Nodes.Count) and (Depth<128) do begin
+          R:=Nodes.Items[Parent] as TJSONObject;
+          if StartsText('routine_',R.GetValue<string>('kind')) or StartsText('anonymous_',R.GetValue<string>('kind')) then begin IncludeRow:=False; Break; end;
+          if (R.GetValue<string>('kind')='block') and (R.GetValue<Integer>('parent')=0) then IncludeRow:=True;
+          Parent:=R.GetValue<Integer>('parent'); Inc(Depth);
+        end;
+        if not IncludeRow or (Depth>=128) then Continue;
+        J:=TJSONObject.Create; Startup.AddElement(J); J.AddPair('text',Redact(Node.GetValue<string>('value')));
+        Range:=TJSONObject.Create; Range.AddPair('source',Node.GetValue<string>('source')); Range.AddPair('start',Node.GetValue('start').Clone as TJSONValue);
+        Range.AddPair('end',Node.GetValue('end').Clone as TJSONValue); Range.AddPair('line',Node.GetValue('line').Clone as TJSONValue); Range.AddPair('column',Node.GetValue('column').Clone as TJSONValue);
+        J.AddPair('range',Range); J.AddPair('source_hash',FileRow.GetValue<string>('sha256')); J.AddPair('generation_id',TJSONNumber.Create(Generation));
+        J.AddPair('resolution','confirmed_static'); J.AddPair('rule','parsed_program_body_expression');
+      end;
+    end;
     for Kind in ['overview','engineering','user','maintenance','build_deploy','troubleshooting','orientation','handoff','help'] do begin
       Section:=TJSONObject.Create; Sections.AddElement(Section); Section.AddPair('id',Kind); Section.AddPair('title',Kind.Replace('_',' '));
       Section.AddPair('source_generation',TJSONNumber.Create(Generation)); Section.AddPair('verification_state','source_derived_static_unreviewed');
@@ -143,6 +195,18 @@ begin
       for V in Knowledge do begin R:=V as TJSONObject; if (R.GetValue<string>('kind')=Kind) or ((Kind='user') and (R.GetValue<string>('kind')='user_help')) or
         ((Kind='engineering') and MatchText(R.GetValue<string>('kind'),['engineering_rule','business_rule','decision','note'])) then Links.Add(R.GetValue<string>('id')); end;
     end;
+    Explanations:=TDPHExplanationModel.Create(FDocument);
+    try
+      for V in Sections do begin Section:=V as TJSONObject; Kind:=Section.GetValue<string>('id'); Paragraphs:=Section.GetValue<TJSONArray>('paragraphs');
+        if Kind='overview' then Paragraphs.Add(Explanations.TopicText(0));
+        if Kind='orientation' then begin Paragraphs.Add(Explanations.TopicText(1)); Paragraphs.Add(Explanations.TopicText(3)); Paragraphs.Add(Explanations.TopicText(10)); end;
+        if MatchText(Kind,['user','help']) then Paragraphs.Add(Explanations.TopicText(2));
+        if Kind='engineering' then begin Paragraphs.Add(Explanations.TopicText(4)); Paragraphs.Add(Explanations.TopicText(5)); Paragraphs.Add(Explanations.TopicText(6)); end;
+        if Kind='maintenance' then Paragraphs.Add(Explanations.TopicText(7));
+        if Kind='troubleshooting' then Paragraphs.Add(Explanations.TopicText(8));
+        if Kind='handoff' then Paragraphs.Add(Explanations.TopicText(9));
+      end;
+    finally Explanations.Free; end;
   finally Queue.Free; FlowIDs.Free; AllKeys.Free; Selected.Free; AllowedFiles.Free; end;
 end;
 destructor TDPHDocumentModel.Destroy;
