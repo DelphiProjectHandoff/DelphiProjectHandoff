@@ -41,6 +41,38 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure RelationshipTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    WorkIndex,ThingIndex,LocalIndex,ProblemIndex,TestIndex: Integer; R: TDPHRelation; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'Relations.pas'),
+    'unit Relations; interface uses DUnitX.TestFramework; type '+
+    'EProblem=class end; TThing=class constructor Create; procedure Free; end; '+
+    'TTests=class [Test] procedure Exercises; procedure Ordinary; end; procedure Work; implementation '+
+    'constructor TThing.Create; begin end; procedure TThing.Free; begin end; '+
+    'procedure Work; var Thing:TThing; begin Thing:=TThing.Create; '+
+    'try raise EProblem.Create; except on E:EProblem do Thing.Free; end; end; '+
+    'procedure TTests.Exercises; begin Work; end; procedure TTests.Ordinary; begin Work; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Relations.dpr'),'program RelationsApp; uses Relations in ''Relations.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'Relations.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        WorkIndex:=Find(G,'Relations.Work','*'); ThingIndex:=Find(G,'Relations.TThing','*'); LocalIndex:=Find(G,'Relations.Work.Thing','*');
+        ProblemIndex:=Find(G,'Relations.EProblem','*'); TestIndex:=Find(G,'Relations.TTests.Exercises','*');
+        Check(Relation(G,WorkIndex,ThingIndex,'creates','inferred'),'REL01','Declared-type creation call has an inferred lifetime relationship');
+        Check(Relation(G,WorkIndex,LocalIndex,'destroys','possible_dynamic'),'REL02','Free receiver keeps alias and completion uncertainty');
+        Check(Relation(G,WorkIndex,ProblemIndex,'raises','inferred'),'REL03','Explicit raised exception type has source evidence');
+        Check(Relation(G,WorkIndex,ProblemIndex,'catches','inferred'),'REL04','Typed exception handler identifies the declared type without claiming a runtime match');
+        Check(Relation(G,TestIndex,WorkIndex,'test_covers','inferred'),'REL05','Explicit DUnitX Test declaration and direct call create a qualified coverage link');
+        Found:=False; for R in G.Relations do if (R.FromSymbol=Find(G,'Relations.TTests.Ordinary','*')) and (R.Kind='test_covers') then Found:=True;
+        Check(not Found,'REL06','Ordinary methods do not become tests from their class or filename');
+        Cached:=Analyzer.Analyze(Scan); try Check(JSON(G)=JSON(Cached),'REL07','Lifetime, exception and test relationships survive cache reuse exactly'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure DataDetailTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
     WorkIndex,OutputIndex,InputIndex,SQLIndex,TableIndex: Integer; R: TDPHRelation; D: TDPHDiagnostic; Found: Boolean;
@@ -522,7 +554,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

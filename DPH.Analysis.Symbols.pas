@@ -44,6 +44,7 @@ type
     procedure Variables(const AFile: string; IR: TDPHParseResult);
     procedure PropertyAccessors(const AFile: string; IR: TDPHParseResult);
     procedure ModulePhases;
+    procedure TestCoverage;
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
@@ -685,6 +686,32 @@ begin
   finally CandidatesFound.Free; end;
 end;
 
+procedure TDPHSemanticAnalyzer.TestCoverage;
+var S: TDPHSymbol; Imports: TList<string>; Tokens: TDPHTokens; L: TDPHRange;
+    I,J,Count: Integer; DeclaredTest,UsesDUnitX: Boolean; R: TDPHRelation; ImportName: string;
+begin
+  Count:=FGraph.Relations.Count;
+  for S in FGraph.Symbols do begin
+    if not S.HasBody or not FImports.TryGetValue(LowerCase(S.UnitName),Imports) then Continue;
+    UsesDUnitX:=False; for ImportName in Imports do if SameText(ImportName,'DUnitX.TestFramework') then UsesDUnitX:=True;
+    DeclaredTest:=False;
+    for L in S.Occurrences do begin
+      if not FTokens.TryGetValue(L.Source,Tokens) then Continue;
+      for I:=3 to High(Tokens) do if Tokens[I].Location.StartByte=L.StartByte then begin
+        J:=I-1;
+        if (Tokens[J].Text=']') and SameText(Tokens[J-1].Text,'Test') and (Tokens[J-2].Text='[') and
+          UsesDUnitX then DeclaredTest:=True;
+        Break;
+      end;
+    end;
+    if not DeclaredTest then Continue;
+    for I:=0 to Count-1 do begin R:=FGraph.Relations[I];
+      if (R.FromSymbol=S.Index) and (R.Kind='calls') and (R.ToSymbol>=0) then
+        FGraph.AddRelation(S.Index,R.ToSymbol,'test_covers','inferred','declared_dunitx_test_static_call_not_assertion_or_run_proof',R.LabelText,R.Location,R.Condition);
+    end;
+  end;
+end;
+
 procedure TDPHSemanticAnalyzer.RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
 var Routine,S: TDPHSymbol; Body,N: TDPHIRNode; I,J,K,Stop,Depth,Next,Variable,Target,Child,CallEnd: Integer;
     Path,Resolution,Kind,Argument,TypeName: string; Args: TList<string>; Matches: TArray<Integer>; L: TDPHRange;
@@ -716,6 +743,26 @@ begin
       Nested.TryGetValue(I,Next); if Next=0 then Next:=I;
       if Next<>I then begin I:=Next; Continue; end;
       if Tokens[I].Kind<>tkIdentifier then begin Inc(I); Continue; end;
+      if SameText(Tokens[I].Text,'raise') or SameText(Tokens[I].Text,'on') then begin
+        J:=I+1; Kind:='raises'; if SameText(Tokens[I].Text,'on') then begin
+          Kind:='catches'; if (J+1<=Body.LastToken) and (Tokens[J+1].Text=':') then Inc(J,2);
+        end;
+        InputPath:='';
+        if (J<=Body.LastToken) and (Tokens[J].Kind=tkIdentifier) and not MatchText(Tokens[J].Text,['end','else','do']) then begin
+          InputPath:=Tokens[J].Text;
+          while (J+2<=Body.LastToken) and (Tokens[J+1].Text='.') and (Tokens[J+2].Kind=tkIdentifier) do begin Inc(J,2); InputPath:=InputPath+'.'+Tokens[J].Text; end;
+        end;
+        if EndsText('.Create',InputPath) then Delete(InputPath,Length(InputPath)-6,7);
+        InputSymbol:=FindType(InputPath,Routine.UnitName);
+        if (InputSymbol<0) and (Kind='raises') then begin
+          InputIndex:=ResolveValue(InputPath,ARoutine); if InputIndex>=0 then InputSymbol:=FindType(FGraph.Symbols[InputIndex].TypeName,Routine.UnitName);
+        end;
+        Resolution:='inferred'; if InputSymbol<0 then Resolution:='unresolved';
+        L:=Tokens[I].Location;
+        if (J<=Body.LastToken) and (Tokens[J].Location.Source=L.Source) then L.EndByte:=Tokens[J].Location.EndByte;
+        FGraph.AddRelation(ARoutine,InputSymbol,Kind,Resolution,'exception_type_syntax_not_runtime_handler_match',InputPath,L,Tokens[I].Condition);
+        if InputSymbol<0 then FGraph.Diagnostics.Report('EXCEPTION_TYPE_PARTIAL','Exception/rethrow type or handler match requires review',Tokens[I].Location);
+      end;
       if MatchText(Tokens[I].Text,['begin','end','if','then','else','while','with','goto','do','for','to','downto','in','repeat','until','try','except','finally','on','raise','case','of','var','const','not','and','or','xor','div','mod','is','as','nil','true','false','exit','break','continue','inherited']) or
         ((I<Body.LastToken) and (Tokens[I+1].Text=':')) or ((I>Body.FirstToken) and SameText(Tokens[I-1].Text,'goto')) then begin Inc(I); Continue; end;
       WithinWith:=False;
@@ -745,6 +792,19 @@ begin
       end;
       if not IsCall and (Stop+1<=Body.LastToken) and MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
         ((I=Body.FirstToken+1) or MatchText(Tokens[I-1].Text,[';','begin','then','else','do',':','inherited'])) then IsCall:=True;
+      if not IsCall and EndsText('.Create',Path) and (Stop+1<=Body.LastToken) and
+        MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
+        (FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName)>=0) then IsCall:=True;
+      if IsCall and EndsText('.Create',Path) then begin
+        InputSymbol:=FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName);
+        if InputSymbol>=0 then FGraph.AddRelation(ARoutine,InputSymbol,'creates','inferred','declared_type_create_spelling_allocation_and_ownership_unverified',Path,L,Tokens[I].Condition);
+      end;
+      if IsCall and (EndsText('.Free',Path) or EndsText('.Destroy',Path) or SameText(Path,'FreeAndNil')) then begin
+        InputSymbol:=-1;
+        if SameText(Path,'FreeAndNil') then begin if Args.Count=1 then InputSymbol:=ResolveValue(Args[0],ARoutine); end
+        else InputSymbol:=ResolveValue(Copy(Path,1,LastDelimiter('.',Path)-1),ARoutine);
+        if InputSymbol>=0 then FGraph.AddRelation(ARoutine,InputSymbol,'destroys','possible_dynamic','lifetime_action_spelling_not_success_or_alias_proof',Path,L,Tokens[I].Condition);
+      end;
       if IsCall and not MatchText(Path,['Assigned','Default','Length','SetLength','High','Low','Ord','Chr','Inc','Dec','SizeOf','New','Dispose','Include','Exclude']) and (FindType(Path,Routine.UnitName)<0) then
       begin
         Matches:=SelectCall(Path,ARoutine,Args.ToArray);
@@ -908,6 +968,7 @@ begin
       end;
       for Item in AScan.Inventory.Manifest do if MatchText(Item.Kind,['.fmx','.dfm']) and AScan.Results.TryGetValue(Item.RelativePath,IR) then BindForms(Item.RelativePath,IR);
       ModulePhases;
+      TestCoverage;
       for Reference in AScan.Inventory.DefinitionReferences do begin
         Consumer:=-1; Resource:=-1;
         for I:=0 to FGraph.Symbols.Count-1 do begin S:=FGraph.Symbols[I];

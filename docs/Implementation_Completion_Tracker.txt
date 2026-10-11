@@ -89,8 +89,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     No database connection is made. Eleven focused data/SQL checks pass;
     semantic suite 106, discovery suite 88. This is lexical input dependency,
     not path-sensitive reaching definitions or a complete SQL dialect parser.
-3.7-3.9 Pending:
-    relationship vocabulary, dynamic
+3.7 Expanded: creation and cleanup-action links, explicit raise/rethrow and
+    typed-handler links, and qualified coverage from a simple [Test] declaration
+    in a unit importing DUnitX.TestFramework to directly called routines. Test
+    links do not prove assertions or execution results. Dynamic exception types,
+    aliases, framework attribute variants and indirect test coverage remain
+    qualified. Seven focused checks pass; semantic suite 113.
+3.8-3.9 Pending:
+    dynamic
     controls/property changes and fuller output lineage.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
     execution projection and preservation of inspected object context. Workspace

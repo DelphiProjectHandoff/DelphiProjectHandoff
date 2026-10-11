@@ -114,6 +114,11 @@ begin
   if Kind='renders' then Verb:='has an inferred model-to-renderer connection with';
   if Kind='imports' then Verb:='declares a unit dependency on';
   if Kind='owns' then Verb:='declares or contains';
+  if Kind='creates' then Verb:='has an inferred creation site for';
+  if Kind='destroys' then Verb:='contains a possible cleanup action for';
+  if Kind='raises' then Verb:='contains an explicit raise with this declared exception type:';
+  if Kind='catches' then Verb:='declares a handler for; actual exception matching is unobserved for';
+  if Kind='test_covers' then Verb:='is explicitly marked as a test and contains a call to; assertions and results are unverified for';
   if Kind='uses_type' then Verb:='declares a value with type';
   if AReverse then Result:=Target+' '+Verb+' this object' else Result:='This object '+Verb+' '+Target;
   Result:=Result+' ['+ARow.GetValue<string>('resolution')+']. Evidence: '+Citation(ARow)+'. Rule: '+ARow.GetValue<string>('rule');

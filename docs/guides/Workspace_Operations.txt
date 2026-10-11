@@ -104,6 +104,14 @@ SQL_DYNAMIC, SQL_SCHEMA_PARTIAL and SQL_EXPRESSION_PARTIAL explain unresolved
 construction, unsupported statements and incomplete expression coverage.
 DPH does not execute SQL or connect to the application's database.
 
+Lifetime, exceptions and tests
+Select a routine and open References. creates identifies a qualified creation
+site; destroys identifies a possible cleanup action, not proof of completion.
+raises and catches show source exception types and declared handler types.
+An unresolved rethrow or dynamic type stays visible as a diagnostic. test_covers
+links require a recognized explicit test attribute and a captured direct call.
+They do not certify assertion quality or show a test result.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage
