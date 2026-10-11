@@ -1,6 +1,21 @@
 param([Parameter(Mandatory=$true)][string]$BundleDirectory)
 $ErrorActionPreference = 'Stop'
 $bundleRoot = [IO.Path]::GetFullPath($BundleDirectory)
+$ancestor = $bundleRoot
+while ($ancestor) {
+    if ((Get-Item -LiteralPath $ancestor).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Reparse bundle paths are not allowed' }
+    $parent = [IO.Path]::GetDirectoryName($ancestor)
+    if ($parent -eq $ancestor) { break }
+    $ancestor = $parent
+}
+$pending = [Collections.Generic.Stack[string]]::new()
+$pending.Push($bundleRoot)
+while ($pending.Count) {
+    foreach ($item in Get-ChildItem -LiteralPath $pending.Pop() -Force) {
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Reparse artifacts are not allowed' }
+        if ($item.PSIsContainer) { $pending.Push($item.FullName) }
+    }
+}
 if (-not (Test-Path -LiteralPath (Join-Path $bundleRoot 'manifest.json'))) { throw 'Select an existing DPH export bundle' }
 $pythonPath = 'C:\Users\marti\AppData\Local\Microsoft\WindowsApps\python.exe'
 $officePath = 'C:\Program Files\LibreOffice\program\soffice.com'

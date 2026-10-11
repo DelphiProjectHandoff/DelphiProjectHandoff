@@ -1,0 +1,44 @@
+Independent first-time-programmer maintenance exercise
+Status: NOT RUN. A human participant and source-based reviewer are required.
+This worksheet is prepared for the formal AC-25 gate; automation cannot act as
+the first-time programmer or invent their answers, elapsed time or approval.
+
+Input: pinned VCL2FMXConverter v6.0.0, commit
+e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d, Debug/Win32,
+extra defines MSWINDOWS;WIN32. Keep original selected source read-only.
+Use the DPH guides and fresh analysis or its verified detached cache. Retain
+partial and uncertain status throughout. Source fingerprint for this selection:
+85af5e4f63dbf775e6b1dc70b03c53cf33d91f1cb8c5d203118d0b6c7b3490d3.
+
+1. Locate the project entry and explain startup using source references.
+2. Find MainForm.btnConvert, its serialized OnClick and btnConvertClick handler.
+3. Follow the anonymous worker, ConversionThreadProc and TConverterEngine.Convert.
+   Identify which asynchronous/dispatch facts remain possible or uncertain.
+4. Locate DryRunPreview and explain the supported control-flow branch and its
+   limits; have an independent reviewer compare the diagram with source.
+5. Locate mapping definitions/loaders and report model/HTML/JSON renderer code.
+   Separate source-backed lineage from inferred model relationships.
+6. Identify unavailable dependencies, opaque grammar and unresolved references.
+   Explain why partial coverage and unknown runtime behavior cannot be approved
+   away by a parser result.
+7. Add an attributed rule with actual author-provided business rationale. Review
+   it against the captured source. On a separately authorized copied fixture,
+   change source, reassess and confirm human review remains pending.
+8. Export a selected-object task bundle, inspect its source hashes/certainty and
+   validate it against a retained trusted fingerprint. Explain stale/historical
+   inspection and why unsigned checksums are not author authentication.
+9. Copy a database with its adjacent .views folder and open it detached. Verify
+   source navigation stays unavailable until explicit source attachment. For an
+   exact source move, use Relocate verified source; reject a different copy.
+
+Record: participant/reviewer names, prior Delphi/project experience, date,
+hardware, source/configuration/hash, app build/hash, task answers and evidence,
+time per task, author assistance, defects, unknowns and pass/fail/partial.
+Acceptance requires that the new programmer can investigate without the original
+author's help, with independent evidence review. Missing business procedures
+must be supplied and reviewed separately; do not fabricate them from captions.
+
+Performance worksheet: review the measured WP7 cold/cached/reassessment timings,
+peak process working set and message-pump gap on the recorded hardware. Agree
+explicit release budgets, then measure the actual interactive workflow against
+them. Current measurements alone do not establish an agreed performance pass.

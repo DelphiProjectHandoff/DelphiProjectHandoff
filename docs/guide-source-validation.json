@@ -51,15 +51,15 @@
     },
     {
       "path": "DPH.Publish.BrowserPolicy.pas",
-      "sha256": "6bab01810016e0b5eef4d22b3152ec44f3af1a17f3b05685b6b710ef66a433a3"
+      "sha256": "ba8df0c1f86f6ecddfa605438764e8dbe5a1dcc858e5a625c677c59a63f77bef"
     },
     {
       "path": "DPH.Publish.Export.pas",
-      "sha256": "753b14650af70cf085e656172e20d3b33a1d3fbe520d10a22b528d521e25a1a0"
+      "sha256": "4a725ef7f3f055e8092bb666d0b5bea6efa40e18f9d052595eb99583d963e122"
     },
     {
       "path": "DPH.Publish.Model.pas",
-      "sha256": "213e1203e2d906b4aaed226b0739b45a1231384e78e4bbf1e5a5a4676910dd89"
+      "sha256": "c3aa365fdc3fc34e5178a8676aeb2d113a4121f57966d7c734ab3375692d7d5e"
     },
     {
       "path": "DPH.Publish.Translation.pas",
@@ -67,7 +67,7 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "43af9edc4f4ad9e0750696698fb306be5d784297644fe223ae7a9add8f84af11"
+      "sha256": "f7eef8833ab8547d7308307f2b98120fa165865bb3143cf0d4fcad2c711acc4d"
     },
     {
       "path": "DPH.Storage.Types.pas",
@@ -75,7 +75,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "e2284ddbeee35f31df6f53eaff372bd334ebea64098d5547a6085daab0da80c4"
+      "sha256": "36943dcb465a3e3a1a87ecb34053ceb5be8710c59cdd9bac1ba5af267cadb806"
     },
     {
       "path": "DPH.Workspace.Model.pas",
@@ -87,11 +87,11 @@
     },
     {
       "path": "DPH.Workspace.Worker.pas",
-      "sha256": "c5be6e7821b2b857f2d632ab711d72afba96ff777d19f4b072b406c0ccaa3187"
+      "sha256": "8e9e7fcca3f0d7dc6d13c4cbd3538b8c89e5754f8561b176ca244258419bd6c6"
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "56f86ff4ce7be48251b1ffe8297226e1beee217dbba64cfd0d7dbe1b1d6c4de6"
+      "sha256": "26672ce9b236a79b3ed89a9b8ac534718f06f711d556c34929e271b9bf894f67"
     },
     {
       "path": "DelphiProjectHandoff.dpr",

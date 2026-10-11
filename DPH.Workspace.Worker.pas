@@ -83,10 +83,24 @@ begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
         Respond(nil,'Working in background…',True,False,False,False);
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if Request.Command='relocate' then
+          begin
+            Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
+            try
+              if (Cached=nil) or not SameText(Cached.GetValue<string>('entry'),ExtractFileName(Request.Entry)) or
+                (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots)) then
+                raise EReadError.Create('Relocation requires the same project entry and analysis selection');
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              try
+                if not Inventory.Revalidate then raise EReadError.Create('Relocation source changed during verification');
+                Store.RelocateSource(Inventory.Root,Request.GenerationID,Inventory.Manifest);
+              finally Inventory.Free; end;
+            finally Cached.Free; end;
+          end;
           if Request.Command='publish' then
           begin
             if Request.Entry<>'' then begin Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
@@ -94,9 +108,9 @@ begin
             Document:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
             View:=TDPHWorkspaceView.Create(Document); Knowledge:=Store.KnowledgeJSON;
             try
-              Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.Status.AnalysisStale);
+              Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.GenerationIsStale(Request.GenerationID));
               try TDPHPublisher.Export(Model,Store,Request.ExportDirectory);
-                Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),Model.Document.GetValue<TJSONArray>('symbols').ToJSON,Store.Status.AnalysisStale);
+                Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),'{"scope":"'+Model.Document.GetValue<string>('scope')+'"}',Model.Document.GetValue<Boolean>('stale'));
               finally Model.Free; end;
             finally Knowledge.Free; View.Free; end;
             Respond(nil,'Offline HTML, editable guides and technical bundle exported. Review coverage and stale status before use.',False,False,Request.Entry='',False,nil,Request.ExportDirectory); Continue;

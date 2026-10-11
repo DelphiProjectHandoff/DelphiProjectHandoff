@@ -1,0 +1,87 @@
+WP7 Hardening and experimental delivery
+Last changed 10 October 2026
+Owner pre-approved WP4-WP7 through completion; no additional phase approval asked.
+Pre-change backup: D:\DPH Backups\WP7_PreChange_20261010_214948
+Verified 3,978 files / 1,598,886,438 bytes before WP7 changes.
+
+Implementation work through WP7 is delivered. Formal product acceptance is NOT
+complete: partial and not-run gates are not pass. See the machine-readable
+wp7-acceptance-matrix.json: 22 pass, two partial, one not-run. AT-06 requires
+independent complex-flow review; AT-15 requires complete attributed business/
+user procedures before replacing eligible manuals; AC-25 requires a first-time
+human programmer. Performance measurements exist but release budgets were not
+agreed. The prepared maintenance worksheet is not fabricated acceptance.
+
+Implemented/hardened:
+Portable managed caches resolve beside the opened database, with checksums and
+generation validation, without following old absolute paths. Explicit source
+relocation verifies the same entry/analysis selection and exact captured file
+identities, hashes and availability. It preserves logical symbols and notes,
+requests human review and reassesses the changed context. A different copy is
+rejected without changing project identity. The relocation button is in FMX.
+
+Exports carry generation IDs on CFG edges, explicit metadata consistency,
+source ranges/hashes, and all technical indexes agree with canonical facts.
+Rehashed inconsistent JSONL and rehashed mixed-generation facts are rejected.
+Validation rejects traversal/reparse roots/artifacts, unexpected files and size
+limits. Historical/incomplete export records cannot claim a current state.
+Quoted Pascal/JSON credentials and Bearer tokens are covered by redaction tests.
+The standalone validator defaults to rejecting stale bundles; --allow-stale
+permits explicitly historical/partial integrity inspection without clearing flags.
+
+FMX preview file-URL construction corrected for the installed Windows FMX
+implementation; strict policy accepts only the managed local index/anchors.
+Real WebView2 rendering and actual offline symbol-search JavaScript pass.
+The final app is Win32 Debug, experimental; not a validated cross-platform build.
+Original instructions and planning documents remain byte-for-byte unchanged.
+
+Evidence:
+29 WP7 integration checks PASS. Includes copied-fixture relocation, notes,
+database/cache portability, rejected different source, tampering controls,
+pinned full pipeline, repeated normalized persistence, exact full/incremental
+semantic equality, FMX reference inspector, task export, stale rejection,
+actual embedded HTML/search and large-store integrity.
+All 2,447 checked inputs unchanged: 2,430 pinned reference files, 14 committed
+fixtures, three original instruction inputs. Zero changed inputs.
+Final regressions: FMX build/resource baseline; 46 storage checks; 68 discovery/
+parser checks; 41 workspace checks; 34 knowledge checks; 57 publishing checks.
+The unchanged WP3 domain retains its earlier 55 semantic checks; WP7 additionally
+exercises its pinned graph through SQLite, UI, cache and export end to end.
+Latest validator independently validates reference canonical and all JSONL
+indexes, including filtered forms/events and data-usage indexes. See
+wp7-build.log, wp7-regression.log, wp7-final-checks.log and input-validation JSON.
+Only expected Windows-specific GetFinalPathNameByHandle compiler warning remains.
+
+Reference:
+VCL2FMXConverter v6.0.0 commit e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d.
+Debug/Win32 with explicit MSWINDOWS;WIN32; source fingerprint
+85af5e4f63dbf775e6b1dc70b03c53cf33d91f1cb8c5d203118d0b6c7b3490d3.
+4,909 symbols, 38,735 relationships, 19,386 CFG nodes. PARTIAL remains visible:
+missing frameworks, unsupported grammar and 10,000-message diagnostic cap.
+No converter input was compiled/executed or changed. No source was copied into
+DPH implementation or distribution as a runtime/build dependency.
+
+Measured on Core i7-1165G7, eight logical processors, 16,934,494,208 bytes RAM:
+full pipeline 82,598 ms; cached opening 2,867 ms; incremental pipeline 75,905 ms;
+message-pump maximum gap 64 ms; peak test-process working set 1,302,274,048 bytes
+(about 1.21 GiB). Peak includes repeated captures/JSON cloning and FMX/WebView2,
+not an isolated app idle-memory measurement. Baseline only, no agreed release
+budget pass. Conservative semantic rebuilding and bounded syntax-cache fallback
+limit large-project incremental speedup. See wp7-validation.json.
+
+Delivery:
+Editable DPH engineering/user guides and companion PDFs, with title/date,
+changeable TOCs and actual-source hash appendix; generated through LibreOffice.
+Experimental Win32 deployment and source ZIPs, migrations, Microsoft loader
+license/provenance, optional PDF tool, independent validator and SHA256 manifest.
+Packaging verifies a clean relocated extraction; final distribution evidence
+is in wp7-distribution-validation.json. No post-change D: backup was made.
+Git commits and pushes to both public and private remotes are the final backup.
+
+Limits requiring no invented approval/result:
+See WP7_Security_and_Limits.txt and WP7_Maintenance_Exercise.txt. Atlas/provider,
+external AI/translation, runtime observations and source snapshots remain off.
+Human rationale and procedures cannot be inferred as verified facts. Unsigned
+checksums are not author signatures. Secret detection is defense in depth;
+explicit exclusions/disclosure review remain necessary before sensitive sharing.
+The product is experimental while the formal partial/not-run gates remain.

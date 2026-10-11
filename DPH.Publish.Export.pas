@@ -9,7 +9,7 @@ type
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
 var Archive: TZipFile; Document,Body,Headings: string; V,W,L: TJSONValue; R: TJSONObject; I: Integer; Linked: Boolean;
   procedure Part(const Name,Text: string);
@@ -141,7 +141,34 @@ begin
 end;
 class procedure TDPHPublisher.Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean);
 var Hashes,Manifest,Canonical,Row,Referenced: TJSONObject; Pair: TJSONPair; Path,Root: string; Files: TArray<string>; V: TJSONValue; Generation: Int64;
-    Sources,Symbols,Evidence,Flow: TDictionary<string,TJSONObject>;
+    Sources,Symbols,Evidence,Flow: TDictionary<string,TJSONObject>; ArtifactCount: Integer;
+  procedure CheckTree(const Directory: string);
+  var Entry: string; Attributes: Cardinal;
+  begin
+    for Entry in TDirectory.GetFileSystemEntries(Directory) do begin
+      Attributes:=GetFileAttributes(PChar(Entry));
+      if (Attributes=INVALID_FILE_ATTRIBUTES) or ((Attributes and FILE_ATTRIBUTE_REPARSE_POINT)<>0) then raise EReadError.Create('Reparse or inaccessible artifact path');
+      Inc(ArtifactCount); if ArtifactCount>100000 then raise EReadError.Create('Artifact count exceeds validation limit');
+      if (Attributes and FILE_ATTRIBUTE_DIRECTORY)<>0 then CheckTree(Entry)
+      else if TFile.GetSize(Entry)>128*1024*1024 then raise EReadError.Create('Artifact exceeds 128 MiB validation limit');
+    end;
+  end;
+  procedure CheckJSONL(const Name,ArrayName: string; const Kinds: TArray<string>);
+  var Lines: TArray<string>; Line: string; Index: Integer; Parsed: TJSONValue; Rows: TJSONArray;
+  begin
+    Rows:=Canonical.GetValue<TJSONArray>(ArrayName); Index:=0;
+    Lines:=TFile.ReadAllLines(TPath.Combine(Root,Name.Replace('/',PathDelim)),TEncoding.UTF8);
+    for Line in Lines do begin
+      if Trim(Line)='' then Continue;
+      while (Index<Rows.Count) and (Length(Kinds)>0) and not MatchText((Rows.Items[Index] as TJSONObject).GetValue<string>('kind'),Kinds) do Inc(Index);
+      Parsed:=TJSONObject.ParseJSONValue(Line);
+      try
+        if (Parsed=nil) or (Index>=Rows.Count) or (Parsed.ToJSON<>Rows.Items[Index].ToJSON) then raise EReadError.Create('Technical index differs from canonical model: '+Name);
+      finally Parsed.Free; end; Inc(Index);
+    end;
+    while (Index<Rows.Count) and (Length(Kinds)>0) and not MatchText((Rows.Items[Index] as TJSONObject).GetValue<string>('kind'),Kinds) do Inc(Index);
+    if Index<>Rows.Count then raise EReadError.Create('Incomplete technical index: '+Name);
+  end;
   procedure CheckRange(AValue: TJSONObject);
   var Source: TJSONObject; Range: TJSONObject;
   begin
@@ -153,6 +180,12 @@ var Hashes,Manifest,Canonical,Row,Referenced: TJSONObject; Pair: TJSONPair; Path
   end;
 begin
   Root:=IncludeTrailingPathDelimiter(TPath.GetFullPath(ADirectory));
+  Path:=ExcludeTrailingPathDelimiter(Root);
+  repeat
+    if (GetFileAttributes(PChar(Path)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then raise EReadError.Create('Reparse artifact root');
+    Path:=ExtractFileDir(Path);
+  until (Path='') or (Length(Path)<=3);
+  ArtifactCount:=0; CheckTree(Root);
   Hashes:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Root,'validation/manifest-sha256.json'),TEncoding.UTF8)) as TJSONObject;
   Manifest:=nil; Canonical:=nil; Sources:=TDictionary<string,TJSONObject>.Create; Symbols:=TDictionary<string,TJSONObject>.Create;
   Evidence:=TDictionary<string,TJSONObject>.Create; Flow:=TDictionary<string,TJSONObject>.Create;
@@ -171,6 +204,9 @@ begin
     Canonical:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Root,'canonical.json'),TEncoding.UTF8)) as TJSONObject;
     if (Canonical=nil) or (Canonical.GetValue<Integer>('schema_version')<>1) or (THashSHA2.GetHashString(Canonical.ToJSON)<>Manifest.GetValue<string>('canonical_hash')) then raise EReadError.Create('Canonical documentation model does not match manifest');
     Generation:=Manifest.GetValue<Int64>('generation_id'); if (Canonical.GetValue<Int64>('generation_id')<>Generation) or (Canonical.GetValue<string>('input_fingerprint')<>AExpectedFingerprint) then raise EReadError.Create('Canonical generation/fingerprint mismatch');
+    if (Canonical.GetValue<Boolean>('stale')<>Manifest.GetValue<Boolean>('stale')) or
+      (Canonical.GetValue<string>('template_version')<>Manifest.GetValue<string>('template_version')) or
+      (Canonical.GetValue<string>('scope')<>Manifest.GetValue<string>('scope')) then raise EReadError.Create('Canonical publication metadata mismatch');
     for V in Canonical.GetValue<TJSONArray>('files') do begin Row:=V as TJSONObject; Sources.Add(Row.GetValue<string>('path'),Row); end;
     for V in Canonical.GetValue<TJSONArray>('symbols') do begin Row:=V as TJSONObject; CheckRange(Row); Symbols.Add(Row.GetValue<string>('key'),Row); end;
     for V in Canonical.GetValue<TJSONArray>('evidence') do begin Row:=V as TJSONObject; CheckRange(Row); Evidence.Add(Row.GetValue<string>('id'),Row); end;
@@ -182,8 +218,14 @@ begin
       if not Symbols.ContainsKey(Row.GetValue<string>('routine')) then raise EReadError.Create('Missing control-flow routine'); Flow.Add(Row.GetValue('id').Value,Row);
     end;
     for V in Canonical.GetValue<TJSONArray>('flow_edges') do begin Row:=V as TJSONObject;
+      if Row.GetValue<Int64>('generation_id')<>Generation then raise EReadError.Create('Cross-generation control-flow edge');
       if not Flow.ContainsKey(Row.GetValue('from').Value) or not Flow.ContainsKey(Row.GetValue('to').Value) then raise EReadError.Create('Broken control-flow reference');
     end;
+    CheckJSONL('indexes/symbols.jsonl','symbols',[]); CheckJSONL('indexes/relationships.jsonl','relationships',[]);
+    CheckJSONL('evidence/references.jsonl','evidence',[]); CheckJSONL('indexes/control-flow.jsonl','flow_nodes',[]);
+    CheckJSONL('indexes/configuration.jsonl','files',[]); CheckJSONL('indexes/knowledge.jsonl','knowledge',[]);
+    CheckJSONL('indexes/forms-events.jsonl','symbols',['component','event']);
+    CheckJSONL('indexes/data-usage.jsonl','relationships',['reads','writes','renders','static_sql']);
   finally Flow.Free; Evidence.Free; Symbols.Free; Sources.Free; Canonical.Free; Manifest.Free; Hashes.Free; end;
 end;
 end.

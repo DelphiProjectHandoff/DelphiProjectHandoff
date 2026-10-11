@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-WP6-1';
+const DPHPublishVersion = 'DPH-WP7-1';
 type
   TDPHDocumentModel = class
   private
@@ -23,14 +23,17 @@ class function TDPHDocumentModel.Redact(const AText: string): string;
 begin
   Result:=AText;
   if ContainsText(Result,'-----BEGIN ') and ContainsText(Result,'PRIVATE KEY-----') then Exit('[REDACTED private key]');
-  Result:=TRegEx.Replace(Result,'(?i)(password|passwd|secret|api[_-]?key|access[_-]?token|authorization)\s*[:=]\s*[^\s;,]+','$1=[REDACTED]');
+  Result:=TRegEx.Replace(Result,'(?i)(authorization\s*[:=]\s*bearer\s+|bearer\s+)[A-Za-z0-9._~+/-]+=*','$1[REDACTED]');
+  Result:=TRegEx.Replace(Result,'(?i)(password|passwd|secret|api[_-]?key|access[_-]?token|authorization)["'']?\s*(?::=|[:=])\s*("[^"]*"|''[^'']*''|[^\s;,]+)','$1=[REDACTED]');
   Result:=TRegEx.Replace(Result,'\bAKIA[0-9A-Z]{16}\b','[REDACTED access key]');
   Result:=TRegEx.Replace(Result,'\beyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b','[REDACTED token]');
 end;
 class function TDPHDocumentModel.Scrub(AValue: TJSONValue): TJSONValue;
 var Pair: TJSONPair; V: TJSONValue; J: TJSONObject; A: TJSONArray;
 begin
-  if AValue is TJSONObject then begin J:=TJSONObject.Create; Result:=J; for Pair in TJSONObject(AValue) do J.AddPair(Pair.JsonString.Value,Scrub(Pair.JsonValue)); end
+  if AValue is TJSONObject then begin J:=TJSONObject.Create; Result:=J; for Pair in TJSONObject(AValue) do
+    if MatchText(Pair.JsonString.Value,['password','passwd','secret','api_key','apikey','access_token','authorization','private_key']) then J.AddPair(Pair.JsonString.Value,'[REDACTED]')
+    else J.AddPair(Pair.JsonString.Value,Scrub(Pair.JsonValue)); end
   else if AValue is TJSONArray then begin A:=TJSONArray.Create; Result:=A; for V in TJSONArray(AValue) do A.AddElement(Scrub(V)); end
   else if AValue is TJSONString then Result:=TJSONString.Create(Redact(AValue.Value)) else Result:=AValue.Clone as TJSONValue;
 end;
@@ -106,7 +109,9 @@ begin
       J:=Scrub(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowNodes.AddElement(J); FlowIDs.Add(R.GetValue('id').Value,True);
     end;
     for V in S.GetValue<TJSONArray>('flow_edges') do begin R:=V as TJSONObject;
-      if FlowIDs.ContainsKey(R.GetValue('from').Value) and FlowIDs.ContainsKey(R.GetValue('to').Value) then FlowEdges.AddElement(Scrub(R));
+      if FlowIDs.ContainsKey(R.GetValue('from').Value) and FlowIDs.ContainsKey(R.GetValue('to').Value) then begin
+        J:=Scrub(R) as TJSONObject; J.AddPair('generation_id',TJSONNumber.Create(Generation)); FlowEdges.AddElement(J);
+      end;
     end;
     for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin R:=V as TJSONObject; Path:=R.GetValue<string>('path'); if not AllowedFiles.ContainsKey(Path) then Continue;
       IncludeRow:=Length(ASeeds)=0; if not IncludeRow then for W in Symbols do if (W as TJSONObject).GetValue<string>('range.source')=Path then begin IncludeRow:=True; Break; end;

@@ -39,6 +39,8 @@ type
     PublishMemo: TMemo;
     PublishBrowser: TWebBrowser;
     ExportDialog: TSaveDialog;
+    RelocateButton: TButton;
+    procedure RelocateClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -176,6 +178,19 @@ procedure TDPHMainForm.OpenCacheClick(Sender: TObject);
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenCacheDialog.Execute then Exit; ClearWorkspace; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open');
+end;
+procedure TDPHMainForm.RelocateClick(Sender: TObject);
+var Generation: Int64; Request: TDPHWorkspaceRequest;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before relocating'; Exit; end;
+  if not OpenProjectDialog.Execute then Exit;
+  Generation:=FView.Document.GetValue<Int64>('generation_id');
+  Request.Command:='relocate'; Request.Database:=FDatabase; Request.Entry:=OpenProjectDialog.FileName; Request.GenerationID:=Generation;
+  Request.Configuration:=FView.Document.GetValue<string>('configuration'); Request.Platform:=FView.Document.GetValue<string>('platform');
+  Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  ClearWorkspace; FEntry:=Request.Entry; FDetached:=True; FBusy:=True;
+  FWorker.Submit(Request); StatusLabel.Text:='Verifying relocated project hashes before reassessment…';
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
@@ -424,7 +439,7 @@ end;
 procedure TDPHMainForm.PreviewClick(Sender: TObject);
 begin
   if FExportDirectory='' then Exit;
-  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file:///'+TPath.Combine(FExportDirectory,'index.html').Replace('\','/'));
+  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file://'+TPath.Combine(FExportDirectory,'index.html'));
   except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'The offline index.html remains available in '+FExportDirectory; end; end;
 end;
 procedure TDPHMainForm.BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);

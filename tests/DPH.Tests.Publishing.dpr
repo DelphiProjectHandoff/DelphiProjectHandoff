@@ -1,6 +1,6 @@
 program DPH.Tests.Publishing;
 {$APPTYPE CONSOLE}
-uses System.SysUtils, System.IOUtils, System.JSON, System.Hash, System.Zip, Winapi.ActiveX,
+uses System.SysUtils, System.StrUtils, System.IOUtils, System.JSON, System.Hash, System.Zip, Winapi.ActiveX,
   DPH.Publish.Model in '..\DPH.Publish.Model.pas',
   DPH.Publish.Export in '..\DPH.Publish.Export.pas',
   DPH.Publish.Translation in '..\DPH.Publish.Translation.pas',
@@ -38,6 +38,9 @@ begin
     Check(not TDPHBrowserPolicy.Allowed('file:///'+Fixture.Replace('\','/')+'/index.html',Work),'Preview rejects unrelated local files');
     Check(not TDPHBrowserPolicy.Allowed('file:///'+Work.Replace('\','/')+'/%2e%2e/index.html',Work),'Preview rejects encoded traversal');
     Check(not TDPHBrowserPolicy.Allowed('javascript:alert(1)',Work),'Preview rejects script navigation');
+    Check(not ContainsText(TDPHDocumentModel.Redact('password := ''two word secret'';'),'two word'),'Pascal quoted credential assignments are fully redacted');
+    Check(not ContainsText(TDPHDocumentModel.Redact('Authorization: Bearer abcdefghijklmnop'),'abcdefghijklmnop'),'Bearer authorization tokens are redacted');
+    Check(not ContainsText(TDPHDocumentModel.Redact('{"password":"quoted secret words"}'),'quoted secret'),'JSON credential text is redacted');
     for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do TFile.Copy(Path,TPath.Combine(Fixture,ExtractFileName(Path)));
     Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
     Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'publish.dphdb'),Fixture,TPath.Combine(Root,'migrations'));

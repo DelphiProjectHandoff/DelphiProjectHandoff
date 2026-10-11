@@ -1,0 +1,79 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  5382 lines, 0.69 seconds, 9167516 bytes code, 344236 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+5290 lines, 0.69 seconds, 9167300 bytes code, 344212 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+tests\DPH.Tests.Publishing.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Publishing.dpr(96) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+4724 lines, 0.64 seconds, 4648424 bytes code, 251668 bytes data.
+PASS 1: Preview permits its blank startup page
+PASS 2: Preview permits only its local index and internal anchors
+PASS 3: Preview rejects external navigation
+PASS 4: Preview rejects unrelated local files
+PASS 5: Preview rejects encoded traversal
+PASS 6: Preview rejects script navigation
+PASS 7: Pascal quoted credential assignments are fully redacted
+PASS 8: Bearer authorization tokens are redacted
+PASS 9: JSON credential text is redacted
+PASS 10: Captured fixture has its click routine
+PASS 11: Credential assignment is redacted throughout canonical model
+PASS 12: Explicit source exclusion is recorded
+PASS 13: Excluded file cannot leak through symbol index
+PASS 14: Excluded file cannot leak through symbol index
+PASS 15: Excluded file cannot leak through symbol index
+PASS 16: Excluded file cannot leak through symbol index
+PASS 17: Excluded file cannot leak through symbol index
+PASS 18: Excluded file cannot leak through symbol index
+PASS 19: Excluded file cannot leak through symbol index
+PASS 20: Excluded file cannot leak through symbol index
+PASS 21: Excluded file cannot leak through symbol index
+PASS 22: Excluded file cannot leak through symbol index
+PASS 23: Excluded file cannot leak through symbol index
+PASS 24: Excluded file cannot leak through symbol index
+PASS 25: Excluded file cannot leak through symbol index
+PASS 26: Excluded file cannot leak through symbol index
+PASS 27: Excluded file cannot leak through symbol index
+PASS 28: Excluded file cannot leak through symbol index
+PASS 29: Excluded file cannot leak through symbol index
+PASS 30: Excluded file cannot leak through symbol index
+PASS 31: Excluded file cannot leak through symbol index
+PASS 32: Excluded file cannot leak through symbol index
+PASS 33: Excluded file cannot leak through symbol index
+PASS 34: Excluded file cannot leak through symbol index
+PASS 35: Excluded file cannot leak through symbol index
+PASS 36: Full handoff passes filename and SHA256 validation
+PASS 37: Owner guardrails and generated agent instructions are excluded by default
+PASS 38: Authored markup is encoded rather than executed
+PASS 39: Escaped author text remains inspectable
+PASS 40: Offline HTML blocks external connections
+PASS 41: Code identifiers are protected from translation
+PASS 42: Local bilingual language selector helper is included
+PASS 43: Canonical output is deterministic for fixed capture, scope and knowledge
+PASS 44: Task bundle records its technical scope
+PASS 45: Task bundle selects incident context rather than a blind full-export truncation
+PASS 46: Changed input fingerprint rejects a stale bundle
+PASS 47: Publishing cannot write into the analyzed source
+PASS 48: Publishing cannot overwrite an existing folder
+PASS 49: Editable engineering guide has a changeable TOC field
+PASS 50: Guide title page records last changed identity
+PASS 51: Modified artifact fails hash validation
+PASS 52: Translation preserves identifiers, paths and SQL byte for byte
+PASS 53: Translated prose requires human review
+PASS 54: Translation review is cached for exact content and revision
+PASS 55: Changed prose invalidates localized cache
+PASS 56: Old translation approval cannot carry to new prose
+PASS 57: Unconfigured external Atlas translation cannot transmit content
+PASS WP6: 57 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+3677 lines, 0.38 seconds, 3449652 bytes code, 148332 bytes data.
+PASS: checksums, source ranges, generation and technical indexes agree with the trusted fingerprint
+Historical/partial inspection explicitly allowed; this does not establish current complete source evidence.

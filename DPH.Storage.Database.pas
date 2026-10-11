@@ -63,6 +63,7 @@ type
     class function ProjectRoot(const ADatabasePath: string): string; static;
     procedure SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
     function LoadWorkspaceView(AGenerationID: Int64 = 0): string;
+    procedure RelocateSource(const ANewRoot: string; AGenerationID: Int64; const AVerifiedManifest: TDPHManifest);
     procedure BeginFacts(AGenerationID: Int64);
     procedure CommitFacts;
     procedure RollbackFacts;
@@ -72,6 +73,7 @@ type
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
+    function GenerationIsStale(AGenerationID: Int64): Boolean;
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -79,7 +81,7 @@ implementation
 
 uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
-  System.Generics.Defaults, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
+  System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
   FireDAC.Phys.SQLiteWrapper.Stat;
 
@@ -847,15 +849,25 @@ var BuildState: string;
 begin
   RequireWriter; CheckOutsideSource(ADirectory);
   if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGenerationID])<>1 then raise EDPHStorage.Create('Export generation is not captured');
+  if not AStale and GenerationIsStale(AGenerationID) then raise EDPHStorage.Create('Historical or incomplete export must be explicitly marked stale');
   BuildState:='validated'; if AStale then BuildState:='stale';
   FConnection.StartTransaction;
   try
     FConnection.ExecSQL('INSERT INTO artifacts(project_id,generation_id,kind,artifact_path,content_hash,locale,template_version,build_state) '+
-      'VALUES(1,:generation,''handoff'',:path,:hash,''en'',''DPH-WP6-1'',:state)',[AGenerationID,ADirectory,ACanonicalHash,BuildState]);
+      'VALUES(1,:generation,''handoff'',:path,:hash,''en'',''DPH-WP7-1'',:state)',[AGenerationID,ADirectory,ACanonicalHash,BuildState]);
     FConnection.ExecSQL('INSERT INTO export_jobs(project_id,generation_id,format,scope_json,started_at,finished_at,manifest_hash,status) '+
       'VALUES(1,:generation,''html_docx_jsonl'',:scope,:started,:finished,:hash,:state)',[AGenerationID,AScope,UTCNow,UTCNow,THashSHA2.GetHashStringFromFile(TPath.Combine(ADirectory,'manifest.json')),BuildState]);
     FConnection.Commit;
   except FConnection.Rollback; raise; end;
+end;
+
+function TDPHKnowledgeStore.GenerationIsStale(AGenerationID: Int64): Boolean;
+begin
+  RequireWriter;
+  Result:=Status.AnalysisStale or (Status.PublishedGeneration<>AGenerationID) or
+    (Scalar('SELECT count(*) FROM analysis_generations g JOIN projects p ON p.project_id=g.project_id '+
+      'WHERE g.generation_id=:id AND g.status=''current'' AND g.config_id=p.active_config AND g.manifest_hash=:hash',
+      [AGenerationID,ManifestHash(ReadManifest)])<>1);
 end;
 
 function TDPHKnowledgeStore.Status: TDPHProjectStatus;
@@ -939,7 +951,9 @@ begin
   Query:=NewQuery('SELECT artifact_path,content_hash FROM artifacts WHERE generation_id=:generation AND kind=''workspace_view'' ORDER BY artifact_id DESC LIMIT 1',[AGenerationID]);
   try
     if Query.Eof then Exit; Path:=Query.Fields[0].AsString; Hash:=Query.Fields[1].AsString;
-    if not SameFileName(TPath.GetFullPath(Path),TPath.Combine(FDatabasePath+'.views',Hash+'.json')) then raise EDPHStorage.Create('Workspace artifact path is not managed');
+    if (Length(Hash)<>64) or not SameText(ExtractFileName(Path),Hash+'.json') then raise EDPHStorage.Create('Workspace artifact path is not managed');
+    // Resolve a portable cache only beside this database, never at an old stored absolute path.
+    Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
     if not TFile.Exists(Path) then raise EDPHStorage.Create('Workspace artifact is missing');
     if (TFile.GetSize(Path)>128*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>Hash) then raise EDPHStorage.Create('Workspace artifact is damaged');
     Result:=TEncoding.UTF8.GetString(TFile.ReadAllBytes(Path)); Parsed:=TJSONObject.ParseJSONValue(Result);
@@ -947,6 +961,35 @@ begin
       if not (Parsed is TJSONObject) or ((Parsed as TJSONObject).GetValue<Int64>('generation_id')<>AGenerationID) then raise EDPHStorage.Create('Workspace artifact generation mismatch');
     finally Parsed.Free; end;
   finally Query.Free; end;
+end;
+
+procedure TDPHKnowledgeStore.RelocateSource(const ANewRoot: string; AGenerationID: Int64; const AVerifiedManifest: TDPHManifest);
+var OldRoot,NewRoot: string;
+begin
+  RequireWriter;
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'',''superseded'')',[AGenerationID])<>1 then
+    raise EDPHStorage.Create('Relocation requires a captured terminal generation');
+  if (Length(AVerifiedManifest)=0) or (ManifestHash(AVerifiedManifest)<>ManifestHash(ReadManifest(AGenerationID))) then
+    raise EDPHStorage.Create('Relocation requires exact captured file identities, hashes and availability');
+  OldRoot:=FSourceRoot; NewRoot:=IncludeTrailingPathDelimiter(TPath.GetFullPath(ANewRoot));
+  if not TDirectory.Exists(NewRoot) then raise EDPHStorage.Create('Relocated source root is unavailable');
+  FSourceRoot:=NewRoot;
+  try CheckOutsideSource(FDatabasePath); CheckOutsideSource(FDatabasePath+'.views');
+  except FSourceRoot:=OldRoot; raise; end;
+  FConnection.StartTransaction;
+  try
+    FConnection.ExecSQL('UPDATE projects SET root_uri=:root WHERE project_id=1',[NewRoot]);
+    FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) '+
+      'SELECT 1,knowledge_id,''Source relocated; confirm evidence context'',''pending'',:generation FROM knowledge_records k '+
+      'WHERE state NOT IN (''retired'',''rejected'') AND NOT EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'')',[AGenerationID]);
+    FConnection.ExecSQL('UPDATE knowledge_records SET state=''needs_review'' WHERE state IN (''verified'',''inferred'')');
+    FConnection.ExecSQL('UPDATE project_state SET analysis_stale=1,reassessment_requested=1,knowledge_review_needed=EXISTS(SELECT 1 FROM review_tasks WHERE state=''pending'') WHERE project_id=1');
+    FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+    FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review''');
+    FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,before_hash,after_hash) '+
+      'VALUES(1,''project'',''1'',''source_relocated'',''explicit local relocation'',:stamp,:before,:after)',[UTCNow,THashSHA2.GetHashString(OldRoot),THashSHA2.GetHashString(NewRoot)]);
+    FConnection.Commit;
+  except FConnection.Rollback; FSourceRoot:=OldRoot; raise; end;
 end;
 
 function TDPHKnowledgeStore.SQLiteVersion: string;

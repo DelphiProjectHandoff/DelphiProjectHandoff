@@ -2,7 +2,7 @@ object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
-Constraints.MinWidth = 1100
+Constraints.MinWidth = 1340
 Constraints.MinHeight = 700
   Fill.Color = claWhite
   OnCreate = FormCreate
@@ -126,10 +126,18 @@ OnClick = NextPageClick
 end
 object BreadcrumbLabel: TLabel
 Text = 'Select a Delphi project or cached database'
+Position.X = 690
+Position.Y = 42
+Width = 620
+Height = 40
+end
+object RelocateButton: TButton
+Text = 'Relocate verified source'
 Position.X = 510
 Position.Y = 42
-Width = 800
-Height = 40
+Width = 170
+Height = 28
+OnClick = RelocateClick
 end
 end
 object StatusLabel: TLabel
