@@ -32,7 +32,7 @@ begin
       end;
       Manifest.AddPair('backup_version',TJSONNumber.Create(1));
       Manifest.AddPair('database_sha256',THashSHA2.GetHashStringFromFile(Destination));
-      Manifest.AddPair('purpose','Consistent SQLite backup plus verified managed views and images. Keep both together.');
+      Manifest.AddPair('purpose','Consistent SQLite backup plus hash-checked managed views, images and saved observations. Keep both together.');
       Target:=TPath.Combine(Directory,'backup-manifest.json'); Created.Add(Target);
       TFile.WriteAllText(Target,Manifest.Format(2),TEncoding.UTF8);
     except

@@ -269,6 +269,26 @@ author to confirm intended outcomes; a static lesson cannot supply runtime resul
 or business rationale. The offline object page and document export use the same
 lesson. This does not mark the selected program tested or the explanation reviewed.
 
+Importing saved runtime observations
+1. Open the intended project database. To link the record to a routine or other
+   object, select that object in Explorer first; its selection is the optional link.
+2. Use the top-right page selector to choose Runtime observations.
+3. Enter Contributor and Run, environment and outcome description. Include the
+   actual run date, application build, platform, action, expected result and what
+   was observed. DPH cannot verify these details from a text file.
+4. Click Select saved log and import. Choose an existing UTF-8 .txt, .log or .json
+   extract no larger than 256 KiB. For a large log, prepare a focused extract and
+   describe the original log and omitted context. DPH does not start the program.
+5. Select the imported record. Read attribution, captured generation, source and
+   original-file SHA256 hashes, and saved text. File order is not verified event
+   order. Script-looking text is displayed literally.
+6. Click Explain linked current object to investigate its source. Historical or
+   unlinked records retain their text but cannot be treated as current identities.
+After reopening a database, click Refresh saved records. The newest 50 are shown.
+Keep the database and adjacent .views directory together. Explicit Database tools
+backups include this managed content; an ordinary database-only file copy does not.
+These records remain local; publication does not automatically share log contents.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

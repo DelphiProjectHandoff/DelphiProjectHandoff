@@ -1,0 +1,75 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(15) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(41) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(60) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(86) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(93) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(93) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(95) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(95) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(95) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(98) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(98) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Knowledge.dpr(118) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Knowledge.dpr(119) Hint: H2077 Value assigned to 'Revision' never used
+9878 lines, 0.92 seconds, 9658112 bytes code, 344408 bytes data.
+PASS 1: Fixture generation publishes
+PASS 2: Runtime claim import requires named attribution
+PASS 3: Runtime claim cannot link an absent captured object
+PASS 4: Observation retains its generation and cannot silently verify runtime claims
+PASS 5: Observation pins both contributed bytes and the actual linked source revision
+PASS 6: Log content stays literal text rather than executed script
+PASS 7: Explicit portable backup inventory includes observation content
+PASS 8: Damaged observation is rejected before display
+PASS 9: Anonymous authorship is rejected
+PASS 10: Captured entity target is offered by bounded link search
+PASS 11: Captured relationship target is offered by bounded link search
+PASS 12: Captured evidence target is offered by bounded link search
+PASS 13: New rule remains pending explicit review
+PASS 14: Rule links to stable identity and multiple evidence targets
+PASS 15: First authored revision retained
+PASS 16: Multiple typed links persist on exact authored revision
+PASS 17: Unavailable rich target rolls back entire authored revision
+PASS 18: Separate project review flag is set
+PASS 19: Authored section persists stable ID, document, audience and source generation
+PASS 20: Anonymous reviewer is rejected
+PASS 21: Explicit named review verifies human content
+PASS 22: Reviewer attribution persists
+PASS 23: Verification appends rather than overwrites history
+PASS 24: Resolved review queue clears its own flag
+PASS 25: Review revision preserves document section metadata
+PASS 26: Named review preserves immutable rich links
+PASS 27: Stale editor revision cannot overwrite reviewed content
+PASS 28: Authored edit reopens human review
+PASS 29: Document reassignment retains prior revision metadata
+PASS 30: Old source generation cannot approve changed inputs
+PASS 31: Changed source generation publishes
+PASS 32: Review task compares last verified source generation with current capture
+PASS 33: Review task identifies affected canonical entity and before/after presence
+PASS 34: Review task exposes prior and current authored content for comparison
+PASS 35: IDE-editable task comparison labels before and after generations
+PASS 36: Review queue offers affected source object selection
+PASS 37: Parser publication never approves human explanation
+PASS 38: Rescan retains authored text
+PASS 39: Rescan preserves all human revisions
+PASS 40: Historical rich links block approval in a newer generation
+PASS 41: Configuration change invalidates review without source-byte change
+PASS 42: Controlled rename publishes a distinct identity
+PASS 43: Missing or renamed entity cannot inherit verified knowledge
+PASS 44: Historical link is not reassigned to a renamed method
+PASS 45: Obsolete knowledge can be retired with history
+PASS 46: Retirement resolves the pending task
+PASS 47: FMX knowledge list shows curated records
+PASS 48: Editor loads selected authored revision
+PASS 49: Inspector exposes prior reviewer attribution
+PASS 50: Pending filter excludes resolved retired knowledge
+PASS 51: Background knowledge refresh preserves unsaved edits
+PASS 52: Close cannot silently discard authored text
+PASS 53: Displayed unsaved edit cannot approve a different persisted revision
+PASS 54: Explicit discard clears the edit
+PASS 55: Knowledge edits preserve SQLite integrity
+PASS 56: Backup/restore retains full immutable review and rich-link history
+PASS WP5: 56 checks

@@ -3,8 +3,10 @@ program DPH.Tests.Knowledge;
 uses System.SysUtils, System.IOUtils, System.JSON, System.Hash, FMX.Forms,
   DPH.UI.Main in '..\DPH.UI.Main.pas',
   DPH.Storage.Database in '..\DPH.Storage.Database.pas',
+  DPH.Storage.Backup in '..\DPH.Storage.Backup.pas',
   DPH.Storage.Types in '..\DPH.Storage.Types.pas';
 var Root,Work,SourceRoot: string; ID: TGUID; Store: TDPHKnowledgeStore;
+    ObservationBytes: TBytes; ObservationPath: string;
     Manifest: TDPHManifest; Config,Generation,Next,Entity,Note,Revision,OldRevision,EvidenceID: Int64;
     Rows,RichLinks: TJSONArray; Row: TJSONObject; Failed,CanClose: Boolean; Checks: Integer; Form: TDPHMainForm; TargetKind: string;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -30,6 +32,39 @@ begin
       EvidenceID:=Store.AddEvidence(Generation,'unit1.pas','{"source":"unit1.pas","start":0,"end":3,"line":1,"column":1}','source','fixture','inferred');
       Store.AddRelationship(Generation,Entity,Entity,EvidenceID,'calls','inferred','fixture-only');
       Check(Store.PublishGeneration(Generation,Manifest,'{}',True),'Fixture generation publishes');
+      TFile.WriteAllText(TPath.Combine(Work,'observed.log'),'2026-10-11T12:00:00Z Work started'+sLineBreak+'<script>not executable</script>',TEncoding.UTF8);
+      Failed:=False; try Store.ImportObservation(Generation,TPath.Combine(Work,'observed.log'),'','Fixture environment','unit1.work'); except Failed:=True; end;
+      Check(Failed,'Runtime claim import requires named attribution');
+      Failed:=False; try Store.ImportObservation(Generation,TPath.Combine(Work,'observed.log'),'Test Author','Fixture environment','missing-key'); except Failed:=True; end;
+      Check(Failed,'Runtime claim cannot link an absent captured object');
+      Store.ImportObservation(Generation,TPath.Combine(Work,'observed.log'),'Test Author','Synthetic fixture log; not a real program run','unit1.work');
+      Rows:=Store.ObservationsJSON;
+      try Row:=Rows.Items[0] as TJSONObject;
+        Check((Rows.Count=1) and (Row.GetValue<string>('verification_state')='contributor_claim_unverified') and
+          (Row.GetValue<Int64>('generation_id')=Generation),'Observation retains its generation and cannot silently verify runtime claims');
+        Check((Row.GetValue<string>('linked_source_hash')=Manifest[0].SHA256) and
+          (Row.GetValue<string>('original_sha256')=THashSHA2.GetHashStringFromFile(TPath.Combine(Work,'observed.log'))),
+          'Observation pins both contributed bytes and the actual linked source revision');
+        Check(Pos('<script>not executable</script>',Row.GetValue<string>('text'))>0,'Log content stays literal text rather than executed script');
+        Check(Length(Store.ManagedArtifactPaths)=1,'Explicit portable backup inventory includes observation content');
+        ObservationPath:=TPath.Combine(Work,'knowledge.dphdb.views\'+Row.GetValue<string>('artifact_hash')+'.json');
+        ObservationBytes:=TFile.ReadAllBytes(ObservationPath); TFile.WriteAllText(ObservationPath,'damaged',TEncoding.UTF8);
+        Failed:=False; try RichLinks:=Store.ObservationsJSON; RichLinks.Free; except Failed:=True; end;
+        Check(Failed,'Damaged observation is rejected before display'); TFile.WriteAllBytes(ObservationPath,ObservationBytes);
+      finally Rows.Free; end;
+      TFile.WriteAllBytes(TPath.Combine(Work,'invalid.log'),TBytes.Create($FF,$FE,$00));
+      Failed:=False; try Store.ImportObservation(Generation,TPath.Combine(Work,'invalid.log'),'Test Author','Invalid encoding',''); except Failed:=True; end;
+      Check(Failed,'Non-UTF-8 observation input is rejected rather than silently replaced');
+      TFile.WriteAllText(TPath.Combine(Work,'empty.log'),'   ',TEncoding.UTF8);
+      Failed:=False; try Store.ImportObservation(Generation,TPath.Combine(Work,'empty.log'),'Test Author','Empty extract',''); except Failed:=True; end;
+      Check(Failed,'Whitespace-only observation cannot become evidence');
+      TDPHProjectBackup.Save(Store,TPath.Combine(Work,'observation-backup.dphdb'));
+      TDPHProjectBackup.Restore(TPath.Combine(Work,'observation-backup.dphdb'),TPath.Combine(Work,'observation-restored.dphdb'),TPath.Combine(Root,'migrations'));
+      var ObservationStore:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'observation-restored.dphdb'),SourceRoot,TPath.Combine(Root,'migrations'));
+      try Rows:=ObservationStore.ObservationsJSON;
+        try Check((Rows.Count=1) and (Rows.Items[0].GetValue<string>('contributor')='Test Author'),
+          'Verified portable backup/restore retains observation content and contributor'); finally Rows.Free; end;
+      finally ObservationStore.Free; end;
       Failed:=False; try Store.SaveKnowledge(0,0,Generation,'Rule','Body','','business_rule','unit1.work'); except Failed:=True; end; Check(Failed,'Anonymous authorship is rejected');
       RichLinks:=TJSONArray.Create;
       try

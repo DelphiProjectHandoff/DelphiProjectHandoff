@@ -136,8 +136,19 @@ type
     QuestionsList: TListBox;
     QuestionMemo: TMemo;
     RefreshQuestionsButton,QuestionEvidenceButton,AnswerQuestionButton: TButton;
+    ObservationsTab: TTabItem;
+    ObservationsPurpose: TLabel;
+    ObservationContributorLabel,ObservationContextLabel: TLabel;
+    ObservationsToolbar: THorzScrollBox;
+    ObservationContributor,ObservationContext: TEdit;
+    ImportObservationButton,RefreshObservationsButton,ObservationObjectButton: TButton;
+    ObservationsList: TListBox;
+    ObservationMemo: TMemo;
+    ObservationDialog: TOpenDialog;
     procedure QuestionsClick(Sender: TObject);
     procedure QuestionSelectionClick(Sender: TObject);
+    procedure ObservationsClick(Sender: TObject);
+    procedure ObservationSelectionClick(Sender: TObject);
     procedure ReviewTasksClick(Sender: TObject);
     procedure ReviewTaskSelectionClick(Sender: TObject);
     procedure KnowledgeLinksClick(Sender: TObject);
@@ -242,6 +253,7 @@ type
     FLinkTargets,FEditableLinks: TJSONArray;
     FReviewTasks: TJSONArray;
     FQuestions: TJSONArray;
+    FObservations: TJSONArray;
     FKnowledgeQuestionJSON: string;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
@@ -308,7 +320,7 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free;
+  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -574,6 +586,7 @@ begin
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
+  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Open Runtime observations and click Refresh saved records.';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
@@ -613,6 +626,12 @@ begin
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if (R.Observations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
+      FObservations.Free; FObservations:=R.Observations; R.Observations:=nil; ObservationsList.Items.Clear;
+      for Value in FObservations do ObservationsList.Items.Add(Value.GetValue<string>('context')+' | generation '+Value.GetValue<Int64>('generation_id').ToString);
+      ObservationMemo.Text:='Newest 50 records loaded. Select a record to read its attribution and saved text.';
+      if FObservations.Count>0 then begin ObservationsList.ItemIndex:=0; ObservationSelectionClick(nil); end;
+    end;
     if (R.LinkCandidates<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
       FLinkTargets.Free; FLinkTargets:=R.LinkCandidates; R.LinkCandidates:=nil; LinkTargetsList.Items.Clear;
       for Value in FLinkTargets do LinkTargetsList.Items.Add(Value.GetValue<string>('label'));
@@ -662,6 +681,7 @@ begin
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
+  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Click Refresh saved records to read attributed observations for this database.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
@@ -922,6 +942,39 @@ begin
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
     HelpBrowser.Navigate('file://'+TPath.Combine(FBaseDirectory,'help\index.html'));
   except on E: Exception do begin HelpBrowser.Visible:=False; StatusLabel.Text:='Getting started preview unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.ObservationSelectionClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  if (FObservations=nil) or (ObservationsList.ItemIndex<0) then Exit;
+  Row:=FObservations.Items[ObservationsList.ItemIndex] as TJSONObject;
+  ObservationMemo.Text:='CONTRIBUTOR CLAIM - UNVERIFIED'+sLineBreak+Row.GetValue<string>('context')+sLineBreak+
+    'Contributor: '+Row.GetValue<string>('contributor')+sLineBreak+'Imported UTC: '+Row.GetValue<string>('imported_utc')+sLineBreak+
+    'Captured generation: '+Row.GetValue('generation_id').Value+sLineBreak+'Linked object: '+Row.GetValue<string>('entity_key')+sLineBreak+
+    'Linked source SHA256: '+Row.GetValue<string>('linked_source_hash')+sLineBreak+'Original extract SHA256: '+Row.GetValue<string>('original_sha256')+sLineBreak+
+    Row.GetValue<string>('provenance')+sLineBreak+sLineBreak+'SAVED TEXT (file order; timestamps are unverified)'+sLineBreak+Row.GetValue<string>('text');
+end;
+procedure TDPHMainForm.ObservationsClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if Sender=ObservationObjectButton then begin
+    if (FObservations=nil) or (ObservationsList.ItemIndex<0) then Exit;
+    Row:=FObservations.Items[ObservationsList.ItemIndex] as TJSONObject;
+    if (Row.GetValue<Int64>('generation_id')<>FView.Document.GetValue<Int64>('generation_id')) or (Row.GetValue<string>('entity_key')='') then begin
+      StatusLabel.Text:='This record is historical or has no object link. Its attribution remains available; no current object identity is assumed.'; Exit;
+    end;
+    SelectSymbol(Row.GetValue<string>('entity_key')); Exit;
+  end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='observations'; Request.Database:=FDatabase; Request.Entry:=FEntry;
+  Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
+  if Sender=ImportObservationButton then begin
+    if (Trim(ObservationContributor.Text)='') or (Trim(ObservationContext.Text)='') then begin StatusLabel.Text:='Enter the contributor and run/environment description before selecting a saved log.'; Exit; end;
+    if not ObservationDialog.Execute then Exit;
+    Request.Command:='import_observation'; Request.Body:=ObservationDialog.FileName; Request.Editor:=ObservationContributor.Text;
+    Request.Title:=ObservationContext.Text; Request.EntityKey:=FSelected;
+  end;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Reading explicitly saved observation text; no target program is executed.';
 end;
 procedure TDPHMainForm.ImportScreenshotClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest;

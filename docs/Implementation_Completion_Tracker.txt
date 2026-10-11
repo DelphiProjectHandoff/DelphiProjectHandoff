@@ -194,7 +194,17 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Native learning integration failed after image checks with an access violation;
     no native browser rendering or human comprehension pass is claimed. Inspection
     disproved a proposed thread-constructor race; that change was fully reverted.
-5.6 Pending: attributed runtime observation import.
+5.6 Expanded: design-time Runtime observations page imports explicitly selected
+    saved UTF-8 .txt/.log/.json extracts up to 256 KiB, with required named
+    contributor and run/environment context. Pins generation, linked source hash
+    and original bytes; literal read-only display retains file order without
+    inferring timestamps, causality or verified runtime behavior. Newest 50 records
+    are available on explicit refresh; historical links cannot navigate as current.
+    Managed hashes reject damaged content; retention protects associated captures;
+    explicit portable backup/restore includes observations. Ten focused checks
+    pass (59 knowledge checks total), plus workspace/selection regression suite.
+    Logs remain local and are not automatically included in publication. No live
+    instrumentation, target execution or production connection was introduced.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time

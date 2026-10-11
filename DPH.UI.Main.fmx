@@ -1329,6 +1329,83 @@ StyledSettings = []
 TextSettings.Font.Size = 14
 end
 end
+object ObservationsTab: TTabItem
+Text = 'Runtime observations'
+object ObservationsPurpose: TLabel
+Align = Top
+Height = 90
+WordWrap = True
+Text = 'Import a saved UTF-8 .txt, .log or .json extract (up to 256 KiB). Enter its named contributor and actual run/environment description. The current Explorer selection becomes an optional object link. Saved records remain unverified claims; DPH does not execute the program, verify timestamps or infer causal order. Refresh displays the newest 50. Records are stored locally with the database and included in explicit database backups; they are not automatically published.'
+end
+object ObservationsToolbar: THorzScrollBox
+Align = Top
+Height = 102
+object ObservationContributorLabel: TLabel
+Position.X = 4
+Position.Y = 2
+Width = 250
+Height = 18
+Text = 'Contributor (required)'
+end
+object ObservationContextLabel: TLabel
+Position.X = 264
+Position.Y = 2
+Width = 480
+Height = 18
+Text = 'Run, environment and outcome description (required)'
+end
+object ObservationContributor: TEdit
+Position.X = 4
+Position.Y = 24
+Width = 250
+Height = 28
+TextPrompt = 'Named contributor'
+end
+object ObservationContext: TEdit
+Position.X = 264
+Position.Y = 24
+Width = 480
+Height = 28
+TextPrompt = 'Run date, environment, action and expected/observed outcome'
+end
+object ImportObservationButton: TButton
+Position.X = 4
+Position.Y = 62
+Width = 220
+Height = 28
+Text = 'Select saved log and import'
+OnClick = ObservationsClick
+end
+object RefreshObservationsButton: TButton
+Position.X = 234
+Position.Y = 62
+Width = 220
+Height = 28
+Text = 'Refresh saved records'
+OnClick = ObservationsClick
+end
+object ObservationObjectButton: TButton
+Position.X = 464
+Position.Y = 62
+Width = 220
+Height = 28
+Text = 'Explain linked current object'
+OnClick = ObservationsClick
+end
+end
+object ObservationsList: TListBox
+Align = Top
+Height = 170
+OnChange = ObservationSelectionClick
+end
+object ObservationMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 14
+end
+end
 object PublishTab: TTabItem
 Text = 'Publish'
 object PublishToolbar: TLayout
@@ -1436,6 +1513,10 @@ end
 object ScreenshotDialog: TOpenDialog
 Filter = 'PNG screenshot|*.png'
 Title = 'Select an existing screenshot; DPH does not run the selected application'
+end
+object ObservationDialog: TOpenDialog
+Filter = 'Saved UTF-8 observations|*.txt;*.log;*.json'
+Title = 'Select an existing saved observation (up to 256 KiB); no program will run'
 end
 object PollTimer: TTimer
 Interval = 100

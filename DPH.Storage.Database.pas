@@ -78,6 +78,8 @@ type
     function GenerationIsStale(AGenerationID: Int64): Boolean;
     procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
     function ScreenshotsJSON: TJSONArray;
+    procedure ImportObservation(AGenerationID: Int64; const AFile,AAuthor,AContext,AEntityKey: string);
+    function ObservationsJSON: TJSONArray;
     function RetentionReport(ARecent: Integer): TJSONArray;
     function RecentRetentionCount: Integer;
     procedure ApplyRetention(ARecent: Integer);
@@ -1278,6 +1280,74 @@ begin
   end;
   finally Query.Free; end;
 end;
+procedure TDPHKnowledgeStore.ImportObservation(AGenerationID: Int64; const AFile,AAuthor,AContext,AEntityKey: string);
+var Bytes,RoundTrip: TBytes; Encoding: TUTF8Encoding; Metadata: TJSONObject; Hasher: THashSHA2;
+    Content,Hash,Directory,Path,SourceHash: string;
+begin
+  RequireWriter;
+  if (Trim(AAuthor)='') or (Trim(AContext)='') or (Length(AAuthor)>256) or (Length(AContext)>4096) then
+    raise EDPHStorage.Create('Enter a named contributor and run/environment description (up to 256/4096 characters)');
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'',''superseded'')',[AGenerationID])<>1 then
+    raise EDPHStorage.Create('Observation requires a captured generation');
+  SourceHash:='';
+  if AEntityKey<>'' then begin
+    if Scalar('SELECT count(*) FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id WHERE e.canonical_key=:key AND v.generation_id=:generation',
+      [AEntityKey,AGenerationID])<>1 then raise EDPHStorage.Create('Observation target is absent from this generation');
+    SourceHash:=VarToStr(Scalar('SELECT fr.sha256 FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id '+
+      'JOIN file_revisions fr ON fr.file_revision_id=v.source_revision_id WHERE e.canonical_key=:key AND v.generation_id=:generation',[AEntityKey,AGenerationID]));
+  end;
+  if not MatchText(ExtractFileExt(AFile),['.txt','.log','.json']) then raise EDPHStorage.Create('Select an explicitly saved UTF-8 .txt, .log or .json observation');
+  if TFile.GetSize(AFile)>256*1024 then raise EDPHStorage.Create('Observation exceeds 256 KiB; select a focused extract with its context');
+  Bytes:=TFile.ReadAllBytes(AFile);
+  if (Length(Bytes)=0) or (Length(Bytes)>256*1024) then raise EDPHStorage.Create('Observation is empty or changed beyond its size limit');
+  Encoding:=TUTF8Encoding.Create(False);
+  try Content:=Encoding.GetString(Bytes); RoundTrip:=Encoding.GetBytes(Content); finally Encoding.Free; end;
+  if (Length(RoundTrip)<>Length(Bytes)) or not CompareMem(@RoundTrip[0],@Bytes[0],Length(Bytes)) then
+    raise EDPHStorage.Create('Observation is not valid round-trip UTF-8 text');
+  if Content.StartsWith(Char($FEFF)) then Delete(Content,1,1);
+  if (Trim(Content)='') or ContainsStr(Content,#0) then raise EDPHStorage.Create('Observation must contain nonempty UTF-8 text without NUL characters');
+  Hasher:=THashSHA2.Create; Hasher.Update(Bytes); Hash:=Hasher.HashAsString;
+  Metadata:=TJSONObject.Create;
+  try
+    Metadata.AddPair('generation_id',TJSONNumber.Create(AGenerationID)); Metadata.AddPair('entity_key',AEntityKey);
+    Metadata.AddPair('linked_source_hash',SourceHash); Metadata.AddPair('contributor',AAuthor); Metadata.AddPair('context',AContext);
+    Metadata.AddPair('imported_utc',UTCNow); Metadata.AddPair('original_sha256',Hash); Metadata.AddPair('text',Content);
+    Metadata.AddPair('verification_state','contributor_claim_unverified');
+    Metadata.AddPair('provenance','Explicitly selected saved text; timestamps, runtime origin, environment and causal interpretation are contributor claims. DPH did not run the program or establish event order.');
+    Bytes:=TEncoding.UTF8.GetBytes(Metadata.ToJSON); Hasher:=THashSHA2.Create; Hasher.Update(Bytes); Hash:=Hasher.HashAsString;
+    Directory:=FDatabasePath+'.views'; CheckOutsideSource(Directory); TDirectory.CreateDirectory(Directory);
+    Path:=TPath.Combine(Directory,Hash+'.json'); if not TFile.Exists(Path) then TFile.WriteAllBytes(Path,Bytes);
+    if THashSHA2.GetHashStringFromFile(Path)<>Hash then raise EDPHStorage.Create('Observation managed content hash mismatch');
+    FConnection.ExecSQL('INSERT INTO artifacts(project_id,generation_id,kind,artifact_path,content_hash,locale,template_version,build_state) '+
+      'VALUES(1,:generation,''runtime_observation'',:path,:hash,''en'',''DPH-OBSERVATION-1'',''needs_review'')',[AGenerationID,Path,Hash]);
+  finally Metadata.Free; end;
+end;
+function TDPHKnowledgeStore.ObservationsJSON: TJSONArray;
+var Query: TFDQuery; Hash,Path: string; C: Char; Row: TJSONObject;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT artifact_id,generation_id,content_hash FROM artifacts WHERE kind=''runtime_observation'' ORDER BY artifact_id DESC LIMIT 50',[]);
+  try
+    try
+      while not Query.Eof do begin
+        Hash:=Query.FieldByName('content_hash').AsString;
+        if Length(Hash)<>64 then raise EDPHStorage.Create('Observation hash is invalid');
+        for C in Hash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Observation hash is invalid');
+        Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
+        if not TFile.Exists(Path) or (TFile.GetSize(Path)>2*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>Hash) then
+          raise EDPHStorage.Create('Observation content is missing or damaged');
+        Row:=TJSONObject.ParseJSONValue(TFile.ReadAllText(Path,TEncoding.UTF8)) as TJSONObject;
+        try
+          if (Row=nil) or (Row.GetValue<Int64>('generation_id')<>Query.FieldByName('generation_id').AsLargeInt) then
+            raise EDPHStorage.Create('Observation generation metadata is invalid');
+          Row.AddPair('artifact_id',TJSONNumber.Create(Query.FieldByName('artifact_id').AsLargeInt)); Row.AddPair('artifact_hash',Hash);
+          Result.AddElement(Row); Row:=nil;
+        finally Row.Free; end;
+        Query.Next;
+      end;
+    except Result.Free; raise; end;
+  finally Query.Free; end;
+end;
 function TDPHKnowledgeStore.SQLiteVersion: string;
 begin RequireWriter; Result := VarToStr(Scalar('SELECT sqlite_version()',[])); end;
 
@@ -1369,7 +1439,7 @@ function TDPHKnowledgeStore.ManagedArtifactPaths: TArray<string>;
 var Query: TFDQuery; Paths: TList<string>; Hash,Path,ImageHash: string; Metadata: TJSONObject; C: Char;
 begin
   RequireWriter; Paths:=TList<string>.Create;
-  Query:=NewQuery('SELECT content_hash,kind FROM artifacts WHERE kind IN (''workspace_view'',''user_screenshot'') ORDER BY artifact_id',[]);
+  Query:=NewQuery('SELECT content_hash,kind FROM artifacts WHERE kind IN (''workspace_view'',''user_screenshot'',''runtime_observation'') ORDER BY artifact_id',[]);
   try
     while not Query.Eof do begin
       Hash:=Query.Fields[0].AsString;
@@ -1486,7 +1556,7 @@ begin
     'WHEN g.generation_id IN (SELECT generation_id FROM analysis_generations ORDER BY generation_id DESC LIMIT :recent) THEN ''recent'' '+
     'WHEN EXISTS(SELECT 1 FROM knowledge_links WHERE last_verified_generation_id=g.generation_id) OR '+
     'EXISTS(SELECT 1 FROM review_tasks WHERE opened_generation_id=g.generation_id OR resolved_generation_id=g.generation_id) THEN ''knowledge evidence'' '+
-    'WHEN EXISTS(SELECT 1 FROM artifacts WHERE generation_id=g.generation_id AND kind=''user_screenshot'') THEN ''screenshot evidence'' '+
+    'WHEN EXISTS(SELECT 1 FROM artifacts WHERE generation_id=g.generation_id AND kind IN (''user_screenshot'',''runtime_observation'')) THEN ''contributed image or runtime evidence'' '+
     'ELSE ''eligible cached views'' END AS retention_reason,'+
     '(SELECT count(*) FROM artifacts a WHERE a.generation_id=g.generation_id AND a.kind=''workspace_view'') AS cached_views '+
     'FROM analysis_generations g LEFT JOIN retained_generations p ON p.generation_id=g.generation_id '+

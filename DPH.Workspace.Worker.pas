@@ -32,6 +32,7 @@ type
     SearchGeneration: Int64;
     LinkCandidates: TJSONArray;
     ReviewTasks: TJSONArray;
+    Observations: TJSONArray;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -57,7 +58,7 @@ uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.D
   DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -117,7 +118,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -169,6 +170,15 @@ begin
               LifecycleResponse.RetentionCount:=Store.RecentRetentionCount;
               LifecycleResponse.Detached:=Request.Entry='';
               LifecycleResponse.MessageText:='Retention report ready. Immutable evidence and authored history are preserved.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
+          if MatchText(Request.Command,['observations','import_observation']) then begin
+            if Request.Command='import_observation' then Store.ImportObservation(Request.GenerationID,Request.Body,Request.Editor,Request.Title,Request.EntityKey);
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try LifecycleResponse.Observations:=Store.ObservationsJSON; LifecycleResponse.SearchGeneration:=Request.GenerationID;
+              LifecycleResponse.Detached:=Request.Entry=''; LifecycleResponse.MessageText:='Saved runtime claims loaded (newest 50). No program executed; contributor evidence remains unverified.';
               if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
             finally LifecycleResponse.Free; end;
             Continue;
