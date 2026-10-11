@@ -39,8 +39,34 @@ a new search. Diagnostics show their message and source path in the excerpt.
 Search covers captured object metadata, flow evidence, diagnostics and notes.
 It does not search arbitrary neighboring files or execute query syntax.
 
+Configurations, platforms and source encoding
+Attaching a project uses its declared configuration/platform defaults. The two
+selectors then show choices discovered in its project metadata and conditions.
+Select the required configuration/platform and click Full reassessment, or let
+the next automatic check notice the changed selection. A raw DPR without this
+metadata uses Debug/Win32 as explicit fallback selections.
+The Source code page field is below the command buttons. Leave 0 for Unicode.
+For legacy files enter the correct Windows code-page number, for example 1252
+for Western Windows text. Click Full reassessment after changing it. Unicode
+BOMs take precedence; decoding must round-trip the exact source bytes. DPH does
+not guess a legacy encoding. Unsupported encodings leave diagnostic evidence.
+
+Resources and external definitions
+The Explorer kind selector includes resource and definition. JSON, XML and INI
+entries have hierarchy and source evidence. RC lines and RES directories retain
+explicit partial coverage for macros and opaque compiled payloads. JSON/XML
+entry evidence points to the containing document, not a claimed exact token.
+Supported literal file-loader references acquire only files inside the approved
+project/dependency boundaries. Reference links show the consuming routine and
+qualify loader spelling and lexical order. Dynamic paths and runtime override
+precedence are not silently guessed.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage
 migration/durability checks. A nonzero exit or FAIL indicates a failed check.
 These automated checks do not substitute for first-time-user acceptance.
+For discovery/resource checks run tools\build-wp2.cmd no-report. For semantic
+checks run tools\build-wp3.cmd to compile, then run
+bin\Win32\Debug\DPH.Tests.Semantics.exe with this project's full folder path as
+its single argument. build-wp3.cmd alone compiles the tests; it does not run them.

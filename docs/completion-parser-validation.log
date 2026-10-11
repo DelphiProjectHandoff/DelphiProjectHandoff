@@ -1,0 +1,93 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+3980 lines, 0.31 seconds, 4333572 bytes code, 231756 bytes data.
+PASS ENC01: UTF-8 BOM and multibyte offsets
+PASS ENC02: Line ending metadata retained
+PASS LEX01: Token starts after BOM
+PASS LEXRANGE3: Token byte range inside captured source
+PASS LEXRANGE7: Token byte range inside captured source
+PASS LEXRANGE8: Token byte range inside captured source
+PASS LEXRANGE12: Token byte range inside captured source
+PASS LEXRANGE13: Token byte range inside captured source
+PASS LEXRANGE14: Token byte range inside captured source
+PASS LEXRANGE19: Token byte range inside captured source
+PASS LEXRANGE21: Token byte range inside captured source
+PASS LEXRANGE24: Token byte range inside captured source
+PASS LEXRANGE25: Token byte range inside captured source
+PASS ENC03: UTF-16 LE byte mapping
+PASS ENC04: UTF-16 BE round trip
+PASS ENC05: Malformed UTF-8 never silently treated as ANSI
+PASS ENC06: Explicit legacy code page round trips
+PASS ENC07: Supplementary Unicode scalar byte range
+PASS ENC08: Explicit code page is honored even when bytes also form valid UTF-8
+PASS ENC09: Explicit legacy selection does not override a Unicode BOM
+PASS COND01: Supported project expression
+PASS COND02: Compiler symbols require explicit known value
+PASS COND03: Conditional recursion is bounded
+PASS PAS01: Declaration and implementation stay separate
+PASS PAS02: Generic type structural discovery
+PASS PAS03: Nested routines and anonymous callback syntax
+PASS PAS04: Assembler stays opaque and partial
+PASS PAS05: Malformed source yields diagnostics and partial IR
+PASS COND04: Unknown branches and conditional definitions remain uncertain
+PASS LEX02: Comments, whitespace and escaped strings preserved
+PASS LEX03: Malformed binary numeric literal is diagnosed
+PASS PAS06: Package terminator and dependency clauses
+PASS PAS07: Class storage is preserved as a field rather than mistaken for a routine
+PASS PAS08: Attributes, sealed classes and indexed class properties preserve structure
+PASS PAS09: Unsupported anonymous nested type stays explicitly partial
+PASS PAS10: Nested variant records retain alternatives and following routines
+PASS PAS11: Nested generic call suffixes coexist with comparisons and parameterless inherited calls
+PASS FORM01: Direct binary form parser requires no component classes
+PASS FORM02: Truncated binary form is partial
+PASS FORM03: Inherited text form and binary property range
+PASS RES01: JSON resource paths and array members retained
+PASS RES02: JSON nesting rejected before recursive decoder allocation
+PASS RES03: XML resource elements and attributes retained
+PASS RES04: Resource XML rejects external entity declarations
+PASS RES05: INI sections and settings retain source ranges
+PASS RES06: RC statements retained with explicit macro/payload coverage limits
+PASS RES07: Compiled resource type/name/language/extent parsed without loading payloads
+PASS RES08: Truncated compiled resource cannot fabricate directory entries
+FIXTURE IMPORT_NOT_EXECUTED: Build imports are not executed or acquired
+PASS INV01: Golden inventory file count
+PASS INV02: Golden narrow project has complete syntax coverage
+PASS INV03: Golden hierarchy and event binding
+PASS INV04: Overload prototypes and implementations
+PASS INV06: Published Pascal property name retained
+PASS GOLD01: Exact versioned golden IR including ranges, manifests and diagnostics
+PASS COND05: Release and Debug select distinct known branches
+PASS INV05: All captured source hashes remain unchanged
+PASS INC01: Incremental parse reuse equals clean full IR and diagnostics
+PASS STORE01: Complete syntax generation publishes atomically
+PASS STORE02: Mid-analysis source edit keeps the previous head and requests reassessment
+PASS INC02: Edited include incremental/full equivalence
+PASS STORE03: Syntax evidence and entity storage preserve integrity
+PASS STORE04: Changed include generation publishes after revalidation
+PASS STORE05: Shifted source publishes valid new ranges
+PASS STORE06: Syntax entity identities survive source offset shifts
+PASS STORE07: Manual note retained across parser generations
+PASS SAFE01: Traversal outside selected root is excluded
+PASS INV09: New selection uses the project declared configuration and platform defaults
+PASS INV10: Inactive configuration conditions contribute choices; disabled target metadata does not
+PASS INV11: Explicit configuration selection survives unconditional defaults and controls acquired defines
+PASS INV12: Legacy encoding participates in variant identity and source revalidation
+PASS INV13: Parser cache does not reuse the same bytes decoded under a different code page
+PASS SAFE02: Project DTD rejected before XML parsing
+PASS SAFE03: Include cycles are bounded and diagnosed
+PASS SAFE04: Build targets remain passive and missing references visible
+PASS SAFE05: Explicit external root uses traversal-free canonical manifest
+PASS SAFE06: Unprovided path macro cannot collapse into an unintended filename
+PASS INV07: Project-group member graph parsed without executing its targets
+PASS SAFE07: Project graph cycle terminates
+PASS INV08: Explicit project search paths, include paths and unit scopes retained during parsing
+PASS SAFE08: Oversized input rejected before token allocation
+PASS REF01: Pinned reference FMX acquired
+PASS REF02: Pinned form hierarchy and event values extracted
+PASS REF03: Pinned reference MainForm acquired
+PASS REF04: btnConvertClick declaration and implementation ranges found
+PASS REF05: btnConvert event names btnConvertClick; semantic resolution reserved for WP3
+PASS REF06: Unavailable framework dependencies and unsupported syntax visibly partial
+PASS REF07: Reference captured bytes unchanged after analysis
+PASS ALL: 87 checks

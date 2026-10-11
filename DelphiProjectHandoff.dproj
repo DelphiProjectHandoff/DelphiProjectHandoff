@@ -26,6 +26,7 @@
     <DCCReference Include="DPH.Parse.Lexer.pas" />
     <DCCReference Include="DPH.Parse.Preprocessor.pas" />
     <DCCReference Include="DPH.Parse.Pascal.pas" />
+    <DCCReference Include="DPH.Parse.Resources.pas" />
     <DCCReference Include="DPH.Parse.Forms.pas" />
     <DCCReference Include="DPH.Project.Inventory.pas" />
     <DCCReference Include="DPH.Project.Analysis.pas" />

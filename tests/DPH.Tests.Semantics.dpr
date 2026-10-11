@@ -40,6 +40,39 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure DefinitionTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
+    Loader,Resource,Index: Integer; Source: string; Config: Int64; Generation: Int64; Store: TDPHKnowledgeStore;
+begin
+  Source:='unit Definitions; interface procedure Load; implementation procedure Load; begin TFile.ReadAllText(''Rules.json''); end; end.';
+  TFile.WriteAllText(TPath.Combine(Fixture,'Definitions.pas'),Source,TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Rules.json'),'{"rules":{"button":"TButton"}}',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Definitions.dpr'),'program DefinitionsApp; uses Definitions in ''Definitions.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try
+    Scan:=A.Scan(TPath.Combine(Fixture,'Definitions.dpr'),'Debug','Win32',[],[]);
+    try
+      Check(Scan.Inventory.DefinitionReferences.Count=1,'DEF01','Literal loader acquires only its bounded referenced definition file');
+      Check(Scan.Results.ContainsKey('rules.json'),'DEF02','Referenced JSON definitions receive parsed resource IR');
+      Graph:=Analyzer.Analyze(Scan);
+      try
+        Loader:=Find(Graph,'Definitions.Load','*'); Resource:=-1;
+        for Index:=0 to Graph.Symbols.Count-1 do if (Graph.Symbols[Index].Kind='resource') and (Graph.Symbols[Index].Location.Source='rules.json') then Resource:=Index;
+        Check((Loader>=0) and (Resource>=0) and Relation(Graph,Loader,Resource,'reads','inferred'),'DEF03','Definition source links to its consuming routine without claiming compiler resolution');
+        Check(Relation(Graph,Resource,Loader,'configures','inferred'),'DEF04','Configuration dependency exposes lexical loader order with runtime precedence qualified');
+        Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'definitions.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
+        try
+          Store.InitializeProject('Definition loader fixture','Delphi');
+          Config:=Store.AddConfiguration('Win32','37.0','[]','[]','Debug'); Store.SelectConfiguration(Config);
+          Generation:=TDPHSemanticPersistence.Stage(Scan,Graph,Store,Config);
+          Check(Generation>0,'DEF05','Resource and loader relationships persist with valid captured source evidence');
+          Store.FailGeneration(Generation,'Test only');
+        finally Store.Free; end;
+      finally Graph.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure FixtureTests;
 var A: TDPHAnalyzer; S: TDPHSemanticAnalyzer; Scan,Again,Full,Variant: TDPHScan;
     G,GAgain,GFull,GV: TDPHSemanticGraph; I,Click,Callback,Worker,Base,Face,IntConvert,StrConvert,PublicWork,Shadow,LocalProc: Integer;
@@ -260,7 +293,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; ReferenceTests;
+      FixtureTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

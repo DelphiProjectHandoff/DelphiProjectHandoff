@@ -20,6 +20,8 @@ type
     procedure UsesClause(AParent: Integer);
     procedure Declarations(AParent: Integer; APrototypes: Boolean);
     procedure TypeDeclaration(AParent: Integer);
+    procedure Attributes(AParent: Integer);
+    procedure VariantRecord(AParent: Integer);
     procedure Routine(AParent: Integer; APrototype: Boolean);
     procedure Block(AParent: Integer);
     procedure Statement(AParent: Integer);
@@ -87,13 +89,16 @@ begin
 end;
 
 procedure TDPHPascalParser.Expression(AParent: Integer; APrecedence: Integer);
-var Node,Start,P,Before: Integer; Op: string;
+var Node,Start,P,Before,GenericEnd,GenericDepth: Integer; Op: string;
 begin
   Inc(FDepth);
   try
     if FDepth>DPHMaxNesting then begin Opaque(AParent,'Expression nesting limit',[';',')',']','then','do']); Exit; end;
     Start:=FPosition; Node:=AddNode('expression','',AParent,Start);
-    if MatchText(Current,['not','-','+','@','inherited']) then begin Inc(FPosition); Expression(Node,4); end
+    if Take('inherited') then begin
+      if not MatchText(Current,[';', 'end', 'else', ')', ',']) then Expression(Node,4);
+    end
+    else if MatchText(Current,['not','-','+','@']) then begin Inc(FPosition); Expression(Node,4); end
     else if Take('(') then begin Expression(Node); while Take(',') do Expression(Node); Expect(')'); end
     else if Take('[') then
     begin
@@ -113,6 +118,19 @@ begin
     else begin Opaque(Node,'Expression not recognized',[';',')',']',',','then','do','end']); Finish(Node); Exit; end;
     while True do
     begin
+      // A generic suffix must close before a call/member selection. Otherwise
+      // leave '<' to the comparison parser (for example A < B and C > D).
+      if IsToken('<') then begin
+        GenericEnd:=FPosition; GenericDepth:=0;
+        while GenericEnd<High(FTokens) do begin
+          Op:=LowerCase(FTokens[GenericEnd].Text);
+          if Op='<' then Inc(GenericDepth) else if Op='>' then Dec(GenericDepth)
+          else if not ((FTokens[GenericEnd].Kind=tkIdentifier) or MatchText(Op,[',','.','[',']'])) then Break;
+          Inc(GenericEnd); if GenericDepth=0 then Break;
+        end;
+        if (GenericDepth=0) and (GenericEnd>FPosition) and
+          MatchText(FTokens[GenericEnd].Text,['(','.']) then begin FPosition:=GenericEnd; Continue; end;
+      end;
       if Take('.') then begin if FTokens[FPosition].Kind=tkIdentifier then Inc(FPosition) else Expect('identifier'); end
       else if Take('^') then Continue
       else if Take('(') then
@@ -149,18 +167,66 @@ begin
   Expect(';'); Finish(Node);
 end;
 
+procedure TDPHPascalParser.Attributes(AParent: Integer);
+var Node,Depth: Integer;
+begin
+  while IsToken('[') do begin
+    Node:=AddNode('attribute','',AParent,FPosition); Depth:=0;
+    repeat
+      if IsToken('[') then Inc(Depth) else if IsToken(']') then Dec(Depth);
+      Inc(FPosition);
+    until (FTokens[FPosition].Kind=tkEOF) or (Depth=0);
+    if Depth<>0 then Expect(']'); Finish(Node);
+  end;
+end;
+
+procedure TDPHPascalParser.VariantRecord(AParent: Integer);
+var Node,Branch,Field,Start,Depth,Before: Integer;
+begin
+  Inc(FDepth);
+  try
+    if FDepth>DPHMaxNesting then begin Opaque(AParent,'Variant record nesting limit',['end']); Exit; end;
+    Node:=AddNode('record_variant','',AParent,FPosition); Expect('case');
+    while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,['of','end',')']) do Inc(FPosition);
+    Expect('of');
+    while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,['end',')']) do begin
+      Before:=FPosition; Branch:=AddNode('record_variant_branch','',Node,FPosition);
+      while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,[':','end',')']) do Inc(FPosition);
+      Expect(':'); Expect('(');
+      while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,[')', 'end']) do begin
+        Start:=FPosition;
+        if IsToken('case') then VariantRecord(Branch)
+        else begin
+          Field:=AddNode('field',FTokens[FPosition].Text,Branch,FPosition); Depth:=0;
+          while (FTokens[FPosition].Kind<>tkEOF) and ((Depth>0) or not MatchText(Current,[';',')','end'])) do begin
+            if MatchText(Current,['(','[','<']) then Inc(Depth)
+            else if MatchText(Current,[')',']','>']) then Dec(Depth);
+            Inc(FPosition);
+          end;
+          Finish(Field);
+        end;
+        Take(';'); if FPosition=Start then Inc(FPosition);
+      end;
+      Expect(')'); Take(';'); Finish(Branch);
+      if FPosition=Before then Break;
+    end;
+    Finish(Node);
+  finally Dec(FDepth); end;
+end;
+
 procedure TDPHPascalParser.TypeDeclaration(AParent: Integer);
-var Start,Node,Depth,Before: Integer; Name,OldScope,Kind: string;
+var Start,Node,Depth,Before,MemberDepth: Integer; Name,OldScope,Kind: string;
 begin
   Start:=FPosition; Name:=FTokens[FPosition].Text; Inc(FPosition);
   if Take('<') then
   begin Depth:=1; while (FTokens[FPosition].Kind<>tkEOF) and (Depth>0) do
     begin if IsToken('<') then Inc(Depth) else if IsToken('>') then Dec(Depth); Inc(FPosition); end; end;
   Expect('='); Node:=AddNode('type',Name,AParent,Start);
+  Take('packed');
   if MatchText(Current,['class','record','interface','dispinterface','object']) and
     not ((FPosition+1<Length(FTokens)) and SameText(FTokens[FPosition+1].Text,'of')) then
   begin
-    Kind:=Current; Inc(FPosition);
+    Kind:=Current; Inc(FPosition); while MatchText(Current,['sealed','abstract']) do Inc(FPosition);
     if Take(';') then begin Finish(Node); Exit; end;
     if Take('helper') then begin if Take('for') then while not MatchText(Current,['public','private','protected','published','end','procedure','function']) and
       (FTokens[FPosition].Kind<>tkEOF) do Inc(FPosition); end;
@@ -172,27 +238,36 @@ begin
       while (FTokens[FPosition].Kind<>tkEOF) and not IsToken('end') do
       begin
         Before:=FPosition;
-        if MatchText(Current,['private','protected','public','published','strict','automated']) then Inc(FPosition)
+        if IsToken('[') then Attributes(Node)
+        else if IsToken('case') and (Kind='record') then VariantRecord(Node)
+        else if MatchText(Current,['private','protected','public','published','strict','automated','var']) then Inc(FPosition)
         else if IsToken('type') then
         begin Inc(FDepth); try if FDepth>DPHMaxNesting then Opaque(Node,'Type nesting limit',[';','end'])
           else Declarations(Node,True); finally Dec(FDepth); end; end
         else if IsToken('class') and (FPosition+1<Length(FTokens)) and
           MatchText(FTokens[FPosition+1].Text,['var','property']) then
-        begin Opaque(Node,'Class storage/property member retained as syntax',[';','end']); Take(';'); end
+        begin Inc(FPosition); Take('var'); end
         else if MatchText(Current,['procedure','function','constructor','destructor','operator','class']) then Routine(Node,True)
         else if (FTokens[FPosition].Kind=tkIdentifier) then
         begin
           Start:=FPosition;
-          if IsToken('property') then
-          begin Kind:='property'; Inc(FPosition); end else Kind:='field';
-          Depth:=AddNode(Kind,FTokens[FPosition].Text,Node,Start); Inc(FPosition);
-          while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,[';','end']) do Inc(FPosition);
+          if IsToken('property') then begin Inc(FPosition); Depth:=AddNode('property',FTokens[FPosition].Text,Node,Start); end
+          else Depth:=AddNode('field',FTokens[FPosition].Text,Node,Start);
+          Inc(FPosition); MemberDepth:=0;
+          while (FTokens[FPosition].Kind<>tkEOF) and ((MemberDepth>0) or not MatchText(Current,[';','end'])) do begin
+            if MatchText(Current,['(','[']) then Inc(MemberDepth) else if MatchText(Current,[')',']']) then Dec(MemberDepth);
+            Inc(FPosition);
+          end;
           Take(';'); Finish(Depth);
         end else Opaque(Node,'Unrecognized type member',[';','end']);
         if FPosition=Before then Inc(FPosition);
       end;
     finally FScope:=OldScope; end;
-    Expect('end'); Expect(';');
+    Expect('end');
+    while MatchText(Current,['deprecated','platform','experimental']) do begin
+      Inc(FPosition); if FTokens[FPosition].Kind=tkString then Inc(FPosition);
+    end;
+    Expect(';');
   end
   else
   begin
@@ -251,7 +326,8 @@ begin
   while FTokens[FPosition].Kind<>tkEOF do
   begin
     Before:=FPosition;
-    if MatchText(Current,['interface','implementation']) then
+    if IsToken('[') then Attributes(AParent)
+    else if MatchText(Current,['interface','implementation']) then
     begin Section:=''; APrototypes:=IsToken('interface'); Inc(FPosition); end
     else if MatchText(Current,['uses','contains','requires']) then UsesClause(AParent)
     else if MatchText(Current,['type','var','const','threadvar','resourcestring','label']) then
@@ -266,7 +342,7 @@ begin
       begin if MatchText(Current,['(','[']) then Inc(Depth) else if MatchText(Current,[')',']']) then Dec(Depth); Inc(FPosition); end;
       Expect(';'); Finish(Node);
     end
-    else Opaque(AParent,'Declaration not recognized',[';','begin','implementation']);
+    else Opaque(AParent,'Declaration not recognized',[';','begin','implementation','procedure','function','type','var','const','initialization','finalization','end']);
     if FPosition=Before then Inc(FPosition);
   end;
 end;

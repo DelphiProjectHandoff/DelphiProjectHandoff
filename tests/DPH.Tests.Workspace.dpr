@@ -64,6 +64,9 @@ begin
           Form:=TDPHMainForm.Create(nil);
           try
             Form.LoadView(View.Document.Clone as TJSONObject); Check(Form.ExplorerList.Items.Count>0,'FMX Explorer displays canonical cached objects');
+            Check((Form.ConfigurationCombo.Items.Count=View.Document.GetValue<TJSONArray>('configurations').Count) and
+              (Form.PlatformCombo.Items.Count=View.Document.GetValue<TJSONArray>('platforms').Count),'FMX choices come from captured project options');
+            Check(Form.CodePageEdit.Text='0','Captured code page is visible in the source settings');
             Form.SearchEdit.Text:='Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Explorer selection populates source-backed inspector');
             Check(Pos('detached',Form.SourceMemo.Text)>0,'Detached source view does not follow cached filesystem paths');

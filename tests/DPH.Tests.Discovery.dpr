@@ -1,7 +1,7 @@
 program DPHDiscoveryTests;
 {$APPTYPE CONSOLE}
 uses
-  System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash,
+  System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils,
   System.Generics.Collections, Winapi.ActiveX,
   FireDAC.Comp.Client, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.DApt,
   DPH.Parse.Model in '..\DPH.Parse.Model.pas',
@@ -10,6 +10,7 @@ uses
   DPH.Parse.Preprocessor in '..\DPH.Parse.Preprocessor.pas',
   DPH.Parse.Pascal in '..\DPH.Parse.Pascal.pas',
   DPH.Parse.Forms in '..\DPH.Parse.Forms.pas',
+  DPH.Parse.Resources in '..\DPH.Parse.Resources.pas',
   DPH.Storage.Types in '..\DPH.Storage.Types.pas',
   DPH.Project.Inventory in '..\DPH.Project.Inventory.pas',
   DPH.Storage.Database in '..\DPH.Storage.Database.pas',
@@ -79,6 +80,12 @@ begin
     Enc:=TEncoding.UTF8; B:=Enc.GetBytes('unit '+#$D83D+#$DE00+';'); TFile.WriteAllBytes(TPath.Combine(Work,'Encoding.pas'),B);
     Source:=TDPHSource.Create(TPath.Combine(Work,'Encoding.pas'),'encoding.pas',D);
     try Check(Source.Decoded and (Source.Range(5,7).EndByte-Source.Range(5,7).StartByte=4),'ENC07','Supplementary Unicode scalar byte range'); finally Source.Free; end;
+    TFile.WriteAllBytes(TPath.Combine(Work,'Encoding.pas'),TBytes.Create($C3,$A9));
+    Source:=TDPHSource.Create(TPath.Combine(Work,'Encoding.pas'),'encoding.pas',D,1252);
+    try Check(Source.Decoded and (Source.EncodingName='CP1252') and (Length(Source.Text)=2),'ENC08','Explicit code page is honored even when bytes also form valid UTF-8'); finally Source.Free; end;
+    TFile.WriteAllText(TPath.Combine(Work,'Encoding.pas'),'unit UnicodeWins; end.',TEncoding.UTF8);
+    Source:=TDPHSource.Create(TPath.Combine(Work,'Encoding.pas'),'encoding.pas',D,1252);
+    try Check(Source.Decoded and (Source.EncodingName='UTF-8 BOM'),'ENC09','Explicit legacy selection does not override a Unicode BOM'); finally Source.Free; end;
   finally D.Free; end;
 end;
 
@@ -111,7 +118,50 @@ begin
   Parsed:=ParseText('package Test; requires Runtime; contains Local in ''Local.pas''; end.',D);
   try Check(Parsed.Complete and (NodeCount(Parsed,'package','Test')=1),'PAS06','Package terminator and dependency clauses'); finally Parsed.Free; D.Free; end;
   Parsed:=ParseText('unit Test; interface type TTest=class class var Value: Integer; end; implementation end.',D);
-  try Check(not Parsed.Complete and HasDiagnostic(D,'OPAQUE_SYNTAX'),'PAS07','Unsupported class storage syntax cannot be mistaken for a routine'); finally Parsed.Free; D.Free; end;
+  try Check(Parsed.Complete and (NodeCount(Parsed,'field','Value')=1),'PAS07','Class storage is preserved as a field rather than mistaken for a routine'); finally Parsed.Free; D.Free; end;
+  Parsed:=ParseText('unit Test; interface type [Serializable] TTest=class sealed private class var Count: Integer; public [Indexed] class property Items[A: Integer; B: Integer]: string read GetItem; end; implementation end.',D);
+  try Check(Parsed.Complete and (NodeCount(Parsed,'attribute','')=2) and (NodeCount(Parsed,'property','Items')=1),'PAS08','Attributes, sealed classes and indexed class properties preserve structure'); finally Parsed.Free; D.Free; end;
+  Parsed:=ParseText('unit Test; interface type TValue=packed record Fixed: Integer; case Tag: Boolean of False: (Number: Integer); True: (Nested: record end); end; implementation end.',D);
+  try Check(not Parsed.Complete,'PAS09','Unsupported anonymous nested type stays explicitly partial'); finally Parsed.Free; D.Free; end;
+  Parsed:=ParseText('unit Test; interface type TValue=packed record Fixed: Integer; case Tag: Boolean of False: (Number: Integer); True: (case Byte of 0: (Text: string); 1: (Flag: Boolean)); end; implementation procedure Later; begin end; end.',D);
+  try Check(Parsed.Complete and (NodeCount(Parsed,'record_variant','')=2) and (NodeCount(Parsed,'record_variant_branch','')=4) and (NodeCount(Parsed,'routine_procedure','Later')=1),'PAS10','Nested variant records retain alternatives and following routines'); finally Parsed.Free; D.Free; end;
+  Parsed:=ParseText('unit Test; interface implementation procedure Run; begin inherited; Value:=Factory<TPair<string,Integer>>.Create(1); if A < B then Value:=2; end; end.',D);
+  try Check(Parsed.Complete,'PAS11','Nested generic call suffixes coexist with comparisons and parameterless inherited calls'); finally Parsed.Free; D.Free; end;
+end;
+
+procedure ResourceTests;
+var D: TDPHDiagnostics; Source: TDPHSource; Parsed: TDPHParseResult; Bytes: TBytes;
+  procedure ParseFile(const FileName,Text: string);
+  begin
+    WriteText(FileName,Text); Source:=TDPHSource.Create(TPath.Combine(Work,FileName),FileName,D);
+    try Parsed:=TDPHResourceParser.Parse(Source,D); finally Source.Free; end;
+  end;
+begin
+  D:=TDPHDiagnostics.Create;
+  try
+    ParseFile('Resource.json','{"mapping":{"source":"TButton","targets":["TButton","TSpeedButton"]}}');
+    try Check(Parsed.Complete and (NodeCount(Parsed,'json_value','/mapping/targets/1')=1),'RES01','JSON resource paths and array members retained'); finally Parsed.Free; end;
+    ParseFile('Resource.json',StringOfChar('[',129)+'0'+StringOfChar(']',129));
+    try Check(not Parsed.Complete and HasDiagnostic(D,'RESOURCE_PARSE_ERROR'),'RES02','JSON nesting rejected before recursive decoder allocation'); finally Parsed.Free; end;
+    ParseFile('Resource.xml','<mapping source="TButton"><target>TButton</target></mapping>');
+    try Check(Parsed.Complete and (NodeCount(Parsed,'xml_attribute','source')=1) and (NodeCount(Parsed,'xml_element','/mapping/target')=1),'RES03','XML resource elements and attributes retained'); finally Parsed.Free; end;
+    ParseFile('Resource.xml','<!DOCTYPE a [<!ENTITY x SYSTEM "file:///c:/secret.txt">]><a>&x;</a>');
+    try Check(not Parsed.Complete,'RES04','Resource XML rejects external entity declarations'); finally Parsed.Free; end;
+    ParseFile('Resource.ini','[Options]'+#13#10+'Mode=Safe'+#13#10+'Retries=3');
+    try Check(Parsed.Complete and (NodeCount(Parsed,'ini_section','Options')=1) and (NodeCount(Parsed,'ini_value','Mode')=1),'RES05','INI sections and settings retain source ranges'); finally Parsed.Free; end;
+    ParseFile('Resource.rc','MAINICON ICON "app.ico"'+#10+'STRINGTABLE BEGIN 1 "Hello" END');
+    try Check(not Parsed.Complete and (NodeCount(Parsed,'rc_statement','')=2),'RES06','RC statements retained with explicit macro/payload coverage limits'); finally Parsed.Free; end;
+    SetLength(Bytes,36); FillChar(Bytes[0],Length(Bytes),0); Bytes[0]:=1; Bytes[4]:=32;
+    Bytes[8]:=$FF; Bytes[9]:=$FF; Bytes[10]:=10; Bytes[12]:=$FF; Bytes[13]:=$FF; Bytes[14]:=101; Bytes[32]:=$42;
+    TFile.WriteAllBytes(TPath.Combine(Work,'Resource.res'),Bytes);
+    Source:=TDPHSource.Create(TPath.Combine(Work,'Resource.res'),'resource.res',D,0,True);
+    try Parsed:=TDPHResourceParser.Parse(Source,D); finally Source.Free; end;
+    try Check(not Parsed.Complete and (NodeCount(Parsed,'compiled_resource','#101')=1) and HasDiagnostic(D,'OPAQUE_RESOURCE_PAYLOAD'),'RES07','Compiled resource type/name/language/extent parsed without loading payloads'); finally Parsed.Free; end;
+    SetLength(Bytes,20); TFile.WriteAllBytes(TPath.Combine(Work,'Resource.res'),Bytes);
+    Source:=TDPHSource.Create(TPath.Combine(Work,'Resource.res'),'resource.res',D,0,True);
+    try Parsed:=TDPHResourceParser.Parse(Source,D); finally Source.Free; end;
+    try Check(not Parsed.Complete and (NodeCount(Parsed,'compiled_resource','')=0),'RES08','Truncated compiled resource cannot fabricate directory entries'); finally Parsed.Free; end;
+  finally D.Free; end;
 end;
 
 procedure FormTests;
@@ -212,6 +262,24 @@ begin
     WriteText('Boundary.dpr','program Boundary; uses Escape in ''..\Outside.pas''; begin end.');
     First:=Analyzer.Scan(TPath.Combine(Work,'Boundary.dpr'),'Debug','Win32',[],[]);
     try Check(not First.Complete and HasDiagnostic(First.Inventory.Diagnostics,'BOUNDARY_EXCLUDED'),'SAFE01','Traversal outside selected root is excluded'); finally First.Free; end;
+    WriteText('Custom.dpr','program Custom; begin end.');
+    WriteText('Custom.dproj','<Project><PropertyGroup><Config>Staging</Config><Platform>Linux64</Platform><MainSource>Custom.dpr</MainSource></PropertyGroup>'+
+      '<PropertyGroup Condition="''$(Config)''==''Production'' And ''$(Platform)''==''Win64''"><DCC_Define>PRODUCTION</DCC_Define></PropertyGroup>'+
+      '<ItemGroup><BuildConfiguration Include="Staging"/><BuildConfiguration Include="Production"/><DelphiCompile Include="$(MainSource)"/></ItemGroup>'+
+      '<ProjectExtensions><Platform><Nested>metadata</Nested></Platform><Platforms><Platform value="Linux64">True</Platform><Platform value="Android64">False</Platform></Platforms></ProjectExtensions></Project>');
+    First:=Analyzer.Scan(TPath.Combine(Work,'Custom.dproj'),'','',[],[]);
+    try
+      Check(First.Complete and (First.Inventory.ConfigurationIdentity='Staging/Linux64'),'INV09','New selection uses the project declared configuration and platform defaults');
+      Check(First.Inventory.Configurations.Contains('Production') and First.Inventory.Platforms.Contains('Win64') and
+        not First.Inventory.Platforms.Contains('Android64'),'INV10','Inactive configuration conditions contribute choices; disabled target metadata does not');
+    finally First.Free; end;
+    First:=Analyzer.Scan(TPath.Combine(Work,'Custom.dproj'),'Production','Win64',[],[]);
+    try Check(First.Complete and MatchText('PRODUCTION',First.Inventory.SourceDefines['custom.dpr']),'INV11','Explicit configuration selection survives unconditional defaults and controls acquired defines'); finally First.Free; end;
+    First:=Analyzer.Scan(TPath.Combine(Work,'Custom.dproj'),'Production','Win64',[],[],True,1252);
+    try
+      Check(First.Complete and First.Inventory.Revalidate and (First.Inventory.ConfigurationIdentity='Production/Win64;CP1252'),'INV12','Legacy encoding participates in variant identity and source revalidation');
+      Check(First.ReusedFiles=0,'INV13','Parser cache does not reuse the same bytes decoded under a different code page');
+    finally First.Free; end;
     WriteText('DTD.dproj','<!DOCTYPE Project [<!ENTITY x SYSTEM "file:///c:/secret.txt">]><Project>&x;</Project>');
     First:=Analyzer.Scan(TPath.Combine(Work,'DTD.dproj'),'Debug','Win32',[],[]);
     try Check(not First.Complete and HasDiagnostic(First.Inventory.Diagnostics,'XML_DTD_REJECTED'),'SAFE02','Project DTD rejected before XML parsing'); finally First.Free; end;
@@ -257,6 +325,10 @@ begin
   try
     Scan:=Analyzer.Scan(TPath.Combine(ReferenceRoot,'VCL2FMXConverter.dproj'),'Debug','Win32',['MSWINDOWS','WIN32'],[],False);
     try
+      if not Scan.Results.ContainsKey('mainform.fmx') then begin
+        J:=Scan.AsJSON;
+        try TFile.WriteAllText(TPath.Combine(Work,'reference-failure.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
+      end;
       Check(Scan.Results.TryGetValue('mainform.fmx',FormIR),'REF01','Pinned reference FMX acquired');
       Check((NodeCount(FormIR,'object','frmMain')=1) and (NodeCount(FormIR,'event_binding','OnClick')>0),'REF02','Pinned form hierarchy and event values extracted');
       Check(Scan.Results.TryGetValue('mainform.pas',UnitIR),'REF03','Pinned reference MainForm acquired');
@@ -296,7 +368,7 @@ begin
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\syntax')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
       ReferenceRoot:=TPath.Combine(Root,'samples\reference-vcl2fmx-v6.0.0');
-      EncodingTests; ParserTests; FormTests; InventoryTests; ReferenceTests;
+      EncodingTests; ParserTests; FormTests; ResourceTests; InventoryTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try
         Report.AddPair('analyzer',DPHAnalyzerVersion); Report.AddPair('ir_schema',TJSONNumber.Create(DPHIRVersion));

@@ -4,6 +4,11 @@ interface
 uses System.SysUtils, System.Generics.Collections, DPH.Project.Source,
   DPH.Parse.Model, DPH.Storage.Types;
 type
+  TDPHDefinitionReference = record
+    Source,Loader,Path,Target: string;
+    Location: TDPHRange;
+    Order: Integer;
+  end;
   TDPHInventory = class
   private
     FRoot: string;
@@ -12,6 +17,7 @@ type
     FIsHandoffProject: Boolean;
     FInitialDefines: TArray<string>;
     FConfig,FPlatform: string;
+    FCodePage: Integer;
     FExternalRoots, FSearchPaths: TList<string>;
     FSourcePaths,FSourceNamespaces: TDictionary<string,TArray<string>>;
     FNamespaces: TList<string>;
@@ -31,9 +37,11 @@ type
     SourceDefines: TDictionary<string,TArray<string>>;
     Diagnostics: TDPHDiagnostics;
     Defines: TList<string>;
+    Configurations,Platforms: TList<string>;
+    DefinitionReferences: TList<TDPHDefinitionReference>;
     Complete: Boolean;
     constructor Create(const AEntry,AConfig,APlatform: string;
-      const ADefines,AExternalRoots: TArray<string>);
+      const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0);
     destructor Destroy; override;
     function Capture(const AFrom,AName: string): TDPHSource;
     function Manifest: TDPHManifest;
@@ -42,6 +50,9 @@ type
     property Root: string read FRoot;
     property IsHandoffProject: Boolean read FIsHandoffProject;
     property ConfigurationIdentity: string read GetConfigurationIdentity;
+    property ConfigurationName: string read FConfig;
+    property PlatformName: string read FPlatform;
+    property CodePage: Integer read FCodePage;
   end;
 const
   DPHHandoffProjectGUID = '{D9484A29-FD59-48ED-8C14-4E3D966C4DCF}';
@@ -50,10 +61,10 @@ const
 implementation
 uses System.IOUtils, System.Classes, System.StrUtils, System.Variants,
   System.Generics.Defaults, Xml.XMLDoc, Xml.XMLIntf, Winapi.Windows,
-  DPH.Parse.Lexer, DPH.Parse.Preprocessor;
+  DPH.Parse.Lexer, DPH.Parse.Preprocessor, System.RegularExpressions;
 
 function TDPHInventory.GetConfigurationIdentity: string;
-begin Result:=FConfig+'/'+FPlatform; end;
+begin Result:=FConfig+'/'+FPlatform; if FCodePage<>0 then Result:=Result+';CP'+IntToStr(FCodePage); end;
 
 function TDPHInventory.Allowed(const APath: string): Boolean;
 var Boundary,Ancestor: string; Attributes: Cardinal;
@@ -73,10 +84,12 @@ begin
 end;
 
 constructor TDPHInventory.Create(const AEntry,AConfig,APlatform: string;
-  const ADefines,AExternalRoots: TArray<string>);
+  const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer);
 var S: string; Entry: TDPHSource;
 begin
   inherited Create;
+  if (ACodePage<0) or (ACodePage>65535) then raise EArgumentException.Create('Code page must be 0 (Unicode) or a Windows code page number');
+  FCodePage:=ACodePage;
   FRoot:=ExcludeTrailingPathDelimiter(ExtractFileDir(TPath.GetFullPath(AEntry)));
   FInitialDefines:=Copy(ADefines); FConfig:=AConfig; FPlatform:=APlatform;
   FExternalRoots:=TList<string>.Create; FSearchPaths:=TList<string>.Create;
@@ -89,6 +102,8 @@ begin
   FUnavailablePaths:=TDictionary<string,string>.Create;
   FProperties:=TDictionary<string,string>.Create; Defines:=TList<string>.Create;
   Diagnostics:=TDPHDiagnostics.Create; Complete:=True;
+  Configurations:=TList<string>.Create; Platforms:=TList<string>.Create;
+  DefinitionReferences:=TList<TDPHDefinitionReference>.Create;
   for S in AExternalRoots do FExternalRoots.Add(ExcludeTrailingPathDelimiter(TPath.GetFullPath(S)));
   for S in ADefines do if not Defines.Contains(S) then Defines.Add(S);
   FProperties.Add('CONFIG',AConfig); FProperties.Add('PLATFORM',APlatform);
@@ -97,9 +112,13 @@ begin
   Entry:=Capture('',ExtractFileName(AEntry));
   FDuringDiscovery:=True;
   try if Assigned(Entry) then Discover(Entry,0); finally FDuringDiscovery:=False; end;
+  if FConfig='' then FConfig:='Debug'; if FPlatform='' then FPlatform:='Win32';
+  if not Configurations.Contains(FConfig) then Configurations.Add(FConfig);
+  if not Platforms.Contains(FPlatform) then Platforms.Add(FPlatform);
 end;
 destructor TDPHInventory.Destroy;
 begin
+  DefinitionReferences.Free; Platforms.Free; Configurations.Free;
   Diagnostics.Free; Defines.Free; FProperties.Free; FUnavailable.Free; FUnavailablePaths.Free; FVisited.Free;
   FSourcePaths.Free; FSourceNamespaces.Free; FNamespaces.Free;
   SourceDefines.Free; ProjectIR.Free; Sources.Free; FSearchPaths.Free; FExternalRoots.Free; inherited;
@@ -180,7 +199,7 @@ begin
   Item:=Default(TDPHManifestFile); Item.RelativePath:=Key; Ext:=LowerCase(ExtractFileExt(Path)); Item.Kind:=Ext;
   try
     if not TFile.Exists(Path) then raise EFileNotFoundException.Create(Path);
-    Result:=TDPHSource.Create(Path,Key,Diagnostics,0,not MatchText(Ext,['.pas','.dpr','.dpk','.inc','.dproj','.groupproj','.fmx','.dfm','.rc','.xml','.json','.ini','.txt']));
+    Result:=TDPHSource.Create(Path,Key,Diagnostics,FCodePage,not MatchText(Ext,['.pas','.dpr','.dpk','.inc','.dproj','.groupproj','.fmx','.dfm','.rc','.xml','.json','.ini','.txt']));
     if FTotalBytes+Length(Result.Bytes)>128*1024*1024 then
     begin Result.Free; Result:=nil; raise EReadError.Create('Project byte acquisition limit'); end;
     Inc(FTotalBytes,Length(Result.Bytes));
@@ -199,6 +218,40 @@ end;
 
 procedure TDPHInventory.ProjectXML(ASource: TDPHSource; ADepth: Integer);
 var Document: IXMLDocument; IR: TDPHParseResult; XMLPosition: Integer;
+    DefaultConfig,DefaultPlatform: string;
+  procedure AddOption(Options: TList<string>; const Value: string);
+  var Existing: string;
+  begin
+    if (Value='') or (Length(Value)>256) or Value.Contains('$(') then Exit;
+    for Existing in Options do if SameText(Existing,Value) then Exit;
+    if Options.Count>=256 then raise EReadError.Create('Project selection option limit');
+    Options.Add(Value);
+  end;
+  procedure Options(Node: IXMLNode; Depth: Integer);
+  var I: Integer; Match: TMatch; Name,Value: string;
+  begin
+    if Depth>DPHMaxNesting then raise EReadError.Create('Project option nesting limit');
+    Name:=Node.LocalName;
+    if SameText(Name,'BuildConfiguration') and Node.HasAttribute('Include') then begin
+      Value:=VarToStr(Node.Attributes['Include']); if not SameText(Value,'Base') then AddOption(Configurations,Value);
+    end;
+    if SameText(Name,'Config') and Node.IsTextElement and not Node.Text.Contains('$(') then begin
+      DefaultConfig:=Trim(Node.Text); AddOption(Configurations,DefaultConfig);
+    end;
+    if SameText(Name,'Platform') and Node.IsTextElement then begin
+      if Node.HasAttribute('value') then begin
+        if SameText(Trim(Node.Text),'True') then AddOption(Platforms,VarToStr(Node.Attributes['value']));
+      end else if not Node.Text.Contains('$(') then begin
+        DefaultPlatform:=Trim(Node.Text); AddOption(Platforms,DefaultPlatform);
+      end;
+    end;
+    if Node.HasAttribute('Condition') then
+      for Match in TRegEx.Matches(VarToStr(Node.Attributes['Condition']),
+        '(?i)\$\((Config|Platform)\)[''"]?\s*==\s*[''"]([^''"]+)[''"]') do
+        if SameText(Match.Groups[1].Value,'Config') then AddOption(Configurations,Match.Groups[2].Value)
+        else AddOption(Platforms,Match.Groups[2].Value);
+    for I:=0 to Node.ChildNodes.Count-1 do Options(Node.ChildNodes[I],Depth+1);
+  end;
   procedure Fact(Node: IXMLNode; const Kind,Value: string; Parent: Integer);
   var N: TDPHIRNode; Start,Stop,CloseAt: Integer; Tag: string;
   begin
@@ -255,7 +308,11 @@ var Document: IXMLDocument; IR: TDPHParseResult; XMLPosition: Integer;
       for I:=0 to Node.ChildNodes.Count-1 do
       begin
         Child:=Node.ChildNodes[I]; if not Enabled(Child) then Continue;
-        Value:=Expand(Child.Text); FProperties.AddOrSetValue(UpperCase(Child.LocalName),Value);
+        Value:=Expand(Child.Text);
+        // Config and Platform are caller-selected global MSBuild properties.
+        if SameText(Child.LocalName,'Config') then Value:=FConfig
+        else if SameText(Child.LocalName,'Platform') then Value:=FPlatform;
+        FProperties.AddOrSetValue(UpperCase(Child.LocalName),Value);
         Fact(Child,'project_property',Value,0);
         if SameText(Child.LocalName,'DCC_Define') then
         begin
@@ -300,7 +357,20 @@ begin
   if ContainsText(ASource.Text,'<!DOCTYPE') or ContainsText(ASource.Text,'<!ENTITY') then
   begin Complete:=False; Diagnostics.Report('XML_DTD_REJECTED','Project XML entities/DTDs are prohibited',ASource.Range(0,0),'error'); Exit; end;
   Document:=LoadXMLData(ASource.Text); IR:=TDPHParseResult.Create; XMLPosition:=1;
-  ProjectIR.Add(ASource.RelativePath,IR); Walk(Document.DocumentElement,0);
+  ProjectIR.Add(ASource.RelativePath,IR);
+  DefaultConfig:=''; DefaultPlatform:=''; Options(Document.DocumentElement,0);
+  if FConfig='' then begin
+    FConfig:=DefaultConfig;
+    if (FConfig='') and (Configurations.Count>0) then FConfig:=Configurations[0];
+    if FConfig='' then FConfig:='Debug';
+  end;
+  if FPlatform='' then begin
+    FPlatform:=DefaultPlatform;
+    if (FPlatform='') and (Platforms.Count>0) then FPlatform:=Platforms[0];
+    if FPlatform='' then FPlatform:='Win32';
+  end;
+  FProperties.AddOrSetValue('CONFIG',FConfig); FProperties.AddOrSetValue('PLATFORM',FPlatform);
+  Walk(Document.DocumentElement,0);
 end;
 
 procedure TDPHInventory.Discover(ASource: TDPHSource; ADepth: Integer);
@@ -308,6 +378,33 @@ var Tokens: TDPHTokens; Token: TDPHToken; P: TDPHPreprocessor; I: Integer;
     Name,Directive,Ext,Previous,Prior: string; Input: TDPHSource;
     SavedProperties: TDictionary<string,string>; Pair: TPair<string,string>;
     SavedDefines,SavedPaths,SavedNamespaces: TArray<string>;
+  function NextCode(Index: Integer): Integer;
+  begin
+    Result:=Index;
+    while (Result<Length(Tokens)) and ((Tokens[Result].Kind in [tkSpace,tkComment,tkDirective]) or (Tokens[Result].Active<>daActive)) do Inc(Result);
+  end;
+  procedure DefinitionFiles;
+  var Index,OpenAt,ArgumentAt,EndAt: Integer; Reference: TDPHDefinitionReference; Captured: TDPHSource;
+  begin
+    for Index:=0 to High(Tokens) do begin
+      if (Tokens[Index].Active<>daActive) or (Tokens[Index].Kind<>tkIdentifier) or
+        not MatchText(Tokens[Index].Text,['ReadAllText','ReadAllBytes','ReadAllLines','LoadFromFile','LoadPack','LoadXMLDocument']) then Continue;
+      OpenAt:=NextCode(Index+1); if (OpenAt>=Length(Tokens)) or (Tokens[OpenAt].Text<>'(') then Continue;
+      ArgumentAt:=NextCode(OpenAt+1); if ArgumentAt>=Length(Tokens) then Continue;
+      EndAt:=NextCode(ArgumentAt+1);
+      if (Tokens[ArgumentAt].Kind<>tkString) or (EndAt>=Length(Tokens)) or not MatchText(Tokens[EndAt].Text,[')',',']) then begin
+        Complete:=False; Diagnostics.Report('DEFINITION_PATH_DYNAMIC','Loader argument requires runtime evaluation: '+Tokens[Index].Text,Tokens[Index].Location); Continue;
+      end;
+      Reference:=Default(TDPHDefinitionReference); Reference.Path:=Tokens[ArgumentAt].Text.DeQuotedString('''');
+      if not MatchText(ExtractFileExt(Reference.Path),['.json','.xml','.ini','.rc','.res','.sql','.txt']) then Continue;
+      Reference.Source:=ASource.RelativePath; Reference.Loader:=Tokens[Index].Text;
+      Reference.Location:=Tokens[Index].Location; Reference.Location.EndByte:=Tokens[EndAt].Location.EndByte;
+      Reference.Order:=DefinitionReferences.Count+1;
+      Captured:=Capture(ASource.RelativePath,Reference.Path);
+      if Captured<>nil then begin Reference.Target:=Captured.RelativePath; Discover(Captured,ADepth+1); end;
+      DefinitionReferences.Add(Reference);
+    end;
+  end;
 begin
   if ADepth>64 then begin Complete:=False; Diagnostics.Report('PROJECT_DEPTH_LIMIT','Project reference depth',ASource.Range(0,0),'error'); Exit; end;
   if FVisited.ContainsKey(ASource.RelativePath) then Exit;
@@ -338,6 +435,7 @@ begin
       function(const AFrom,AInclude: string): TDPHSource
       begin Result:=Capture(AFrom,AInclude); end);
     try Tokens:=P.Run(ASource); finally P.Free; end;
+    DefinitionFiles;
     // Dependencies are extracted from active uses/contains/requires clauses, never from directory scans.
     I:=0; Previous:='';
     while I<Length(Tokens) do
@@ -416,7 +514,7 @@ begin
     if FUnavailablePaths.ContainsKey(Item.RelativePath) then Path:=FUnavailablePaths[Item.RelativePath];
     try
       if not Allowed(Path) then raise EReadError.Create('Source boundary changed');
-      Current:=TDPHSource.Create(Path,Item.RelativePath,RecheckDiagnostics,0,Item.Encoding='opaque-binary');
+      Current:=TDPHSource.Create(Path,Item.RelativePath,RecheckDiagnostics,FCodePage,Item.Encoding='opaque-binary');
       try
         Item.SHA256:=LowerCase(Current.SHA256); Item.SizeBytes:=Length(Current.Bytes);
         Item.Encoding:=Current.EncodingName; Item.Availability:='available';

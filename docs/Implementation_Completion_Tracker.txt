@@ -26,8 +26,27 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     uncaptured source files or claim compiler-complete expression semantics.
     Lifecycle suite: 35 checks; storage suite: 46 checks with schema 4;
     workspace: 43; knowledge: 34; selection: 18; startup: 2; FMX binding passes.
-2.1-2.6 Pending: grammar, variants, project configurations, encodings, resources,
-    referenced external definitions.
+2.1 Expanded: attributes, class storage, indexed class properties, nested variant
+    records, generic call suffixes, inherited calls and declaration recovery.
+    Anonymous nested field types and unsupported syntax remain explicitly partial.
+2.2 Improved: caller-selected Config/Platform are global properties; code-page
+    choice is part of variant identity and parse-cache selection. Separate
+    analyses retain their configurations. Project-group shared-source conflicts
+    under distinct per-member defines still require separate variant expansion.
+2.3 Implemented: project-derived configurations/platforms/defaults in captured
+    workspace and IDE-editable selectors, including inactive condition choices.
+2.4 Implemented: visible legacy code-page setting, BOM precedence, byte round-trip,
+    saved selection and safe cache/open/source-view/revalidation propagation.
+2.5 Expanded: JSON/XML/INI structural parsing and resource symbols; RC statements
+    and compiled RES directory type/name/language/byte extents. RC macros and
+    compiled payload decoding remain explicitly partial. XML DTDs and excessive
+    JSON nesting are rejected. JSON/XML evidence uses whole-document extents.
+2.6 Expanded: active literal loader references acquire bounded definition files,
+    structured resources link to consuming routines, lexical loader order is
+    exposed with runtime precedence qualified. Dynamic paths, schema-specific
+    map-pack interpretation and actual runtime precedence remain pending.
+    Discovery: 87 checks; semantic execution: 60; workspace: 45; knowledge: 34;
+    selection: 18; startup: 2; lifecycle: 35; catalog: 7; FMX binding passes.
 3.1-3.9 Pending: affected semantic recomputation, resolution, startup graphs,
     additional control flow, async, data/SQL, relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
@@ -48,6 +67,9 @@ No source copied and no shared build/runtime dependency added.
 
 Tests must use disposable fixtures and leave the owner's workspace preferences
 unchanged. Generated test directories are removed after the required checks.
+tools/clear-validation-output.ps1 removes only recognized validation outputs
+under bin, refuses linked paths and running validation processes. The workspace
+validation driver now cleans these outputs before and after a successful run.
 No human acceptance, business rationale, runtime result or provider success may
 be fabricated to mark an item done.
 

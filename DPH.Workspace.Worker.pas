@@ -11,6 +11,7 @@ type
     OldEntityKey: string;
     SearchKind: string;
     SearchOffset: Integer;
+    CodePage: Integer;
     ExportDirectory: string;
     Seeds,Exclusions: TArray<string>;
   end;
@@ -48,7 +49,7 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model;
 
 destructor TDPHWorkspaceResponse.Destroy;
 begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; inherited; end;
@@ -106,8 +107,9 @@ begin
         end;
         if (Request.Entry<>'') and MatchText(Request.Command,['incremental','full','relocate']) then
         begin
-          Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+          Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
           try if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
+            Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
         if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
@@ -139,7 +141,7 @@ begin
           if StartsText('continuity_',Request.Command) then begin
             if Request.Command='continuity_approve' then begin
               if Request.Entry='' then raise EReadError.Create('Attach available source before approving identity continuity');
-              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end;
               Store.ApproveContinuity(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,Request.OldEntityKey,Request.EntityKey,Request.Editor);
             end;
@@ -175,9 +177,9 @@ begin
             Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
             try
               if (Cached=nil) or not SameText(Cached.GetValue<string>('entry'),ExtractFileName(Request.Entry)) or
-                (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots)) then
+                (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage)) then
                 raise EReadError.Create('Relocation requires the same project entry and analysis selection');
-              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try
                 if not Inventory.Revalidate then raise EReadError.Create('Relocation source changed during verification');
                 Store.RelocateSource(Inventory.Root,Request.GenerationID,Inventory.Manifest);
@@ -186,7 +188,7 @@ begin
           end;
           if Request.Command='publish' then
           begin
-            if Request.Entry<>'' then begin Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+            if Request.Entry<>'' then begin Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end; end;
             Document:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
             View:=TDPHWorkspaceView.Create(Document); Knowledge:=nil; Images:=nil;
@@ -207,9 +209,9 @@ begin
             begin
               if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');
               Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
-              try if (Cached=nil) or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots)) then
+              try if (Cached=nil) or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage)) then
                 raise EReadError.Create('Selected configuration differs from the evidence being reviewed; reassess first'); finally Cached.Free; end;
-              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end;
               Store.ReviewKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,Request.Editor,Request.ReviewState);
             end;
@@ -241,6 +243,7 @@ begin
                 SourceEntry:=TPath.Combine(Root,Text);
               if SourceEntry<>'' then begin
                 Request.Entry:=SourceEntry; Request.Command:='check';
+                Request.CodePage:=Document.GetValue<Integer>('code_page',0);
                 Request.Configuration:=Document.GetValue<string>('configuration');
                 Request.Platform:=Document.GetValue<string>('platform');
                 Request.Defines:=[]; Request.ExternalRoots:=[];
@@ -260,11 +263,12 @@ begin
             Cached:=nil; Text:=Store.LoadWorkspaceView;
             if Text<>'' then Cached:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
             try
-              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try
                 if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
                 Changed:=(Cached=nil) or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>Cached.GetValue<TJSONObject>('semantics').GetValue<string>('input_fingerprint'))
-                  or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots));
+                  or (Cached.GetValue<string>('syntax.analyzer','')<>DPHAnalyzerVersion)
+                  or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
               RunScan:=Changed;
@@ -275,10 +279,11 @@ begin
           end;
           if not RunScan or Terminated then Continue;
           Defines:=TJSONArray.Create; try for Value in Request.Defines do Defines.Add(Value);
-            Config:=Store.AddConfiguration(Request.Platform,'37.0',Defines.ToJSON,'[]',Request.Configuration);
+            Text:=Request.Configuration; if Request.CodePage<>0 then Text:=Text+';CP'+IntToStr(Request.CodePage);
+            Config:=Store.AddConfiguration(Request.Platform,'37.0',Defines.ToJSON,'[]',Text);
           finally Defines.Free; end;
           Store.SelectConfiguration(Config);
-          Scan:=Analyzer.Scan(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.Command<>'full');
+          Scan:=Analyzer.Scan(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.Command<>'full',Request.CodePage);
           try
             if Terminated then Continue;
             Graph:=Semantic.Analyze(Scan);

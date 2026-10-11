@@ -20,7 +20,7 @@ type
     function Properties(const AKey: string): TJSONArray;
     function Graph(const AKind,AKey: string; ALimit: Integer = 120): TJSONObject;
     function FlagsText: string;
-    class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): string; static;
+    class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
     class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
   end;
@@ -48,8 +48,13 @@ begin
   end;
 end;
 
-class function TDPHWorkspaceView.SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): string;
-begin Result:=THashSHA2.GetHashString(AConfig+#0+APlatform+#0+String.Join(#0,ADefines)+#1+String.Join(#0,AExternalRoots)); end;
+class function TDPHWorkspaceView.SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer): string;
+var Selection: string;
+begin
+  Selection:=AConfig+#0+APlatform+#0+String.Join(#0,ADefines)+#1+String.Join(#0,AExternalRoots);
+  if ACodePage<>0 then Selection:=Selection+#0+'CP'+IntToStr(ACodePage);
+  Result:=THashSHA2.GetHashString(Selection);
+end;
 
 class function TDPHWorkspaceView.Capture(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AGeneration: Int64;
   const AEntry,AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): TJSONObject;
@@ -60,9 +65,12 @@ begin
   Result.AddPair('generation_id',TJSONNumber.Create(AGeneration)); Result.AddPair('entry',ExtractFileName(AEntry));
   Result.AddPair('root',AScan.Inventory.Root); Result.AddPair('configuration',AConfig); Result.AddPair('platform',APlatform);
   Result.AddPair('configuration_identity',AScan.Inventory.ConfigurationIdentity);
-  Result.AddPair('selection_hash',SelectionHash(AConfig,APlatform,ADefines,AExternalRoots));
+  Result.AddPair('selection_hash',SelectionHash(AConfig,APlatform,ADefines,AExternalRoots,AScan.Inventory.CodePage));
+  Result.AddPair('code_page',TJSONNumber.Create(AScan.Inventory.CodePage));
   A:=TJSONArray.Create; Result.AddPair('defines',A); for Value in ADefines do A.Add(Value);
   A:=TJSONArray.Create; Result.AddPair('external_roots',A); for Value in AExternalRoots do A.Add(Value);
+  A:=TJSONArray.Create; Result.AddPair('configurations',A); for Value in AScan.Inventory.Configurations do A.Add(Value);
+  A:=TJSONArray.Create; Result.AddPair('platforms',A); for Value in AScan.Inventory.Platforms do A.Add(Value);
   Result.AddPair('syntax',AScan.AsJSON(True)); Result.AddPair('semantics',AGraph.AsJSON);
   Result.AddPair('analysis_complete',TJSONBool.Create(AScan.Complete and AGraph.Complete));
   Result.AddPair('runtime_observed',TJSONBool.Create(False));

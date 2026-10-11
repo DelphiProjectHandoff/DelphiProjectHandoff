@@ -1,6 +1,8 @@
 @echo off
 setlocal
 cd /d "%~dp0.."
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\clear-validation-output.ps1
+if errorlevel 1 exit /b 1
 call tools\build-wp0.cmd
 if errorlevel 1 exit /b 1
 call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat"
@@ -15,4 +17,6 @@ if errorlevel 1 exit /b 1
 call tools\build-wp5.cmd
 if errorlevel 1 exit /b 1
 call tools\build-selection.cmd
+if errorlevel 1 exit /b 1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\clear-validation-output.ps1
 exit /b %errorlevel%

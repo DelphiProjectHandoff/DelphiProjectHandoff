@@ -25,12 +25,12 @@ type
     constructor Create;
     destructor Destroy; override;
     function Scan(const AEntry,AConfig,APlatform: string;
-      const ADefines,AExternalRoots: TArray<string>; AIncremental: Boolean = True): TDPHScan;
+      const ADefines,AExternalRoots: TArray<string>; AIncremental: Boolean = True; ACodePage: Integer = 0): TDPHScan;
   end;
 implementation
 uses System.IOUtils, System.Classes, System.Hash, System.StrUtils,
   DPH.Project.Source, DPH.Parse.Preprocessor, DPH.Parse.Pascal, DPH.Parse.Forms,
-  DPH.Storage.Types;
+  DPH.Storage.Types, DPH.Parse.Resources;
 
 constructor TDPHScan.Create(AInventory: TDPHInventory);
 begin inherited Create; Inventory:=AInventory; Results:=TObjectDictionary<string,TDPHParseResult>.Create([doOwnsValues]); end;
@@ -165,14 +165,14 @@ destructor TDPHAnalyzer.Destroy;
 begin FDiagnostics.Free; FCache.Free; inherited; end;
 
 function TDPHAnalyzer.Scan(const AEntry,AConfig,APlatform: string;
-  const ADefines,AExternalRoots: TArray<string>; AIncremental: Boolean): TDPHScan;
+  const ADefines,AExternalRoots: TArray<string>; AIncremental: Boolean; ACodePage: Integer): TDPHScan;
 var Inventory: TDPHInventory; Item: TDPHManifestFile; Source: TDPHSource;
     Parsed,Cached: TDPHParseResult; P: TDPHPreprocessor; PascalParser: TDPHPascalParser;
     FormParser: TDPHFormParser; Tokens: TDPHTokens; CacheKey,IncludeHashes,Symbols: string;
     NewDiagnostics: TArray<TDPHDiagnostic>; D: TDPHDiagnostic; Start,I,CacheWeight,IRWeight: Integer; UnitDefines: TArray<string>;
     UnitDiagnostics: TDPHDiagnostics;
 begin
-  Inventory:=TDPHInventory.Create(AEntry,AConfig,APlatform,ADefines,AExternalRoots);
+  Inventory:=TDPHInventory.Create(AEntry,AConfig,APlatform,ADefines,AExternalRoots,ACodePage);
   Result:=TDPHScan.Create(Inventory);
   try
     IncludeHashes:=''; Symbols:=String.Join(';',Inventory.Defines.ToArray); IRWeight:=0;
@@ -181,6 +181,11 @@ begin
     begin
       if Inventory.ProjectIR.TryGetValue(Item.RelativePath,Parsed) then
       begin Result.Results.Add(Item.RelativePath,Parsed.Clone); Continue; end;
+      if (Item.Availability='available') and MatchText(Item.Kind,['.res','.rc','.json','.xml','.ini']) then begin
+        if IRWeight>=500000 then begin Inventory.Diagnostics.Report('PROJECT_IR_LIMIT','Resource retained without parsed IR',Inventory.Sources[Item.RelativePath].Range(0,0),'error'); Continue; end;
+        Parsed:=TDPHResourceParser.Parse(Inventory.Sources[Item.RelativePath],Inventory.Diagnostics);
+        Result.Results.Add(Item.RelativePath,Parsed); Inc(IRWeight,Parsed.Nodes.Count); Continue;
+      end;
       if (Item.Availability='available') and not MatchText(Item.Kind,['.pas','.dpr','.dpk','.inc','.fmx','.dfm','.dproj','.groupproj']) then
       begin
         Inventory.Diagnostics.Report('OPAQUE_RESOURCE','Captured resource/configuration has no syntax adapter: '+Item.RelativePath,
@@ -191,7 +196,7 @@ begin
       if IRWeight>=500000 then
       begin Inventory.Diagnostics.Report('PROJECT_IR_LIMIT','Remaining inputs retained without parsed IR',Source.Range(0,0),'error'); Continue; end;
       UnitDefines:=Inventory.SourceDefines[Item.RelativePath]; Symbols:=String.Join(';',UnitDefines);
-      CacheKey:=THashSHA2.GetHashString(DPHAnalyzerVersion+'|'+Inventory.Root+'|'+String.Join(';',AExternalRoots)+'|'+Item.RelativePath+'|'+Item.SHA256+'|'+IncludeHashes+'|'+Symbols+'|'+AConfig+'|'+APlatform);
+      CacheKey:=THashSHA2.GetHashString(DPHAnalyzerVersion+'|'+Inventory.Root+'|'+String.Join(';',AExternalRoots)+'|'+Item.RelativePath+'|'+Item.SHA256+'|'+Item.Encoding+'|'+IncludeHashes+'|'+Symbols+'|'+Inventory.ConfigurationIdentity);
       Start:=Inventory.Diagnostics.Count;
       if AIncremental and FCache.TryGetValue(CacheKey,Cached) then
       begin

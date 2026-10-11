@@ -12,7 +12,8 @@ type
     HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout,ScreenToolbar,GraphToolbar: TLayout;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
-    SearchEdit,DefinesEdit,ExternalRootsEdit: TEdit;
+    SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
+    CodePageLabel: TLabel;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
     ExplorerList,RelationsList: TListBox;
     WorkspaceTabs: TTabControl;
@@ -350,6 +351,7 @@ begin
   if FBusy or (FView=nil) then Exit;
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored edit before continuity review'; Exit; end;
   Request:=Default(TDPHWorkspaceRequest); Request.Command:='continuity_preview';
+  if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   Request.Database:=FDatabase; Request.Entry:=FEntry; Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
   Request.Body:=ContinuityQueryEdit.Text; Request.Editor:=ContinuityReviewerEdit.Text;
   Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
@@ -400,6 +402,8 @@ procedure TDPHMainForm.Submit(const ACommand: string);
 var R: TDPHWorkspaceRequest;
 begin
   if FBusy then Exit;
+  R:=Default(TDPHWorkspaceRequest);
+  if not TryStrToInt(CodePageEdit.Text,R.CodePage) or (R.CodePage<0) or (R.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   R.Command:=ACommand; R.Database:=FDatabase; R.Entry:=FEntry;
   R.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex]; R.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
   R.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); R.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
@@ -444,9 +448,11 @@ begin
   if FBusy then Exit;
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   Request:=Default(TDPHWorkspaceRequest); Request.Entry:=AEntry; Request.Database:=ADatabase;
+  if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   if AEntry='' then Request.Command:='open' else Request.Command:='incremental';
   Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
   Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
+  if AEntry<>'' then begin Request.Configuration:=''; Request.Platform:=''; end;
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
@@ -459,6 +465,7 @@ begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before relocating'; Exit; end;
   if not OpenProjectDialog.Execute then Exit;
   Generation:=FView.Document.GetValue<Int64>('generation_id');
+  Request:=Default(TDPHWorkspaceRequest); Request.CodePage:=FView.Document.GetValue<Integer>('code_page',0);
   Request.Command:='relocate'; Request.Database:=FDatabase; Request.Entry:=OpenProjectDialog.FileName; Request.GenerationID:=Generation;
   Request.Configuration:=FView.Document.GetValue<string>('configuration'); Request.Platform:=FView.Document.GetValue<string>('platform');
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
@@ -540,7 +547,7 @@ end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
 procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
-var V: TJSONValue; Row: TJSONObject; Path: string;
+var V: TJSONValue; Row: TJSONObject; Path: string; Options: TJSONArray;
 begin
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
@@ -550,11 +557,20 @@ begin
   except on E: Exception do StatusLabel.Text:='Project opened, but catalog could not be saved: '+E.Message; end;
   FBinding:=True;
   try
+    if ADocument.TryGetValue<TJSONArray>('configurations',Options) then begin
+      ConfigurationCombo.Items.Clear; for V in Options do ConfigurationCombo.Items.Add(V.Value);
+    end;
+    if ADocument.TryGetValue<TJSONArray>('platforms',Options) then begin
+      PlatformCombo.Items.Clear; for V in Options do PlatformCombo.Items.Add(V.Value);
+    end;
+    if ConfigurationCombo.Items.IndexOf(ADocument.GetValue<string>('configuration'))<0 then ConfigurationCombo.Items.Add(ADocument.GetValue<string>('configuration'));
+    if PlatformCombo.Items.IndexOf(ADocument.GetValue<string>('platform'))<0 then PlatformCombo.Items.Add(ADocument.GetValue<string>('platform'));
     ConfigurationCombo.ItemIndex:=ConfigurationCombo.Items.IndexOf(ADocument.GetValue<string>('configuration'));
     if ConfigurationCombo.ItemIndex<0 then ConfigurationCombo.ItemIndex:=0;
     PlatformCombo.ItemIndex:=PlatformCombo.Items.IndexOf(ADocument.GetValue<string>('platform'));
     if PlatformCombo.ItemIndex<0 then PlatformCombo.ItemIndex:=0;
     DefinesEdit.Text:=''; for V in ADocument.GetValue<TJSONArray>('defines') do begin if DefinesEdit.Text<>'' then DefinesEdit.Text:=DefinesEdit.Text+';'; DefinesEdit.Text:=DefinesEdit.Text+V.Value; end;
+    CodePageEdit.Text:=IntToStr(ADocument.GetValue<Integer>('code_page',0));
     ExternalRootsEdit.Text:=''; for V in ADocument.GetValue<TJSONArray>('external_roots') do begin if ExternalRootsEdit.Text<>'' then ExternalRootsEdit.Text:=ExternalRootsEdit.Text+';'; ExternalRootsEdit.Text:=ExternalRootsEdit.Text+V.Value; end;
     FormCombo.Items.Clear;
     for V in ADocument.GetValue<TJSONArray>('syntax.files') do begin Row:=V as TJSONObject; Path:=Row.GetValue<string>('path');
@@ -691,7 +707,7 @@ begin
     begin
       Diagnostics:=TDPHDiagnostics.Create;
       try
-        try Source:=TDPHSource.Create(Path,Range.GetValue<string>('source'),Diagnostics);
+        try Source:=TDPHSource.Create(Path,Range.GetValue<string>('source'),Diagnostics,FView.Document.GetValue<Integer>('code_page',0));
           try if Source.Decoded and SameText(Source.SHA256,Row.GetValue<string>('sha256')) then begin SourceMemo.Text:=Source.Text;
             SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1)); end
             else SourceMemo.Text:='STALE or undecodable source - cached range not applied.'; finally Source.Free; end;

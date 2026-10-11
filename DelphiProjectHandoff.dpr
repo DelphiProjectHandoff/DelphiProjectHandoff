@@ -12,6 +12,7 @@ uses
   DPH.Parse.Lexer in 'DPH.Parse.Lexer.pas',
   DPH.Parse.Preprocessor in 'DPH.Parse.Preprocessor.pas',
   DPH.Parse.Pascal in 'DPH.Parse.Pascal.pas',
+  DPH.Parse.Resources in 'DPH.Parse.Resources.pas',
   DPH.Parse.Forms in 'DPH.Parse.Forms.pas',
   DPH.Project.Inventory in 'DPH.Project.Inventory.pas',
   DPH.Project.Analysis in 'DPH.Project.Analysis.pas',

@@ -53,6 +53,7 @@ begin
   begin Decoder:=TUnicodeEncoding.Create(False); Skip:=2; EncodingName:='UTF-16 LE'; end
   else if (Length(Bytes)>=2) and (Bytes[0]=$FE) and (Bytes[1]=$FF) then
   begin Decoder:=TBigEndianUnicodeEncoding.Create(False); Skip:=2; EncodingName:='UTF-16 BE'; end
+  else if ACodePage<>0 then begin Decoder:=TEncoding.GetEncoding(ACodePage); EncodingName:='CP'+IntToStr(ACodePage); end
   else begin Decoder:=TMBCSEncoding.Create(65001,8,0,False); EncodingName:='UTF-8'; end;
   try
     try Text:=Decoder.GetString(Bytes,Skip,Length(Bytes)-Skip);

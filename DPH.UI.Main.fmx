@@ -56,12 +56,27 @@ end
 end
 object CommandScroll: THorzScrollBox
 Align = Top
-Height = 106
+Height = 140
 ShowScrollBars = True
 AutoHide = True
 object CommandLayout: TLayout
 Width = 1320
-Height = 84
+Height = 118
+object CodePageEdit: TEdit
+Position.X = 8
+Position.Y = 80
+Width = 80
+Height = 28
+Text = '0'
+TextPrompt = 'Code page'
+end
+object CodePageLabel: TLabel
+Position.X = 100
+Position.Y = 80
+Width = 1180
+Height = 28
+Text = 'Source code page: 0 = Unicode; 1252 = Western; 1251 = Cyrillic; 932 = Japanese. BOM takes precedence. Apply with reassessment.'
+end
 object OpenProjectButton: TButton
 Text = 'Attach project'
 Position.X = 8
@@ -215,6 +230,8 @@ Items.Strings = (
 'field'
 'property'
 'local'
+'resource'
+'definition'
 )
 ItemIndex = 0
 OnChange = SearchChange

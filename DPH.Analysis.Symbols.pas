@@ -34,7 +34,7 @@ type
   end;
 implementation
 uses System.Classes, System.StrUtils, System.Hash, DPH.Storage.Types,
-  DPH.Storage.Database, DPH.Analysis.Flow;
+  DPH.Storage.Database, DPH.Analysis.Flow, DPH.Project.Inventory;
 
 function TDPHSemanticAnalyzer.NodeKey(const AFile: string; ANode: Integer): string;
 begin Result:=AFile+'#'+IntToStr(ANode); end;
@@ -295,6 +295,19 @@ var N,Child: TDPHIRNode; S,Owner: TDPHSymbol; I,J,OwnerIndex,Index,Ordinal: Inte
     UnitName,Kind,Name,Variant,Visibility: string; Tokens: TDPHTokens; Anon: TDictionary<Integer,Integer>; ImplementationAt,K: Integer;
 begin
   if IR.Nodes.Count=0 then Exit; Kind:=IR.Nodes[0].Kind;
+  if Kind='resource' then begin
+    for I:=0 to IR.Nodes.Count-1 do begin
+      N:=IR.Nodes[I]; S:=TDPHSymbol.Create; S.Location:=N.Location; S.NodeIndex:=I;
+      S.SourceHash:=FGraph.SourceHashes[AFile]; S.Variant:=FGraph.Configuration;
+      S.Name:=N.Name; S.Kind:='definition'; if I=0 then S.Kind:='resource';
+      S.Signature:=N.Kind; S.UnitName:=AFile; S.QualifiedName:=AFile+'#'+N.Name;
+      S.Owner:=ParentSymbol(AFile,IR,N.Parent);
+      if S.Owner>=0 then S.QualifiedName:=FGraph.Symbols[S.Owner].QualifiedName+'/'+N.Name;
+      Index:=AddSymbol(S); FNodeSymbols.Add(NodeKey(AFile,I),Index);
+      if N.Parent>=0 then FGraph.AddRelation(FGraph.Symbols[Index].Owner,Index,'owns','confirmed_static','resource_document_structure',N.Kind,N.Location,'');
+    end;
+    Exit;
+  end;
   if not MatchText(Kind,['unit','program','library','package']) then Exit;
   UnitName:=IR.Nodes[0].Name; Tokens:=FTokens[AFile];
   ImplementationAt:=MaxInt;
@@ -589,7 +602,7 @@ end;
 
 function TDPHSemanticAnalyzer.Analyze(AScan: TDPHScan): TDPHSemanticGraph;
 var Item: TDPHManifestFile; IR: TDPHParseResult; T: TDPHToken; Tokens: TList<TDPHToken>;
-    S: TDPHSymbol; I,TypeIndex: Integer; SymbolsBefore: Integer;
+    S: TDPHSymbol; I,TypeIndex,Consumer,Resource: Integer; SymbolsBefore: Integer; Reference: TDPHDefinitionReference;
 begin
   FScan:=AScan; FGraph:=TDPHSemanticGraph.Create; FGraph.Complete:=AScan.Complete;
   FGraph.Diagnostics.AddRange(AScan.Inventory.Diagnostics);
@@ -619,6 +632,19 @@ begin
         if S.HasBody and AScan.Results.TryGetValue(S.Location.Source,IR) then RoutineFacts(I,IR,FTokens[S.Location.Source]);
       end;
       for Item in AScan.Inventory.Manifest do if MatchText(Item.Kind,['.fmx','.dfm']) and AScan.Results.TryGetValue(Item.RelativePath,IR) then BindForms(Item.RelativePath,IR);
+      for Reference in AScan.Inventory.DefinitionReferences do begin
+        Consumer:=-1; Resource:=-1;
+        for I:=0 to FGraph.Symbols.Count-1 do begin S:=FGraph.Symbols[I];
+          if (S.Kind='resource') and (S.Location.Source=Reference.Target) then Resource:=I;
+          if S.HasBody and (S.Location.Source=Reference.Source) and (S.Location.StartByte<=Reference.Location.StartByte) and (S.Location.EndByte>=Reference.Location.EndByte) then
+            if (Consumer<0) or (S.Location.EndByte-S.Location.StartByte<FGraph.Symbols[Consumer].Location.EndByte-FGraph.Symbols[Consumer].Location.StartByte) then Consumer:=I;
+        end;
+        if Consumer>=0 then begin
+          if Resource>=0 then FGraph.AddRelation(Consumer,Resource,'reads','inferred','literal_file_loader_spelling_api_unverified',Reference.Loader+': '+Reference.Path,Reference.Location,'')
+          else FGraph.AddRelation(Consumer,-1,'reads','unresolved','literal_definition_unavailable_or_opaque',Reference.Loader+': '+Reference.Path,Reference.Location,'');
+          if Resource>=0 then FGraph.AddRelation(Resource,Consumer,'configures','inferred','loader_lexical_order_not_runtime_precedence',IntToStr(Reference.Order)+': '+Reference.Loader,Reference.Location,'');
+        end;
+      end;
       Result:=FGraph; FGraph:=nil;
     except FGraph.Free; raise; end;
   finally Tokens.Free; FImports.Free; FTokens.Free; FNames.Free; FKeys.Free; FNodeSymbols.Free; FBaseTypes.Free; end;
