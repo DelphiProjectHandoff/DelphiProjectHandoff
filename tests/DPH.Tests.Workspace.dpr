@@ -118,6 +118,21 @@ begin
             Check((Form.ConfigurationCombo.Items.Count=View.Document.GetValue<TJSONArray>('configurations').Count) and
               (Form.PlatformCombo.Items.Count=View.Document.GetValue<TJSONArray>('platforms').Count),'FMX choices come from captured project options');
             Check(Form.CodePageEdit.Text='0','Captured code page is visible in the source settings');
+            J:=View.Coverage;
+            try
+              Check((J.GetValue<TJSONArray>('metrics').Count=8) and
+                (J.GetValue<TJSONArray>('metrics').Items[0].GetValue<Integer>('denominator')=View.Document.GetValue<TJSONArray>('syntax.files').Count),
+                'Coverage metrics define inventory denominator explicitly');
+              Check(J.GetValue<TJSONArray>('diagnostics').Count=View.Document.GetValue<TJSONArray>('syntax.diagnostics').Count+
+                View.Document.GetValue<TJSONArray>('semantics.diagnostics').Count,'Coverage retains syntax and semantic diagnostic evidence');
+            finally J.Free; end;
+            Check(Form.CoverageMemo.Text.Contains('not proof') and Form.CoverageMemo.Text.Contains('denominator'),
+              'Coverage page explains human-review limits separately from static measures');
+            if Form.CoverageList.Count>0 then begin
+              Form.CoverageList.ItemIndex:=0; Form.CoverageInspectClick(nil);
+              Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and Form.DetailsMemo.Text.StartsWith('diagnostic:'),
+                'Coverage gap opens labeled source evidence in Details');
+            end;
             Form.SearchEdit.Text:='Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Explorer selection populates source-backed inspector');
             Check(Pos('detached',Form.SourceMemo.Text)>0,'Detached source view does not follow cached filesystem paths');
@@ -189,6 +204,23 @@ begin
             Form.ScreenshotInspectClick(nil);
             Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and Form.InspectorMemo.Text.StartsWith(View.Symbol(ComponentKey).GetValue<string>('name')),
               'Screenshot linked object opens canonical explanation');
+            Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+            Form.LoadView(View.Document.Clone as TJSONObject);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.GraphTab) and
+              Form.InspectorMemo.Text.StartsWith(View.Symbol(ComponentKey).GetValue<string>('name')),
+              'Same-project reassessment preserves selected object and active page');
+            Form.BookmarksClick(nil);
+            Check(Form.ExplorerList.Items.Contains(View.Symbol(ComponentKey).GetValue<string>('name')),
+              'Same-project reassessment retains surviving bookmarks');
+            J:=View.Document.Clone as TJSONObject;
+            Rows:=J.GetValue<TJSONArray>('semantics.symbols');
+            for Members:=Rows.Count-1 downto 0 do if Rows.Items[Members].GetValue<string>('key')=ComponentKey then Rows.Remove(Members).Free;
+            Form.LoadView(J);
+            Check((Form.InspectorMemo.Text='') and Form.StatusLabel.Text.Contains('absent'),
+              'Removed object clears stale inspector and reports selection loss without guessing a replacement');
+            Form.BookmarksClick(nil);
+            Check(not Form.ExplorerList.Items.Contains(View.Symbol(ComponentKey).GetValue<string>('name')),
+              'Removed object is pruned from reassessment bookmarks');
             Form.Hide;
           finally Form.Free; end;
           CachedShownBeforeVerification:=False;

@@ -146,7 +146,15 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
 4.8 Expanded: imported PNG thumbnail list, fit/native/custom zoom, dimensions,
     attributed evidence and linked-object explanation. Four focused checks pass;
     workspace suite 81. Images remain unverified contributor evidence.
-4.9-4.10 Pending: coverage dashboard and navigation continuity.
+4.9 Expanded: design-time Coverage page with eight independently defined static
+    measures, separate revision review/task counts, explicit unknown build and
+    documentation approval status, and syntax/semantic diagnostic navigation.
+    Four focused checks pass. Counts apply only to the selected captured scope.
+4.10 Expanded: same-project reassessment retains surviving selection, active page,
+    form choice, history, bookmarks, expanded branches and filters. Missing objects
+    are pruned; stale inspector content is cleared with an explicit warning.
+    Four focused checks pass; workspace suite 89. Graph previews now use immutable
+    content-hashed filenames to avoid intermittent WebView file-sharing errors.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused
     questions, educational explanations and runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,

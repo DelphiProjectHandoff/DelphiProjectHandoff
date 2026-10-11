@@ -186,6 +186,18 @@ The bottom evidence pane shows attribution, generation, dimensions and hash.
 Click Explain linked object to inspect its captured source context. Imported
 images do not prove runtime origin or correctness without human review.
 
+Coverage and reassessment
+Choose Coverage in the top-right page selector. Each measure states what is
+counted and its denominator. N/A means no eligible records. Select a diagnostic
+in the lower list and click Inspect selected gap. Details shows its source
+evidence; Open matching source checks the file hash before navigating.
+Human review, pending tasks, tested-build evidence and documentation approval
+remain separate from automatic analysis measures.
+Reassessment of the same project retains surviving selections, bookmarks,
+history, expanded branches, filters and the active page. If an object disappears,
+DPH clears its stale inspector and reports the lost selection. Different project
+identities reset navigation. Rename matching remains a separate reviewed action.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

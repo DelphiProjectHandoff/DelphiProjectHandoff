@@ -104,6 +104,12 @@ type
     ProjectSearchList: TListBox;
     ProjectSearchMemo: TMemo;
     WorkspacePageCombo: TComboBox;
+    CoverageTab: TTabItem;
+    CoverageMemo: TMemo;
+    CoverageList: TListBox;
+    CoveragePurpose: TLabel;
+    CoverageInspectButton: TButton;
+    procedure CoverageInspectClick(Sender: TObject);
     procedure WorkspacePageChange(Sender: TObject);
     procedure WholeProgramGraphClick(Sender: TObject);
     procedure AllFormsGraphClick(Sender: TObject);
@@ -198,6 +204,9 @@ type
     FSearchQuery: string;
     FSearchKind: string;
     FWholeGraph: Boolean;
+    FFlowPages: TList<string>;
+    FCoverage: TJSONObject;
+    procedure RefreshCoverage;
     procedure RefreshLearning;
     procedure ShowExplanation;
     procedure Submit(const ACommand: string);
@@ -225,6 +234,7 @@ procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
+  FFlowPages:=TList<string>.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
@@ -257,10 +267,12 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free;
+  FSearchResults.Free; FCoverage.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
+  for Directory in FFlowPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
+  FFlowPages.Free;
   // Remove only this form's three generated preview files, never a recursive tree.
   if FLearningDirectory<>'' then
   try
@@ -512,6 +524,7 @@ begin
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
+  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
@@ -584,11 +597,26 @@ end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
 procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
-var V: TJSONValue; Row: TJSONObject; Path: string; Options: TJSONArray;
+var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options: TJSONArray;
+  SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
+  SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
+    SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
+  SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
+  if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
-  FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
+  if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; end
+  else begin
+    for Index:=FHistory.Count-1 downto 0 do if FView.Symbol(FHistory[Index])=nil then FHistory.Delete(Index);
+    for Index:=FBookmarks.Count-1 downto 0 do if FView.Symbol(FBookmarks[Index])=nil then FBookmarks.Delete(Index);
+    for Index:=FExpandedKeys.Count-1 downto 0 do if FView.Symbol(FExpandedKeys[Index])=nil then FExpandedKeys.Delete(Index);
+    if (SavedKey<>'') and (FView.Symbol(SavedKey)=nil) then begin SavedKey:=''; FScope:=''; FPage:=0;
+      StatusLabel.Text:='The previous selection is absent from the new generation. Explorer is reset; only surviving bookmarks and history were retained.';
+    end;
+  end;
   FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object to inspect evidence from this generation.';
   if (FCatalog<>nil) and (FDatabase<>'') then
   try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);
@@ -614,10 +642,52 @@ begin
     for V in ADocument.GetValue<TJSONArray>('syntax.files') do begin Row:=V as TJSONObject; Path:=Row.GetValue<string>('path');
       if MatchText(ExtractFileExt(Path),['.fmx','.dfm']) and (Row.GetValue('ir')<>nil) then FormCombo.Items.Add(Path);
     end;
-    if FormCombo.Items.Count>0 then FormCombo.ItemIndex:=0;
+    if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshLearning;
+  RefreshExplorer; RefreshLearning; RefreshCoverage;
+  if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
+  if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
+end;
+procedure TDPHMainForm.RefreshCoverage;
+var V: TJSONValue; Row: TJSONObject; Text: TStringBuilder; Verified,Current,Total: Integer;
+begin
+  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
+  if FView=nil then Exit; FCoverage:=FView.Coverage; Text:=TStringBuilder.Create;
+  try
+    Text.AppendLine(FView.FlagsText); Text.AppendLine('Each measure has its own denominator. N/A means no eligible records.');
+    for V in FCoverage.GetValue<TJSONArray>('metrics') do begin Row:=V as TJSONObject;
+      Text.AppendLine(Row.GetValue<string>('name')+': '+Row.GetValue<Int64>('numerator').ToString+' / '+Row.GetValue<Int64>('denominator').ToString+
+        IfThen(Row.GetValue<Int64>('denominator')=0,' (N/A)',''));
+      Text.AppendLine('  '+Row.GetValue<string>('definition'));
+    end;
+    Verified:=0; Current:=0; Total:=0;
+    if FKnowledge<>nil then for V in FKnowledge do begin Inc(Total); Row:=V as TJSONObject;
+      if Row.GetValue<string>('revision_state','')='verified' then Inc(Verified);
+      if Row.GetValue<string>('pending','1')='0' then Inc(Current);
+    end;
+    Text.AppendLine(Format('Human records: %d verified revisions / %d total; %d without pending review tasks / %d total.',[Verified,Total,Current,Total]));
+    Text.AppendLine('No pending task is not proof of current or correct content. Human verification is independent of parser measures. Runtime behavior remains unobserved unless attributed evidence is imported.');
+    Text.AppendLine('Selected-project tested build: unknown; passive analysis does not compile or run it. Documentation approval: unknown unless an attributed reviewed record establishes its scope.');
+    Text.AppendLine('Diagnostics below identify captured gaps; they do not enumerate every possible unsupported behavior.');
+    CoverageMemo.Text:=Text.ToString;
+    for V in FCoverage.GetValue<TJSONArray>('diagnostics') do begin Row:=V as TJSONObject;
+      CoverageList.Items.Add(Row.GetValue<string>('severity')+' | '+Row.GetValue<string>('code')+' | '+Row.GetValue<string>('message'));
+    end;
+  finally Text.Free; end;
+end;
+procedure TDPHMainForm.CoverageInspectClick(Sender: TObject);
+var Row: TJSONObject; Range: TJSONObject; FileRow: TJSONObject;
+begin
+  if (FCoverage=nil) or (CoverageList.ItemIndex<0) then Exit;
+  Row:=FCoverage.GetValue<TJSONArray>('diagnostics').Items[CoverageList.ItemIndex].Clone as TJSONObject;
+  FreeAndNil(FDetails); FDetails:=TJSONArray.Create; FDetails.AddElement(Row);
+  Row.AddPair('detail_kind','diagnostic'); Row.AddPair('title',Row.GetValue<string>('code'));
+  Row.AddPair('text',Row.GetValue<string>('message')); Row.AddPair('resolution','unresolved'); Row.AddPair('rule',Row.GetValue<string>('code'));
+  Range:=Row.GetValue<TJSONObject>('range'); FileRow:=FView.SourceFile(Range.GetValue<string>('source'));
+  if FileRow<>nil then Row.AddPair('source_hash',FileRow.GetValue<string>('sha256'));
+  DetailsList.Items.Clear; DetailsList.Items.Add(Row.GetValue<string>('title')); DetailsList.ItemIndex:=0;
+  DetailsClick(nil); WorkspaceTabs.ActiveTab:=DetailsTab;
 end;
 procedure TDPHMainForm.RefreshLearning;
 var ID: TGUID;
@@ -757,6 +827,7 @@ begin
   ExplorerExpandButton.Enabled:=FHierarchyVisible;
   if FHierarchyVisible then Rows:=FView.Hierarchy(FExpandedKeys.ToArray,FPage,250)
   else Rows:=FView.Search(SearchEdit.Text,Kind,FScope,FPage,250);
+  if (Rows.Count=0) and (FPage>0) then begin Rows.Free; FPage:=0; RefreshExplorer; Exit; end;
   try
     ExplorerList.Items.BeginUpdate;
     try ExplorerList.Items.Clear; FExplorerKeys.Clear;
@@ -921,7 +992,7 @@ begin
 end;
 procedure TDPHMainForm.RefreshGraphics;
 const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data flow');
-var Grouped: TJSONObject; Limit: Integer; HTML: string;
+var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath: string;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
@@ -934,9 +1005,12 @@ begin
   end;
   if (FGraph<>nil) and (FExplanations<>nil) then begin
     if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
-    TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
+    GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
+    if not FFlowPages.Contains(GraphPath) then begin
+      TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FFlowPages.Add(GraphPath);
+    end;
     try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
-      FlowBrowser.Navigate('file://'+TPath.Combine(FFlowDirectory,'index.html'));
+      FlowBrowser.Navigate('file://'+GraphPath);
     except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML graph view unavailable; native graph retained: '+E.Message; end; end;
   end;
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
@@ -1078,7 +1152,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; RefreshCoverage; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

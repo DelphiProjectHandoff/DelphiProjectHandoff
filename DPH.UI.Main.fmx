@@ -35,6 +35,7 @@ Items.Strings = (
 'Screenshots'
 'References'
 'Details'
+'Coverage'
 'Knowledge'
 'Publish')
 OnChange = WorkspacePageChange
@@ -309,6 +310,30 @@ Align = Client
 TabPosition = None
 ActiveTab = OverviewTab
 OnChange = WorkspacePageChange
+object CoverageTab: TTabItem
+Text = 'Coverage'
+object CoveragePurpose: TLabel
+Align = Top
+Height = 64
+WordWrap = True
+Text = 'Coverage and gaps: separate static capture measures, human review and diagnostics. Select a diagnostic and click Inspect selected gap to read evidence and open matching source.'
+end
+object CoverageMemo: TMemo
+Align = Top
+Height = 340
+ReadOnly = True
+end
+object CoverageInspectButton: TButton
+Align = Top
+Height = 32
+Text = 'Inspect selected gap'
+OnClick = CoverageInspectClick
+end
+object CoverageList: TListBox
+Align = Client
+OnDblClick = CoverageInspectClick
+end
+end
 object ProjectSearchTab: TTabItem
 Text = 'Search project'
 object ProjectSearchPurpose: TLabel

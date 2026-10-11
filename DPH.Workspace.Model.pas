@@ -22,6 +22,7 @@ type
     function Details(const AKey: string): TJSONArray;
     function Graph(const AKind,AKey: string; ALimit: Integer = 120): TJSONObject;
     function FlagsText: string;
+    function Coverage: TJSONObject;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
     class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
@@ -307,6 +308,54 @@ begin
     end;
     Result.AddPair('truncated',TJSONBool.Create(Truncated));
   finally Queue.Free; EdgeKeys.Free; Seen.Free; end;
+end;
+function TDPHWorkspaceView.Coverage: TJSONObject;
+var Files,Relations,Diagnostics,Metrics,Nodes: TJSONArray; V,W,E: TJSONValue; R,IR,N,Edge: TJSONObject;
+  Parsed,Available,Complete,Confirmed,Unresolved,Events,BoundEvents,Evidence: Integer; Recognized,Tokens: Int64; Matched: Boolean;
+  procedure Metric(const Name,Definition: string; Numerator,Denominator: Int64);
+  var Row: TJSONObject;
+  begin Row:=TJSONObject.Create; Metrics.AddElement(Row); Row.AddPair('name',Name);
+    Row.AddPair('definition',Definition); Row.AddPair('numerator',TJSONNumber.Create(Numerator));
+    Row.AddPair('denominator',TJSONNumber.Create(Denominator)); end;
+begin
+  Result:=TJSONObject.Create; Metrics:=TJSONArray.Create; Result.AddPair('metrics',Metrics);
+  Diagnostics:=TJSONArray.Create; Result.AddPair('diagnostics',Diagnostics);
+  Files:=FDocument.GetValue<TJSONArray>('syntax.files'); Relations:=FDocument.GetValue<TJSONArray>('semantics.relationships');
+  Parsed:=0; Available:=0; Complete:=0; Recognized:=0; Tokens:=0; Confirmed:=0; Unresolved:=0;
+  Events:=0; BoundEvents:=0; Evidence:=0;
+  for V in Files do begin R:=V as TJSONObject;
+    if R.GetValue<string>('sha256','')<>'' then Inc(Available);
+    if R.TryGetValue<TJSONObject>('ir',IR) then begin Inc(Parsed);
+      if IR.GetValue<Boolean>('complete',False) then Inc(Complete);
+      Inc(Recognized,IR.GetValue<Int64>('recognized_tokens',0)); Inc(Tokens,IR.GetValue<Int64>('significant_tokens',0));
+      if MatchText(ExtractFileExt(R.GetValue<string>('path')),['.fmx','.dfm']) and IR.TryGetValue<TJSONArray>('nodes',Nodes) then
+        for W in Nodes do begin N:=W as TJSONObject;
+          if (N.GetValue<string>('kind')<>'property') or not StartsText('On',N.GetValue<string>('name')) or (Trim(N.GetValue<string>('value'))='') then Continue;
+          Inc(Events); Matched:=False;
+          for E in Relations do begin Edge:=E as TJSONObject;
+            if (Edge.GetValue<string>('kind')='binds') and (Edge.GetValue<string>('resolution')='confirmed_static') and
+              SameText(Edge.GetValue<string>('range.source'),R.GetValue<string>('path')) and
+              (Edge.GetValue<Int64>('range.start')=N.GetValue<Int64>('start')) then begin Matched:=True; Break; end;
+          end;
+          if Matched then Inc(BoundEvents);
+        end;
+    end;
+  end;
+  for V in Relations do begin R:=V as TJSONObject;
+    if R.GetValue<string>('resolution')='confirmed_static' then Inc(Confirmed);
+    if R.GetValue<string>('resolution')='unresolved' then Inc(Unresolved);
+    if (R.GetValue<string>('range.source','')<>'') and (R.GetValue<string>('rule','')<>'') then Inc(Evidence);
+  end;
+  Metric('Fingerprinted inventory files','Files with captured SHA256 / files in selected inventory. Not all files on disk.',Available,Files.Count);
+  Metric('Files with parsed IR','Files with an intermediate representation / selected inventory files. Opaque resources may have no IR.',Parsed,Files.Count);
+  Metric('Complete parsed files','IR complete flag / files with IR. This does not measure semantic correctness.',Complete,Parsed);
+  Metric('Recognized syntax tokens','Sum of recognized tokens / significant tokens in parsed files. Not runtime coverage.',Recognized,Tokens);
+  Metric('Confirmed static relationships','confirmed_static relationship records / all captured relationship records. Inferred edges remain separate.',Confirmed,Relations.Count);
+  Metric('Unresolved relationships','unresolved relationship records / all captured relationship records. A zero count does not prove completeness.',Unresolved,Relations.Count);
+  Metric('Serialized event bindings','Nonempty On-prefixed serialized properties with a confirmed static binds edge / nonempty On-prefixed properties in captured forms. Dynamic assignments excluded.',BoundEvents,Events);
+  Metric('Source-located relationship evidence','Relationship records with a source location and derivation rule / all captured relationship records. Location is not human verification.',Evidence,Relations.Count);
+  for V in FDocument.GetValue<TJSONArray>('syntax.diagnostics') do Diagnostics.AddElement(V.Clone as TJSONObject);
+  for V in FDocument.GetValue<TJSONArray>('semantics.diagnostics') do Diagnostics.AddElement(V.Clone as TJSONObject);
 end;
 function TDPHWorkspaceView.FlagsText: string;
 begin
