@@ -29,7 +29,7 @@ type
     property Document: TJSONObject read FDocument;
   end;
 implementation
-uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory;
+uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory, DPH.Analysis.Quality;
 
 class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;
 var Files,Nodes: TJSONArray; FileValue,NodeValue: TJSONValue; Row,IR,Node: TJSONObject;
@@ -76,6 +76,7 @@ begin
   A:=TJSONArray.Create; Result.AddPair('configurations',A); for Value in AScan.Inventory.Configurations do A.Add(Value);
   A:=TJSONArray.Create; Result.AddPair('platforms',A); for Value in AScan.Inventory.Platforms do A.Add(Value);
   Result.AddPair('syntax',AScan.AsJSON(True)); Result.AddPair('semantics',AGraph.AsJSON);
+  Result.AddPair('source_quality',TDPHSourceQuality.Analyze(AScan,AGraph));
   Result.AddPair('analysis_complete',TJSONBool.Create(AScan.Complete and AGraph.Complete));
   Result.AddPair('runtime_observed',TJSONBool.Create(False));
 end;

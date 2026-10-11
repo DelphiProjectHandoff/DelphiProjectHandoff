@@ -52,10 +52,14 @@ without the original author's help. The worksheet exists; the human exercise has
 not been performed by an independent participant.
 Release performance budgets require owner agreement on measured hardware/corpus.
 Measurements are recorded without treating them as approved thresholds.
-The referenced earlier Phase 1-2 design containing 23 functional domains was not
-present in the supplied master/handoff files or located project documents. Its
-file location was requested from the owner; those domains cannot be reconciled
-against an unavailable detailed source.
+The owner supplied DPH_PHASE1_MASTER_REQUIREMENTS.md on 11 October 2026.
+It contains 387 original features, 94 expansion records, 12 scope rules and
+40 database rules. Phase1_Requirements_Traceability.json preserves all 533
+numbered requirements and separately identifies unnumbered presentation rules.
+Reconciliation and implementation are IN PROGRESS. Earlier WP acceptance,
+manuals and 0.3.0 packages do not establish completion of this larger inventory.
+New structured project-profile and source-quality checks are recorded in the
+phase1-* evidence files. Unassessed and partial requirements are not passes.
 
 Translation and source disclosure
 The owner identified local VCL2FMX as the reference. DPH independently vendors

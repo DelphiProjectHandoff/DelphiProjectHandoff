@@ -1,0 +1,4371 @@
+{
+  "schema_version": 1,
+  "baseline": "DPH_PHASE1_MASTER_REQUIREMENTS.md",
+  "baseline_sha256": "ac149f4b8ca91f7dd766ab92c360f736a413aaa219a8dd76d4e88997eb3cb504",
+  "numbered_requirements": 533,
+  "original_features": 387,
+  "expansions": 94,
+  "scope_rules": 12,
+  "database_rules": 40,
+  "completion": "NOT COMPLETE: each requirement needs implementation and evidence; unassessed is not pass",
+  "requirements": [
+    {
+      "id": "01.01",
+      "domain": "DPH-01",
+      "requirement": "Company, department, and business-unit records",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.02",
+      "domain": "DPH-01",
+      "requirement": "Application and project catalogs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "01.03",
+      "domain": "DPH-01",
+      "requirement": "Multiple applications within one knowledge repository",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "01.04",
+      "domain": "DPH-01",
+      "requirement": "Delphi project and project-group discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "01.05",
+      "domain": "DPH-01",
+      "requirement": "Executables, libraries, packages, and services",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "01.06",
+      "domain": "DPH-01",
+      "requirement": "Application purpose, scope, and description",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.07",
+      "domain": "DPH-01",
+      "requirement": "Business-criticality classification",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.08",
+      "domain": "DPH-01",
+      "requirement": "Application ownership and support contacts",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.09",
+      "domain": "DPH-01",
+      "requirement": "Production, test, staging, and development environments",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.10",
+      "domain": "DPH-01",
+      "requirement": "Application relationships and dependencies",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.11",
+      "domain": "DPH-01",
+      "requirement": "Active, legacy, retired, and planned systems",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.12",
+      "domain": "DPH-01",
+      "requirement": "Project maturity, maintenance status, and lifecycle",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.13",
+      "domain": "DPH-01",
+      "requirement": "Vendor, license, and support information",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "01.14",
+      "domain": "DPH-01",
+      "requirement": "Application architecture overviews",
+      "implementation": "implemented_manual_capture",
+      "evidence": [
+        "DPH.Knowledge.ProjectProfile.pas",
+        "DPH.UI.ProjectProfile.fmx",
+        "DPH.Storage.Database.pas",
+        "tests/DPH.Tests.Phase1.dpr",
+        "docs/phase1-profile-validation.json"
+      ],
+      "limitation": "Structured, attributed project-scope fields and append-only revisions; saving does not verify owner-supplied information. No company-wide discovery. Actual project answers require a knowledgeable contributor."
+    },
+    {
+      "id": "02.01",
+      "domain": "DPH-02",
+      "requirement": "Project-wide source-file inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.02",
+      "domain": "DPH-02",
+      "requirement": "Unit declarations and implementations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.03",
+      "domain": "DPH-02",
+      "requirement": "Classes, records, interfaces, and helper types",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.04",
+      "domain": "DPH-02",
+      "requirement": "Methods, functions, and procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.05",
+      "domain": "DPH-02",
+      "requirement": "Parameters, return values, and overloads",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.06",
+      "domain": "DPH-02",
+      "requirement": "Variables, constants, enumerations, and sets",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.07",
+      "domain": "DPH-02",
+      "requirement": "Generic types, helpers, and anonymous methods",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.08",
+      "domain": "DPH-02",
+      "requirement": "Inheritance and interface implementation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.09",
+      "domain": "DPH-02",
+      "requirement": "Properties, visibility, and accessors",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.10",
+      "domain": "DPH-02",
+      "requirement": "Unit dependency and symbol-reference mapping",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.11",
+      "domain": "DPH-02",
+      "requirement": "Compiler directives and conditional compilation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.12",
+      "domain": "DPH-02",
+      "requirement": "Exception handling and resource ownership",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.13",
+      "domain": "DPH-02",
+      "requirement": "Memory management, object lifetimes, and ownership",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.14",
+      "domain": "DPH-02",
+      "requirement": "Threading, asynchronous tasks, and synchronization",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.15",
+      "domain": "DPH-02",
+      "requirement": "Source comments and embedded documentation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.16",
+      "domain": "DPH-02",
+      "requirement": "Unused or apparently unreachable code candidates",
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Analysis.Quality.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.SourceQuality.dpr",
+        "docs/phase1-quality-validation.json"
+      ],
+      "limitation": "Captured routine metrics, significant-token body equality, missing inbound-reference candidates, disconnected CFG candidates and static call-cycle components. Not compiler-exact complexity, semantic redundancy, proof of unused code, whole-program reachability, reentrancy or runtime feasibility."
+    },
+    {
+      "id": "02.17",
+      "domain": "DPH-02",
+      "requirement": "Duplicate and potentially redundant code",
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Analysis.Quality.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.SourceQuality.dpr",
+        "docs/phase1-quality-validation.json"
+      ],
+      "limitation": "Captured routine metrics, significant-token body equality, missing inbound-reference candidates, disconnected CFG candidates and static call-cycle components. Not compiler-exact complexity, semantic redundancy, proof of unused code, whole-program reachability, reentrancy or runtime feasibility."
+    },
+    {
+      "id": "02.18",
+      "domain": "DPH-02",
+      "requirement": "Source complexity and maintainability metrics",
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Analysis.Quality.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.SourceQuality.dpr",
+        "docs/phase1-quality-validation.json"
+      ],
+      "limitation": "Captured routine metrics, significant-token body equality, missing inbound-reference candidates, disconnected CFG candidates and static call-cycle components. Not compiler-exact complexity, semantic redundancy, proof of unused code, whole-program reachability, reentrancy or runtime feasibility."
+    },
+    {
+      "id": "02.19",
+      "domain": "DPH-02",
+      "requirement": "Precise source references and navigation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "02.20",
+      "domain": "DPH-02",
+      "requirement": "Source-code comparison across revisions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.01",
+      "domain": "DPH-03",
+      "requirement": "Application startup and initialization sequence",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.02",
+      "domain": "DPH-03",
+      "requirement": "Application shutdown and cleanup sequence",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.03",
+      "domain": "DPH-03",
+      "requirement": "Procedure and function call graphs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.04",
+      "domain": "DPH-03",
+      "requirement": "Reverse call graphs (who calls this?)",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.05",
+      "domain": "DPH-03",
+      "requirement": "Conditional branches and decision paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.06",
+      "domain": "DPH-03",
+      "requirement": "Loops and iteration logic",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.07",
+      "domain": "DPH-03",
+      "requirement": "Event-driven execution tracing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.08",
+      "domain": "DPH-03",
+      "requirement": "Exception and recovery pathways",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.09",
+      "domain": "DPH-03",
+      "requirement": "State transitions and state-machine descriptions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.10",
+      "domain": "DPH-03",
+      "requirement": "Data movement through procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.11",
+      "domain": "DPH-03",
+      "requirement": "Business-process execution sequences",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.12",
+      "domain": "DPH-03",
+      "requirement": "Thread and task interaction diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.13",
+      "domain": "DPH-03",
+      "requirement": "Recursive calls and potential cycles",
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Analysis.Quality.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.SourceQuality.dpr",
+        "docs/phase1-quality-validation.json"
+      ],
+      "limitation": "Captured routine metrics, significant-token body equality, missing inbound-reference candidates, disconnected CFG candidates and static call-cycle components. Not compiler-exact complexity, semantic redundancy, proof of unused code, whole-program reachability, reentrancy or runtime feasibility."
+    },
+    {
+      "id": "03.14",
+      "domain": "DPH-03",
+      "requirement": "Timers, callbacks, and scheduled procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.15",
+      "domain": "DPH-03",
+      "requirement": "Dynamic dispatch and uncertain call targets",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.16",
+      "domain": "DPH-03",
+      "requirement": "Runtime trace correlation with static analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.17",
+      "domain": "DPH-03",
+      "requirement": "Logic-flow diagrams and readable explanations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "03.18",
+      "domain": "DPH-03",
+      "requirement": "Entry-point-to-result execution narratives",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.01",
+      "domain": "DPH-04",
+      "requirement": "DFM and FMX form discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.02",
+      "domain": "DPH-04",
+      "requirement": "Screen and form inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.03",
+      "domain": "DPH-04",
+      "requirement": "Form thumbnails and gallery views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.04",
+      "domain": "DPH-04",
+      "requirement": "Fit-to-window and full-size screen views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.05",
+      "domain": "DPH-04",
+      "requirement": "Full-screen and zoomable inspection",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.06",
+      "domain": "DPH-04",
+      "requirement": "Visual component hierarchy",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.07",
+      "domain": "DPH-04",
+      "requirement": "Component names, classes, and properties",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.08",
+      "domain": "DPH-04",
+      "requirement": "Component-to-event-handler relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.09",
+      "domain": "DPH-04",
+      "requirement": "Form navigation and opening logic",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.10",
+      "domain": "DPH-04",
+      "requirement": "Screen-to-screen navigation diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.11",
+      "domain": "DPH-04",
+      "requirement": "Data bindings and dataset relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.12",
+      "domain": "DPH-04",
+      "requirement": "Validation rules and displayed error messages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.13",
+      "domain": "DPH-04",
+      "requirement": "Keyboard shortcuts and focus order",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.14",
+      "domain": "DPH-04",
+      "requirement": "Menus, context menus, and toolbars",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.15",
+      "domain": "DPH-04",
+      "requirement": "Dynamic and runtime-created controls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.16",
+      "domain": "DPH-04",
+      "requirement": "Responsive layouts, anchors, and alignments",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.17",
+      "domain": "DPH-04",
+      "requirement": "Third-party UI components",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.18",
+      "domain": "DPH-04",
+      "requirement": "Form inheritance and embedded frames",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.19",
+      "domain": "DPH-04",
+      "requirement": "User-visible actions and business purposes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "04.20",
+      "domain": "DPH-04",
+      "requirement": "Screen history and visual change comparisons",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.01",
+      "domain": "DPH-05",
+      "requirement": "Database connection inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.02",
+      "domain": "DPH-05",
+      "requirement": "Database engines and versions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.03",
+      "domain": "DPH-05",
+      "requirement": "Tables, views, and schemas",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.04",
+      "domain": "DPH-05",
+      "requirement": "Columns, data types, and constraints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.05",
+      "domain": "DPH-05",
+      "requirement": "Primary, foreign, and unique keys",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.06",
+      "domain": "DPH-05",
+      "requirement": "Indexes and performance-related structures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.07",
+      "domain": "DPH-05",
+      "requirement": "Stored procedures, functions, and triggers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.08",
+      "domain": "DPH-05",
+      "requirement": "Entity-relationship diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.09",
+      "domain": "DPH-05",
+      "requirement": "Data dictionaries and business meanings",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.10",
+      "domain": "DPH-05",
+      "requirement": "SQL statements linked to source locations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.11",
+      "domain": "DPH-05",
+      "requirement": "Dataset components and bindings",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.12",
+      "domain": "DPH-05",
+      "requirement": "Read, insert, update, and delete operations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.13",
+      "domain": "DPH-05",
+      "requirement": "Transaction boundaries and rollback behavior",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.14",
+      "domain": "DPH-05",
+      "requirement": "Data validation and transformation rules",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.15",
+      "domain": "DPH-05",
+      "requirement": "Data lineage from input to final destination",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.16",
+      "domain": "DPH-05",
+      "requirement": "Migration and schema-version history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.17",
+      "domain": "DPH-05",
+      "requirement": "Import/export file formats",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.18",
+      "domain": "DPH-05",
+      "requirement": "Data retention and archival requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.19",
+      "domain": "DPH-05",
+      "requirement": "Data quality and integrity checks",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "05.20",
+      "domain": "DPH-05",
+      "requirement": "Backup and restoration requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.01",
+      "domain": "DPH-06",
+      "requirement": "Business-process inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.02",
+      "domain": "DPH-06",
+      "requirement": "Departmental workflows",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.03",
+      "domain": "DPH-06",
+      "requirement": "End-to-end process diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.04",
+      "domain": "DPH-06",
+      "requirement": "Business-rule catalog",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.05",
+      "domain": "DPH-06",
+      "requirement": "Business-rule-to-source-code links",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.06",
+      "domain": "DPH-06",
+      "requirement": "Calculations and formulas",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.07",
+      "domain": "DPH-06",
+      "requirement": "Approval and authorization workflows",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.08",
+      "domain": "DPH-06",
+      "requirement": "Exception handling in business operations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.09",
+      "domain": "DPH-06",
+      "requirement": "Daily, weekly, monthly, and annual operations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.10",
+      "domain": "DPH-06",
+      "requirement": "Financial and regulatory deadlines",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.11",
+      "domain": "DPH-06",
+      "requirement": "Critical operational dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.12",
+      "domain": "DPH-06",
+      "requirement": "Business terminology and glossary",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.13",
+      "domain": "DPH-06",
+      "requirement": "Policy and procedural requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.14",
+      "domain": "DPH-06",
+      "requirement": "Business continuity during system outages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.15",
+      "domain": "DPH-06",
+      "requirement": "Consequences of failures or incorrect processing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "06.16",
+      "domain": "DPH-06",
+      "requirement": "Business ownership of rules and decisions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.01",
+      "domain": "DPH-07",
+      "requirement": "Internal unit and package dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.02",
+      "domain": "DPH-07",
+      "requirement": "Third-party Delphi component inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.03",
+      "domain": "DPH-07",
+      "requirement": "DLL and shared-library dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.04",
+      "domain": "DPH-07",
+      "requirement": "COM, ActiveX, and external automation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.05",
+      "domain": "DPH-07",
+      "requirement": "REST, SOAP, and other API integrations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.06",
+      "domain": "DPH-07",
+      "requirement": "Network protocols, endpoints, and ports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.07",
+      "domain": "DPH-07",
+      "requirement": "File-based system interfaces",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.08",
+      "domain": "DPH-07",
+      "requirement": "Messaging, queues, and event systems",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.09",
+      "domain": "DPH-07",
+      "requirement": "Hardware, printers, scanners, and devices",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.10",
+      "domain": "DPH-07",
+      "requirement": "External systems and their owners",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.11",
+      "domain": "DPH-07",
+      "requirement": "Interface authentication requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.12",
+      "domain": "DPH-07",
+      "requirement": "Data formats, schemas, and contracts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.13",
+      "domain": "DPH-07",
+      "requirement": "Retry, timeout, and failure behavior",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.14",
+      "domain": "DPH-07",
+      "requirement": "Compatibility and version requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "07.15",
+      "domain": "DPH-07",
+      "requirement": "Dependency diagrams and failure propagation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.01",
+      "domain": "DPH-08",
+      "requirement": "Delphi compiler and IDE version",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.02",
+      "domain": "DPH-08",
+      "requirement": "Build configurations and target platforms",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.03",
+      "domain": "DPH-08",
+      "requirement": "Project compiler options",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.04",
+      "domain": "DPH-08",
+      "requirement": "Conditional symbols and defines",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.05",
+      "domain": "DPH-08",
+      "requirement": "Search paths and library paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.06",
+      "domain": "DPH-08",
+      "requirement": "Required packages and dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.07",
+      "domain": "DPH-08",
+      "requirement": "Resource files and application assets",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.08",
+      "domain": "DPH-08",
+      "requirement": "Build instructions and scripts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.09",
+      "domain": "DPH-08",
+      "requirement": "Reproducible build verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.10",
+      "domain": "DPH-08",
+      "requirement": "Environment-specific configuration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.11",
+      "domain": "DPH-08",
+      "requirement": "Installation and upgrade instructions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.12",
+      "domain": "DPH-08",
+      "requirement": "Runtime prerequisites",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.13",
+      "domain": "DPH-08",
+      "requirement": "Deployment destinations and topologies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.14",
+      "domain": "DPH-08",
+      "requirement": "Rollback and recovery procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.15",
+      "domain": "DPH-08",
+      "requirement": "Versioning and release records",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.16",
+      "domain": "DPH-08",
+      "requirement": "Secrets and credential-reference locations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.17",
+      "domain": "DPH-08",
+      "requirement": "Build troubleshooting",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "08.18",
+      "domain": "DPH-08",
+      "requirement": "Production deployment verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.01",
+      "domain": "DPH-09",
+      "requirement": "Runtime architecture and processes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.02",
+      "domain": "DPH-09",
+      "requirement": "Services, daemons, and background tasks",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.03",
+      "domain": "DPH-09",
+      "requirement": "Scheduled operations and timers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.04",
+      "domain": "DPH-09",
+      "requirement": "Logging locations and formats",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.05",
+      "domain": "DPH-09",
+      "requirement": "Exception catalogs and error messages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.06",
+      "domain": "DPH-09",
+      "requirement": "Diagnostic procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.07",
+      "domain": "DPH-09",
+      "requirement": "System health and monitoring indicators",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.08",
+      "domain": "DPH-09",
+      "requirement": "Common problems and solutions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.09",
+      "domain": "DPH-09",
+      "requirement": "Known defects and workarounds",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.10",
+      "domain": "DPH-09",
+      "requirement": "Troubleshooting decision trees",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.11",
+      "domain": "DPH-09",
+      "requirement": "Performance bottlenecks and constraints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.12",
+      "domain": "DPH-09",
+      "requirement": "Resource requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.13",
+      "domain": "DPH-09",
+      "requirement": "Incident records and lessons learned",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.14",
+      "domain": "DPH-09",
+      "requirement": "Restart, shutdown, and recovery sequences",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.15",
+      "domain": "DPH-09",
+      "requirement": "Outage-impact analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.16",
+      "domain": "DPH-09",
+      "requirement": "Disaster recovery and restoration testing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.17",
+      "domain": "DPH-09",
+      "requirement": "Scheduled-job dependency and failure chains",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "09.18",
+      "domain": "DPH-09",
+      "requirement": "Escalation paths and emergency contacts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.01",
+      "domain": "DPH-10",
+      "requirement": "Authentication mechanisms",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.02",
+      "domain": "DPH-10",
+      "requirement": "Authorization and user roles",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.03",
+      "domain": "DPH-10",
+      "requirement": "Permission checks linked to source code",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.04",
+      "domain": "DPH-10",
+      "requirement": "Sensitive data classifications",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.05",
+      "domain": "DPH-10",
+      "requirement": "Data encryption and key-management references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.06",
+      "domain": "DPH-10",
+      "requirement": "API credentials and secrets-handling procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.07",
+      "domain": "DPH-10",
+      "requirement": "User activity and audit logging",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.08",
+      "domain": "DPH-10",
+      "requirement": "Security configuration requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.09",
+      "domain": "DPH-10",
+      "requirement": "Trust boundaries and data exposure",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.10",
+      "domain": "DPH-10",
+      "requirement": "Vulnerability and risk documentation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.11",
+      "domain": "DPH-10",
+      "requirement": "Regulatory and contractual requirements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.12",
+      "domain": "DPH-10",
+      "requirement": "Security-related change history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.13",
+      "domain": "DPH-10",
+      "requirement": "Security incident procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.14",
+      "domain": "DPH-10",
+      "requirement": "DPH knowledge-access permissions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.15",
+      "domain": "DPH-10",
+      "requirement": "Redaction of sensitive information in exports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "10.16",
+      "domain": "DPH-10",
+      "requirement": "Approval controls for confidential handoffs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.01",
+      "domain": "DPH-11",
+      "requirement": "Architecture decisions and rationale",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.02",
+      "domain": "DPH-11",
+      "requirement": "Design assumptions and constraints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.03",
+      "domain": "DPH-11",
+      "requirement": "Original requirements and specifications",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.04",
+      "domain": "DPH-11",
+      "requirement": "Technical debt inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.05",
+      "domain": "DPH-11",
+      "requirement": "Known limitations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.06",
+      "domain": "DPH-11",
+      "requirement": "Alternative designs previously evaluated",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.07",
+      "domain": "DPH-11",
+      "requirement": "Code ownership and expertise",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.08",
+      "domain": "DPH-11",
+      "requirement": "Maintenance history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.09",
+      "domain": "DPH-11",
+      "requirement": "Git revision and commit references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.10",
+      "domain": "DPH-11",
+      "requirement": "Change requests and reasons",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.11",
+      "domain": "DPH-11",
+      "requirement": "Design and implementation notes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.12",
+      "domain": "DPH-11",
+      "requirement": "Unfinished work and proposed improvements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.13",
+      "domain": "DPH-11",
+      "requirement": "Deprecations and compatibility issues",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.14",
+      "domain": "DPH-11",
+      "requirement": "Engineering standards and conventions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.15",
+      "domain": "DPH-11",
+      "requirement": "Lessons learned from failures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "11.16",
+      "domain": "DPH-11",
+      "requirement": "Knowledge-capture interviews",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.01",
+      "domain": "DPH-12",
+      "requirement": "Automatically generated screen catalog",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.02",
+      "domain": "DPH-12",
+      "requirement": "Screen descriptions and purposes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.03",
+      "domain": "DPH-12",
+      "requirement": "Control and field explanations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.04",
+      "domain": "DPH-12",
+      "requirement": "Step-by-step user procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.05",
+      "domain": "DPH-12",
+      "requirement": "Common task walkthroughs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.06",
+      "domain": "DPH-12",
+      "requirement": "Error-message explanations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.07",
+      "domain": "DPH-12",
+      "requirement": "User role-specific instructions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.08",
+      "domain": "DPH-12",
+      "requirement": "Screenshots and annotated interface views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.09",
+      "domain": "DPH-12",
+      "requirement": "Business terminology and definitions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.10",
+      "domain": "DPH-12",
+      "requirement": "Frequently asked questions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.11",
+      "domain": "DPH-12",
+      "requirement": "Tutorials and training lessons",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.12",
+      "domain": "DPH-12",
+      "requirement": "Troubleshooting for nontechnical users",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.13",
+      "domain": "DPH-12",
+      "requirement": "Printable and searchable manuals",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.14",
+      "domain": "DPH-12",
+      "requirement": "Context-sensitive help links",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.15",
+      "domain": "DPH-12",
+      "requirement": "Version-specific documentation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "12.16",
+      "domain": "DPH-12",
+      "requirement": "Translation of user-facing documentation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.01",
+      "domain": "DPH-13",
+      "requirement": "Hierarchical project tree",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.02",
+      "domain": "DPH-13",
+      "requirement": "Expandable and collapsible categories",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.03",
+      "domain": "DPH-13",
+      "requirement": "Multiple simultaneous Explorer panes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.04",
+      "domain": "DPH-13",
+      "requirement": "Dockable and resizable panels",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.05",
+      "domain": "DPH-13",
+      "requirement": "Tabbed documents and views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.06",
+      "domain": "DPH-13",
+      "requirement": "Thumbnail galleries",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.07",
+      "domain": "DPH-13",
+      "requirement": "Fit-to-window and actual-size views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.08",
+      "domain": "DPH-13",
+      "requirement": "Zoom, pan, and full-screen viewing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.09",
+      "domain": "DPH-13",
+      "requirement": "Call, dependency, and data-flow diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.10",
+      "domain": "DPH-13",
+      "requirement": "Visual database relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.11",
+      "domain": "DPH-13",
+      "requirement": "Source-code and documentation side by side",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.12",
+      "domain": "DPH-13",
+      "requirement": "Bookmarks, favorites, and recent items",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.13",
+      "domain": "DPH-13",
+      "requirement": "User-defined Explorer views",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.14",
+      "domain": "DPH-13",
+      "requirement": "Breadcrumb navigation and history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.15",
+      "domain": "DPH-13",
+      "requirement": "Multiple monitor support",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.16",
+      "domain": "DPH-13",
+      "requirement": "Graph node inspection and drill-down",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.17",
+      "domain": "DPH-13",
+      "requirement": "Expandable technical detail levels",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "13.18",
+      "domain": "DPH-13",
+      "requirement": "Exportable and printable diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.01",
+      "domain": "DPH-14",
+      "requirement": "Global full-text search",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.02",
+      "domain": "DPH-14",
+      "requirement": "Search by source-code symbol",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.03",
+      "domain": "DPH-14",
+      "requirement": "Search by form, component, or event",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.04",
+      "domain": "DPH-14",
+      "requirement": "Search by database object",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.05",
+      "domain": "DPH-14",
+      "requirement": "Search by business process or rule",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.06",
+      "domain": "DPH-14",
+      "requirement": "Search by error message",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.07",
+      "domain": "DPH-14",
+      "requirement": "Search by file, path, or configuration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.08",
+      "domain": "DPH-14",
+      "requirement": "Relationship-aware search",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.09",
+      "domain": "DPH-14",
+      "requirement": "Reverse dependency discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.10",
+      "domain": "DPH-14",
+      "requirement": "Change-impact analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.11",
+      "domain": "DPH-14",
+      "requirement": "Cross-application impact analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.12",
+      "domain": "DPH-14",
+      "requirement": "Natural-language question answering",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.13",
+      "domain": "DPH-14",
+      "requirement": "Saved queries and filtered result sets",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.14",
+      "domain": "DPH-14",
+      "requirement": "Navigation to original source locations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.15",
+      "domain": "DPH-14",
+      "requirement": "Search results with evidence references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "14.16",
+      "domain": "DPH-14",
+      "requirement": "Change-impact reports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.01",
+      "domain": "DPH-15",
+      "requirement": "Full initial project scan",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.02",
+      "domain": "DPH-15",
+      "requirement": "Incremental rescanning",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.03",
+      "domain": "DPH-15",
+      "requirement": "Change detection using file hashes and revisions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.04",
+      "domain": "DPH-15",
+      "requirement": "Delphi source-code parsing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.05",
+      "domain": "DPH-15",
+      "requirement": "DFM/FMX parsing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.06",
+      "domain": "DPH-15",
+      "requirement": "Project and package metadata parsing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.07",
+      "domain": "DPH-15",
+      "requirement": "Database metadata discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.08",
+      "domain": "DPH-15",
+      "requirement": "External-document ingestion",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.09",
+      "domain": "DPH-15",
+      "requirement": "Runtime observation import",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.10",
+      "domain": "DPH-15",
+      "requirement": "AI-generated explanation with evidence",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.11",
+      "domain": "DPH-15",
+      "requirement": "Manual fact verification and approval",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.12",
+      "domain": "DPH-15",
+      "requirement": "Evidence provenance and source locations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.13",
+      "domain": "DPH-15",
+      "requirement": "Confidence and verification classifications",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.14",
+      "domain": "DPH-15",
+      "requirement": "Stale-documentation detection",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.15",
+      "domain": "DPH-15",
+      "requirement": "Conflicting-information detection",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.16",
+      "domain": "DPH-15",
+      "requirement": "Missing-information discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.17",
+      "domain": "DPH-15",
+      "requirement": "Parser failure and unsupported-syntax reporting",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.18",
+      "domain": "DPH-15",
+      "requirement": "Source-to-documentation traceability",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.19",
+      "domain": "DPH-15",
+      "requirement": "Analysis completeness measurements",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "15.20",
+      "domain": "DPH-15",
+      "requirement": "Reproducible analysis and validation tests",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.01",
+      "domain": "DPH-16",
+      "requirement": "Central structured knowledge repository",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.02",
+      "domain": "DPH-16",
+      "requirement": "Stable identifiers for every knowledge object",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.03",
+      "domain": "DPH-16",
+      "requirement": "Relationships among all object types",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.04",
+      "domain": "DPH-16",
+      "requirement": "Source-code reference storage",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.05",
+      "domain": "DPH-16",
+      "requirement": "Technical explanations and annotations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.06",
+      "domain": "DPH-16",
+      "requirement": "Human-authored knowledge records",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.07",
+      "domain": "DPH-16",
+      "requirement": "Document and image attachments",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.08",
+      "domain": "DPH-16",
+      "requirement": "Analysis snapshots and revision history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.09",
+      "domain": "DPH-16",
+      "requirement": "Knowledge-record versioning",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.10",
+      "domain": "DPH-16",
+      "requirement": "Conflict and change tracking",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.11",
+      "domain": "DPH-16",
+      "requirement": "Cross-reference integrity checking",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.12",
+      "domain": "DPH-16",
+      "requirement": "Custom object types and attributes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.13",
+      "domain": "DPH-16",
+      "requirement": "Tags, classifications, and metadata",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.14",
+      "domain": "DPH-16",
+      "requirement": "Import/export and backup",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.15",
+      "domain": "DPH-16",
+      "requirement": "Database schema migration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.16",
+      "domain": "DPH-16",
+      "requirement": "Multiuser review and approval support",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.17",
+      "domain": "DPH-16",
+      "requirement": "Full-text and relationship indexes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "16.18",
+      "domain": "DPH-16",
+      "requirement": "Data-retention and archival controls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.01",
+      "domain": "DPH-17",
+      "requirement": "Integrated HTML documentation viewer",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.02",
+      "domain": "DPH-17",
+      "requirement": "Standalone offline HTML documentation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.03",
+      "domain": "DPH-17",
+      "requirement": "Interactive links and navigation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.04",
+      "domain": "DPH-17",
+      "requirement": "Searchable tables and indexes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.05",
+      "domain": "DPH-17",
+      "requirement": "Embedded screen images and diagrams",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.06",
+      "domain": "DPH-17",
+      "requirement": "Expandable technical sections",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.07",
+      "domain": "DPH-17",
+      "requirement": "Consistent documentation templates",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.08",
+      "domain": "DPH-17",
+      "requirement": "Atlas translation integration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.09",
+      "domain": "DPH-17",
+      "requirement": "Source-language preservation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.10",
+      "domain": "DPH-17",
+      "requirement": "Protected source-code and identifier text",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.11",
+      "domain": "DPH-17",
+      "requirement": "Multiple target languages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.12",
+      "domain": "DPH-17",
+      "requirement": "Translation caching and revision invalidation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.13",
+      "domain": "DPH-17",
+      "requirement": "Translation quality review",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.14",
+      "domain": "DPH-17",
+      "requirement": "Technical manual generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.15",
+      "domain": "DPH-17",
+      "requirement": "End-user manual generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.16",
+      "domain": "DPH-17",
+      "requirement": "Operations manual generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.17",
+      "domain": "DPH-17",
+      "requirement": "PDF and printable output",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "17.18",
+      "domain": "DPH-17",
+      "requirement": "Documentation package validation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.01",
+      "domain": "DPH-18",
+      "requirement": "Machine-readable project manifest",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.02",
+      "domain": "DPH-18",
+      "requirement": "Detailed source and symbol indexes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.03",
+      "domain": "DPH-18",
+      "requirement": "Structured dependency and call graphs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.04",
+      "domain": "DPH-18",
+      "requirement": "Technical architecture exports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.05",
+      "domain": "DPH-18",
+      "requirement": "Business-rule and data-flow mappings",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.06",
+      "domain": "DPH-18",
+      "requirement": "Exact build and test instructions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.07",
+      "domain": "DPH-18",
+      "requirement": "AI agent operating constraints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.08",
+      "domain": "DPH-18",
+      "requirement": "AGENTS.md generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.09",
+      "domain": "DPH-18",
+      "requirement": "Structured JSON knowledge exports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.10",
+      "domain": "DPH-18",
+      "requirement": "Source-revision and evidence references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.11",
+      "domain": "DPH-18",
+      "requirement": "Selective context retrieval",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.12",
+      "domain": "DPH-18",
+      "requirement": "Token-efficient technical summaries",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.13",
+      "domain": "DPH-18",
+      "requirement": "AI question-answering against project knowledge",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.14",
+      "domain": "DPH-18",
+      "requirement": "Coding-task-specific handoff packages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.15",
+      "domain": "DPH-18",
+      "requirement": "Prohibited operations and protected files",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.16",
+      "domain": "DPH-18",
+      "requirement": "Agent-generated-change verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.17",
+      "domain": "DPH-18",
+      "requirement": "Stale-context detection",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.18",
+      "domain": "DPH-18",
+      "requirement": "Post-change documentation refresh",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.19",
+      "domain": "DPH-18",
+      "requirement": "External agent protocol adapters",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "18.20",
+      "domain": "DPH-18",
+      "requirement": "Human review and approval of AI-derived facts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.01",
+      "domain": "DPH-19",
+      "requirement": "New-maintainer onboarding",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.02",
+      "domain": "DPH-19",
+      "requirement": "Structured knowledge-transfer interviews",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.03",
+      "domain": "DPH-19",
+      "requirement": "Departing-developer questionnaires",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.04",
+      "domain": "DPH-19",
+      "requirement": "Knowledge gaps and unanswered questions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.05",
+      "domain": "DPH-19",
+      "requirement": "Ownership and responsibility mapping",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.06",
+      "domain": "DPH-19",
+      "requirement": "Critical-person dependency analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.07",
+      "domain": "DPH-19",
+      "requirement": "Maintenance readiness assessments",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.08",
+      "domain": "DPH-19",
+      "requirement": "Build and deployment readiness verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.09",
+      "domain": "DPH-19",
+      "requirement": "Recovery readiness verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.10",
+      "domain": "DPH-19",
+      "requirement": "Documentation coverage measurement",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.11",
+      "domain": "DPH-19",
+      "requirement": "Training plans and learning paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.12",
+      "domain": "DPH-19",
+      "requirement": "Required approvals and sign-offs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.13",
+      "domain": "DPH-19",
+      "requirement": "Handoff package generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.14",
+      "domain": "DPH-19",
+      "requirement": "Acceptance-test checklists",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.15",
+      "domain": "DPH-19",
+      "requirement": "Handoff status dashboards",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "19.16",
+      "domain": "DPH-19",
+      "requirement": "Continuing knowledge-maintenance schedules",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.01",
+      "domain": "DPH-20",
+      "requirement": "DPH project creation and import",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.02",
+      "domain": "DPH-20",
+      "requirement": "Analysis profiles and scan configuration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.03",
+      "domain": "DPH-20",
+      "requirement": "Customizable Explorer categories",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.04",
+      "domain": "DPH-20",
+      "requirement": "Customizable documentation templates",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.05",
+      "domain": "DPH-20",
+      "requirement": "User preferences and layouts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.06",
+      "domain": "DPH-20",
+      "requirement": "Extension and parser architecture",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.07",
+      "domain": "DPH-20",
+      "requirement": "Pluggable translation providers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.08",
+      "domain": "DPH-20",
+      "requirement": "External tool integration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.09",
+      "domain": "DPH-20",
+      "requirement": "Analysis diagnostics and logs",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.10",
+      "domain": "DPH-20",
+      "requirement": "Application backup and restore",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.11",
+      "domain": "DPH-20",
+      "requirement": "Import/export configuration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.12",
+      "domain": "DPH-20",
+      "requirement": "Performance and resource controls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.13",
+      "domain": "DPH-20",
+      "requirement": "Large-project scalability",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.14",
+      "domain": "DPH-20",
+      "requirement": "Restricted knowledge-access controls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.15",
+      "domain": "DPH-20",
+      "requirement": "Schema and application upgrades",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.16",
+      "domain": "DPH-20",
+      "requirement": "Automated DPH regression tests",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.17",
+      "domain": "DPH-20",
+      "requirement": "Documentation generation validation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "20.18",
+      "domain": "DPH-20",
+      "requirement": "Recovery from interrupted project scans",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.01",
+      "domain": "DPH-21",
+      "requirement": "Test project and test framework discovery",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.02",
+      "domain": "DPH-21",
+      "requirement": "Unit, integration, and system test inventories",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.03",
+      "domain": "DPH-21",
+      "requirement": "Test-to-source-code traceability",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.04",
+      "domain": "DPH-21",
+      "requirement": "Test-to-business-rule traceability",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.05",
+      "domain": "DPH-21",
+      "requirement": "Test cases, inputs, and expected results",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.06",
+      "domain": "DPH-21",
+      "requirement": "Manual testing procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.07",
+      "domain": "DPH-21",
+      "requirement": "Automated test execution integration",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.08",
+      "domain": "DPH-21",
+      "requirement": "Regression-test selection for proposed changes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.09",
+      "domain": "DPH-21",
+      "requirement": "Test results and evidence history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.10",
+      "domain": "DPH-21",
+      "requirement": "Test coverage and missing-test identification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.11",
+      "domain": "DPH-21",
+      "requirement": "Performance and load testing records",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "21.12",
+      "domain": "DPH-21",
+      "requirement": "Release acceptance criteria",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.01",
+      "domain": "DPH-22",
+      "requirement": "Maintenance request records",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.02",
+      "domain": "DPH-22",
+      "requirement": "Defect investigation history",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.03",
+      "domain": "DPH-22",
+      "requirement": "Enhancement specifications",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.04",
+      "domain": "DPH-22",
+      "requirement": "Change-impact assessments",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.05",
+      "domain": "DPH-22",
+      "requirement": "Required source and documentation updates",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.06",
+      "domain": "DPH-22",
+      "requirement": "Change approval procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.07",
+      "domain": "DPH-22",
+      "requirement": "Implementation checklists",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.08",
+      "domain": "DPH-22",
+      "requirement": "Prechange and postchange comparisons",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.09",
+      "domain": "DPH-22",
+      "requirement": "Regression verification",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.10",
+      "domain": "DPH-22",
+      "requirement": "Release and deployment approvals",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.11",
+      "domain": "DPH-22",
+      "requirement": "Rollback plans",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "22.12",
+      "domain": "DPH-22",
+      "requirement": "Maintenance audit trails",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.01",
+      "domain": "DPH-23",
+      "requirement": "Application report inventory",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.02",
+      "domain": "DPH-23",
+      "requirement": "Report templates and definitions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.03",
+      "domain": "DPH-23",
+      "requirement": "Report fields and data sources",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.04",
+      "domain": "DPH-23",
+      "requirement": "Calculations, grouping, and sorting",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.05",
+      "domain": "DPH-23",
+      "requirement": "Report generation and scheduling logic",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.06",
+      "domain": "DPH-23",
+      "requirement": "Report access permissions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.07",
+      "domain": "DPH-23",
+      "requirement": "Printed forms, labels, and documents",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.08",
+      "domain": "DPH-23",
+      "requirement": "Email, spreadsheet, and file exports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.09",
+      "domain": "DPH-23",
+      "requirement": "Output destinations and recipients",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.10",
+      "domain": "DPH-23",
+      "requirement": "Report-to-business-process links",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.11",
+      "domain": "DPH-23",
+      "requirement": "Sample output and layout previews",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "23.12",
+      "domain": "DPH-23",
+      "requirement": "Report verification procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-001",
+      "domain": "EX",
+      "requirement": "Document every procedure's inputs, outputs, and side effects",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-002",
+      "domain": "EX",
+      "requirement": "Identify which global variables a procedure reads or modifies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-003",
+      "domain": "EX",
+      "requirement": "Trace property getters, setters, and their side effects",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-004",
+      "domain": "EX",
+      "requirement": "Analyze class constructors and destructors",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-005",
+      "domain": "EX",
+      "requirement": "Document object ownership and lifetime relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-006",
+      "domain": "EX",
+      "requirement": "Distinguish static calls from virtual and dynamic dispatch",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-007",
+      "domain": "EX",
+      "requirement": "Identify conditional code compiled for particular platforms",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-008",
+      "domain": "EX",
+      "requirement": "Record initialization and finalization sections of every unit",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-009",
+      "domain": "EX",
+      "requirement": "Trace exception creation, propagation, and handling",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-010",
+      "domain": "EX",
+      "requirement": "Record unresolved symbols, unknown call targets, and parser limitations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-011",
+      "domain": "EX",
+      "requirement": "Show the actual component hierarchy within each form",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-012",
+      "domain": "EX",
+      "requirement": "Display design-time properties and significant default values",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-013",
+      "domain": "EX",
+      "requirement": "Identify controls created dynamically",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-014",
+      "domain": "EX",
+      "requirement": "Locate all procedures that change a particular control",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-015",
+      "domain": "EX",
+      "requirement": "Trace events through subsequent procedure calls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-016",
+      "domain": "EX",
+      "requirement": "Identify which database fields appear on each screen",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-017",
+      "domain": "EX",
+      "requirement": "Show how and when a form is created and destroyed",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-018",
+      "domain": "EX",
+      "requirement": "Document runtime changes to visibility, position, and enabled state",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-019",
+      "domain": "EX",
+      "requirement": "Identify inherited forms, frames, styles, and custom components",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-020",
+      "domain": "EX",
+      "requirement": "Distinguish real screen captures from reconstructed layouts",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-021",
+      "domain": "EX",
+      "requirement": "Trace from an application entry point to a selected procedure",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-022",
+      "domain": "EX",
+      "requirement": "Trace a user action through all identifiable downstream calls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-023",
+      "domain": "EX",
+      "requirement": "Identify all locations where a variable receives a value",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-024",
+      "domain": "EX",
+      "requirement": "Identify every known location where a database field is changed",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-025",
+      "domain": "EX",
+      "requirement": "Trace important data transformations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-026",
+      "domain": "EX",
+      "requirement": "Identify shared state across threads and callbacks",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-027",
+      "domain": "EX",
+      "requirement": "Document timer-initiated execution",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-028",
+      "domain": "EX",
+      "requirement": "Identify reentrant or potentially recursive execution",
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Analysis.Quality.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.SourceQuality.dpr",
+        "docs/phase1-quality-validation.json"
+      ],
+      "limitation": "Captured routine metrics, significant-token body equality, missing inbound-reference candidates, disconnected CFG candidates and static call-cycle components. Not compiler-exact complexity, semantic redundancy, proof of unused code, whole-program reachability, reentrancy or runtime feasibility."
+    },
+    {
+      "id": "EX-029",
+      "domain": "EX",
+      "requirement": "Visualize transaction start, commit, and rollback paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-030",
+      "domain": "EX",
+      "requirement": "Display uncertain paths separately from verified paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-031",
+      "domain": "EX",
+      "requirement": "Identify required Delphi and compiler versions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-032",
+      "domain": "EX",
+      "requirement": "Record component packages needed to compile",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-033",
+      "domain": "EX",
+      "requirement": "Identify required DLLs and runtime files",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-034",
+      "domain": "EX",
+      "requirement": "Document application-specific environment settings",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-035",
+      "domain": "EX",
+      "requirement": "Identify external files read or written by the application",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-036",
+      "domain": "EX",
+      "requirement": "Explain external services used by this application",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-037",
+      "domain": "EX",
+      "requirement": "Document expected file and folder permissions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-038",
+      "domain": "EX",
+      "requirement": "Identify hardcoded paths, endpoints, and environment assumptions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-039",
+      "domain": "EX",
+      "requirement": "Record exact build and deployment prerequisites",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-040",
+      "domain": "EX",
+      "requirement": "Identify dependencies that are unavailable or unverified",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-041",
+      "domain": "EX",
+      "requirement": "Explain why important procedures exist",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-042",
+      "domain": "EX",
+      "requirement": "Document unusual algorithms and design choices",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-043",
+      "domain": "EX",
+      "requirement": "Associate a business rule with the exact implementing code",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-044",
+      "domain": "EX",
+      "requirement": "Identify source-code comments that conflict with implementation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-045",
+      "domain": "EX",
+      "requirement": "Store programmer annotations linked to specific symbols",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-046",
+      "domain": "EX",
+      "requirement": "Track changes to important procedures across revisions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-047",
+      "domain": "EX",
+      "requirement": "Explain known defects and their technical workarounds",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-048",
+      "domain": "EX",
+      "requirement": "Generate user instructions from documented screens and workflows",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-049",
+      "domain": "EX",
+      "requirement": "Generate detailed maintenance instructions for the selected application",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-050",
+      "domain": "EX",
+      "requirement": "Flag manual documentation requiring reapproval after code changes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-051",
+      "domain": "EX",
+      "requirement": "Create an exact project-specific technical manifest",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-052",
+      "domain": "EX",
+      "requirement": "Export symbol and relationship indexes with stable identifiers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-053",
+      "domain": "EX",
+      "requirement": "Provide source paths, signatures, and revision references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-054",
+      "domain": "EX",
+      "requirement": "Identify protected functionality and high-risk code",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-055",
+      "domain": "EX",
+      "requirement": "List known limitations and unresolved analysis questions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-056",
+      "domain": "EX",
+      "requirement": "Supply build, test, and regression procedures",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-057",
+      "domain": "EX",
+      "requirement": "Generate task-specific technical context packages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-058",
+      "domain": "EX",
+      "requirement": "Mark confirmed information separately from AI inference",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-059",
+      "domain": "EX",
+      "requirement": "Detect technical-context changes after source modifications",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-060",
+      "domain": "EX",
+      "requirement": "Generate a fresh handoff for the selected revision of the project",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-061",
+      "domain": "EX",
+      "requirement": "Background execution: identify anonymous threads, entry points, completion mechanisms, and synchronization",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-062",
+      "domain": "EX",
+      "requirement": "UI/thread relationships: explain how worker-thread results reach FMX controls",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-063",
+      "domain": "EX",
+      "requirement": "Object lifecycle: creation, ownership, destruction, references held across threads",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-064",
+      "domain": "EX",
+      "requirement": "Mode-dependent execution: compare normal and dry-run and other option-dependent paths",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-065",
+      "domain": "EX",
+      "requirement": "Failure-path analysis: effect of errors on processing, status, and reports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-066",
+      "domain": "EX",
+      "requirement": "Shared analysis context: accesses and mutations of TConversionContext",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-067",
+      "domain": "EX",
+      "requirement": "Configuration propagation: UI checkbox settings into engine behavior",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-068",
+      "domain": "EX",
+      "requirement": "Output artifact lineage: source files to generated files and reports",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-069",
+      "domain": "EX",
+      "requirement": "Nested/local procedures: analyze routines defined inside other routines",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-070",
+      "domain": "EX",
+      "requirement": "Generated knowledge verification: documentation accurate for analyzed source revision",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-071",
+      "domain": "EX",
+      "requirement": "Associate visual control with serialized FMX/DFM definition",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-072",
+      "domain": "EX",
+      "requirement": "Trace controls through events, callbacks, and downstream logic",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-073",
+      "domain": "EX",
+      "requirement": "Locate procedures reading or changing a particular control",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-074",
+      "domain": "EX",
+      "requirement": "Document user-visible validation and error messages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-075",
+      "domain": "EX",
+      "requirement": "Trace UI control values into settings and processing logic",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-076",
+      "domain": "EX",
+      "requirement": "Connect background processing results to UI updates",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-077",
+      "domain": "EX",
+      "requirement": "Identify generated output artifacts and their producers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-078",
+      "domain": "EX",
+      "requirement": "Trace report fields back to original calculations or source",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-079",
+      "domain": "EX",
+      "requirement": "Identify report-format selection and fallback behavior",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-080",
+      "domain": "EX",
+      "requirement": "Generate user and engineering documentation from shared knowledge",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-081",
+      "domain": "EX",
+      "requirement": "Validate agreement among HTML, JSON, and other documentation formats",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-082",
+      "domain": "EX",
+      "requirement": "Distinguish discovered screen details from verified runtime appearance",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-083",
+      "domain": "EX",
+      "requirement": "Trace each significant configuration option to its consumers",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-084",
+      "domain": "EX",
+      "requirement": "Identify and explain mode-dependent application behavior",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-085",
+      "domain": "EX",
+      "requirement": "Identify external definition files influencing program operation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-086",
+      "domain": "EX",
+      "requirement": "Link definition-file records to Delphi code interpreting them",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-087",
+      "domain": "EX",
+      "requirement": "Document default settings and configuration precedence",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-088",
+      "domain": "EX",
+      "requirement": "Identify caches and when configuration changes invalidate them",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-089",
+      "domain": "EX",
+      "requirement": "Record project and relevant dependency revision fingerprints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-090",
+      "domain": "EX",
+      "requirement": "Detect changed source symbols and event bindings",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-091",
+      "domain": "EX",
+      "requirement": "Identify documentation affected by code/configuration changes",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-092",
+      "domain": "EX",
+      "requirement": "Preserve historical explanations and their original evidence",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-093",
+      "domain": "EX",
+      "requirement": "Require revalidation of potentially obsolete explanations",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "EX-094",
+      "domain": "EX",
+      "requirement": "Detect stale AI handoff information before export",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-01",
+      "domain": "SC",
+      "requirement": "One explicitly selected active Delphi project or project group",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-02",
+      "domain": "SC",
+      "requirement": "Every discovered record carries a project identity",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-03",
+      "domain": "SC",
+      "requirement": "External entities require an explicit relationship to that project",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-04",
+      "domain": "SC",
+      "requirement": "No automatic scanning of unrelated applications or repositories",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-05",
+      "domain": "SC",
+      "requirement": "No unrestricted traversal outside configured source/dependency boundaries",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-06",
+      "domain": "SC",
+      "requirement": "No company-wide discovery unless directly required by selected application's dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-07",
+      "domain": "SC",
+      "requirement": "Every knowledge item explains its relevance to the selected project",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-08",
+      "domain": "SC",
+      "requirement": "Reports filtered to active project and relevant dependencies",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-09",
+      "domain": "SC",
+      "requirement": "AI context restricted to active project and authorized references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-10",
+      "domain": "SC",
+      "requirement": "Dependency exploration never silently expands project scope",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-11",
+      "domain": "SC",
+      "requirement": "Unrelated records excluded from generated manuals",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "SC-12",
+      "domain": "SC",
+      "requirement": "Switching projects is an explicit user action",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-001",
+      "domain": "DB",
+      "requirement": "Maintain a persistent SQLite knowledge database for each selected project",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-002",
+      "domain": "DB",
+      "requirement": "Open previously analyzed projects without requiring full rescanning",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-003",
+      "domain": "DB",
+      "requirement": "Detect source and dependency changes through verified fingerprints",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-004",
+      "domain": "DB",
+      "requirement": "Incrementally update affected symbols and relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-005",
+      "domain": "DB",
+      "requirement": "Preserve manual knowledge and historical records across scans",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-006",
+      "domain": "DB",
+      "requirement": "Track stale facts, explanations, translations, and AI context",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-007",
+      "domain": "DB",
+      "requirement": "Support explicit full reanalysis without losing curated knowledge",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-008",
+      "domain": "DB",
+      "requirement": "Protect last verified database state during failed/interrupted analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-009",
+      "domain": "DB",
+      "requirement": "Maintain persistent modification and reassessment status for selected project, files, and knowledge records; user can manually request reassessment",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-010",
+      "domain": "DB",
+      "requirement": "Separate source modification tracking from knowledge edits",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-011",
+      "domain": "DB",
+      "requirement": "Store last successfully analyzed source fingerprint",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-012",
+      "domain": "DB",
+      "requirement": "Store latest observed fingerprint independently",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-013",
+      "domain": "DB",
+      "requirement": "Never clear modification flag for obsolete analysis revision",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-014",
+      "domain": "DB",
+      "requirement": "Preserve curated knowledge during automatic rescanning",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-015",
+      "domain": "DB",
+      "requirement": "Store source-to-knowledge dependency relationships",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-016",
+      "domain": "DB",
+      "requirement": "Reevaluate dependent records when underlying facts change",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-017",
+      "domain": "DB",
+      "requirement": "Record renamed, moved, deleted, and restored source objects",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-018",
+      "domain": "DB",
+      "requirement": "Support manual reassessment requests",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-019",
+      "domain": "DB",
+      "requirement": "Maintain history of successful analysis revisions",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-020",
+      "domain": "DB",
+      "requirement": "Recover safely from interrupted database updates",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-021",
+      "domain": "DB",
+      "requirement": "Keep reports associated with exact analyzed revision",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-022",
+      "domain": "DB",
+      "requirement": "Track analyzer version for each result",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-023",
+      "domain": "DB",
+      "requirement": "Detect changes in relevant external definition files",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-024",
+      "domain": "DB",
+      "requirement": "Maintain unresolved documentation reviews independently of scan status",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-025",
+      "domain": "DB",
+      "requirement": "Automatic incremental reassessment is default; load cached project immediately, check in background, update safely and preserve manual knowledge",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-026",
+      "domain": "DB",
+      "requirement": "Store structured project facts persistently in SQLite",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-027",
+      "domain": "DB",
+      "requirement": "Preserve exact source revision and fingerprint references",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-028",
+      "domain": "DB",
+      "requirement": "Support configurable full-source snapshots",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-029",
+      "domain": "DB",
+      "requirement": "Associate snapshots with correct analysis generation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-030",
+      "domain": "DB",
+      "requirement": "Support connected and detached project viewing",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-031",
+      "domain": "DB",
+      "requirement": "Detect source changes occurring during analysis",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-032",
+      "domain": "DB",
+      "requirement": "Prevent mixed-revision results from being published as current",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-033",
+      "domain": "DB",
+      "requirement": "Deduplicate identical archived source content",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-034",
+      "domain": "DB",
+      "requirement": "Support source-directory relocation",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-035",
+      "domain": "DB",
+      "requirement": "Apply exclusions to confidential and unnecessary files",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-036",
+      "domain": "DB",
+      "requirement": "Validate stored source hashes and snapshot integrity",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-037",
+      "domain": "DB",
+      "requirement": "Support portable validated project handoff packages",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-038",
+      "domain": "DB",
+      "requirement": "Enforce configurable snapshot retention and storage limits",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-039",
+      "domain": "DB",
+      "requirement": "Preserve knowledge when source files become unavailable",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    },
+    {
+      "id": "DB-040",
+      "domain": "DB",
+      "requirement": "Keep previous successful analysis accessible during reassessment",
+      "implementation": "unassessed",
+      "evidence": [],
+      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+    }
+  ],
+  "last_changed": "2026-10-11",
+  "unnumbered_requirements": [
+    "DPH-SCOPE-001 umbrella: selected project and verified relevant dependencies",
+    "Four explanation depths: Overview, Functional, Detailed Engineering, Forensic/Source-Level",
+    "Shared canonical knowledge across HTML, manuals and machine-readable exports",
+    "Screen gallery and fit/actual-size/full-screen inspection with design-time/runtime labels",
+    "Forward and reverse event/output chains with evidence and uncertain edges",
+    "New maintainer can learn, operate, debug, change, build and maintain with explicit gaps"
+  ]
+}

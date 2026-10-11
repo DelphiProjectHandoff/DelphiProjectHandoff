@@ -1,0 +1,416 @@
+﻿{
+  "checks_passed": 15,
+  "quality_version": "DPH-QUALITY-1",
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{46EAC016-7D71-4CD6-8B9E-5133B7704A8F}",
+  "report": {
+    "version": "DPH-QUALITY-1",
+    "input_fingerprint": "0d106ab7052d3cde589fc741e23cd972b49cd029d7e928be81dcf20b9ace99d8",
+    "definition": "Structural decision score is 1 plus unique captured if/for/while/repeat decisions and explicit case arms. It is not compiler-exact cyclomatic complexity or a maintainability index. Body equality uses significant active tokens with exact literals, normalized identifier case and conditional identity. At least 12 tokens and a complete parsed file are required; unknown conditional bodies are excluded. Missing inbound references, disconnected CFG statements and call cycles are investigation candidates, never proof that code is unused or removable. Dynamic dispatch, external callers, parser gaps and runtime conditions remain unknown.",
+    "routines": [
+      {
+        "object_key": "quality.$entry|routine|():|debug/win32;",
+        "name": "Quality.$entry",
+        "range": {
+          "source": "quality.dpr",
+          "start": 41,
+          "end": 57,
+          "line": 1,
+          "column": 39
+        },
+        "source_hash": "22b960bc1ca3b0803f8dd85342f52727670620f2da898c83ce5a598c38d82e86",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 4,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 4,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.entry|routine|():|debug/win32;",
+        "name": "QualityFixture.Entry",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 780,
+          "end": 871,
+          "line": 18,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 9,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 17,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": true
+      },
+      {
+        "object_key": "qualityfixture.alpha|routine|():|debug/win32;",
+        "name": "QualityFixture.Alpha",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 674,
+          "end": 707,
+          "line": 15,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 4,
+        "structural_decision_score": 1,
+        "incoming_relationships": 2,
+        "body_line_span": 1,
+        "significant_body_tokens": 4,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.beta|routine|():|debug/win32;",
+        "name": "QualityFixture.Beta",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 709,
+          "end": 742,
+          "line": 16,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 4,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 4,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.gamma|routine|():|debug/win32;",
+        "name": "QualityFixture.Gamma",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 744,
+          "end": 778,
+          "line": 17,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 4,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 4,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.duplicatea|routine|():|debug/win32;",
+        "name": "QualityFixture.DuplicateA",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 123,
+          "end": 193,
+          "line": 8,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 6,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 18,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": true
+      },
+      {
+        "object_key": "qualityfixture.duplicateb|routine|():|debug/win32;",
+        "name": "QualityFixture.DuplicateB",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 195,
+          "end": 265,
+          "line": 9,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 6,
+        "structural_decision_score": 1,
+        "incoming_relationships": 0,
+        "body_line_span": 1,
+        "significant_body_tokens": 18,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": true
+      },
+      {
+        "object_key": "qualityfixture.literala|routine|():|debug/win32;",
+        "name": "QualityFixture.LiteralA",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 267,
+          "end": 347,
+          "line": 10,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 5,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 12,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": true
+      },
+      {
+        "object_key": "qualityfixture.literalb|routine|():|debug/win32;",
+        "name": "QualityFixture.LiteralB",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 349,
+          "end": 429,
+          "line": 11,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 5,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 12,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": true
+      },
+      {
+        "object_key": "qualityfixture.neverreferenced|routine|():|debug/win32;",
+        "name": "QualityFixture.NeverReferenced",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 431,
+          "end": 498,
+          "line": 12,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 4,
+        "structural_decision_score": 1,
+        "incoming_relationships": 0,
+        "body_line_span": 1,
+        "significant_body_tokens": 7,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.disconnected|routine|():|debug/win32;",
+        "name": "QualityFixture.Disconnected",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 500,
+          "end": 565,
+          "line": 13,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 5,
+        "structural_decision_score": 1,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 9,
+        "maximum_parse_nesting": 0,
+        "body_comparison_eligible": false
+      },
+      {
+        "object_key": "qualityfixture.branch|routine|(integer):|debug/win32;",
+        "name": "QualityFixture.Branch",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 567,
+          "end": 672,
+          "line": 14,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "captured_cfg_nodes": 7,
+        "structural_decision_score": 3,
+        "incoming_relationships": 1,
+        "body_line_span": 1,
+        "significant_body_tokens": 22,
+        "maximum_parse_nesting": 1,
+        "body_comparison_eligible": true
+      }
+    ],
+    "duplicate_bodies": [
+      {
+        "body_fingerprint": "b8a105a566016105f23e658d406bc3f292f268475bb7d996e8233bc65fa7b020",
+        "finding": "Equal significant-token bodies are potential duplicates, not proven equivalent routines. Signatures, types, captures and surrounding state can differ.",
+        "members": [
+          {
+            "object_key": "qualityfixture.duplicatea|routine|():|debug/win32;",
+            "name": "QualityFixture.DuplicateA",
+            "range": {
+              "source": "qualityfixture.pas",
+              "start": 123,
+              "end": 193,
+              "line": 8,
+              "column": 1
+            },
+            "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+            "verification_state": "source_derived_candidate_unreviewed"
+          },
+          {
+            "object_key": "qualityfixture.duplicateb|routine|():|debug/win32;",
+            "name": "QualityFixture.DuplicateB",
+            "range": {
+              "source": "qualityfixture.pas",
+              "start": 195,
+              "end": 265,
+              "line": 9,
+              "column": 1
+            },
+            "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+            "verification_state": "source_derived_candidate_unreviewed"
+          }
+        ]
+      }
+    ],
+    "unreferenced_candidates": [
+      {
+        "object_key": "qualityfixture.duplicateb|routine|():|debug/win32;",
+        "name": "QualityFixture.DuplicateB",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 195,
+          "end": 265,
+          "line": 9,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "finding": "No captured non-ownership incoming reference. Lexical ownership, imports and documentation/test-coverage annotations are excluded. External callers, RTTI, callbacks and unresolved calls may still use it; investigate rather than delete."
+      },
+      {
+        "object_key": "qualityfixture.neverreferenced|routine|():|debug/win32;",
+        "name": "QualityFixture.NeverReferenced",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 431,
+          "end": 498,
+          "line": 12,
+          "column": 1
+        },
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "finding": "No captured non-ownership incoming reference. Lexical ownership, imports and documentation/test-coverage annotations are excluded. External callers, RTTI, callbacks and unresolved calls may still use it; investigate rather than delete."
+      }
+    ],
+    "unreachable_candidates": [
+      {
+        "object_key": "qualityfixture.disconnected|routine|():|debug/win32;",
+        "name": "QualityFixture.Disconnected",
+        "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+        "verification_state": "source_derived_candidate_unreviewed",
+        "range": {
+          "source": "qualityfixture.pas",
+          "start": 536,
+          "end": 559,
+          "line": 13,
+          "column": 37
+        },
+        "finding": "No path from the captured CFG entry, including modeled uncertain edges; unsupported jumps, exception semantics or runtime entry may invalidate this candidate.",
+        "flow_node": 54
+      }
+    ],
+    "call_cycles": [
+      {
+        "finding": "Captured call-graph cycle; recursion is possible, but runtime feasibility and termination are unverified.",
+        "members": [
+          {
+            "object_key": "qualityfixture.alpha|routine|():|debug/win32;",
+            "name": "QualityFixture.Alpha",
+            "range": {
+              "source": "qualityfixture.pas",
+              "start": 674,
+              "end": 707,
+              "line": 15,
+              "column": 1
+            },
+            "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+            "verification_state": "source_derived_candidate_unreviewed"
+          },
+          {
+            "object_key": "qualityfixture.beta|routine|():|debug/win32;",
+            "name": "QualityFixture.Beta",
+            "range": {
+              "source": "qualityfixture.pas",
+              "start": 709,
+              "end": 742,
+              "line": 16,
+              "column": 1
+            },
+            "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+            "verification_state": "source_derived_candidate_unreviewed"
+          },
+          {
+            "object_key": "qualityfixture.gamma|routine|():|debug/win32;",
+            "name": "QualityFixture.Gamma",
+            "range": {
+              "source": "qualityfixture.pas",
+              "start": 744,
+              "end": 778,
+              "line": 17,
+              "column": 1
+            },
+            "source_hash": "b3840d5bdabee2c2c0417b97c44e1f4b8508fdd6a9e3da075c21d23de186274f",
+            "verification_state": "source_derived_candidate_unreviewed"
+          }
+        ],
+        "evidence": [
+          {
+            "source": "qualityfixture.pas",
+            "start": 697,
+            "end": 701,
+            "line": 15,
+            "column": 24,
+            "from": "qualityfixture.alpha|routine|():|debug/win32;",
+            "to": "qualityfixture.beta|routine|():|debug/win32;",
+            "resolution": "confirmed_static",
+            "rule": "lexical_scope_declared_receiver_and_signature"
+          },
+          {
+            "source": "qualityfixture.pas",
+            "start": 731,
+            "end": 736,
+            "line": 16,
+            "column": 23,
+            "from": "qualityfixture.beta|routine|():|debug/win32;",
+            "to": "qualityfixture.gamma|routine|():|debug/win32;",
+            "resolution": "confirmed_static",
+            "rule": "lexical_scope_declared_receiver_and_signature"
+          },
+          {
+            "source": "qualityfixture.pas",
+            "start": 767,
+            "end": 772,
+            "line": 17,
+            "column": 24,
+            "from": "qualityfixture.gamma|routine|():|debug/win32;",
+            "to": "qualityfixture.alpha|routine|():|debug/win32;",
+            "resolution": "confirmed_static",
+            "rule": "lexical_scope_declared_receiver_and_signature"
+          }
+        ],
+        "relationship_count": 3,
+        "omitted_evidence": 0
+      }
+    ]
+  }
+}

@@ -11,6 +11,7 @@ type
     DocumentKind,Audience: string;
     LinksJSON: string;
     QuestionJSON: string;
+    StructuredJSON: string;
     OldEntityKey: string;
     SearchKind: string;
     SearchOffset: Integer;
@@ -62,7 +63,7 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality;
 
 destructor TDPHWorkspaceResponse.Destroy;
 begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
@@ -289,7 +290,7 @@ begin
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin
             if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,
-              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience,Request.LinksJSON,Request.QuestionJSON);
+              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience,Request.LinksJSON,Request.QuestionJSON,Request.StructuredJSON);
             if Request.Command='review_knowledge' then
             begin
               if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');
@@ -355,6 +356,7 @@ begin
                 Changed:=(Cached=nil) or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>Cached.GetValue<TJSONObject>('semantics').GetValue<string>('input_fingerprint'))
                   or (Cached.GetValue<string>('syntax.analyzer','')<>DPHAnalyzerVersion)
                   or (Cached.GetValue<string>('semantics.analyzer','')<>DPHSemanticVersion)
+                  or (Cached.GetValue<string>('source_quality.version','')<>DPHQualityVersion)
                   or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;

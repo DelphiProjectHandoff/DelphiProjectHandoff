@@ -22,6 +22,8 @@
   <ItemGroup>
     <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
     <DCCReference Include="DPH.UI.Main.pas"><Form>DPHMainForm</Form><FormType>fmx</FormType></DCCReference>
+    <DCCReference Include="DPH.UI.ProjectProfile.pas"><Form>DPHProjectProfileForm</Form><FormType>fmx</FormType></DCCReference>
+    <DCCReference Include="DPH.Knowledge.ProjectProfile.pas" />
     <DCCReference Include="DPH.Storage.Types.pas" />
     <DCCReference Include="DPH.Storage.Database.pas" />
     <DCCReference Include="DPH.Storage.Backup.pas" />
@@ -35,6 +37,7 @@
     <DCCReference Include="DPH.Project.Inventory.pas" />
     <DCCReference Include="DPH.Project.Analysis.pas" />
     <DCCReference Include="DPH.Analysis.Model.pas" />
+    <DCCReference Include="DPH.Analysis.Quality.pas" />
     <DCCReference Include="DPH.Analysis.Symbols.pas" />
     <DCCReference Include="DPH.Analysis.Flow.pas" />
     <DCCReference Include="DPH.Analysis.Async.pas" />

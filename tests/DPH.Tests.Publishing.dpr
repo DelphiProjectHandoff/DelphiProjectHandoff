@@ -10,7 +10,8 @@ uses System.SysUtils, System.StrUtils, System.IOUtils, System.JSON, System.Hash,
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',
   DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
   DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas',
-  DPH.Storage.Database in '..\DPH.Storage.Database.pas';
+  DPH.Storage.Database in '..\DPH.Storage.Database.pas',
+  DPH.Knowledge.ProjectProfile in '..\DPH.Knowledge.ProjectProfile.pas';
 type TMockTranslator = class(TInterfacedObject,IDPHTranslationProvider)
   function ID: string; function Version: string; function External: Boolean;
   function TranslateProse(const AText,ASourceLocale,ATargetLocale: string): string;
@@ -248,6 +249,23 @@ begin
             J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
             try Check(J.GetValue<Integer>('source_fallback_count')=0,'Fenced code, SQL and paths are protected without becoming missing prose'); finally J.Free; end;
           finally Cache.Free; Provider:=nil; end;
+          J:=TJSONObject.ParseJSONValue('{"record_type":"project_profile","fields":{"purpose":"Profile publication fixture","owner":"Named fixture owner","evidence":"Synthetic acceptance evidence; not a live program observation"}}') as TJSONObject;
+          try Store.SaveKnowledge(0,0,Generation,'Project profile',TDPHProjectProfile.Body(J),'Profile fixture author','orientation','','overview','all','','',J.ToJSON);
+          finally J.Free; end;
+          Rows:=Store.KnowledgeJSON;
+          try Again:=TDPHDocumentModel.Create(View,Rows,[],[],False,False);
+            try
+              Check(Again.Document.ToJSON.Contains('Profile publication fixture'),'Canonical publication includes attributed project profile text');
+              TDPHPublisher.Export(Again,Store,TPath.Combine(Work,'project-profile'));
+              TDPHPublisher.Validate(TPath.Combine(Work,'project-profile'),Again.Document.GetValue<string>('input_fingerprint'));
+              Text:=TFile.ReadAllText(TPath.Combine(Work,'project-profile\index.html'),TEncoding.UTF8);
+              Check(Text.Contains('Named fixture owner') and Text.Contains('Profile publication fixture'),'Offline handoff renders readable project purpose and owner');
+              Archive:=TZipFile.Create;
+              try Archive.Open(TPath.Combine(Work,'project-profile\Engineering_Guide.docx'),zmRead); Archive.Read('word/document.xml',Bytes);
+                Check(TEncoding.UTF8.GetString(Bytes).Contains('Named fixture owner'),'Editable engineering guide includes the same attributed project profile');
+              finally Archive.Free; end;
+            finally Again.Free; end;
+          finally Rows.Free; end;
         finally Knowledge.Free; end;
       finally View.Free; end;
     finally Store.Free; Semantic.Free; Analyzer.Free; end;

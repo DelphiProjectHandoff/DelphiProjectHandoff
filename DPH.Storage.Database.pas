@@ -68,7 +68,7 @@ type
     procedure CommitFacts;
     procedure RollbackFacts;
     function SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''; const ALinksJSON: string = ''; const AQuestionJSON: string = ''): Int64;
+      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''; const ALinksJSON: string = ''; const AQuestionJSON: string = ''; const AStructuredJSON: string = ''): Int64;
     procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
@@ -104,10 +104,10 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile;
 
 const
-  CurrentSchemaVersion = 8;
+  CurrentSchemaVersion = 9;
   RichLinkProjectionSQL = 'SELECT l.target_kind,l.target_id,l.source_generation,l.link_role,l.label,'+
     'coalesce(e.canonical_key,a.canonical_key,'''') AS canonical_key,coalesce(b.canonical_key,'''') AS to_key,coalesce(ev.source_range_json,''{}'') AS source_range,'+
     'coalesce(ev.payload_ref,'''') AS evidence_payload,coalesce(rel.resolution_status,CASE WHEN ev.verification_state=''verified'' THEN ''confirmed_static'' ELSE ev.verification_state END,''inferred'') AS resolution,'+
@@ -331,7 +331,8 @@ begin
     else if Version = 5 then MigrationPath := MigrationPath + 'document_sections.sql'
     else if Version = 6 then MigrationPath := MigrationPath + 'revision_links.sql'
     else if Version = 7 then MigrationPath := MigrationPath + 'author_questions.sql'
-    else MigrationPath := MigrationPath + 'translation_cache.sql';
+      else if Version = 8 then MigrationPath := MigrationPath + 'translation_cache.sql'
+      else MigrationPath := MigrationPath + 'structured_knowledge.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -779,9 +780,10 @@ begin
 end;
 
 function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON: string): Int64;
+  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON,AStructuredJSON: string): Int64;
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
-  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID: string;
+  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;
+  StructuredValue: TJSONValue;
 begin
   RequireWriter;
   if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
@@ -792,6 +794,23 @@ begin
     else if MatchText(AKind,['maintenance','build_deploy','troubleshooting','orientation']) then DocumentKind:=AKind; end;
   if Audience='' then begin Audience:='engineer'; if DocumentKind='user' then Audience:='user'
     else if DocumentKind='maintenance' then Audience:='maintainer' else if DocumentKind='build_deploy' then Audience:='builder' else if DocumentKind='handoff' then Audience:='agent'; end;
+  StructuredText:=AStructuredJSON; if StructuredText='' then StructuredText:='{}';
+  if Length(StructuredText)>65536 then raise EDPHStorage.Create('Structured knowledge exceeds 64 KiB');
+  StructuredValue:=TJSONObject.ParseJSONValue(StructuredText);
+  try
+    if not (StructuredValue is TJSONObject) then raise EDPHStorage.Create('Structured knowledge must be an object');
+    PriorStructured:='';
+    if AKnowledgeID<>0 then PriorStructured:=VarToStr(Scalar('SELECT structured_json FROM knowledge_revisions WHERE knowledge_revision_id=:revision AND knowledge_id=:id',[AExpectedRevision,AKnowledgeID]));
+    if (StructuredValue as TJSONObject).Count>0 then begin
+      TDPHProjectProfile.Validate(StructuredValue as TJSONObject);
+      if (ATitle<>'Project profile') or (AKind<>'orientation') or (DocumentKind<>'overview') or (Audience<>'all') or (AEntityKey<>'') then
+        raise EDPHStorage.Create('Project profile identity, audience and project scope must be preserved');
+      if ABody<>TDPHProjectProfile.Body(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit project profile fields with the Project profile command');
+      if (AKnowledgeID=0) and (Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND json_extract(r.structured_json,''$.record_type'')=''project_profile''',[])<>0) then
+        raise EDPHStorage.Create('A profile already exists; refresh and edit its current revision');
+      if (AKnowledgeID<>0) and (PriorStructured='{}') then raise EDPHStorage.Create('An ordinary knowledge record cannot be reassigned as the project profile');
+    end else if (PriorStructured<>'') and (PriorStructured<>'{}') then raise EDPHStorage.Create('Structured record fields cannot be discarded; use its editor');
+  finally StructuredValue.Free; end;
   if not MatchText(DocumentKind,['overview','engineering','user','maintenance','build_deploy','troubleshooting','orientation','handoff','help']) then raise EDPHStorage.Create('Unknown document kind');
   if not MatchText(Audience,['all','engineer','user','maintainer','builder','agent']) then raise EDPHStorage.Create('Unknown documentation audience');
   if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND project_id=1 AND status IN (''current'',''partial'')',[AGenerationID])<>1 then raise EDPHStorage.Create('Select a captured generation first');
@@ -814,7 +833,7 @@ begin
         [Result,AExpectedRevision,ATitle,AKind])<>1 then raise EDPHStorage.Create('Knowledge changed since loading, or its stable title/kind was changed; reload first');
       Prior:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[AExpectedRevision]));
     end;
-    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state) VALUES(:id,:body,:author,:stamp,''needs_review'')',[Result,ABody,AEditor,UTCNow]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,structured_json) VALUES(:id,:body,:author,:stamp,''needs_review'',:structured)',[Result,ABody,AEditor,UTCNow,StructuredText]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('INSERT INTO document_section_versions(revision_id,knowledge_id,section_id,document_kind,audience,source_generation) '+
       'VALUES(:revision,:id,:section,:document,:audience,:generation)',[Revision,Result,'knowledge-'+IntToStr(Result),DocumentKind,Audience,AGenerationID]);
@@ -910,8 +929,8 @@ begin
     if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision',[AKnowledgeID,AExpectedRevision])<>1 then
       raise EDPHStorage.Create('Knowledge revision changed; reload before reviewing');
     Body:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[AExpectedRevision]));
-    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,verified_by,verified_at) '+
-      'VALUES(:id,:body,:editor,:stamp,:state,:reviewer,:reviewed)',[AKnowledgeID,Body,AReviewer,UTCNow,AState,AReviewer,UTCNow]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,verified_by,verified_at,structured_json) '+
+      'VALUES(:id,:body,:editor,:stamp,:state,:reviewer,:reviewed,(SELECT structured_json FROM knowledge_revisions WHERE knowledge_revision_id=:prior))',[AKnowledgeID,Body,AReviewer,UTCNow,AState,AReviewer,UTCNow,AExpectedRevision]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=:state WHERE knowledge_id=:id',[Revision,AState,AKnowledgeID]);
     FConnection.ExecSQL('INSERT INTO knowledge_revision_links SELECT :revision,ordinal,target_kind,target_id,source_generation,link_role,label '+
@@ -1079,7 +1098,7 @@ var Query,Detail,LinkDetail: TFDQuery; Row,Item,LinkItem: TJSONObject; Links,His
 begin
   RequireWriter; Result:=TJSONArray.Create;
   Query:=NewQuery('SELECT k.knowledge_id AS id,k.current_revision_id AS revision,k.kind,k.title,k.state,k.owner,r.body_md AS body,r.editor,r.created_at,r.verification_state AS revision_state,'+
-    'coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
+    'r.structured_json,coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
     'coalesce(s.section_id,''knowledge-''||k.knowledge_id) AS section_id,coalesce(s.document_kind,''engineering'') AS document_kind,'+
     'coalesce(s.audience,''engineer'') AS audience,coalesce(s.source_generation,0) AS source_generation,'+
     'coalesce(q.question_json,'''') AS question_json,'+
@@ -1109,7 +1128,7 @@ begin
       try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
       History:=TJSONArray.Create; Row.AddPair('history',History);
       Detail:=NewQuery('SELECT r.knowledge_revision_id AS revision,r.body_md AS body,r.editor,r.created_at,r.verification_state,coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
-        'coalesce(s.document_kind,''engineering'') AS document_kind,coalesce(s.audience,''engineer'') AS audience,coalesce(s.source_generation,0) AS source_generation '+
+        'r.structured_json,coalesce(s.document_kind,''engineering'') AS document_kind,coalesce(s.audience,''engineer'') AS audience,coalesce(s.source_generation,0) AS source_generation '+
         'FROM knowledge_revisions r LEFT JOIN document_section_versions s ON s.revision_id=r.knowledge_revision_id WHERE r.knowledge_id=:id ORDER BY r.knowledge_revision_id',[Query.FieldByName('id').AsLargeInt]);
       try while not Detail.Eof do begin Item:=TJSONObject.Create; History.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString);
         Links:=TJSONArray.Create; Item.AddPair('rich_links',Links);
@@ -1579,7 +1598,7 @@ begin
     Body:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:revision',[AExpectedRevision]));
     FConnection.ExecSQL('UPDATE knowledge_links SET link_role=''historical_annotation'' WHERE knowledge_id=:note AND entity_id=:old',[AKnowledge,OldEntity]);
     FConnection.ExecSQL('INSERT INTO knowledge_links(project_id,knowledge_id,entity_id,link_role) VALUES(1,:note,:new,''reviewed_continuity'')',[AKnowledge,NewEntity]);
-    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state) VALUES(:note,:body,:reviewer,:stamp,''needs_review'')',[AKnowledge,Body,AReviewer,UTCNow]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,structured_json) VALUES(:note,:body,:reviewer,:stamp,''needs_review'',(SELECT structured_json FROM knowledge_revisions WHERE knowledge_revision_id=:prior))',[AKnowledge,Body,AReviewer,UTCNow,AExpectedRevision]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:note',[Revision,AKnowledge]);
     FConnection.ExecSQL('INSERT INTO knowledge_revision_links SELECT :revision,ordinal,target_kind,target_id,source_generation,link_role,label '+

@@ -4,7 +4,7 @@ if (Get-Process -Name 'DPH.Tests*' -ErrorAction SilentlyContinue) {
 }
 $projectDirectory = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $outputDirectory = [IO.Path]::GetFullPath((Join-Path $projectDirectory 'bin'))
-$generatedName = '^(lifecycle-validation|wp[1-7]-tests-\{[0-9A-F-]+\}(-empty\.dphdb(\.views)?)?|wp2-tests-\d{8}-\d{6}-\d{3}|selection-tests-\{[0-9A-F-]+\}|learning-tests-\{[0-9A-F-]+\})$'
+$generatedName = '^(lifecycle-validation|wp[1-7]-tests-\{[0-9A-F-]+\}(-empty\.dphdb(\.views)?)?|wp2-tests-\d{8}-\d{6}-\d{3}|selection-tests-\{[0-9A-F-]+\}|learning-tests-\{[0-9A-F-]+\}|phase1-tests-\{[0-9A-F-]+\})$'
 $generatedItems = Get-ChildItem -LiteralPath $outputDirectory -Force | Where-Object { $_.Name -match $generatedName }
 foreach ($generatedItem in $generatedItems) {
     $resolvedOutput = [IO.Path]::GetFullPath($generatedItem.FullName)

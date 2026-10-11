@@ -102,6 +102,7 @@ type
     ProjectsList: TListBox;
     ProjectsPurpose: TLabel;
     OpenKnownProjectButton,ForgetProjectButton,RefreshProjectsButton: TButton;
+    ProjectProfileButton: TButton;
     LifecycleTab: TTabItem;
     LifecycleToolbar: TLayout;
     LifecyclePurpose: TLabel;
@@ -165,7 +166,18 @@ type
     TranslationList: TListBox;
     TranslationMemo: TMemo;
     TranslationDialog,TerminologyDialog: TOpenDialog;
+    QualityTab: TTabItem;
+    QualityPurpose: TLabel;
+    QualityToolbar: THorzScrollBox;
+    QualityKindCombo: TComboBox;
+    QualityFilterEdit: TEdit;
+    QualityRefreshButton,QualityNextButton,QualityOpenButton: TButton;
+    QualityList: TListBox;
+    QualityMemo: TMemo;
+    procedure QualityClick(Sender: TObject);
+    procedure QualitySelectionClick(Sender: TObject);
     procedure TranslationClick(Sender: TObject);
+    procedure ProjectProfileClick(Sender: TObject);
     procedure TranslationSelectionClick(Sender: TObject);
     procedure ValidateBundleClick(Sender: TObject);
     procedure QuestionsClick(Sender: TObject);
@@ -280,6 +292,9 @@ type
     FTranslations: TJSONArray;
     FTerminologyJSON: string;
     FKnowledgeQuestionJSON: string;
+    FKnowledgeStructuredJSON: string;
+    FQualityRows: TList<TJSONObject>;
+    FQualityOffset: Integer;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
@@ -306,13 +321,15 @@ type
 var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
-  Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
+  Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
   FPreviewPages:=TList<string>.Create;
+  FQualityRows:=TList<TJSONObject>.Create;
   FEditableLinks:=TJSONArray.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
@@ -350,6 +367,7 @@ begin
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
+  FQualityRows.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -543,6 +561,7 @@ begin
     if KnowledgeAudienceCombo.ItemIndex>0 then R.Audience:=KnowledgeAudienceCombo.Items[KnowledgeAudienceCombo.ItemIndex];
     R.LinksJSON:=FEditableLinks.ToJSON;
     R.QuestionJSON:=FKnowledgeQuestionJSON;
+      R.StructuredJSON:=FKnowledgeStructuredJSON;
   end;
   if ACommand='publish' then
   begin
@@ -556,7 +575,7 @@ begin
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
-  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON;
+    FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 var SelectedDatabase: string;
@@ -608,6 +627,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
@@ -654,7 +674,7 @@ begin
       if FView=nil then HelpClick(nil);
     end;
     if R.Knowledge<>nil then begin
-      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON) then FKnowledgeEdited:=False;
+      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
@@ -719,6 +739,7 @@ begin
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
   FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Click Refresh saved records to read attributed observations for this database.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
+  FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
   if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; end
@@ -758,10 +779,74 @@ begin
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions;
+  RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions; QualityClick(nil);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
 end;
+procedure TDPHMainForm.QualityClick(Sender: TObject);
+const Names: array[0..4] of string = ('routines','duplicate_bodies','unreferenced_candidates','unreachable_candidates','call_cycles');
+var Quality,Row,Target: TJSONObject; Rows,Members: TJSONArray; Value: TJSONValue; Count: Integer; Title: string;
+begin
+  if FBinding or (FQualityRows=nil) then Exit;
+  if Sender=QualityOpenButton then begin
+    if (QualityList.ItemIndex<0) or (QualityList.ItemIndex>=FQualityRows.Count) then Exit;
+    Target:=FQualityRows[QualityList.ItemIndex];
+    if Target.TryGetValue<TJSONArray>('members',Members) and (Members.Count>0) then Target:=Members.Items[0] as TJSONObject;
+    if Target.GetValue<string>('object_key','')<>'' then begin SelectSymbol(Target.GetValue<string>('object_key')); WorkspaceTabs.ActiveTab:=ExplainTab; end;
+    Exit;
+  end;
+  if Sender=QualityNextButton then Inc(FQualityOffset,250) else FQualityOffset:=0;
+  FQualityRows.Clear; QualityList.Items.Clear; QualityNextButton.Enabled:=False;
+  QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
+  if FView=nil then Exit;
+  if not FView.Document.TryGetValue<TJSONObject>('source_quality',Quality) then begin
+    QualityMemo.Text:='This older capture has no source quality report. Attach source and reassess; detached caches retain their original evidence.'; Exit;
+  end;
+  if (QualityKindCombo.ItemIndex<0) or (QualityKindCombo.ItemIndex>4) then Exit;
+  Rows:=Quality.GetValue<TJSONArray>(Names[QualityKindCombo.ItemIndex]); Count:=0;
+  for Value in Rows do begin
+    Row:=Value as TJSONObject;
+    if (QualityFilterEdit.Text<>'') and not ContainsText(Row.ToJSON,QualityFilterEdit.Text) then Continue;
+    Inc(Count); if Count<=FQualityOffset then Continue;
+    if FQualityRows.Count>=250 then begin QualityNextButton.Enabled:=True; Break; end;
+    Title:=Row.GetValue<string>('name','');
+    if Row.TryGetValue<TJSONArray>('members',Members) and (Members.Count>0) then Title:=Members.Items[0].GetValue<string>('name')+' | '+IntToStr(Members.Count)+' members';
+    if Row.GetValue('structural_decision_score')<>nil then Title:=Title+' | decisions '+Row.GetValue('structural_decision_score').Value;
+    FQualityRows.Add(Row); QualityList.Items.Add(Title);
+  end;
+  QualityMemo.Text:=Quality.GetValue<string>('definition')+sLineBreak+Format('%d captured rows in this category. Displayed page begins at %d; use a filter or Next 250.',[Rows.Count,FQualityOffset+1]);
+  if FQualityRows.Count>0 then begin QualityList.ItemIndex:=0; QualitySelectionClick(nil); end;
+end;
+procedure TDPHMainForm.QualitySelectionClick(Sender: TObject);
+var Quality,Row,Member: TJSONObject; Members: TJSONArray; Text: TStringBuilder; I: Integer;
+begin
+  if (FView=nil) or (QualityList.ItemIndex<0) or (QualityList.ItemIndex>=FQualityRows.Count) then Exit;
+  if not FView.Document.TryGetValue<TJSONObject>('source_quality',Quality) then Exit;
+  Row:=FQualityRows[QualityList.ItemIndex]; Text:=TStringBuilder.Create;
+  try
+    Text.AppendLine(Row.GetValue<string>('name',QualityKindCombo.Items[QualityKindCombo.ItemIndex]));
+    Text.AppendLine(Row.GetValue<string>('finding',Quality.GetValue<string>('definition')));
+    if Row.GetValue('structural_decision_score')<>nil then begin
+      Text.AppendLine('Structural decision score: '+Row.GetValue('structural_decision_score').Value);
+      Text.AppendLine('Captured CFG nodes: '+Row.GetValue('captured_cfg_nodes').Value);
+      Text.AppendLine('Significant body tokens: '+Row.GetValue('significant_body_tokens').Value);
+      Text.AppendLine('Body line span (0 means unavailable): '+Row.GetValue('body_line_span').Value);
+      Text.AppendLine('Maximum parsed statement nesting: '+Row.GetValue('maximum_parse_nesting').Value);
+      Text.AppendLine('Captured incoming relationships: '+Row.GetValue('incoming_relationships').Value);
+    end;
+    if Row.GetValue('range')<>nil then Text.AppendLine('Evidence: '+Row.GetValue<string>('range.source')+':'+IntToStr(Row.GetValue<Integer>('range.line'))+' | SHA256 '+Row.GetValue<string>('source_hash'));
+    if Row.TryGetValue<TJSONArray>('members',Members) then begin
+      for I:=0 to Min(Members.Count,100)-1 do begin Member:=Members.Items[I] as TJSONObject;
+        Text.AppendLine(Member.GetValue<string>('name')+' | '+Member.GetValue<string>('range.source')+':'+IntToStr(Member.GetValue<Integer>('range.line'))+' | SHA256 '+Member.GetValue<string>('source_hash'));
+      end;
+      if Members.Count>100 then Text.AppendLine(IntToStr(Members.Count-100)+' further members omitted from this display.');
+    end;
+    Text.AppendLine('Captured generation '+FView.Document.GetValue('generation_id').Value+' | '+Quality.GetValue<string>('version')+' | input fingerprint '+Quality.GetValue<string>('input_fingerprint'));
+    Text.AppendLine('Open explanation inspects the routine, or the first group member. Use its Source and References pages to investigate. These findings never authorize source deletion.');
+    QualityMemo.Text:=Text.ToString;
+  finally Text.Free; end;
+end;
+
 procedure TDPHMainForm.RefreshCoverage;
 var V: TJSONValue; Row: TJSONObject; Text: TStringBuilder; Verified,Current,Total: Integer;
 begin
@@ -1526,6 +1611,8 @@ begin
   if KnowledgeKindCombo.ItemIndex<0 then KnowledgeKindCombo.ItemIndex:=0;
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
   FKnowledgeQuestionJSON:=Row.GetValue<string>('question_json','');
+  FKnowledgeStructuredJSON:=Row.GetValue<string>('structured_json','{}');
+  KnowledgeBodyMemo.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
   FEditableLinks.Free; if Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
   RefreshKnowledgeLinks;
   KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf(Row.GetValue<string>('document_kind','engineering'));
@@ -1542,6 +1629,7 @@ begin
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
     FKnowledgeQuestionJSON:='';
+    FKnowledgeStructuredJSON:='{}'; KnowledgeBodyMemo.ReadOnly:=False;
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
     FreeAndNil(FEditableLinks); FEditableLinks:=TJSONArray.Create; RefreshKnowledgeLinks;
     KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
@@ -1549,6 +1637,44 @@ begin
 end;
 procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
 begin Submit('save_knowledge'); end;
+procedure TDPHMainForm.ProjectProfileClick(Sender: TObject);
+var Editor: TDPHProjectProfileForm; Value: TJSONValue; Row,Profile,Initial: TJSONObject; Links: TJSONArray;
+begin
+  if FBusy then Exit;
+  if FView=nil then begin StatusLabel.Text:='Open the selected project before editing its profile'; Exit; end;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before editing the profile'; Exit; end;
+  Row:=nil; Initial:=nil;
+  if FKnowledge<>nil then for Value in FKnowledge do begin
+    Profile:=TJSONObject.ParseJSONValue(Value.GetValue<string>('structured_json','{}')) as TJSONObject;
+    if (Profile<>nil) and (Profile.GetValue<string>('record_type','')='project_profile') then begin Row:=Value as TJSONObject; Initial:=Profile; Break; end;
+    Profile.Free;
+  end;
+  Editor:=TDPHProjectProfileForm.Create(nil);
+  try
+    if Row=nil then Editor.LoadRecord(nil,KnowledgeAuthorEdit.Text) else Editor.LoadRecord(Initial,Row.GetValue<string>('editor',''));
+    if Editor.ShowModal<>mrOk then Exit;
+    Profile:=Editor.RecordJSON;
+    try
+      FBinding:=True;
+      try
+        FKnowledgeID:=0; FKnowledgeRevision:=0;
+        if Row<>nil then begin FKnowledgeID:=StrToInt64(Row.GetValue<string>('id')); FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision')); end;
+        KnowledgeTitleEdit.Text:='Project profile'; KnowledgeAuthorEdit.Text:=Editor.ProfileAuthorEdit.Text;
+        KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('orientation');
+        KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('overview');
+        KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
+        KnowledgeBodyMemo.Text:=TDPHProjectProfile.Body(Profile); KnowledgeBodyMemo.ReadOnly:=True;
+        FKnowledgeStructuredJSON:=Profile.ToJSON; FKnowledgeQuestionJSON:=''; FKnowledgeLink:='';
+        FreeAndNil(FEditableLinks);
+        if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+        RefreshKnowledgeLinks; FKnowledgeEdited:=True;
+        KnowledgeSectionLabel.Text:='Project profile draft; use Save, then review with a named reviewer';
+        KnowledgeHistoryMemo.Text:='Structured profile fields are edited with Projects > Project profile. Saved revisions and review history remain available in Knowledge.';
+      finally FBinding:=False; end;
+      WorkspaceTabs.ActiveTab:=KnowledgeTab; StatusLabel.Text:='Project profile draft prepared. Click Save to persist it; review remains explicit.';
+    finally Profile.Free; end;
+  finally Editor.Free; Initial.Free; end;
+end;
 procedure TDPHMainForm.RefreshKnowledgeLinks;
 var V: TJSONValue;
 begin

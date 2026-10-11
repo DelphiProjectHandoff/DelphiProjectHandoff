@@ -36,6 +36,7 @@ Items.Strings = (
 'References'
 'Details'
 'Coverage'
+'Source quality'
 'Knowledge'
 'Knowledge links'
 'Review tasks'
@@ -588,6 +589,14 @@ Height = 30
 Text = 'Refresh'
 OnClick = RefreshProjectsClick
 end
+  object ProjectProfileButton: TButton
+  Position.X = 422
+  Position.Y = 4
+  Width = 154
+  Height = 30
+  Text = 'Project profile'
+  OnClick = ProjectProfileClick
+  end
 end
 object ProjectsList: TListBox
 Align = Client
@@ -608,8 +617,81 @@ DefaultExt = 'dphdb'
 Filter = 'DPH project database (*.dphdb)|*.dphdb'
 Title = 'Restore to a NEW database outside the selected source project'
 end
-object OverviewTab: TTabItem
-Text = 'Learn the project'
+  object QualityTab: TTabItem
+    Text = 'Source quality'
+    object QualityPurpose: TLabel
+      Align = Top
+      Height = 90
+      Margins.Left = 12
+      Margins.Right = 12
+      WordWrap = True
+      Text = 'Inspect routine metrics, potential duplicate bodies, missing incoming references, disconnected statements and call cycles. These are source-based investigation candidates. They do not prove unused code, equivalent behavior, runtime recursion or safe deletion. Select a row for evidence and explanation.'
+    end
+    object QualityToolbar: THorzScrollBox
+      Align = Top
+      Height = 48
+      ShowScrollBars = True
+      object QualityKindCombo: TComboBox
+        Position.X = 8
+        Position.Y = 4
+        Width = 186
+        Height = 30
+        Items.Strings = (
+          'Routine metrics'
+          'Duplicate bodies'
+          'Unreferenced candidates'
+          'Unreachable statements'
+          'Call cycles')
+        ItemIndex = 0
+        OnChange = QualityClick
+      end
+      object QualityFilterEdit: TEdit
+        Position.X = 202
+        Position.Y = 4
+        Width = 168
+        Height = 30
+        TextPrompt = 'Name or source filter'
+      end
+      object QualityRefreshButton: TButton
+        Position.X = 378
+        Position.Y = 4
+        Width = 80
+        Height = 30
+        Text = 'Filter'
+        OnClick = QualityClick
+      end
+      object QualityNextButton: TButton
+        Position.X = 466
+        Position.Y = 4
+        Width = 90
+        Height = 30
+        Text = 'Next 250'
+        OnClick = QualityClick
+      end
+      object QualityOpenButton: TButton
+        Position.X = 564
+        Position.Y = 4
+        Width = 154
+        Height = 30
+        Text = 'Open explanation'
+        OnClick = QualityClick
+      end
+    end
+    object QualityList: TListBox
+      Align = Top
+      Height = 190
+      OnChange = QualitySelectionClick
+    end
+    object QualityMemo: TMemo
+      Align = Client
+      ReadOnly = True
+      WordWrap = True
+      StyledSettings = []
+      TextSettings.Font.Size = 16
+    end
+  end
+  object OverviewTab: TTabItem
+  Text = 'Learn the project'
 object LearningTopics: TListBox
 Align = Left
 Width = 220
