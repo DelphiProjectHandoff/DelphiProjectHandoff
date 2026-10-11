@@ -135,9 +135,13 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     propagation and unknown call side effects remain qualified limitations.
     Three focused data checks pass (134 semantic total); native command checks
     added to workspace suite.
-4.6-4.10 Pending: graph
-    collapse, screen modes, screenshot viewing, coverage dashboard and navigation
-    continuity.
+4.6 Expanded: directed labeled SVG relationships, Objects/Types/Units grouping,
+    member navigation and internal/external evidence samples. Group totals
+    preserve the bounded input projection, including truncation warnings.
+    Eleven focused checks pass; workspace suite 73. Browser visual verification
+    remains outstanding; native controls and generated HTML are tested.
+4.7-4.10 Pending: screen modes, screenshot viewing, coverage dashboard and
+    navigation continuity.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused
     questions, educational explanations and runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,

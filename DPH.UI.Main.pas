@@ -17,11 +17,12 @@ type
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
+    GraphGroupingCombo: TComboBox;
     ExplorerList,RelationsList: TListBox;
     DetailsList: TListBox;
     DetailsMemo: TMemo;
     DetailsTitle: TLabel;
-    DetailsSourceButton: TButton;
+    DetailsSourceButton,DetailsObjectButton: TButton;
     DetailsTab: TTabItem;
     WorkspaceTabs: TTabControl;
     OverviewTab,SourceTab,GraphTab,ScreenTab,RelationsTab: TTabItem;
@@ -128,6 +129,7 @@ type
     procedure ExplorerExpandClick(Sender: TObject);
     procedure DetailsClick(Sender: TObject);
     procedure DetailsSourceClick(Sender: TObject);
+    procedure DetailsObjectClick(Sender: TObject);
     procedure RelationsClick(Sender: TObject);
     procedure BackClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
@@ -189,6 +191,7 @@ type
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
     procedure RefreshGraphics;
+    procedure GraphGroupDetails(const AGroup: string);
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
   public
@@ -200,7 +203,7 @@ type
 var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
-  Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
+  Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -598,7 +601,7 @@ begin
     if FormCombo.Items.Count>0 then FormCombo.ItemIndex:=0;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshGraphics; RefreshLearning;
+  RefreshExplorer; RefreshLearning;
 end;
 procedure TDPHMainForm.RefreshLearning;
 var ID: TGUID;
@@ -639,6 +642,14 @@ begin
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=TPath.Combine(FBaseDirectory,'help');
   ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory); if ACancel then Exit;
+  P:=Pos('#g_',AURL);
+  if (P>0) and (FGraph<>nil) then begin
+    ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
+    for V in FGraph.GetValue<TJSONArray>('nodes') do begin S:=V as TJSONObject;
+      if SameText(THashSHA2.GetHashString(S.GetValue('id').Value),Fragment) then begin GraphGroupDetails(S.GetValue('id').Value); Break; end;
+    end;
+    Exit;
+  end;
   P:=Pos('#s_',AURL); if (P=0) or (FView=nil) then Exit; ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
   for V in FView.Document.GetValue<TJSONArray>('semantics.symbols') do begin S:=V as TJSONObject;
     if SameText(THashSHA2.GetHashString(S.GetValue<string>('key')),Fragment) then begin SelectSymbol(S.GetValue<string>('key')); WorkspaceTabs.ActiveTab:=ExplainTab; Break; end;
@@ -734,6 +745,13 @@ begin
     'This is captured static evidence. Open matching source verifies the file hash before applying this range. Detached mode retains the evidence above.';
 end;
 
+procedure TDPHMainForm.DetailsObjectClick(Sender: TObject);
+var Row: TJSONObject; Key: string;
+begin
+  if (FDetails=nil) or (DetailsList.ItemIndex<0) or (DetailsList.ItemIndex>=FDetails.Count) then Exit;
+  Row:=FDetails.Items[DetailsList.ItemIndex] as TJSONObject; Key:=Row.GetValue<string>('object_key',FSelected);
+  if (Key='') or (FView.Symbol(Key)=nil) then Exit; SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
 procedure TDPHMainForm.DetailsSourceClick(Sender: TObject);
 var Row,Range,FileRow: TJSONObject; Path: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
 begin
@@ -843,20 +861,64 @@ begin
 end;
 procedure TDPHMainForm.RefreshGraphics;
 const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data flow');
+var Grouped: TJSONObject; Limit: Integer; HTML: string;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
-  if (GraphCombo.ItemIndex=1) and (FExplanations<>nil) then begin
-    TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.FlowHTML(FSelected)));
+  Limit:=120; GraphGroupingCombo.Enabled:=GraphCombo.ItemIndex<>1;
+  if (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then Limit:=1000;
+  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
+  else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
+  if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then begin
+    Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
+  end;
+  if (FGraph<>nil) and (FExplanations<>nil) then begin
+    if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
+    TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
     try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
       FlowBrowser.Navigate('file://'+TPath.Combine(FFlowDirectory,'index.html'));
-    except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML flow view unavailable; native graph retained: '+E.Message; end; end;
+    except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML graph view unavailable; native graph retained: '+E.Message; end; end;
   end;
-  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'')
-  else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected);
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
   else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);
   GraphPaint.Repaint; ScreenPaint.Repaint;
+end;
+procedure TDPHMainForm.GraphGroupDetails(const AGroup: string);
+var V,W,E: TJSONValue; GroupRow,Symbol,Row,Edge: TJSONObject; Key: string; EvidenceRows: TList<TJSONObject>;
+begin
+  if (FGraph=nil) or (FView=nil) then Exit;
+  for V in FGraph.GetValue<TJSONArray>('nodes') do begin
+    GroupRow:=V as TJSONObject; if (GroupRow.GetValue('id').Value<>AGroup) or (GroupRow.GetValue<string>('kind','')<>'group') then Continue;
+    FreeAndNil(FDetails); FDetails:=TJSONArray.Create; DetailsList.Items.Clear;
+    for W in GroupRow.GetValue<TJSONArray>('members') do begin
+      Key:=W.Value; Symbol:=FView.Symbol(Key); if Symbol=nil then Continue;
+      Row:=Symbol.Clone as TJSONObject; FDetails.AddElement(Row);
+      Row.AddPair('detail_kind','group member'); Row.AddPair('title',Symbol.GetValue<string>('name'));
+      Row.AddPair('text',Symbol.GetValue<string>('kind')+': '+Symbol.GetValue<string>('signature'));
+      Row.AddPair('object_key',Key); Row.AddPair('resolution','inferred'); Row.AddPair('rule','lexical_graph_group_not_runtime_ownership');
+      DetailsList.Items.Add('member | '+Symbol.GetValue<string>('name'));
+    end;
+    EvidenceRows:=TList<TJSONObject>.Create;
+    try
+    for E in GroupRow.GetValue<TJSONArray>('internal_evidence') do EvidenceRows.Add(E as TJSONObject);
+    for W in FGraph.GetValue<TJSONArray>('edges') do begin
+      Edge:=W as TJSONObject; if (Edge.GetValue('from').Value<>AGroup) and (Edge.GetValue('to').Value<>AGroup) then Continue;
+      for E in Edge.GetValue<TJSONArray>('evidence') do EvidenceRows.Add(E as TJSONObject);
+    end;
+    for Edge in EvidenceRows do begin
+        if FDetails.Count>=1000 then Break;
+        Row:=Edge.Clone as TJSONObject; FDetails.AddElement(Row); Row.AddPair('detail_kind','group relationship');
+        Row.AddPair('title',Row.GetValue<string>('kind')); Row.AddPair('text',Row.GetValue<string>('label'));
+        Key:=Row.GetValue<string>('to',''); if Key='' then Key:=Row.GetValue<string>('from'); Row.AddPair('object_key',Key);
+        DetailsList.Items.Add('evidence | '+Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('label'));
+    end;
+    finally EvidenceRows.Free; end;
+    DetailsMemo.Text:='Group: '+GroupRow.GetValue<string>('label')+sLineBreak+
+      'Members in this captured projection: '+GroupRow.GetValue<Integer>('member_count').ToString+sLineBreak+
+      'Internal source relationships: '+GroupRow.GetValue<Integer>('internal_relationships').ToString+sLineBreak+sLineBreak+
+      'Select a member or evidence row. Open linked object reads its explanation; Open matching source verifies its file. Counts cover the bounded projection. Grouped connections retain up to 16 evidence examples each; at most 1,000 detail rows are shown.';
+    WorkspaceTabs.ActiveTab:=DetailsTab; Exit;
+  end;
 end;
 function TDPHMainForm.GraphRect(AIndex: Integer): TRectF;
 var Columns: Integer; W,H: Single;
@@ -883,11 +945,17 @@ begin
   end;
 end;
 procedure TDPHMainForm.GraphMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Single);
-var I: Integer; N: TJSONObject; Nodes: TJSONArray;
+var I: Integer; N,Row: TJSONObject; Nodes: TJSONArray;
 begin
   if FGraph=nil then Exit; Nodes:=FGraph.GetValue<TJSONArray>('nodes');
   for I:=0 to Nodes.Count-1 do if GraphRect(I).Contains(TPointF.Create(X,Y)) then begin N:=Nodes.Items[I] as TJSONObject;
-    if FGraph.GetValue<string>('kind')='Procedure CFG' then InspectorMemo.Text:=N.Format(2) else SelectSymbol(N.GetValue<string>('id')); Break;
+    if N.GetValue<string>('kind','')='group' then GraphGroupDetails(N.GetValue('id').Value)
+    else if FGraph.GetValue<string>('kind')='Procedure CFG' then begin
+      FreeAndNil(FDetails); FDetails:=TJSONArray.Create; Row:=N.Clone as TJSONObject; FDetails.AddElement(Row);
+      Row.AddPair('detail_kind','statement'); Row.AddPair('title',N.GetValue<string>('kind')); Row.AddPair('text',N.GetValue<string>('expression'));
+      Row.AddPair('resolution','inferred'); Row.AddPair('rule','captured_control_flow_not_runtime_trace'); Row.AddPair('object_key',FSelected);
+      DetailsList.Items.Clear; DetailsList.Items.Add(N.GetValue<string>('label')); DetailsList.ItemIndex:=0; DetailsClick(nil); WorkspaceTabs.ActiveTab:=DetailsTab;
+    end else SelectSymbol(N.GetValue<string>('id')); Break;
   end;
 end;
 procedure TDPHMainForm.ScreenPaintPaint(Sender: TObject; Canvas: TCanvas);

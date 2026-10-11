@@ -704,10 +704,19 @@ Height = 28
 Text = 'Project data'
 OnClick = AllDataGraphClick
 end
+object GraphGroupingCombo: TComboBox
+Position.X = 704
+Position.Y = 4
+Width = 150
+Height = 28
+Items.Strings = ('Objects' 'Types' 'Units')
+ItemIndex = 0
+OnChange = ViewChange
+end
 object GraphLegend: TLabel
-Text = 'Static graph | blue: confirmed | orange dash: uncertain | click for evidence | bounded to 120 nodes'
+Text = 'Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence'
 Position.Y = 35
-Width = 650
+Width = 850
 Height = 38
 WordWrap = True
 end
@@ -850,6 +859,12 @@ Align = Top
 Height = 32
 Text = 'Open matching source for selected row'
 OnClick = DetailsSourceClick
+end
+object DetailsObjectButton: TButton
+Align = Top
+Height = 32
+Text = 'Open linked object explanation'
+OnClick = DetailsObjectClick
 end
 object DetailsList: TListBox
 Align = Left

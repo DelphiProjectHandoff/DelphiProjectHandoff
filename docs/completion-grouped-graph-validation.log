@@ -1,0 +1,87 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(58) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(59) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(61) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(61) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(63) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(63) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(66) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(94) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+8851 lines, 0.91 seconds, 9526372 bytes code, 344532 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Component details distinguish serialized values from unknown defaults
+PASS 8: Routine details retain statement text and immutable source evidence
+PASS 9: Reverse references retain event evidence
+PASS 10: Collapsed hierarchy shows only ownership roots
+PASS 11: Expanding a module reveals its immediate owned objects
+PASS 12: Collapsing a branch restores root rows without changing the source model
+PASS 13: Hierarchy pagination is applied after branch visibility
+PASS 14: Types grouping retains every captured member while collapsing nodes
+PASS 15: Types grouping retains internal and external relationship counts
+PASS 16: Grouped graph HTML renders directed labeled nodes with member navigation
+PASS 17: Graph labels escape analyzed source text as inert content
+PASS 18: Units grouping retains every captured member while collapsing nodes
+PASS 19: Units grouping retains internal and external relationship counts
+PASS 20: Grouped graph HTML renders directed labeled nodes with member navigation
+PASS 21: Graph labels escape analyzed source text as inert content
+PASS 22: Grouped graph preserves source-projection truncation
+PASS 23: Execution graph is bounded
+PASS 24: Execution graph has static provenance
+PASS 25: Procedure CFG graph is bounded
+PASS 26: Procedure CFG graph has static provenance
+PASS 27: Caller / callee graph is bounded
+PASS 28: Caller / callee graph has static provenance
+PASS 29: Form navigation graph is bounded
+PASS 30: Form navigation graph has static provenance
+PASS 31: Data flow graph is bounded
+PASS 32: Data flow graph has static provenance
+PASS 33: Change impact graph is bounded
+PASS 34: Change impact graph has static provenance
+PASS 35: Design-time screen contains form and button
+PASS 36: Screen reconstruction never claims runtime capture
+PASS 37: FMX Explorer displays canonical cached objects
+PASS 38: IDE-editable expand button opens the selected Explorer branch
+PASS 39: Explorer branch collapse preserves other roots
+PASS 40: FMX choices come from captured project options
+PASS 41: Captured code page is visible in the source settings
+PASS 42: Explorer selection populates source-backed inspector
+PASS 43: Detached source view does not follow cached filesystem paths
+PASS 44: Selected routine populates IDE-editable statement/evidence rows
+PASS 45: Evidence pane labels certainty, rule and source hash
+PASS 46: Detached evidence command retains cached details without following filesystem paths
+PASS 47: Selecting a collapsed graph group opens its member/evidence list
+PASS 48: Group member opens its canonical object explanation
+PASS 49: Whole program command opens startup execution projection
+PASS 50: Whole program projection preserves the inspected object context
+PASS 51: All forms command selects the whole form navigation projection
+PASS 52: All forms graph preserves the inspected object context
+PASS 53: Project data command opens the whole captured data projection
+PASS 54: Project data projection preserves the inspected object context
+PASS 55: Canonical selection can be bookmarked
+PASS 56: Render screen mode Thumbnail
+PASS 57: Render screen mode Fit
+PASS 58: Render screen mode Native
+PASS 59: Render screen mode Zoom 200%
+PASS 60: Render screen mode Full screen
+PASS 61: Cached database opens without analysis
+PASS 62: Cached open verifies available source automatically
+PASS 63: Cached open preserves generation
+PASS 64: Fixture cached open completes within 5 seconds
+PASS 65: Cached document is delivered before background verification completes
+PASS 66: Unavailable source opens safely detached
+PASS 67: Unchanged connected check skips analysis
+PASS 68: Configuration change reassesses unchanged source bytes
+PASS 69: Source modification triggers background reassessment
+PASS 70: Controlled edit changes its input fingerprint
+PASS 71: Updated cached workspace can reopen
+PASS 72: Artifact tampering is rejected
+PASS 73: Idle worker shutdown returns without a queue loop
+PASS WP4: 73 checks

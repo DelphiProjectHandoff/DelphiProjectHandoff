@@ -24,6 +24,7 @@ type
     function TopicHTML(AIndex: Integer): string;
     function FlowSVG(const AKey: string): string;
     function FlowHTML(const AKey: string): string;
+    function GraphHTML(AGraph: TJSONObject): string;
     function TraceHTML(const AKey: string): string;
     class function TopicTitle(AIndex: Integer): string; static;
   end;
@@ -293,6 +294,59 @@ begin
   if Body='' then Body:='<section class="card"><h2>Select a routine</h2><p>A procedure control-flow graph requires a routine with a captured body. Select an operation in Explorer, then return here.</p></section>';
   Result:=Page('Procedure control flow',Body);
 end;
+function TDPHExplanationModel.GraphHTML(AGraph: TJSONObject): string;
+var Nodes,Edges: TJSONArray; Indices: TDictionary<string,Integer>;
+    Links: TObjectDictionary<Integer,TList<Integer>>; Targets: TList<Integer>; Queue: TQueue<Integer>;
+    Depths,Incoming,Slots,X,Y: TArray<Integer>; I,A,B,Width,Height: Integer;
+    V: TJSONValue; Row: TJSONObject; Text: TStringBuilder; LabelText,Kind,Colour,Dash,Href,Tooltip: string;
+  procedure Walk;
+  var Source,Target: Integer; Destinations: TList<Integer>;
+  begin
+    while Queue.Count>0 do begin
+      Source:=Queue.Dequeue; if not Links.TryGetValue(Source,Destinations) then Continue;
+      for Target in Destinations do if Depths[Target]<0 then begin Depths[Target]:=Min(8,Depths[Source]+1); Queue.Enqueue(Target); end;
+    end;
+  end;
+begin
+  Nodes:=AGraph.GetValue<TJSONArray>('nodes'); Edges:=AGraph.GetValue<TJSONArray>('edges');
+  if Nodes.Count=0 then Exit(Page(AGraph.GetValue<string>('kind'),'<section class="card"><h2>No supported graph objects</h2><p>Select an Explorer object or use Whole program, All forms or Project data. Review coverage gaps before inferring that behavior is absent.</p></section>'));
+  Indices:=TDictionary<string,Integer>.Create; Links:=TObjectDictionary<Integer,TList<Integer>>.Create([doOwnsValues]); Queue:=TQueue<Integer>.Create; Text:=TStringBuilder.Create;
+  try
+    SetLength(Depths,Nodes.Count); SetLength(Incoming,Nodes.Count); SetLength(X,Nodes.Count); SetLength(Y,Nodes.Count); SetLength(Slots,9);
+    for I:=0 to Nodes.Count-1 do begin Indices.Add(Nodes.Items[I].GetValue<string>('id'),I); Depths[I]:=-1; end;
+    for V in Edges do begin Row:=V as TJSONObject;
+      if not Indices.TryGetValue(Row.GetValue('from').Value,A) or not Indices.TryGetValue(Row.GetValue('to').Value,B) then Continue;
+      if A=B then Continue; Inc(Incoming[B]);
+      if not Links.TryGetValue(A,Targets) then begin Targets:=TList<Integer>.Create; Links.Add(A,Targets); end; Targets.Add(B);
+    end;
+    for I:=0 to Nodes.Count-1 do if Incoming[I]=0 then begin Depths[I]:=0; Queue.Enqueue(I); end; Walk;
+    for I:=0 to Nodes.Count-1 do if Depths[I]<0 then begin Depths[I]:=0; Queue.Enqueue(I); Walk; end;
+    Width:=700; Height:=160;
+    for I:=0 to Nodes.Count-1 do begin X[I]:=25+Depths[I]*380; Y[I]:=25+Slots[Depths[I]]*150; Inc(Slots[Depths[I]]); Width:=Max(Width,X[I]+330); Height:=Max(Height,Y[I]+130); end;
+    Text.Append('<section class="card"><p><strong>Static relationship graph.</strong> Blue solid arrows show confirmed source facts; orange dashed arrows show qualified facts. Arrow labels describe the relationship, not runtime order. Scroll the diagram to inspect it. Select a node for details.</p>');
+    if AGraph.GetValue<string>('grouping','')<>'' then Text.Append('<p>Grouped by '+Encode(AGraph.GetValue<string>('grouping'))+'. Select a group to inspect its members. Counts cover the bounded captured projection; up to 16 evidence examples accompany each grouped connection.</p>');
+    if AGraph.GetValue<Boolean>('truncated') then Text.Append('<p class="warning">This projection is truncated. Missing nodes or arrows do not prove absence of behavior. Focus an object or change the grouping.</p>');
+    Text.Append('<div style="overflow:auto;max-height:75vh;border:1px solid #dce5ef"><svg xmlns="http://www.w3.org/2000/svg" width="'+IntToStr(Width)+'" height="'+IntToStr(Height)+'" role="img" aria-label="Captured static relationships"><defs><marker id="blueArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="orangeArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
+    for V in Edges do begin Row:=V as TJSONObject;
+      if not Indices.TryGetValue(Row.GetValue('from').Value,A) or not Indices.TryGetValue(Row.GetValue('to').Value,B) then Continue;
+      Kind:=Row.GetValue<string>('kind').Replace('_',' '); Colour:='#146cb4'; Dash:=''; Href:='blueArrow';
+      if Row.GetValue<string>('resolution','')<>'confirmed_static' then begin Colour:='#bc5a00'; Dash:=' stroke-dasharray="6 4"'; Href:='orangeArrow'; end;
+      Tooltip:=Kind+' | '+Row.GetValue<string>('resolution','unverified')+' | '+Row.GetValue<string>('rule','');
+      if Row.GetValue<Integer>('relationship_count',1)>1 then Kind:=Kind+' ('+Row.GetValue<Integer>('relationship_count').ToString+')';
+      Text.Append('<g><title>'+Encode(Tooltip)+'</title><path d="M'+IntToStr(X[A]+280)+' '+IntToStr(Y[A]+50)+' C'+IntToStr(X[A]+330)+' '+IntToStr(Y[A]+50)+' '+IntToStr(X[B]-50)+' '+IntToStr(Y[B]+50)+' '+IntToStr(X[B])+' '+IntToStr(Y[B]+50)+'" fill="none" stroke="'+Colour+'" stroke-width="1.5"'+Dash+' marker-end="url(#'+Href+')"/><text x="'+IntToStr((X[A]+280+X[B]) div 2)+'" y="'+IntToStr((Y[A]+Y[B]) div 2+38)+'" font-size="11" fill="'+Colour+'">'+Encode(Kind)+'</text></g>');
+    end;
+    for I:=0 to Nodes.Count-1 do begin Row:=Nodes.Items[I] as TJSONObject; LabelText:=Row.GetValue<string>('label'); Kind:=Row.GetValue<string>('kind','object');
+      Href:='#s_'+THashSHA2.GetHashString(Row.GetValue('id').Value);
+      if Kind='group' then begin Href:='#g_'+THashSHA2.GetHashString(Row.GetValue('id').Value); Kind:=Row.GetValue<string>('grouping')+' group | '+Row.GetValue<Integer>('member_count').ToString+' members'; end;
+      Text.Append('<a href="'+Href+'"><g><title>'+Encode(LabelText)+'</title><rect x="'+IntToStr(X[I])+'" y="'+IntToStr(Y[I])+'" width="280" height="100" rx="8" fill="#eaf3fc" stroke="#146cb4"/><text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+20)+'" font-size="11" fill="#146cb4">'+Encode(Kind)+'</text><text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+44)+'" font-size="14" font-weight="bold" fill="#20364a">'+Encode(Copy(LabelText,1,32))+'</text><text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+65)+'" font-size="13" fill="#20364a">'+Encode(Copy(LabelText,33,32))+'</text>');
+      if Row.GetValue<Integer>('member_count',0)>0 then LabelText:=Row.GetValue<Integer>('internal_relationships',0).ToString+' internal source relationships'
+      else LabelText:=Row.GetValue<string>('range.source','')+':'+Row.GetValue<Integer>('range.line',0).ToString;
+      Text.Append('<text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+87)+'" font-size="11" fill="#52697c">'+Encode(Copy(LabelText,1,42))+'</text></g></a>');
+    end;
+    Text.Append('</svg></div></section>'); Result:=Page(AGraph.GetValue<string>('kind'),Text.ToString);
+  finally Text.Free; Queue.Free; Links.Free; Indices.Free; end;
+end;
+
 function TDPHExplanationModel.Page(const ATitle,ABody: string): string;
 begin
   Result:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; base-uri ''none''"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+

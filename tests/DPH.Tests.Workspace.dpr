@@ -1,20 +1,24 @@
 program DPH.Tests.Workspace;
 {$APPTYPE CONSOLE}
-uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagnostics,
+uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagnostics, System.UITypes,
   System.Hash, System.Types, FMX.Forms, FMX.Graphics, Winapi.ActiveX,
   DPH.UI.Main in '..\DPH.UI.Main.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas',
   DPH.Workspace.Worker in '..\DPH.Workspace.Worker.pas',
   DPH.Workspace.Screen in '..\DPH.Workspace.Screen.pas',
+  DPH.Workspace.Graphs in '..\DPH.Workspace.Graphs.pas',
+  DPH.Publish.Model in '..\DPH.Publish.Model.pas',
+  DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
   DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',
   DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas';
 var Root,Work,Fixture,Path,Key,ComponentKey,Kind: string; ID: TGUID; Checks: Integer;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
-    View: TDPHWorkspaceView; Rows: TJSONArray; J,Screen: TJSONObject; V: TJSONValue;
+    View: TDPHWorkspaceView; Rows: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
     Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation: Int64;
-    Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount: Integer;
+    Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
+    Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
 procedure Check(OK: Boolean; const MessageText: string);
 begin if not OK then raise Exception.Create('FAIL '+MessageText); Inc(Checks); Writeln('PASS ',Checks,': ',MessageText); end;
 function WaitResponse: TDPHWorkspaceResponse;
@@ -72,6 +76,33 @@ begin
           finally Rows.Free; end;
           Rows:=View.Hierarchy([]); try Check(Rows.Count=RootCount,'Collapsing a branch restores root rows without changing the source model'); finally Rows.Free; end;
           Rows:=View.Hierarchy([RootKey],1,2); try Check(Rows.Count=2,'Hierarchy pagination is applied after branch visibility'); finally Rows.Free; end;
+          BaseGraph:=View.Graph('Execution',Key,1000);
+          try for Kind in ['Types','Units'] do begin
+            GroupedGraph:=TDPHGraphProjection.Group(View,BaseGraph,Kind);
+            try
+              Members:=0; Relationships:=0;
+              for V in GroupedGraph.GetValue<TJSONArray>('nodes') do begin Inc(Members,V.GetValue<Integer>('member_count')); Inc(Relationships,V.GetValue<Integer>('internal_relationships')); end;
+              for V in GroupedGraph.GetValue<TJSONArray>('edges') do Inc(Relationships,V.GetValue<Integer>('relationship_count'));
+              Check((Members=BaseGraph.GetValue<TJSONArray>('nodes').Count) and (GroupedGraph.GetValue<TJSONArray>('nodes').Count<Members),Kind+' grouping retains every captured member while collapsing nodes');
+              Check(Relationships=BaseGraph.GetValue<TJSONArray>('edges').Count,Kind+' grouping retains internal and external relationship counts');
+              Facts:=TDPHDocumentModel.Create(View,nil,[],[],True,not View.Document.GetValue<Boolean>('analysis_complete'),nil,True);
+              try Explanation:=TDPHExplanationModel.Create(Facts.Document);
+                try
+                  HTML:=Explanation.GraphHTML(GroupedGraph);
+                  Check(HTML.Contains('<svg') and HTML.Contains('#g_') and HTML.Contains('marker-end'),'Grouped graph HTML renders directed labeled nodes with member navigation');
+                  TFile.WriteAllText(TPath.Combine(Work,'grouped-graph.html'),HTML,TEncoding.UTF8);
+                  Row:=(GroupedGraph.GetValue<TJSONArray>('nodes').Items[0] as TJSONObject);
+                  Row.RemovePair('label').Free; Row.AddPair('label','<script>alert(1)</script>');
+                  HTML:=Explanation.GraphHTML(GroupedGraph);
+                  Check(HTML.Contains('&lt;script&gt;') and not HTML.Contains('<script>'),'Graph labels escape analyzed source text as inert content');
+                finally Explanation.Free; end;
+              finally Facts.Free; end;
+            finally GroupedGraph.Free; end;
+          end; finally BaseGraph.Free; end;
+          BaseGraph:=View.Graph('Execution',Key,1);
+          try GroupedGraph:=TDPHGraphProjection.Group(View,BaseGraph,'Units');
+            try Check(GroupedGraph.GetValue<Boolean>('truncated'),'Grouped graph preserves source-projection truncation'); finally GroupedGraph.Free; end;
+          finally BaseGraph.Free; end;
           for Kind in ['Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact'] do begin
             J:=View.Graph(Kind,Key,5); try Check(J.GetValue<TJSONArray>('nodes').Count<=5,Kind+' graph is bounded'); Check(not J.GetValue<Boolean>('runtime_trace'),Kind+' graph has static provenance'); finally J.Free; end;
           end;
@@ -95,6 +126,12 @@ begin
             Check(Pos('SHA256:',Form.DetailsMemo.Text)>0,'Evidence pane labels certainty, rule and source hash');
             Form.WorkspaceTabs.ActiveTab:=Form.DetailsTab; Form.DetailsSourceClick(nil);
             Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and (Pos('detached',Form.DetailsMemo.Text)>0),'Detached evidence command retains cached details without following filesystem paths');
+            Form.GraphGroupingCombo.ItemIndex:=Form.GraphGroupingCombo.Items.IndexOf('Units'); Form.ViewChange(Form.GraphGroupingCombo);
+            Form.GraphMouseDown(Form.GraphPaint,TMouseButton.mbLeft,[],20,20);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and (Form.DetailsList.Items.Count>0) and (Pos('Group:',Form.DetailsMemo.Text)>0),'Selecting a collapsed graph group opens its member/evidence list');
+            Form.DetailsList.ItemIndex:=0; Form.DetailsObjectClick(nil);
+            Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Group member opens its canonical object explanation');
+            Form.GraphGroupingCombo.ItemIndex:=0; Form.SearchEdit.Text:='Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
             Form.WholeProgramGraphClick(nil);
             Check((Form.GraphCombo.ItemIndex=0) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Whole program command opens startup execution projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Whole program projection preserves the inspected object context');

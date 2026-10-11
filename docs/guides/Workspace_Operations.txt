@@ -162,6 +162,14 @@ input or candidate function producer. Call-argument links identify a possible
 formal binding; aliases, runtime values and calling context are not proven.
 Graph commands scroll horizontally when the available toolbar width is small.
 
+Grouped relationships
+Choose Graphs, choose a graph type, then select Objects, Types or Units in the
+grouping list. Procedure CFG retains statement-level nodes. Click a group to
+open Details with its members and sampled relationship evidence. Select a
+member and click Explain selected object to open its canonical explanation.
+Counts describe the captured projection; a truncation warning means additional
+objects were omitted. Arrow labels and certainty describe static evidence.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

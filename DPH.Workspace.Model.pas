@@ -201,6 +201,7 @@ begin
       CopyRow:=Row.Clone as TJSONObject; Result.AddElement(CopyRow);
       if MatchText(Row.GetValue<string>('kind'),['entry','normal_exit','exception_exit']) then CopyRow.AddPair('detail_kind','flow boundary')
       else CopyRow.AddPair('detail_kind','statement'); CopyRow.AddPair('title',Row.GetValue<string>('kind'));
+      CopyRow.AddPair('object_key',AKey);
       CopyRow.AddPair('text',Row.GetValue<string>('expression')); CopyRow.AddPair('resolution','inferred');
       CopyRow.AddPair('rule','captured_control_flow_not_runtime_trace'); if Result.Count>=1000 then Exit;
     end;
@@ -208,6 +209,7 @@ begin
     try for V in PropertiesRows do begin
       Row:=V as TJSONObject; CopyRow:=TJSONObject.Create; Result.AddElement(CopyRow);
       CopyRow.AddPair('detail_kind','property'); CopyRow.AddPair('title',Row.GetValue<string>('name'));
+      CopyRow.AddPair('object_key',AKey);
       CopyRow.AddPair('text',Row.GetValue<string>('value')); CopyRow.AddPair('range',Row.Clone as TJSONObject);
       CopyRow.AddPair('resolution','confirmed_static'); CopyRow.AddPair('rule','serialized_override_not_framework_default');
       FileRow:=SourceFile(Row.GetValue<string>('source')); if FileRow<>nil then CopyRow.AddPair('source_hash',FileRow.GetValue<string>('sha256'));
@@ -217,6 +219,7 @@ begin
       Row:=V as TJSONObject; if Row.GetValue<string>('from')<>AKey then Continue;
       CopyRow:=Row.Clone as TJSONObject; Result.AddElement(CopyRow);
       CopyRow.AddPair('detail_kind','relationship'); CopyRow.AddPair('title',Row.GetValue<string>('kind'));
+      CopyRow.AddPair('object_key',Row.GetValue<string>('to',AKey));
       CopyRow.AddPair('text',Row.GetValue<string>('label')); if Result.Count>=1000 then Exit;
     end;
     except Result.Free; raise; end;
