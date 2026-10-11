@@ -174,6 +174,157 @@ ENGINEERING = [
 'On the recorded Core i7-1165G7 host with eight logical processors and about 16 GB RAM, the pinned reference pipeline measured 82.6 seconds for full capture, 2.87 seconds for cached opening and 75.9 seconds for incremental reassessment. The message-pump maximum gap was 64 ms. Peak test-process working set was about 1.21 GiB, including repeated captures, JSON cloning and FMX/WebView2 tests. These are baseline measurements, not agreed hardware-independent budgets. Large syntax-cache fallback and conservative semantic recomputation explain the modest reassessment speedup. Formal acceptance retains independent complex-flow review, missing business/user content, AC-25 and performance-budget agreement as outstanding.'
 ])]
 
+# Keep the operating instructions aligned with the design-time controls and
+# persistence contracts. These chapters describe behavior, not inferred intent.
+USER.extend([
+('Manage the project catalog', [
+'Choose Projects in the page selector at the upper right. Refresh the catalog, select the intended database and open it. Missing entries identify unavailable paths; they do not mean the project or its authored history was deleted. Remove an entry only when you want to remove that catalog reference. Catalog removal does not delete the database or managed evidence.',
+'Use one database per analyzed application. Keep its adjacent .views directory with it. A database is not the source project: DPH can inspect cached facts when the source is unavailable, but current-source review and source navigation require attached matching source. When the original entry is available, cached opening displays captured facts first and then verifies that source in the background.'
+]),
+('Measure coverage before relying on an explanation', [
+'Choose Coverage in the page selector. Read each numerator, denominator and definition separately. Fingerprinted inventory measures acquired inputs; parsed files, complete IR and recognized tokens measure supported parsing. Confirmed and unresolved relationships measure the extracted graph. Serialized event coverage applies to captured On-prefixed properties. Evidence coverage applies to source-located relationships with derivation rules.',
+'Select a diagnostic and inspect its source evidence. A missing unit, ambiguous overload or unsupported construct can change what a route means. None of these percentages measures business understanding. Verified authored revisions and pending review tasks are reported separately; a zero task count is not proof that all necessary documentation exists.',
+'The selected application is not built or tested merely because DPH finished analysis. Read explicit unknown build and documentation approval states before sharing a handoff. Record the actual independent test procedure and result as attributed knowledge.'
+]),
+('Search across the captured project', [
+'Choose Project search. Enter a meaningful term, select the desired kind filter and click Search. Results contain excerpts from captured object metadata, flow evidence and authored knowledge. Select a result to inspect it; use next or previous result pages when offered. This search is distinct from the narrower Explorer name and signature filter.',
+'Search uses SQLite FTS5 when available and a word-index fallback otherwise. It operates on the captured generation. A word absent from the index is not evidence that its behavior is absent. Reassess changed source before relying on old results.'
+]),
+('Read a routine as a beginner', [
+'Select a routine in Explorer and choose Explain. Read its declared contract, source-author comments, incoming callers and outgoing interactions. Expand the exact-evidence disclosure for a connection you do not understand. A comment records what its source author wrote; it does not independently establish the running behavior.',
+'Scroll to SOURCE WALKTHROUGH. Each source point includes the captured expression, a plain explanation and possible next paths with destination lines. For an if, inspect both true and false destinations. For while, inspect the condition before the body. For repeat, the body runs before its final test, and false returns toward the body. For for, inspect the iteration and exit paths without assuming actual bounds or collection contents.',
+'Follow early return, break and continue through any intervening finally cleanup. Cleanup points may appear several times to preserve different pending transfers. An exception path represents a possibility; it does not establish that a particular run raised an exception. The walkthrough is arranged by source location and is not a chronological execution recording.',
+'Complete CHECK YOUR UNDERSTANDING by choosing an actual captured condition and tracing both outcomes to a return, loop or exception boundary. Compare the related reads and writes. The lesson shows up to 60 source points and eight next paths per point, with explicit omitted counts. Use Source and Procedure CFG for the remainder.'
+]),
+('Choose graph scope and grouping', [
+'Choose Graphs after selecting an object. Execution follows supported startup, event, call and asynchronous connections; Caller / callee isolates calls; Form navigation shows qualified form actions; Data flow shows producers, consumers and possible effects; Change impact follows possible dependencies. Procedure CFG follows captured statement edges within a routine.',
+'Use Whole program, All forms or Project data when you need a broad starting point. Choose object, type or unit grouping to reduce a large relationship graph. Select a group to inspect its members and bounded evidence examples. A count describes the captured projection; it does not count observed executions. Procedure CFG retains individual control nodes.',
+'Read arrow labels and certainty before interpreting a route. A unit import is a dependency, not a call. An asynchronous start, callback dispatch, wait or cancellation request describes a source site; it does not prove successful completion, thread timing or termination. Narrow a truncated graph rather than treating missing nodes as proof of absence.'
+]),
+('Link authored sections to exact evidence', [
+'In Knowledge, select the document kind and intended audience before saving. The section ID and revision label identify the stable record and immutable revision. Editing creates a new pending revision; it does not overwrite a previously reviewed statement.',
+'Choose Knowledge links. Select entity, relationship, evidence, screenshot or section, enter a target filter and refresh candidates. Select the intended target and the role explains, cites, depends_on or illustrates. Add the link, then return to Knowledge and click Save. Removing a link is also an unsaved edit until Save. A section can contain up to 64 explicit links.',
+'Open a saved target to inspect its object explanation, normalized relationship or evidence details, imported PNG, or exact historical section body. A section link pins a particular revision. If its target is updated, explicitly relink and save after reviewing the new content. DPH does not silently transfer your approval to a newer target.',
+'Export applies audience and source scope. Out-of-scope links and backlinks are omitted with counts. An audience filter is a document organization choice; it is not a confidentiality boundary. Use explicit exclusions and inspect the resulting bundle before disclosure.'
+]),
+('Review changed knowledge against evidence', [
+'Choose Review tasks and refresh. Select a task to read its original trigger, prior authored text and current revision. Compare the BEFORE and AFTER panes for source presence, signature, type, hash and configuration. Drag their divider to resize them. An unavailable baseline is explicitly missing, not reconstructed from guesses.',
+'Select an affected object and inspect Change impact or open its knowledge record. Save an authored correction before returning to task review. Enter the named reviewer and choose Verify selected only after checking the exact current content. Choose Retire selected for an obsolete section whose history must be retained.',
+'Review requires attached current-source verification and the expected revision. A changed configuration, source hash, absent entity or obsolete rich-link target can reject approval. Resolve the underlying mismatch, refresh, and review again. Review changes the authored record state; it does not make a partial analyzer capture complete.'
+]),
+('Answer focused author questions', [
+'Choose Author questions. DPH derives bounded questions from uncertain relationships, diagnostics, asynchronous work, SQL and output contracts, and missing reviewed user or build procedures. Select a question and inspect its evidence before contacting its author. Up to 100 questions are shown, with at most 20 per category.',
+'Choose Record author answer. In Knowledge, enter the named author and their actual response after the Answer marker, then Save. An empty answer is rejected. The captured question remains associated with that record. Saving leaves it pending review; only named verification with no pending task hides that exact question.',
+'Changed evidence can produce another question or reopen review. Similar wording does not establish identical evidence. Do not invent business rationale, runtime outcomes or operating procedures just to clear the list.'
+]),
+('Preserve saved runtime observations', [
+'Select an optional object link in Explorer, then choose Runtime observations. Enter Contributor and Run, environment and outcome description. Include the actual application build, run date, platform, action, expected result and observed result. Click Select saved log and import, then choose an existing UTF-8 .txt, .log or .json extract up to 256 KiB.',
+'Select the record to read its attribution, captured generation, linked source SHA256, original-file SHA256 and saved text. The text is displayed literally. File order and timestamps remain contributor claims; DPH did not run the application or infer causal order. Invalid UTF-8, empty extracts and damaged managed files are rejected.',
+'Use Explain linked current object to investigate a current-generation link. Historical and unlinked records retain their text without assuming a current identity. After reopening the database, choose Refresh saved records. The newest 50 are displayed. Managed portable backups include observations; publication does not automatically share log contents.'
+]),
+('Retain captures and review rename continuity', [
+'Choose Database tools. Preview the retention policy before applying the desired recent-capture count. Pin an important generation with a release label and named reviewer before pruning disposable cached views. Baseline, current head, recent captures and generations referenced by review or contributed evidence are protected.',
+'Retention removes eligible derived workspace files; immutable source facts and authored history remain. It is not a command to erase the project database. Keep a recoverable copy using the explicit backup workflow before a major catalog or storage operation when needed.',
+'If a linked object disappeared after a rename, open the continuity workflow, filter proposals and compare old and new identities. Enter a named reviewer before approving a justified mapping. Approval preserves historical links, appends an authored revision and requests review. It does not prove semantic equivalence from name similarity.'
+]),
+('Back up and restore a complete database', [
+'Choose Database tools and run Integrity. Read the result before relying on the database. For an explicit portable backup, choose a new .dphdb destination outside the analyzed source. The command saves a consistent SQLite copy, referenced managed views, screenshots and observations, and a SHA256 backup manifest.',
+'Keep the backup database and its adjacent .views folder together. Choose Restore to new database and provide a fresh destination. DPH verifies filenames, manifest hashes, database integrity and managed artifacts, and refuses to overwrite an existing database. Open the restored copy and confirm the intended project, generation and authored history.',
+'The suspended D: development-backup instruction remains in effect. Explicit database backups requested through this workflow are separate operations. Git continues to preserve application source changes.'
+]),
+('Run the application and its checks', [
+'To run the current source build, open C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\Win32\\Debug in File Explorer. Double-click DelphiProjectHandoff.exe. Keep the deployed migrations and help folders and the Win32 WebView2Loader.dll supplied by the build beside the executable. Select a different Delphi application to analyze; DPH rejects itself.',
+'For a first check, choose the intended Debug or Release and Win32 or Win64 analysis configuration, then Attach project. Save its database outside that selected source. Wait for the activity line to finish, select a recognizable form event, and follow its handler through Explain, Source and Graphs. Read Coverage before drawing conclusions. Close and reopen its saved database and confirm the same captured identity and notes.',
+'For developer regression checks, open an elevated Command Prompt, run cd /d "C:\\New Delphi Projects\\Delphi Project Handoff", then run tools\\validate-completion-wp1.cmd. A nonzero exit or FAIL is a failure. Run tools\\build-learning.cmd for source lessons and real WebView2 checks, tools\\build-wp1.cmd for storage and migrations, and tools\\build-wp6.cmd for publishing. These tests create disposable fixtures, not user projects.',
+'Automated checks cannot substitute for an independent beginner explaining an actual program. Record the participant, project, chosen event, identified branches and effects, unresolved questions and outcome. Do not mark the first-time-user acceptance gate passed without that evidence.'
+])])
+
+ENGINEERING.extend([
+('Current semantic cache and extended evidence', [
+'The current analyzers are DPH-WP2-5 and DPH-WP3-11 with IR and semantic schema 1. Routine semantic cache reuse is bounded to 512 records and 32 MiB. Binding context hashes invalidate affected reuse. Synthetic startup and postprocessing occur after reusable routine facts, preserving their relationships to current identities. This is bounded evidence reuse; it is not a proof of an optimal incremental solver.',
+'Supported extensions include typed aliases, inheritance and accessors, startup entry and unit phases, case/goto/with control flow, asynchronous operation handles and captures, cancellation and event waits, formal arguments and result producers, static SQL projection, output-writer lineage, lifetime and exception relationships, explicit test-call links, and qualified form navigation. Every relationship retains resolution, source range/hash and rule. Unsupported grammar, aliases and dynamic behavior remain diagnosed or qualified.'
+]),
+('Current schema and authored document contracts', [
+'Schema 7 uses checksum-verified migrations 001 through 007. document_section_versions associates immutable authored revisions with stable section ID, document kind, audience and source generation. knowledge_revision_links preserves ordinal, target kind/identity, captured generation, role and label. knowledge_questions preserves the exact deterministic question identity and captured JSON associated with a response record.',
+'SaveKnowledge appends immutable text and link snapshots. Empty LinksJSON preserves the prior snapshot; an explicit JSON array replaces it. Entity, relationship and evidence targets remain tied to generation identities; screenshot targets reference managed artifacts; section targets pin an exact knowledge revision. Current reverse section references open review when their targets change. Verify rejects obsolete rich-link generations or target revisions.',
+'Question identity hashes kind, entity key, range, source hash, prompt, rule and context fingerprint. Generation is retained separately, allowing unchanged evidence to keep its question identity across captures. An answer needs actual text after Answer. Only verified content with no pending task suppresses an exact question. Export converts question metadata to typed JSON before recursive redaction.'
+]),
+('Native review and learning projections', [
+'ReviewTasks provides bounded pending tasks, prior and current authored text, baseline/current configurations, affected object signatures, types, source hashes and relationship comparisons. A missing baseline is reported. Native controls invoke existing optimistic-revision and connected-source review checks; they do not create a separate approval authority.',
+'RoutineLesson uses the routine CFG and an indexed outgoing-edge lookup. It explains source points, actual expressions and destination lines, with explicit loop, branch, early-return, cleanup and exceptional semantics. The same lesson is used by ObjectText and ObjectHTML; exported document prose and offline object pages therefore share its source interpretation. Its bounds are 60 points and eight outgoing paths per point.',
+'Preview HTML files have immutable content-hashed names, tracked for cleanup. BrowserPolicy allows them only in the owned preview directory when explicitly enabled. This avoids rewriting a file held by WebView2. Arbitrary filenames and external navigation remain blocked. Native browser tests render the app pages; they do not execute the analyzed application.'
+]),
+('Saved observation persistence', [
+'ImportObservation accepts explicitly selected UTF-8 text extracts up to 256 KiB with named contributor and run context. It checks generation and optional entity existence, captures original byte SHA256 and linked file-revision SHA256, and stores content plus attribution in a managed hash-named JSON artifact of kind runtime_observation. No schema migration is needed for this artifact kind.',
+'ObservationsJSON verifies managed identity, size, checksum and generation before returning the newest 50 records. The response owns the array until PollTimer transfers it to the form. LoadView clears old observation rows; historical records cannot navigate as current. Saved text stays in a native read-only memo rather than an executable browser surface.',
+'ManagedArtifactPaths includes observations for explicit portable backup. Retention protects their associated captured views. Publication currently omits observations rather than automatically disclose potentially sensitive logs. Contributor claims do not set runtime_observed on static analysis or create an automated causal trace.'
+]),
+('Regression commands and evidence', [
+'Run commands from the project root in an elevated Command Prompt so RAD Studio can read its environment. tools\\build-wp0.cmd builds the app and checks FMX bindings. tools\\validate-completion-wp1.cmd serially builds app, catalog, lifecycle, workspace, knowledge, selection and startup tests, then removes recognized disposable fixture directories.',
+'Run tools\\build-wp1.cmd for 46 storage checks, tools\\build-wp2.cmd no-report for discovery/resource checks, and tools\\build-wp3.cmd to compile semantic tests. Then explicitly run bin\\Win32\\Debug\\DPH.Tests.Semantics.exe "C:\\New Delphi Projects\\Delphi Project Handoff"; the build script alone does not run semantic assertions.',
+'tools\\build-learning.cmd exercises managed images, cached supplemental-evidence recovery, actual WebView2 rendering, source walkthroughs and collapsed CFGs. --no-ui isolates deterministic checks and is not native acceptance. tools\\build-wp6.cmd checks canonical scope, redaction, link integrity, publication and translation protection. Use exact log files and current input hashes for claims; historical reports are not automatically refreshed acceptance.',
+'A native-learning test once dereferenced an absent image array on a later background-verification response. It now checks the initial cached document/image response directly. Source attachment preserves supplemental-image warnings. Inspection disproved a proposed constructor race, and no worker thread-start change remains.'
+]),
+('Rebuild and inspect these manuals', [
+'tools\\build-guides.py generates the two application manuals from maintained operating content and current implementation hashes. Use the approved Python executable C:\\Users\\marti\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe. tools\\render-guides.ps1 renders with LibreOffice, populates cached page numbers in editable TOC fields, renders again and writes companion PDFs under docs\\pdf.',
+'Inspect every final page PNG under bin\\guide-qa for clipping, broken headings, unreadable code and TOC page numbers before delivering a guide. Rendered PNGs are QA outputs, not a mock application UI. Actual included interface images are identified by their capture source and fixture; they do not establish runtime behavior of a selected project.',
+'Regenerate manuals after later translation, handoff-contract or source-navigation changes. The source evidence appendix records inspected file hashes, while docs\\guide-source-validation.json provides a machine-readable manifest. A successful generator run alone is not proof that the writing, current behavior or layout is correct.'
+])])
+
+# Correct historical statements in the original guide text instead of leaving
+# contradictory behavior beside the new chapters.
+revisions = {
+    'Choose Project search.': 'Choose Search project in the upper-right page selector.',
+    'click the central Explain tab for behavior or Source for code.': 'choose Explain in the upper-right page selector for behavior or Source for code.',
+    'Click the central Explain tab for behavior or Source for code.': 'Choose Explain in the upper-right page selector for behavior or Source for code.',
+    'click the Learn the project tab in the centre': 'choose Learn the project in the upper-right page selector',
+    'Open the central Explain tab': 'Choose Explain in the upper-right page selector',
+    'Learning and help retain the index-only policy.': 'Help retains the index-only policy; learning explicitly permits content-hashed pages only inside its owned preview directory.',
+    'Double-click an object in the far-left list to read': 'Click an object in the far-left list to read',
+    'Double-click an Explorer object or follow a learning link': 'Click an Explorer object or follow a learning link',
+    'Double-click an object in the far-left Explorer list to select it.': 'Click an object in the far-left Explorer list to select it. Double-click a [+] or [-] branch to expand or collapse its children.',
+    'the local user profile and reopens detached.': 'the local user profile; reopening shows cached facts before source availability is checked.',
+    'use next or previous result pages when offered.': 'use Next 50 results when more matches are available.',
+    'run Integrity.': 'click Check integrity.',
+    'choose Restore to new database': 'choose Restore to new file',
+    'Choose Restore to new database': 'Choose Restore to new file',
+    'Cached opening does not start a source scan. The cache opens detached until you explicitly attach its source project.': 'Cached facts are displayed before source verification. When the captured entry is available, DPH reconnects and verifies in the background; otherwise the cache remains detached.',
+    'Bookmarks belong to the captured generation and reset when a new generation is loaded.': 'Same-project reassessment retains surviving bookmarks, history, expanded nodes and filters; missing identities are pruned. A different project resets that navigation state.',
+    'Zoom displays 200 percent, and Full screen uses the larger window. The Full screen button toggles the DPH window size.': 'Custom zoom ranges from 25 to 400 percent and updates the scrolling extent. Full screen hides the surrounding workspace panes; Exit full screen or Escape restores them.',
+    'Deploy the executable, migrations 001_foundation.sql and 002_constraints.sql,': 'Deploy the executable, all seven immutable migration files,',
+    'analyzer DPH-WP2-1': 'analyzer DPH-WP2-5',
+    'analyzer DPH-WP3-1.': 'analyzer DPH-WP3-11.',
+    'Schema 2 is created through two checksum-verified migrations.': 'Schema 7 is created through seven checksum-verified migrations.',
+    'The default is detached until explicit source attachment.': 'Cached facts are delivered before automatic verification when the original source entry is available; unavailable source remains detached.',
+    'Syntax cache reuse is bounded; semantic recomputation is currently conservative rather than a claim of a minimal incremental semantic solver.': 'Syntax and routine semantic caches are bounded and binding-context aware; conservative postprocessing remains separate from reused routine facts.',
+    'with bookmarks reset on a new captured generation.': 'with surviving same-project bookmarks retained across reassessment.',
+    'Affected-only semantic recomputation, broader external-definition interpretation and retention/continuity controls remain incomplete.': 'The implementation tracker records expanded semantic reuse, resource interpretation and retention/continuity controls. Their documented bounds still apply.',
+    'TDPHAtlasAdapter is deliberately unconfigured because the exact Atlas product, transport, licensing and confidentiality have not been selected.': 'The owner identified the local VCL2FMXConverterV7 DAT framework as the translation reference. At this manual revision, its integration is pending and TDPHAtlasAdapter remains unconfigured.',
+}
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        for old, new in revisions.items():
+            paragraphs = [paragraph.replace(old, new) for paragraph in paragraphs]
+        chapters[index] = (heading, paragraphs)
+
+user_order = [
+    'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
+    'Attach a source project', 'Open cached work', 'Manage the project catalog',
+    'Learn the selected project', 'Measure coverage before relying on an explanation',
+    'Explore and search', 'Search across the captured project',
+    'Read source and graph evidence', 'Choose graph scope and grouping',
+    'Read a routine as a beginner', 'Inspect screens', 'Import actual screenshot evidence',
+    'Write attributed knowledge', 'Link authored sections to exact evidence',
+    'Review and retire knowledge', 'Review changed knowledge against evidence',
+    'Answer focused author questions', 'Preserve saved runtime observations',
+    'Retain captures and review rename continuity', 'Back up and restore a complete database',
+    'Publish manuals and handoffs', 'Validate and preserve exports',
+    'Troubleshoot common states', 'Practice a maintenance handoff',
+]
+if set(user_order) != {heading for heading, _ in USER}:
+    raise RuntimeError('User-guide outline does not cover every maintained chapter')
+USER.sort(key=lambda chapter: user_order.index(chapter[0]))
+
 def field(run, kind, text=None):
     element = OxmlElement('w:fldChar')
     element.set(qn('w:fldCharType'), kind)
@@ -214,8 +365,10 @@ def build(filename, title, audience, sections):
     field(doc.add_paragraph().add_run(), 'begin', ' TOC \\o "1-1" \\h \\z \\u ')
     field(doc.add_paragraph().add_run(), 'separate')
     for heading, _ in sections:
-        doc.add_paragraph(heading)
-    doc.add_paragraph('Source and revision evidence')
+        entry = doc.add_paragraph(heading)
+        entry.paragraph_format.space_after = Pt(3)
+    entry = doc.add_paragraph('Source and revision evidence')
+    entry.paragraph_format.space_after = Pt(3)
     field(doc.add_paragraph().add_run(), 'end')
     doc.add_page_break()
     for heading, paragraphs in sections:
@@ -228,7 +381,7 @@ def build(filename, title, audience, sections):
             doc.add_paragraph('These images are direct WebView2 captures from the running DPH test application, not proposed interface mockups. They show the visible portion of scrollable pages.')
             for image_name, caption in [
                 ('rework-getting-started.png', 'Getting started: first-launch education before a project is loaded.'),
-                ('rework-reference-trace.png', 'Explain: actual event/callback reachability in the pinned converter, retaining certainty and evidence.')
+                ('rework-explain-browser.png', 'Explain: direct WebView2 capture for the synthetic semantics fixture. This is DPH rendering captured source evidence, not a screenshot of the analyzed application running.')
             ]:
                 image_path = ROOT / 'docs' / image_name
                 if not image_path.exists():
@@ -278,5 +431,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 2, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 3, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

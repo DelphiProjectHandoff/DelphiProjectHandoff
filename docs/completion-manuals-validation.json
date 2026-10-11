@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-11",
+  "guide_version": 3,
+  "source_hashes_verified": 32,
+  "engineering_pdf_pages": 12,
+  "user_pdf_pages": 15,
+  "all_rendered_pages_visually_inspected": true,
+  "editable_docx_toc_fields_preserved": true,
+  "toc_page_numbers_populated_from_rendered_body_headings": true,
+  "human_comprehension_acceptance": "pending",
+  "later_feature_changes_require_regeneration": true
+}

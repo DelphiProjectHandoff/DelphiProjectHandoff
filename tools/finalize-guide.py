@@ -15,7 +15,9 @@ ET.register_namespace('w', W[1:-1])
 with ZipFile(args.docx) as archive:
     parts = {info.filename: archive.read(info.filename) for info in archive.infolist()}
 root = ET.fromstring(parts['word/document.xml'])
-pages = [re.sub(r'\s+', ' ', (p.extract_text() or '')).casefold() for p in PdfReader(args.pdf).pages]
+pages = [[re.sub(r'\s+', ' ', line).strip().casefold()
+          for line in (p.extract_text() or '').splitlines()]
+         for p in PdfReader(args.pdf).pages]
 inside = False
 separated = False
 entries = []
@@ -39,12 +41,21 @@ for paragraph in root.iter(W+'p'):
     # Support updating the same cache again after a second render.
     heading = re.sub(r'\s+\d+$', '', heading).strip()
     lookup = re.sub(r'\s+', ' ', heading).casefold()
-    page = next((i+1 for i, text in enumerate(pages) if i >= 2 and lookup in text), None)
+    # TOC rows contain a leader and page number. Match a whole body-heading line
+    # so a continued contents page cannot masquerade as the chapter itself.
+    page = next((i+1 for i, lines in enumerate(pages) if i >= 2 and lookup in lines), None)
     if page is None:
         raise RuntimeError(f'TOC heading absent from body PDF: {heading}')
+    # Keep the authored spacing when replacing the field result. Dropping pPr
+    # can move the TOC onto another page and invalidate every cached page number.
+    props = paragraph.find(W+'pPr')
     for child in list(paragraph):
-        paragraph.remove(child)
-    props = ET.SubElement(paragraph, W+'pPr')
+        if child is not props:
+            paragraph.remove(child)
+    if props is None:
+        props = ET.SubElement(paragraph, W+'pPr')
+    for existing in list(props.findall(W+'tabs')):
+        props.remove(existing)
     tabs = ET.SubElement(props, W+'tabs')
     ET.SubElement(tabs, W+'tab', {W+'val': 'right', W+'leader': 'dot', W+'pos': '9360'})
     run = ET.SubElement(paragraph, W+'r')

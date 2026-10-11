@@ -208,7 +208,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     pass (59 knowledge checks total), plus workspace/selection regression suite.
     Logs remain local and are not automatically included in publication. No live
     instrumentation, target execution or production connection was introduced.
-6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
+6.1 Expanded: actual operating and engineering manuals rebuilt from 32 hashed
+    implementation sources. User guide is 15 pages; engineering guide is 12.
+    Both editable DOCX and companion PDF include dated title pages and editable
+    TOCs with rendered page numbers. Every rendered page was visually inspected.
+    Directions cover current learning, review, runtime observations, publication,
+    troubleshooting and explicit build/test commands. Selected-program business
+    procedures still require attributed author input. Regenerate after later work.
+6.2-6.7 Pending: review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
