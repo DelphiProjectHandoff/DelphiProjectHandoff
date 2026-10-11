@@ -103,6 +103,8 @@ begin
             else if CharInSet(C,['}',']']) then Dec(JSONDepth);
           end;
           JSON:=TJSONObject.ParseJSONValue(ASource.Text,False,True); if JSON=nil then raise EReadError.Create('Invalid JSON resource'); JSONNodes(JSON,'',Root,0);
+        end else if Kind='.sql' then begin
+          Add('sql_text','statement',ASource.Text,Root,0,Length(ASource.Text));
         end else if Kind='.xml' then begin
           if ASource.Text.ToUpper.Contains('<!DOCTYPE') or ASource.Text.ToUpper.Contains('<!ENTITY') then raise EReadError.Create('Resource XML DTD/entity declarations are prohibited');
           XML:=LoadXMLData(ASource.Text); XMLNodes(XML.DocumentElement,'',Root,0);

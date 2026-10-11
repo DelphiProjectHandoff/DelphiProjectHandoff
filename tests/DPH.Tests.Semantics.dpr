@@ -41,6 +41,48 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure DataDetailTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    WorkIndex,OutputIndex,InputIndex,SQLIndex,TableIndex: Integer; R: TDPHRelation; D: TDPHDiagnostic; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'DataCases.pas'),
+    'unit DataCases; interface procedure Work(Input:Integer); implementation '+
+    'procedure Work(Input:Integer); var Output:Integer; Query:TQuery; begin Output:=Input+1; '+
+    'Query.ExecSQL(''SELECT id,name FROM customers''); '+
+    'Query.ExecSQL(''SELECT a.id FROM customers a JOIN orders b ON a.id=b.id''); '+
+    'Query.ExecSQL(''UPDATE customers SET name=''''new'''' WHERE id=1''); '+
+    'Query.ExecSQL(''INSERT INTO customers (id,name) VALUES (1,''''new'''')''); '+
+    'Query.SQL.Text:=''SELECT id ''+''FROM customers''; Query.SQL.Text:=BuildSQL(Input); TFile.ReadAllText(''data-query.sql''); end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'data-query.sql'),'SELECT id FROM customers',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'DataCases.dpr'),'program DataCasesApp; uses DataCases in ''DataCases.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'DataCases.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        WorkIndex:=Find(G,'DataCases.Work','*'); OutputIndex:=Find(G,'DataCases.Work.Output','*'); InputIndex:=Find(G,'DataCases.Work.Input','*');
+        Check(Relation(G,OutputIndex,InputIndex,'derives_from','inferred'),'DATA01','Assignment output links to its parameter input without claiming a runtime value');
+        SQLIndex:=Find(G,'DataCases.Work.$sql1','*'); TableIndex:=Find(G,'DataCases.Work.$sql1.customers','*');
+        Check((SQLIndex>=0) and Relation(G,SQLIndex,TableIndex,'reads','inferred'),'SQL01','Simple literal SELECT identifies its sole table with schema qualification');
+        Check(Relation(G,SQLIndex,Find(G,'DataCases.Work.$sql1.customers.name','*'),'reads','inferred'),'SQL02','Explicit SELECT projection identifies a column in the sole table');
+        Check(Find(G,'DataCases.Work.$sql2.customers','*')<0,'SQL03','Join and alias SQL retains text without invented table/column resolution');
+        SQLIndex:=Find(G,'DataCases.Work.$sql3','*');
+        Check(Relation(G,SQLIndex,Find(G,'DataCases.Work.$sql3.customers.name','*'),'writes','inferred'),'SQL04','UPDATE assignment column has a qualified write relationship');
+        SQLIndex:=Find(G,'DataCases.Work.$sql4','*');
+        Check(Relation(G,SQLIndex,Find(G,'DataCases.Work.$sql4.customers.id','*'),'writes','inferred'),'SQL05','INSERT explicit column list has a qualified write relationship');
+        Check(Find(G,'DataCases.Work.$sql5.customers.id','*')>=0,'SQL06','Literal SQL.Text concatenation is captured without executing a component');
+        Found:=False; for R in G.Relations do if (R.FromSymbol=WorkIndex) and (R.Kind='dynamic_sql') then Found:=True;
+        Check(Found,'SQL07','Nonliteral SQL.Text remains an explicit dynamic SQL gap');
+        Found:=False; for D in G.Diagnostics do if D.Code='SQL_EXPRESSION_PARTIAL' then Found:=True;
+        Check(Found and not G.Complete,'SQL08','Predicate and complex-statement coverage limits are visible');
+        Found:=False; for R in G.Relations do if (R.Kind='reads') and (R.ToSymbol>=0) and (G.Symbols[R.ToSymbol].Kind='sql_table') and (R.Location.Source='data-query.sql') then Found:=True;
+        Check(Found,'SQL09','Directly referenced SQL file has source-backed schema references without execution');
+        Cached:=Analyzer.Analyze(Scan);
+        try Check(JSON(G)=JSON(Cached),'DATA02','Data and SQL postprocessing agrees across routine cache reuse'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure AsyncDetailTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
     WorkIndex,NamedIndex,Operation,Queued,Sync,Callback,LocalValue: Integer;
@@ -480,7 +522,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

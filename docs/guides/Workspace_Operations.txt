@@ -92,6 +92,18 @@ project/dependency boundaries. Reference links show the consuming routine and
 qualify loader spelling and lexical order. Dynamic paths and runtime override
 precedence are not silently guessed.
 
+Data and SQL
+Select a variable in Explorer and open References or the Data flow graph.
+derives_from links show inputs found in assignment expressions. They do not
+prove the value reaching a later use. Select sql_statement in the Explorer
+kind list to inspect static SQL sites. sql_table and sql_column narrow the list
+to inferred schema references. Each reference keeps the containing source
+range and hash; these are references from text, not a verified live schema.
+Literal SQL.Text concatenation and directly loaded .sql files are supported.
+SQL_DYNAMIC, SQL_SCHEMA_PARTIAL and SQL_EXPRESSION_PARTIAL explain unresolved
+construction, unsupported statements and incomplete expression coverage.
+DPH does not execute SQL or connect to the application's database.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

@@ -181,7 +181,7 @@ begin
     begin
       if Inventory.ProjectIR.TryGetValue(Item.RelativePath,Parsed) then
       begin Result.Results.Add(Item.RelativePath,Parsed.Clone); Continue; end;
-      if (Item.Availability='available') and MatchText(Item.Kind,['.res','.rc','.json','.xml','.ini']) then begin
+      if (Item.Availability='available') and MatchText(Item.Kind,['.res','.rc','.json','.xml','.ini','.sql']) then begin
         if IRWeight>=500000 then begin Inventory.Diagnostics.Report('PROJECT_IR_LIMIT','Resource retained without parsed IR',Inventory.Sources[Item.RelativePath].Range(0,0),'error'); Continue; end;
         Parsed:=TDPHResourceParser.Parse(Inventory.Sources[Item.RelativePath],Inventory.Diagnostics);
         Result.Results.Add(Item.RelativePath,Parsed); Inc(IRWeight,Parsed.Nodes.Count); Continue;

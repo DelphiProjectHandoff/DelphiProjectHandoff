@@ -199,7 +199,7 @@ begin
   Item:=Default(TDPHManifestFile); Item.RelativePath:=Key; Ext:=LowerCase(ExtractFileExt(Path)); Item.Kind:=Ext;
   try
     if not TFile.Exists(Path) then raise EFileNotFoundException.Create(Path);
-    Result:=TDPHSource.Create(Path,Key,Diagnostics,FCodePage,not MatchText(Ext,['.pas','.dpr','.dpk','.inc','.dproj','.groupproj','.fmx','.dfm','.rc','.xml','.json','.ini','.txt']));
+    Result:=TDPHSource.Create(Path,Key,Diagnostics,FCodePage,not MatchText(Ext,['.pas','.dpr','.dpk','.inc','.dproj','.groupproj','.fmx','.dfm','.rc','.xml','.json','.ini','.sql','.txt']));
     if FTotalBytes+Length(Result.Bytes)>128*1024*1024 then
     begin Result.Free; Result:=nil; raise EReadError.Create('Project byte acquisition limit'); end;
     Inc(FTotalBytes,Length(Result.Bytes));

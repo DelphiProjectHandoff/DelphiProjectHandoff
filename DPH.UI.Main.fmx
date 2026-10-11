@@ -232,6 +232,10 @@ Items.Strings = (
 'local'
 'resource'
 'definition'
+'async_operation'
+'sql_statement'
+'sql_table'
+'sql_column'
 )
 ItemIndex = 0
 OnChange = SearchChange

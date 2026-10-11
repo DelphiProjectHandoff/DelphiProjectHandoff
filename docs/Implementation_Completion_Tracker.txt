@@ -81,8 +81,16 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Main-thread queue versus Synchronize is distinguished. Runtime ownership,
     alias state, errors and cross-thread total order remain explicitly unverified.
     Eight focused checks pass; semantic suite 95. App/workspace regressions pass.
-3.6-3.9 Pending:
-    data/SQL, relationship vocabulary, dynamic
+3.6 Expanded: inferred assignment-input derivation links, static SQL literals,
+    literal SQL.Text concatenation and directly referenced SQL text files.
+    Supported single-table statements expose explicit projection/assignment
+    columns and source receiver links. Dynamic text, joins, aliases, batches,
+    dialect/schema checks and complex expressions remain qualified gaps.
+    No database connection is made. Eleven focused data/SQL checks pass;
+    semantic suite 106, discovery suite 88. This is lexical input dependency,
+    not path-sensitive reaching definitions or a complete SQL dialect parser.
+3.7-3.9 Pending:
+    relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
     execution projection and preservation of inspected object context. Workspace

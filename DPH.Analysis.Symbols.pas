@@ -57,7 +57,7 @@ type
   end;
 implementation
 uses System.Classes, System.StrUtils, System.Hash, DPH.Storage.Types,
-  DPH.Storage.Database, DPH.Analysis.Flow, DPH.Analysis.Async, DPH.Project.Inventory;
+  DPH.Storage.Database, DPH.Analysis.Flow, DPH.Analysis.Async, DPH.Analysis.SQL, DPH.Project.Inventory;
 
 constructor TDPHSemanticAnalyzer.Create;
 begin inherited; FRoutineCache:=TObjectDictionary<string,TDPHRoutineSummary>.Create([doOwnsValues]); end;
@@ -688,7 +688,8 @@ end;
 procedure TDPHSemanticAnalyzer.RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
 var Routine,S: TDPHSymbol; Body,N: TDPHIRNode; I,J,K,Stop,Depth,Next,Variable,Target,Child,CallEnd: Integer;
     Path,Resolution,Kind,Argument,TypeName: string; Args: TList<string>; Matches: TArray<Integer>; L: TDPHRange;
-    IsCall,IsWrite,WithinWith: Boolean; Flow: TDPHFlowBuilder;
+    IsCall,IsWrite,WithinWith,LiteralSQL: Boolean; Flow: TDPHFlowBuilder;
+    InputIndex,ExpressionEnd,InputStop,InputSymbol: Integer; InputPath,SQLText: string;
     Nested: TDictionary<Integer,Integer>; Closures: TList<Integer>;
     WithScopes: TList<TDPHRange>; WithRange: TDPHRange;
 begin
@@ -794,6 +795,28 @@ begin
         Resolution:='confirmed_static'; if FGraph.Symbols[Variable].Kind='property' then Resolution:='inferred';
         if WithinWith and not Path.Contains('.') then Resolution:='possible_dynamic';
         FGraph.AddRelation(ARoutine,Variable,Kind,Resolution,'lexical_def_use_not_runtime_value',Path,L,Tokens[I].Condition);
+        if IsWrite then begin
+          ExpressionEnd:=Stop+2; Depth:=0;
+          while ExpressionEnd<=Body.LastToken do begin
+            if (Depth=0) and MatchText(Tokens[ExpressionEnd].Text,[';','end','else','until']) then Break;
+            if MatchText(Tokens[ExpressionEnd].Text,['(','[']) then Inc(Depth)
+            else if MatchText(Tokens[ExpressionEnd].Text,[')',']']) then begin if Depth=0 then Break; Dec(Depth); end;
+            Inc(ExpressionEnd);
+          end;
+          InputIndex:=Stop+2;
+          while InputIndex<ExpressionEnd do begin
+            if Nested.TryGetValue(InputIndex,Next) then begin InputIndex:=Next; Continue; end;
+            if Tokens[InputIndex].Kind<>tkIdentifier then begin Inc(InputIndex); Continue; end;
+            InputPath:=Tokens[InputIndex].Text; InputStop:=InputIndex;
+            while (InputStop+2<ExpressionEnd) and (Tokens[InputStop+1].Text='.') and (Tokens[InputStop+2].Kind=tkIdentifier) do begin
+              Inc(InputStop,2); InputPath:=InputPath+'.'+Tokens[InputStop].Text;
+            end;
+            InputSymbol:=ResolveValue(InputPath,ARoutine);
+            if (InputSymbol>=0) and not (WithinWith and not InputPath.Contains('.')) and MatchText(FGraph.Symbols[InputSymbol].Kind,['local','parameter','variable','field','property']) then
+              FGraph.AddRelation(Variable,InputSymbol,'derives_from','inferred','lexical_assignment_input_not_reaching_definition_or_runtime_value',Path+' := ... '+InputPath,Tokens[InputIndex].Location,Tokens[I].Condition);
+            InputIndex:=InputStop+1;
+          end;
+        end;
         if IsWrite and (Stop+2<=Body.LastToken) then
         begin
           Argument:=Tokens[Stop+2].Text;
@@ -809,12 +832,26 @@ begin
         FGraph.AddRelation(ARoutine,-1,'reads','unresolved','unresolved_identifier_access',Path,L,Tokens[I].Condition);
         FGraph.Diagnostics.Report('READ_TARGET_UNRESOLVED',Path,L);
       end;
+      if (Stop+1<=Body.LastToken) and (Tokens[Stop+1].Text=':=') and EndsText('.SQL.Text',Path) then begin
+        SQLText:=''; LiteralSQL:=True; J:=Stop+2;
+        while (J<=Body.LastToken) and (Tokens[J].Text<>';') do begin
+          if Tokens[J].Kind=tkString then SQLText:=SQLText+Copy(Tokens[J].Text,2,Length(Tokens[J].Text)-2).Replace('''''','''')
+          else if Tokens[J].Text<>'+' then LiteralSQL:=False;
+          Inc(J);
+        end;
+        Kind:='dynamic_sql'; if LiteralSQL and (SQLText<>'') then Kind:='static_sql';
+        InputSymbol:=ResolveValue(Copy(Path,1,Length(Path)-9),ARoutine);
+        FGraph.AddRelation(ARoutine,InputSymbol,Kind,'inferred','sql_text_assignment_spelling_component_unverified',SQLText,L,Tokens[I].Condition);
+        if Kind='dynamic_sql' then FGraph.Diagnostics.Report('SQL_DYNAMIC','SQL.Text contains nonliteral inputs; SQL schema usage is not inferred',L);
+      end;
       if SameText(Path,'Inc') or SameText(Path,'Dec') then
         if Args.Count=1 then
         begin Variable:=ResolveValue(Args[0],ARoutine); FGraph.AddRelation(ARoutine,Variable,'writes','inferred','intrinsic_update',Args[0],L,Tokens[I].Condition); end;
       if EndsText('.ExecSQL',Path) and (Args.Count=1) and (Stop+3=CallEnd) and
-        (Tokens[Stop+2].Kind=tkString) then
-        FGraph.AddRelation(ARoutine,-1,'static_sql','inferred','literal_argument_to_execsql_spelling_api_unverified',Args[0],L,Tokens[I].Condition);
+        (Tokens[Stop+2].Kind=tkString) then begin
+        InputSymbol:=ResolveValue(Copy(Path,1,Length(Path)-8),ARoutine);
+        FGraph.AddRelation(ARoutine,InputSymbol,'static_sql','inferred','literal_argument_to_execsql_spelling_api_unverified',Args[0],L,Tokens[I].Condition);
+      end;
       I:=Stop+1;
     end;
     if not IR.Complete then FGraph.Diagnostics.Report('ROUTINE_PARTIAL_PARSE','Routine facts derived from partial syntax; coverage is not complete',Routine.Location);
@@ -885,6 +922,7 @@ begin
         end;
       end;
       TDPHAsyncAnalysis.Enrich(AScan,FGraph);
+      TDPHSQLAnalysis.Enrich(AScan,FGraph);
       Result:=FGraph; FGraph:=nil;
     except FGraph.Free; raise; end;
   finally Tokens.Free; FImports.Free; FTokens.Free; FNames.Free; FKeys.Free; FNodeSymbols.Free; FBaseTypes.Free; end;

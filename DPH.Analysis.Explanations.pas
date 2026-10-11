@@ -107,6 +107,10 @@ begin
   if Kind='assigns_callback' then Verb:='assigns a procedure reference to';
   if Kind='reads' then Verb:='reads the value of';
   if Kind='writes' then Verb:='may update';
+  if Kind='derives_from' then Verb:='has a source expression that uses; the reaching value remains unverified for';
+  if Kind='configures' then Verb:='has an inferred configuration connection with';
+  if Kind='static_sql' then Verb:='contains static SQL text associated with';
+  if Kind='dynamic_sql' then Verb:='builds SQL from inputs that require review for';
   if Kind='renders' then Verb:='has an inferred model-to-renderer connection with';
   if Kind='imports' then Verb:='declares a unit dependency on';
   if Kind='owns' then Verb:='declares or contains';
