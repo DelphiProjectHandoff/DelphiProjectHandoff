@@ -1,0 +1,48 @@
+﻿{
+    "validated_utc":  "2026-10-11T21:04:22.0158592Z",
+    "suites":  [
+                   {
+                       "suite":  "storage",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "discovery",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "semantics_build",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "semantics",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "workspace",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "knowledge",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "publishing",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "hardening",
+                       "exit_code":  0
+                   },
+                   {
+                       "suite":  "learning",
+                       "exit_code":  0
+                   }
+               ],
+    "checked_files":  2447,
+    "changed_files":  [
+
+                      ],
+    "reference_commit":  "e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d",
+    "independent_human_acceptance":  "not_run",
+    "plan_status":  "reworked learning product; explicit remaining requirements in Rework_Requirements_Audit.txt"
+}

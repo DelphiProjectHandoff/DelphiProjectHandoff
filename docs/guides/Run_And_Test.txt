@@ -1,0 +1,119 @@
+Delphi Project Handoff run and test directions
+Last changed 11 October 2026
+
+Run the current source build
+1. Open File Explorer and paste this folder into its address bar:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. It opens maximized. Keep its deployed
+   migrations, help and WebView2Loader.dll files in place. Microsoft WebView2
+   Runtime enables embedded learning pages; readable native text is the fallback.
+3. Read Getting started. Use the page selector in the upper-right corner to
+   choose a workspace page. Click an object in the left-hand Explorer to inspect
+   it. The labeled Selection details pane is on the right; activity is at the
+   bottom. Drag the dividers to resize panes. A restored narrow window requires
+   horizontal scrolling along its command toolbar to reach all commands.
+
+Attach a project and learn one action
+1. Select the intended analysis configuration and platform in the top commands.
+   These describe the selected application; DPH itself currently runs as Win32.
+2. Click Attach project. Select that application's .dproj, .dpr or .groupproj.
+   DPH rejects its own project, including renamed copies retaining its identity.
+3. Save a new .dphdb outside the selected source tree. The picker defaults to
+   Databases under the Handoff application folder. Use one database per project.
+4. Wait for the bottom activity line to finish. Read PARTIAL and other warnings.
+   For the provided reference, select:
+   C:\New Delphi Projects\Delphi Project Handoff\samples\reference-vcl2fmx-v6.0.0\VCL2FMXConverter.dproj
+   Use Debug / Win32 and extra defines MSWINDOWS;WIN32. This reference remains
+   partial; missing dependencies and unsupported syntax are explicit gaps.
+5. Choose Learn the project, then How the program starts. Locate a recognizable
+   control under Screens and user actions. Follow its event into Explain.
+6. Read its contract, incoming/outgoing connections and SOURCE WALKTHROUGH.
+   Inspect one condition and both paths. Use Source to compare matching captured
+   code and Graphs / Procedure CFG to inspect its control flow. Read certainty,
+   line numbers, source hashes and omitted counts with every conclusion.
+7. Choose Coverage to inspect the defined measures and diagnostics. None of the
+   percentages establishes complete business knowledge or successful execution.
+
+Check persistence and authored explanations
+1. Select an object and choose Knowledge. Click New, enter a stable title, kind,
+   named author and meaningful explanation, then Save.
+2. Close and reopen the saved .dphdb using Open cache. Confirm the project,
+   generation, note text and review state. Cached facts arrive before automatic
+   source verification when the original entry is available; otherwise the
+   workspace remains detached. Keep its adjacent .dphdb.views folder with it.
+3. To approve an actual statement, attach matching source, inspect its evidence
+   and enter a named reviewer. Review tasks shows changed evidence and pending
+   work. Parser success and a source reparse never approve authored text.
+4. Author questions records actual attributed answers to unresolved questions.
+   Screenshots imports existing PNG evidence. Runtime observations imports an
+   existing UTF-8 text/log/JSON extract with contributor and run context.
+
+Translate a small practice section
+1. In Knowledge, save a section whose body is exactly Run conversion.
+2. Select that saved revision, then choose Translations. Use source en and target
+   fr and select:
+   C:\New Delphi Projects\Delphi Project Handoff\samples\translation\DPH.fr.sample.json
+3. Compare Run conversion with Exécuter la conversion. The French sample has
+   only three unreviewed phrases. Missing phrases retain labeled source fallback.
+4. Review the source section and resolve its tasks before approving accurate,
+   complete localized wording with a named translation reviewer. Revising its
+   source or terminology invalidates the previous approval.
+
+Publish and validate a handoff
+1. Choose Publish, select full project or selected object/context, audience and
+   explicit exclusions. Choose a new export folder outside the selected source.
+2. Optional controls are explicit: generated agent boundaries, redacted captured
+   source browsing, and Localized prose locale. Leave the locale blank for normal
+   publication. Enter fr for reviewed French authored-body publication.
+3. Open the exported index.html. Read overview, object explanations, gaps and
+   provenance. Inspect source omissions and localized fallback counts if those
+   options were used. Original source bytes are not copied. Shared task-source
+   lines can include surrounding code. Inspect output before sharing.
+4. Choose Validate bundle in DPH. Paste the trusted captured input fingerprint,
+   or click Use opened capture fingerprint after opening its trusted database.
+5. Click Select manifest and validate bundle and select manifest.json at the
+   export root. Read the entire PASS/FAILED report. Default validation rejects
+   stale/partial exports. Allow historical/partial inspection is a deliberate
+   qualification; an integrity pass is not complete analysis or human approval.
+6. Editable Engineering_Guide.docx and User_Guide.docx accompany the handoff.
+   A requested locale adds Localized_Sections.docx for authored bodies only;
+   titles, generated guidance and technical indexes retain source language.
+7. For optional PDF companions, open an elevated PowerShell window, enter the
+   project directory, and run the following with your actual export folder:
+   powershell -NoProfile -ExecutionPolicy Bypass -File tools\export-pdf.ps1 -BundleDirectory "C:\your\handoff-folder"
+   LibreOffice and the approved Python 3.13 with pypdf are required. This command
+   populates editable TOC page caches and refreshes bundle checksums.
+
+Build and run automated checks
+1. Open Windows Start, type Command Prompt, right-click it and choose
+   Run as administrator. RAD Studio requires this environment access here.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Build the application and validate its IDE form bindings:
+   tools\build-wp0.cmd
+4. Run the serial project/catalog/lifecycle/workspace/knowledge/selection checks:
+   tools\validate-completion-wp1.cmd
+5. Run storage, discovery and publishing checks as needed:
+   tools\build-wp1.cmd
+   tools\build-wp2.cmd no-report
+   tools\build-wp6.cmd
+6. Compile and then explicitly execute semantic checks:
+   tools\build-wp3.cmd
+   bin\Win32\Debug\DPH.Tests.Semantics.exe "C:\New Delphi Projects\Delphi Project Handoff"
+7. Run source lessons and actual WebView2 checks:
+   tools\build-learning.cmd
+   The --no-ui option checks deterministic logic only; it is not a UI pass.
+8. Run pinned end-to-end hardening with source/instruction hash proof:
+   powershell -NoProfile -ExecutionPolicy Bypass -File tools\validate-wp7.ps1
+9. A FAIL, exception or nonzero exit is a failed check. Inspect the named suite's
+   log and validation JSON; previous reports are not proof of the current run.
+   Formal first-time programmer testing uses docs\WP7_Maintenance_Exercise.txt.
+10. After checks finish and their evidence is retained, remove disposable test
+    outputs with:
+    powershell -NoProfile -ExecutionPolicy Bypass -File tools\clear-validation-output.ps1
+    It removes recognized validation outputs under bin and refuses linked paths
+    or running validation processes. It does not delete the owner's databases.
+
+The full DPH User Guide is docs\guides\DPH_User_Guide.docx and its companion PDF
+is docs\pdf\DPH_User_Guide.pdf. The Engineering Guide is in the same folders.
+D: development backups remain suspended. Git and both GitHub remotes remain active.

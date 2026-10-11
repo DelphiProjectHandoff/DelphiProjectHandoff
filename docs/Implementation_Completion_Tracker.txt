@@ -138,8 +138,9 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
 4.6 Expanded: directed labeled SVG relationships, Objects/Types/Units grouping,
     member navigation and internal/external evidence samples. Group totals
     preserve the bounded input projection, including truncation warnings.
-    Eleven focused checks pass; workspace suite 73. Browser visual verification
-    remains outstanding; native controls and generated HTML are tested.
+    Eleven focused checks pass; workspace suite 73. Actual WebView unit-group
+    rendering and viewport containment pass; the native diagram capture was
+    visually inspected in the completion learning regression.
 4.7 Expanded: focused borderless form-design view with explicit Exit full screen
     and Escape restoration; fit/native/custom 25-400 percent zoom and scrollable
     component extents. Four focused behavior checks pass.
@@ -209,11 +210,12 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Logs remain local and are not automatically included in publication. No live
     instrumentation, target execution or production connection was introduced.
 6.1 Expanded: actual operating and engineering manuals rebuilt from 32 hashed
-    implementation sources. User guide is 15 pages; engineering guide is 12.
+    implementation sources. Current user guide is 16 pages; engineering guide is 13.
     Both editable DOCX and companion PDF include dated title pages and editable
     TOCs with rendered page numbers. Every rendered page was visually inspected.
     Directions cover current learning, review, runtime observations, publication,
-    troubleshooting and explicit build/test commands. Selected-program business
+    troubleshooting, offline translation/review, localized publication, source
+    browsing, native bundle validation and explicit build/test commands. Selected-program business
     procedures still require attributed author input. Regenerate after later work.
 6.2 Expanded: HTML and editable generated guides expose generated section identity,
     content version, source generation, unreviewed state and last-review status.
@@ -271,10 +273,19 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     object-to-line links use the existing hashed object-page allowlist. Manifest,
     scope/line metadata and artifacts validate after relocation. Eleven new
     publishing checks pass (105 total); workspace 127, app/form build pass.
-    Live WebView source-page visual acceptance remains a final-review task;
-    generated HTML, route policy, worker export and integrity are exercised.
-7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
-    programmer exercise, agreed performance budgets and reconciled acceptance.
+    Live WebView source rendering and original line anchors pass. Native captures
+    were inspected, including the real btnConvertClick form binding at line 420
+    and explicit task-source omissions. Hardening passes 32 checks; full pinned
+    learning passes 62; all nine combined regression suites pass with 2447 original
+    source, fixture and instruction files unchanged.
+7.1-7.3 Pending human evidence: independent flow review, reviewed selected-program
+    procedures and actual first-time programmer exercise. Worksheets are supplied;
+    prepared procedures are not observed participant results.
+7.4 Measurements supplied; owner-agreed release performance budgets remain pending.
+7.5 Reconciled: current completion acceptance matrix records 22 automated passes,
+    two partial gates and one not-run human gate, with exact evidence hashes and
+    current analyzer/publisher/schema versions. Formal release acceptance remains
+    incomplete; automation cannot supply the outstanding human judgments.
 
 Translation reference identified by owner: local VCL2FMX under New Delphi Projects.
 Read-only inspection found VCL2FMXConverterV7/dependencies/DelphiAppTranslation,

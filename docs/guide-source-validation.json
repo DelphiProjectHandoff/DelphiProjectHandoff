@@ -1,5 +1,5 @@
 {
-  "guide_version": 3,
+  "guide_version": 4,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -71,15 +71,15 @@
     },
     {
       "path": "DPH.Publish.Export.pas",
-      "sha256": "137619355d6feb426ffd58ee677a500ac8ac02762ce2b5e31320fc0584763603"
+      "sha256": "2de922c043eba74c1bbd9079373b23e9c33d1d534da6b48b084d6dca96cfd4fe"
     },
     {
       "path": "DPH.Publish.Model.pas",
-      "sha256": "89932abdd16caf6a234c10a170c59761fc8df105325d12e864bf07e4cc932df4"
+      "sha256": "396585941e2989ed400da1d038bef376fb3555b7cc58e7d64926ec770447aa90"
     },
     {
       "path": "DPH.Publish.Translation.pas",
-      "sha256": "d211794576a0e234d1aa8ac347d09f6a981e9590346204ef142608aa5aa400b2"
+      "sha256": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20"
     },
     {
       "path": "DPH.Storage.Backup.pas",
@@ -87,7 +87,7 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "92b465a1b9c385f4627a1273efe473394f6184090156438d48f9457d051afeff"
+      "sha256": "b05f869126267e7c0e3b27152b70c90a5f82f417180688982d8b8ffc59d305f1"
     },
     {
       "path": "DPH.Storage.Types.pas",
@@ -95,7 +95,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "90db98cb36b9d6e1fc1c58a308971aa0d1d6f9a3a59d4dd77f397a9d04c3b1b6"
+      "sha256": "26e8447174114031f562a85aad5b3928bc99f7fb1b8cb1ce910a725faf4c7b74"
     },
     {
       "path": "DPH.Workspace.Catalog.pas",
@@ -115,11 +115,11 @@
     },
     {
       "path": "DPH.Workspace.Worker.pas",
-      "sha256": "fed04c89fd5cf63f202002aee813b755a3ccf0349507659c34bbd5b0417ed1dd"
+      "sha256": "4be99ff95017aa6afeca61bca566575b189637b3cdf9d62ae28086666f2039d6"
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "62e5e29c4c6fae0758cf6b42f37c1aaabf151cb40289994c4dfe4e5728638766"
+      "sha256": "14dc96efcf375dea3bc8a11e9d97005e2e632ef0b95eb93d9d599b1a8da7e35d"
     },
     {
       "path": "DelphiProjectHandoff.dpr",
@@ -127,7 +127,7 @@
     },
     {
       "path": "DelphiProjectHandoff.dproj",
-      "sha256": "d42dec72fcdc84a25ca76f597d4f333da3db2e3388dbee5ca9ffb19f99718a85"
+      "sha256": "ecd4515cbc6a46e3d444d0af41aa7e3d3484f2d3d6f79a548891052ddd8efba7"
     }
   ],
   "last_changed": "2026-10-11"

@@ -1,7 +1,7 @@
 ﻿{
-  "checks_passed": 53,
-  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\learning-tests-{5F440286-9ECA-4C3E-B485-3C70C54CE2C4}",
-  "reference_cache": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp7-tests-{412C233D-D845-46E9-8FED-48FDA37C65B8}\\reference.dphdb",
+  "checks_passed": 62,
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\learning-tests-{2693F13D-C341-42DE-A716-7C3830E0F14E}",
+  "reference_cache": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp7-tests-{6AD81213-F3ED-49F3-87DD-24216016CBE1}\\reference.dphdb",
   "human_acceptance": "not_run",
-  "reference_learning_projection_ms": 5995
+  "reference_learning_projection_ms": 23165
 }

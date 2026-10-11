@@ -1,0 +1,79 @@
+DPH implementation and acceptance record
+Last changed 11 October 2026
+
+The owner authorized implementation of the audited missing items. Current
+item-by-item evidence is in Implementation_Completion_Tracker.txt. The original
+master specification and handoff remain unchanged. The prior blanket WP7
+completion claim remains withdrawn. This record does not declare formal release
+acceptance or substitute prepared instructions for observed human results.
+
+Implemented workflow additions include persistent project catalog, early cached
+display and background verification, retention/release pins, named continuity
+review, portable database backup/restore, project-wide search, configuration and
+encoding selectors, expanded syntax/resources and semantic relationships, bounded
+routine reuse, startup phases, hierarchy and source details, grouped graphs,
+screen/evidence viewing, defined coverage, retained navigation, revision-aware
+document/link/review/author-question workflows, saved runtime observations,
+expanded manuals, section provenance, DAT offline translation and persistent
+review cache, localized authored-body publication, fuller handoff narratives and
+metadata, opt-in agent boundaries, native bundle validation and opt-in redacted
+source browsing. Bounds and qualifications accompany each item in the tracker.
+
+Run and test directions
+docs\guides\Run_And_Test.txt provides exact launch paths, first-use steps,
+translation practice, publishing/validation steps and developer commands.
+The full editable User and Engineering Guides are in docs\guides; companion PDFs
+are in docs\pdf. Current manuals identify 32 implementation source hashes,
+have dated title pages and editable populated contents tables, and were rendered
+with LibreOffice and visually inspected page by page.
+
+Evidence accounting
+completion-hardening-validation.json records the current pinned pipeline,
+cached open, reassessment, UI/browser checks and measured memory/timings.
+completion-input-validation.json records reference commit, hardware, compiler,
+current schema and original-input before/after hash proof.
+completion-regression-validation.json records current serial regression exits
+and the full source/instruction hash check. Its detailed logs use rework-* names.
+completion-acceptance-matrix.json records each AT-01 through AT-16 and AC-17
+through AC-25 expected/observed result, evidence hash, versions and reviewer.
+Only a successfully generated current report supports its stated result; earlier
+phase reports remain historical. A partial/not-run gate is never counted as pass.
+
+Remaining human and specification evidence
+AT-06 and master section 6.5 require independent source-based review of complex
+explanations, control flow and uncertainty negative controls. Automation and the
+implementing agent cannot provide this independent human judgment.
+AT-15 requires actual selected-program operating/build procedures and outcomes,
+attributed to their author and reviewed against evidence. DPH's own operating
+manuals are supplied; unwritten business rationale and target-program outcomes
+cannot be inferred from source names or captions.
+AC-25 requires an actual first-time programmer's answers and maintenance exercise
+without the original author's help. The worksheet exists; the human exercise has
+not been performed by an independent participant.
+Release performance budgets require owner agreement on measured hardware/corpus.
+Measurements are recorded without treating them as approved thresholds.
+The referenced earlier Phase 1-2 design containing 23 functional domains was not
+present in the supplied master/handoff files or located project documents. Its
+file location was requested from the owner; those domains cannot be reconciled
+against an unavailable detailed source.
+
+Translation and source disclosure
+The owner identified local VCL2FMX as the reference. DPH independently vendors
+the licensed DAT reader snapshot; VCL2FMX remains unchanged with no shared build
+or runtime dependency. Translation is offline. The three-phrase French sample
+is incomplete and unreviewed. Localized publication covers reviewed authored
+bodies only; titles, generated guidance and technical indexes retain source
+language, and missing/stale/unreviewed entries keep explicit source fallback.
+Source browsing derives encoded/redacted HTML, never original source bytes.
+Task excerpts can contain surrounding code on a cited line. Review output and
+explicit exclusions before sharing. Integrity hashes do not authenticate authors.
+
+Safety and delivery
+The selected application is never compiled or executed by analysis. Its original
+source/configuration inputs and the owner's planning instructions are hash
+checked. Imported runtime evidence retains contributor attribution and uncertainty.
+Win32 large-address support is enabled in the Delphi project options after the
+expanded pinned-corpus test exposed the previous address-limit failure. Current
+memory measurements and large-corpus results must accompany that setting.
+D: development backups remain suspended. Git remains authoritative; validated
+changes are committed and pushed to both the public and private GitHub remotes.

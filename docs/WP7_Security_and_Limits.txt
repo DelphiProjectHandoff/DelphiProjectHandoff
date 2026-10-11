@@ -48,12 +48,29 @@ Unavailable preview leaves offline files usable. The separate Microsoft runtime
 is not automatically installed. Normal DPH operation needs neither Python nor
 LibreOffice; optional PDF tools require LibreOffice and Python 3.13 with pypdf.
 
-Translation/AI: Atlas is unconfigured, external consent is mandatory, protected
-segments are unchanged, review caches are exact content/revision/provider/locales.
-The mock/session cache is not a production translation integration. No external
-AI or translation calls occur. Offline GTranslate remains disabled. Optional
-source snapshots, runtime instrumentation and generated agent instructions have
-not been activated by this implementation authorization.
+Translation/AI: Atlas uses independently vendored DAT offline language packs;
+the reader's original license and pinned hashes accompany DPH. Selected packs
+are bounded to 4 MiB, strictly UTF-8 and scoped to DPH's application identity.
+Schema eight persists cache identity, protected segments and named review.
+Revision, terminology and source changes invalidate derived approval. Missing
+phrases retain explicit source fallback and cannot be approved. Localized exports
+include reviewed authored bodies only; generated guidance remains source language.
+No external AI or translation calls occur. Offline GTranslate remains disabled.
+There is no full DPH language catalog. Unusual unmarked technical text requires
+human comparison even though common code, SQL, paths and hashes are protected.
+
+Source browsing and generated agent boundaries are separate unchecked publication
+options. Original source bytes are never copied. Browsing verifies scoped source
+hashes and code page, then derives encoded/redacted line-anchored HTML. Missing or
+changed eligible source rejects export. Binary/undecodable/private-key content,
+files over 4 MiB and files over 20000 lines are omitted with reasons. Task exports
+retain cited noncontainer line excerpts and mark omissions; shared lines can
+contain surrounding code. Explicit exclusions and disclosure review remain needed.
+Generated AGENTS instructions apply only to that capture/scope and grant no
+authority to execute or modify the selected project. Owner AGENTS is never copied.
+Runtime instrumentation remains disabled. Existing screenshots/log extracts may
+be explicitly imported with unverified contributor attribution and managed hashes;
+saved runtime observation text is not automatically included in publication.
 
 Semantic/operational limits: bounded static Delphi analysis, not a compiler or
 full alias/exception/RTTI solver. Conditional compiler built-ins must be supplied
@@ -62,8 +79,12 @@ Unknown conditions remain uncertain. The v6.0 reference hits the 10,000-diagnost
 retention limit and is partial. Semantic recomputation is conservative; large
 syntax inputs can exceed the bounded reuse cache and fall back to full parsing.
 Displayed graphs have at most 120 nodes/960 edges; screen galleries at most 60
-approximate forms. History/bookmarks are generation-local. Runtime screenshots,
-advanced semantic continuity, retention UI, live Atlas and authenticated review
-roles are not claimed. Independent complex-flow review, completed user/business
+approximate forms. Surviving same-project history/bookmarks are retained after
+reassessment. Explicit retention and named continuity-review controls preserve
+authored history and reject stale/unjustified approvals. Imported screenshots
+remain contributor evidence; passive analysis never manufactures runtime images.
+Native bundle validation checks integrity without requiring an open database;
+historical/partial inspection is an explicit qualification, not human approval.
+Authenticated enterprise review roles are not implemented. Independent complex-flow review, completed user/business
 procedures, first-time-programmer acceptance and agreed performance budgets
 remain explicit product acceptance limitations.

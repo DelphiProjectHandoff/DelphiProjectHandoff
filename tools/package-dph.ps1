@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
-$version = 'DPH-0.2.2-experimental-Win32'
+$version = 'DPH-0.3.0-experimental-Win32'
 $packageRoot = Join-Path $projectRoot ('bin\distribution\' + $version)
 if (Test-Path -LiteralPath $packageRoot) { throw 'Package staging already exists; use a new version or review existing contents' }
 [IO.Directory]::CreateDirectory($packageRoot) | Out-Null
@@ -15,14 +15,20 @@ foreach ($directory in @('migrations','help','docs\guides','docs\pdf')) {
 [IO.Directory]::CreateDirectory((Join-Path $packageRoot 'Databases')) | Out-Null
 # Ship the folder instructions only; never package the owner's databases or views.
 Copy-Item -LiteralPath (Join-Path $projectRoot 'Databases\README.txt') -Destination (Join-Path $packageRoot 'Databases')
-foreach ($name in @('Selection_and_Databases.txt','selection-validation.json','selection-startup-tests.log','selection-guide-validation.json','UI_Layout_Correction.txt','ui-layout-tests.log','Rework_Requirements_Audit.txt','Rework_Acceptance.txt','rework-regression-validation.json','rework-learning-validation.json','rework-wp7-validation.json','WP7_Security_and_Limits.txt','WP7_Maintenance_Exercise.txt','WP6_WebView2_Provenance.txt')) {
+foreach ($name in @('Implementation_Completion_Tracker.txt','Completion_Acceptance.txt','completion-acceptance-matrix.json','completion-hardening-validation.json','completion-hardening.log','completion-input-validation.json','completion-regression-validation.json','completion-manuals-validation.json','completion-localized-publication-validation.json','rework-wp3-reference-validation.json','rework-wp3-validation.json','WP7_Security_and_Limits.txt','WP7_Maintenance_Exercise.txt','WP6_WebView2_Provenance.txt')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot ('docs\'+$name)) -Destination (Join-Path $packageRoot 'docs')
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\WebView2\LICENSE.txt') -Destination (Join-Path $packageRoot 'WebView2-LICENSE.txt')
+[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'samples\translation')) | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $projectRoot 'samples\translation') -File | Copy-Item -Destination (Join-Path $packageRoot 'samples\translation')
+[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'licenses\DelphiAppTranslation')) | Out-Null
+foreach ($name in @('LICENSE','README.txt','SNAPSHOT.json')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot ('dependencies\DelphiAppTranslation\'+$name)) -Destination (Join-Path $packageRoot 'licenses\DelphiAppTranslation')
+}
 [IO.Directory]::CreateDirectory((Join-Path $packageRoot 'tools')) | Out-Null
 foreach ($name in @('export-pdf.ps1','finalize-guide.py')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $packageRoot 'tools') }
 @'
-Delphi Project Handoff 0.2.2 experimental Windows Win32 build
+Delphi Project Handoff 0.3.0 experimental Windows Win32 build
 
 Extract this folder to a writable local location and run DelphiProjectHandoff.exe.
 DPH rejects its own source project and self-analysis caches. A rejected selection
@@ -31,9 +37,9 @@ default to Databases beside this executable. Existing databases are not moved;
 browse to their current location if needed. Keep each .dphdb.views folder with its
 database. The shipped Databases folder contains instructions, not project data.
 This build opens maximized. Selection details on the right identifies the object
-you double-click in the far-left list. Click Explain in the centre for behavior.
-Read activity on the bottom status line. To read analysis gaps, click Learn the
-project in the centre, then Coverage and troubleshooting in that tab's topic list.
+you click in the far-left list. Choose Explain in the upper-right page selector
+for behavior. Read activity on the bottom status line. Choose Coverage for static
+measures, or Learn the project then Coverage and troubleshooting for guidance.
 Keep help, migrations and WebView2Loader.dll beside the application. Read the
 Getting started page at launch, then Learn the project and Explain. The executable is
 the validated Win32 Debug build. Microsoft WebView2 Runtime is required only for
@@ -46,10 +52,15 @@ it. Store each knowledge database outside its selected source tree. Copy a cache
 with its adjacent .dphdb.views folder. Use Relocate verified source for an exact
 source move; unrelated or changed inputs cannot claim identity continuity.
 
-Read docs/Rework_Acceptance.txt, Rework_Requirements_Audit.txt and the guides
+Read docs/Completion_Acceptance.txt, Implementation_Completion_Tracker.txt and the guides
 before relying on analysis. This version adds guided lessons, source-based object
 explanations, callback traces, labeled/collapsed procedure diagrams, imported PNG
 screenshots and richer offline publication. Form designs remain approximate.
+Translations reads explicitly selected DAT offline language packs. The included
+French sample contains three unreviewed phrases, not a full language catalog.
+Publish can include reviewed localized authored bodies, redacted source browsing
+and generated agent boundaries through explicit options. Validate bundle checks
+a selected manifest against a trusted fingerprint without requiring an open database.
 The prior blanket WP7 completion claim is withdrawn. The pinned
 large reference remains partial. Independent first-time-programmer acceptance
 and agreed release performance budgets are outstanding. This is an experimental
@@ -73,7 +84,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $binaryZip = Join-Path $projectRoot ('export\' + $version + '.zip')
 if (Test-Path -LiteralPath $binaryZip) { throw 'Distribution already exists; review before replacing' }
 [IO.Compression.ZipFile]::CreateFromDirectory($packageRoot,$binaryZip)
-$sourceZip = Join-Path $projectRoot 'source distributions\DPH-0.2.2-experimental-source.zip'
+$sourceZip = Join-Path $projectRoot 'source distributions\DPH-0.3.0-experimental-source.zip'
 if (Test-Path -LiteralPath $sourceZip) { throw 'Source distribution already exists; review before replacing' }
 $sourceFiles = & 'C:\Program Files\Git\cmd\git.exe' ls-files --cached --others --exclude-standard
 if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate intended source files' }
@@ -96,5 +107,5 @@ foreach ($property in $recorded.PSObject.Properties) {
 [ordered]@{ version=$version; binary=$binaryZip; binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();
     source=$sourceZip; source_sha256=(Get-FileHash -LiteralPath $sourceZip -Algorithm SHA256).Hash.ToLowerInvariant();
     extracted_files=@($recorded.PSObject.Properties).Count; validated_utc=[DateTime]::UtcNow.ToString('o'); verification_directory=$verificationRoot;
-    acceptance='experimental selection and database defaults; see remaining requirements and human acceptance' } | ConvertTo-Json -Depth 4 | Set-Content docs\selection-distribution-validation.json -Encoding UTF8
+    acceptance='experimental expanded implementation; see current item tracker and unresolved human acceptance gates' } | ConvertTo-Json -Depth 4 | Set-Content docs\completion-distribution-validation.json -Encoding UTF8
 Write-Output "PACKAGED and verified $binaryZip and $sourceZip"

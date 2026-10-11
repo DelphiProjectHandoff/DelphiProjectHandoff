@@ -27,8 +27,10 @@ partial and uncertain status throughout. Source fingerprint for this selection:
 8. Export a selected-object task bundle, inspect its source hashes/certainty and
    validate it against a retained trusted fingerprint. Explain stale/historical
    inspection and why unsigned checksums are not author authentication.
-9. Copy a database with its adjacent .views folder and open it detached. Verify
-   source navigation stays unavailable until explicit source attachment. For an
+9. Copy a database with its adjacent .views folder and open it without access to
+   its original source. Verify detached source navigation stays unavailable. When
+   the original source is available, cached facts arrive before its background
+   verification. For an
    exact source move, use Relocate verified source; reject a different copy.
 
 Record: participant/reviewer names, prior Delphi/project experience, date,
@@ -42,3 +44,21 @@ Performance worksheet: review the measured WP7 cold/cached/reassessment timings,
 peak process working set and message-pump gap on the recorded hardware. Agree
 explicit release budgets, then measure the actual interactive workflow against
 them. Current measurements alone do not establish an agreed performance pass.
+
+Independent explanation review (AT-06 and plan section 6.5)
+Use a reviewer who did not implement the explanation engine. Compare source,
+Explain and Procedure CFG for btnConvertClick, ConversionThreadProc, Convert,
+DryRunPreview and one map/report loader. For each sampled routine, record the
+exact symbol identity, generation, source hash and line/byte range. Check branch
+directions, early exits, loop back edges, finally cleanup and callback boundaries.
+Include a dynamic call or unavailable dependency as a negative control: DPH must
+retain uncertainty instead of inventing a confirmed destination or runtime order.
+Record each finding, correction, retest and reviewer decision. Status: NOT RUN.
+
+Selected-program user procedure review (AT-15)
+Obtain actual prerequisites, input preparation, steps, expected visible results,
+output locations, failure handling and recovery from the program's owner. Save
+these as attributed Knowledge sections, linked to captured controls and evidence.
+Review each procedure against a separately authorized actual program test and
+import its existing screenshots/logs if available. Source captions and generated
+instructions alone cannot establish this operating result. Status: NOT RUN.

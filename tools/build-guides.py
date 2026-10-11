@@ -245,7 +245,7 @@ ENGINEERING.extend([
 'Supported extensions include typed aliases, inheritance and accessors, startup entry and unit phases, case/goto/with control flow, asynchronous operation handles and captures, cancellation and event waits, formal arguments and result producers, static SQL projection, output-writer lineage, lifetime and exception relationships, explicit test-call links, and qualified form navigation. Every relationship retains resolution, source range/hash and rule. Unsupported grammar, aliases and dynamic behavior remain diagnosed or qualified.'
 ]),
 ('Current schema and authored document contracts', [
-'Schema 7 uses checksum-verified migrations 001 through 007. document_section_versions associates immutable authored revisions with stable section ID, document kind, audience and source generation. knowledge_revision_links preserves ordinal, target kind/identity, captured generation, role and label. knowledge_questions preserves the exact deterministic question identity and captured JSON associated with a response record.',
+'Schema 8 uses checksum-verified migrations 001 through 008. document_section_versions associates immutable authored revisions with stable section ID, document kind, audience and source generation. knowledge_revision_links preserves ordinal, target kind/identity, captured generation, role and label. knowledge_questions preserves the exact deterministic question identity and captured JSON associated with a response record.',
 'SaveKnowledge appends immutable text and link snapshots. Empty LinksJSON preserves the prior snapshot; an explicit JSON array replaces it. Entity, relationship and evidence targets remain tied to generation identities; screenshot targets reference managed artifacts; section targets pin an exact knowledge revision. Current reverse section references open review when their targets change. Verify rejects obsolete rich-link generations or target revisions.',
 'Question identity hashes kind, entity key, range, source hash, prompt, rule and context fingerprint. Generation is retained separately, allowing unchanged evidence to keep its question identity across captures. An answer needs actual text after Answer. Only verified content with no pending task suppresses an exact question. Export converts question metadata to typed JSON before recursive redaction.'
 ]),
@@ -291,21 +291,58 @@ revisions = {
     'Cached opening does not start a source scan. The cache opens detached until you explicitly attach its source project.': 'Cached facts are displayed before source verification. When the captured entry is available, DPH reconnects and verifies in the background; otherwise the cache remains detached.',
     'Bookmarks belong to the captured generation and reset when a new generation is loaded.': 'Same-project reassessment retains surviving bookmarks, history, expanded nodes and filters; missing identities are pruned. A different project resets that navigation state.',
     'Zoom displays 200 percent, and Full screen uses the larger window. The Full screen button toggles the DPH window size.': 'Custom zoom ranges from 25 to 400 percent and updates the scrolling extent. Full screen hides the surrounding workspace panes; Exit full screen or Escape restores them.',
-    'Deploy the executable, migrations 001_foundation.sql and 002_constraints.sql,': 'Deploy the executable, all seven immutable migration files,',
+    'Deploy the executable, migrations 001_foundation.sql and 002_constraints.sql,': 'Deploy the executable, all eight immutable migration files,',
     'analyzer DPH-WP2-1': 'analyzer DPH-WP2-5',
     'analyzer DPH-WP3-1.': 'analyzer DPH-WP3-11.',
-    'Schema 2 is created through two checksum-verified migrations.': 'Schema 7 is created through seven checksum-verified migrations.',
+    'Schema 2 is created through two checksum-verified migrations.': 'Schema 8 is created through eight checksum-verified migrations.',
     'The default is detached until explicit source attachment.': 'Cached facts are delivered before automatic verification when the original source entry is available; unavailable source remains detached.',
     'Syntax cache reuse is bounded; semantic recomputation is currently conservative rather than a claim of a minimal incremental semantic solver.': 'Syntax and routine semantic caches are bounded and binding-context aware; conservative postprocessing remains separate from reused routine facts.',
     'with bookmarks reset on a new captured generation.': 'with surviving same-project bookmarks retained across reassessment.',
     'Affected-only semantic recomputation, broader external-definition interpretation and retention/continuity controls remain incomplete.': 'The implementation tracker records expanded semantic reuse, resource interpretation and retention/continuity controls. Their documented bounds still apply.',
-    'TDPHAtlasAdapter is deliberately unconfigured because the exact Atlas product, transport, licensing and confidentiality have not been selected.': 'The owner identified the local VCL2FMXConverterV7 DAT framework as the translation reference. At this manual revision, its integration is pending and TDPHAtlasAdapter remains unconfigured.',
+    'Atlas is unconfigured.': 'Atlas uses independently vendored DAT offline language packs; no complete DPH language catalog is supplied.',
+    'Generated AGENTS.md and source snapshots are excluded unless a separate explicit request is implemented and authorized.': 'Generated AGENTS.md and redacted source browsing are separate unchecked options described below. Original source bytes are never copied.',
+    'On the recorded Core i7-1165G7 host': 'In the historical pre-rework benchmark on the recorded Core i7-1165G7 host',
+    'TDPHAtlasAdapter is deliberately unconfigured because the exact Atlas product, transport, licensing and confidentiality have not been selected. External providers require explicit consent. The current adapter throws before transmission, and tests use an offline mock.': 'TDPHAtlasAdapter reads explicitly selected DAT JSON packs offline. The independent Apache-2.0 reader snapshot and license reside under dependencies\\DelphiAppTranslation; VCL2FMX is unchanged and is not a build or runtime dependency. No network provider is configured. Tests exercise actual packs, persistent cache, terminology changes, source invalidation and exact-content named review.',
 }
 for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         for old, new in revisions.items():
             paragraphs = [paragraph.replace(old, new) for paragraph in paragraphs]
         chapters[index] = (heading, paragraphs)
+
+USER.extend([
+('Translate and review saved sections', [
+'Choose Translations in the upper-right page selector. First select a saved Knowledge revision. Enter the source locale and requested target locale, for example en and fr. Click the language-pack selection command and select an explicitly supplied DAT JSON pack. DPH requires its applicationId to be DelphiProjectHandoff. A matching base pack may serve a regional request; the requested and actual locales are both displayed.',
+'Compare the labeled source and localized panes. Source phrases absent from the pack remain unchanged with a fallback count. Code, SQL, paths, hashes and protected identifiers retain their original characters. Fence unusual technical material in backticks or code blocks before translation. A terminology JSON object supplies exact prose replacements; changing it creates a newly pending derived result.',
+'Review the source section against current attached evidence and resolve its pending tasks before approving a translation. Enter the translation reviewer name and approve only complete, accurate wording. A fallback cannot be approved. Editing source prose or invalidating its source evidence invalidates approval. Translation review does not verify the underlying business explanation.',
+'For a small practice only, save the exact body Run conversion and use samples\\translation\\DPH.fr.sample.json. The result is Exécuter la conversion. This pack has only three unreviewed phrases and is not a complete language catalog. Existing entries survive closing and reopening the database.'
+]),
+('Publish localized text and source browsing', [
+'Choose Publish. Leave Localized prose locale blank for normal publication, or enter the exact target locale used for reviewed saved-section translations. Export to a new folder. Open index.html and the localized authored-sections link. Localized_Sections.docx is the editable companion; the optional PDF command converts it when present. Inspect translated and fallback counts before sharing.',
+'Only reviewed exact-revision authored section bodies are localized. Titles, generated guidance and technical indexes remain in their source language. Missing, stale, unreviewed or redacted sections retain explicitly labeled source prose. Each localized entry carries its source revision, source generation, requested and actual locales, reviewer and review date.',
+'Include redacted source browsing pages is unchecked by default. Check it only when you intend to share captured code. DPH verifies available eligible files against their captured byte hashes and code page; changed or missing source rejects export. Task exports include cited noncontainer line excerpts, mark omitted lines and retain original line anchors. Shared source lines can contain surrounding code.',
+'Open Browse captured source files and omissions from index.html, or use an object explanation\'s captured-source link. Binary or undecodable material, private-key material, files over 4 MiB and files over 20000 lines are omitted with reasons. Source browsing derives redacted HTML; it does not copy original source bytes. Review exclusions and output because redaction cannot recognize every sensitive format.',
+'Include generated agent boundaries is also unchecked by default. Checking it writes DPH-generated instructions for that captured scope; it never copies the owner\'s AGENTS.md or grants authority to modify or execute a selected project. The bundle includes project summary, architecture, build and test, known risks and decisions narratives with explicit unknowns.'
+]),
+('Validate a bundle in the application', [
+'Choose Validate bundle. An open database is optional. Paste a trusted 64-character captured input fingerprint, or open the trusted database first and click Use opened capture fingerprint. A fingerprint read only from an untrusted bundle cannot establish its origin.',
+'Click Select manifest and validate bundle and select manifest.json at the bundle root. Wait for the background result. Read PASS or FAILED and every reported qualification. DPH checks names, hashes, canonical provenance, technical indexes, ranges, source browsing and localization metadata. Integrity does not prove author identity, complete analysis or reviewed operating procedures.',
+'Historical or partial bundles are rejected by default. For deliberate qualified inspection, check Allow historical/partial inspection and select the manifest again. A qualified pass remains historical or incomplete; it cannot approve missing knowledge or current-source behavior.'
+])])
+
+ENGINEERING.extend([
+('Offline translation and localized publication', [
+'Migration 008 adds the persistent translation cache key and JSON record. Cache identity covers saved knowledge revision, requested locales, provider pack hash, source segments and terminology. SQL state overlays cached metadata so source invalidation remains authoritative after database reopen. Approval requires current source review, complete translated prose and a named reviewer; it never updates authoritative source text.',
+'TDPHAtlasAdapter uses DAT.Runtime.LanguagePack plus its two copied core dependencies, original license and hashed snapshot provenance. Selected packs are bounded to 4 MiB, strictly UTF-8 and application scoped. Exact source phrase lookup and base-language fallback are explicit. Common code, SQL, paths and identifiers are protected during segmentation; unusual unmarked identifiers still need human review.',
+'DPH-LEARNING-6 publication writes localization.json and, when a locale is requested, a hashed HTML page and Localized_Sections.docx. Verified exact-revision cache entries are eligible only while the canonical source section is reviewed and has no pending tasks. Redacted source bodies use source fallback. The supplementary document explicitly limits its scope to authored bodies.',
+'Source navigation is separately opt-in. Only scoped captured text with matching source hashes is rendered as encoded, redacted HTML. Task masks use captured noncontainer ranges and original line starts. source-navigation.json records included line numbers and omission reasons. Validate checks scope, file identity, line order/counts, generations and disclosure metadata. No original source snapshot is shipped.'
+]),
+('Native validation and release evidence', [
+'The design-time Validate bundle controls dispatch validate_bundle to the worker before a database connection is required. The owner supplies an expected fingerprint independently. Stale rejection is default and historical inspection is an explicit qualification. Native reports distinguish integrity from human approval.',
+'The Win32 project enables DCC_LargeAddressAware in its IDE project options. The hardening and learning harnesses use the equivalent PE flag. The expanded pinned corpus exposed an out-of-memory failure after repeated captures and native workspace loading under the former address limit. Keep memory measurements and actual large-corpus validation with this change; the linker flag does not make memory consumption unbounded or establish a release budget.',
+'Run tools\\validate-wp7.ps1 elevated for the pinned reference hardening suite and before/after hash proof. It reads the current schema constant rather than an obsolete hardcoded version. The suite measures full capture, cached open, reassessment, message-pump gaps and peak process working set on recorded hardware. Measurements require owner-agreed budgets before release acceptance.',
+'The independent first-time programmer and source-review worksheet is docs\\WP7_Maintenance_Exercise.txt. Preserve actual participant answers, source citations, uncertainty judgments, assistance, timings and defects. Do not substitute automated tests or prepared instructions for AC-25 or independent explanation review.'
+])])
 
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
@@ -318,7 +355,9 @@ user_order = [
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
     'Retain captures and review rename continuity', 'Back up and restore a complete database',
-    'Publish manuals and handoffs', 'Validate and preserve exports',
+    'Publish manuals and handoffs', 'Translate and review saved sections',
+    'Publish localized text and source browsing', 'Validate a bundle in the application',
+    'Validate and preserve exports',
     'Troubleshoot common states', 'Practice a maintenance handoff',
 ]
 if set(user_order) != {heading for heading, _ in USER}:
@@ -400,7 +439,9 @@ def build(filename, title, audience, sections):
     for item in evidence:
         paragraph = doc.add_paragraph(item['path'])
         paragraph.paragraph_format.keep_with_next = True
-        run = doc.add_paragraph(item['sha256']).runs[0]
+        hash_paragraph = doc.add_paragraph(item['sha256'])
+        hash_paragraph.paragraph_format.space_after = Pt(3)
+        run = hash_paragraph.runs[0]
         run.font.name = 'Consolas'
         run.font.size = Pt(8)
     footer = section.footer.paragraphs[0]
@@ -431,5 +472,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 3, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 4, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

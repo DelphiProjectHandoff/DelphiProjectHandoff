@@ -27,8 +27,11 @@ $changed = @()
 foreach ($path in $beforeHashes.Keys) { if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $beforeHashes[$path]) { $changed += $path } }
 $computer = Get-CimInstance Win32_ComputerSystem
 $processor = Get-CimInstance Win32_Processor | Select-Object -First 1
+$schemaSource = Get-Content -LiteralPath DPH.Storage.Database.pas -Raw
+$schemaVersion = [int]([regex]::Match($schemaSource, 'CurrentSchemaVersion\s*=\s*(\d+)').Groups[1].Value)
+if ($schemaVersion -lt 1) { throw 'Cannot determine current storage schema version' }
 [ordered]@{ validated_utc=[DateTime]::UtcNow.ToString('o'); reference_commit=$baseline.commit; checked_files=$beforeHashes.Count; changed_files=$changed; test_exit=$testExit;
-    compiler='37.0.59082.6021'; target='Win32 Debug'; schema_version=2; cpu=$processor.Name; logical_processors=$computer.NumberOfLogicalProcessors; physical_memory_bytes=$computer.TotalPhysicalMemory;
+    compiler='37.0.59082.6021'; target='Win32 Debug'; schema_version=$schemaVersion; cpu=$processor.Name; logical_processors=$computer.NumberOfLogicalProcessors; physical_memory_bytes=$computer.TotalPhysicalMemory;
     budgets='Measurements only; no owner-agreed release performance budgets were supplied'; reviewer='Codex automated tests, not independent human acceptance' } |
     ConvertTo-Json -Depth 5 | Set-Content docs\wp7-input-validation.json -Encoding UTF8
 if ($changed.Count -gt 0) { throw 'Selected input or instruction changed during WP7 validation' }

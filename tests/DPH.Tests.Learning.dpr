@@ -1,5 +1,6 @@
 program DPH.Tests.Learning;
 {$APPTYPE CONSOLE}
+{$SETPEFLAGS $20}
 uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
@@ -9,7 +10,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, 
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas', DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
   DPH.Workspace.Worker in '..\DPH.Workspace.Worker.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas', DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
-var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot: string; ID: TGUID;
+var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArtifact,ReferenceBundle: string; ID: TGUID;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Store: TDPHKnowledgeStore; View: TDPHWorkspaceView; Model,ImageModel: TDPHDocumentModel; Explain: TDPHExplanationModel;
     Config,Generation: Int64; Rows: TJSONArray; V: TJSONValue; Row,Report: TJSONObject;
@@ -152,6 +153,17 @@ begin
                 Bitmap.SaveToFile(TPath.Combine(Root,'docs\rework-learning-workspace.png'));
               finally Bitmap.Free; end;
               finally BrowserBitmap.Free; end;
+              Form.GraphGroupingCombo.ItemIndex:=2; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(nil);
+              Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+              WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
+              WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
+              Check(True,'Native grouped graph renders labeled source relationships in WebView2');
+              WaitHTML(Form.FlowBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
+              Check(True,'Grouped graph keeps wide diagrams inside their scrollable viewport');
+                WaitHTML(Form.FlowBrowser,'(()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");if(!graph)return "WAIT";graph.scrollIntoView();return "GRAPH_VISIBLE";})()','GRAPH_VISIBLE');
+                Application.ProcessMessages; TThread.Sleep(200);
+              BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\completion-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
               Form.Hide;
             finally Form.Free; end;
             end;
@@ -220,6 +232,22 @@ begin
               Check(True,'Narrow learning view wraps long source citations without horizontal overflow');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-reference-startup.png')); finally BrowserBitmap.Free; end;
+              ReferenceBundle:=TPath.Combine(TPath.GetDirectoryName(ReferenceDB),'reference-task');
+              if TFile.Exists(TPath.Combine(ReferenceBundle,'source-navigation.json')) then begin
+                Row:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(ReferenceBundle,'source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
+                try SourceArtifact:='';
+                  for V in Row.GetValue<TJSONArray>('files') do
+                    if V.GetValue<string>('state')='redacted_captured_text' then begin SourceArtifact:=V.GetValue<string>('artifact'); Break; end;
+                finally Row.Free; end;
+                Check(SourceArtifact<>'','Pinned source browsing has an eligible page for native visual review');
+                Form.WorkspaceTabs.ActiveTab:=Form.PublishTab; Form.PublishBrowser.OnShouldLoadURL:=nil;
+                Form.PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; Form.PublishBrowser.Visible:=True;
+                Form.PublishBrowser.Navigate('file://'+TPath.Combine(ReferenceBundle,SourceArtifact.Replace('/',PathDelim)));
+                WaitHTML(Form.PublishBrowser,'(()=>{const line=document.querySelector("pre span[id^=L]");if(!line)return "WAIT";line.scrollIntoView();return "SOURCE_LINES_READY";})()','SOURCE_LINES_READY');
+                Application.ProcessMessages; TThread.Sleep(200);
+                BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
+                try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\completion-source-lines-browser.png')); finally BrowserBitmap.Free; end;
+              end;
               Form.Hide;
             finally Form.Free; end;
             Check(not Model.Document.GetValue<Boolean>('analysis_complete'),'Learning does not clear partial reference coverage');
