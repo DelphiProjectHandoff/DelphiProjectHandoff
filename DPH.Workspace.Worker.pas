@@ -6,7 +6,7 @@ type
   TDPHWorkspaceRequest = record
     Command,Database,Entry,Configuration,Platform: string;
     Defines,ExternalRoots: TArray<string>;
-    KnowledgeID,ExpectedRevision,GenerationID: Int64;
+    KnowledgeID,ExpectedRevision,GenerationID,BaselineGeneration: Int64;
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
     DocumentKind,Audience: string;
     LinksJSON: string;
@@ -41,6 +41,7 @@ type
     Translations: TJSONArray;
     TranslationRevision: Int64;
     ValidationReport: string;
+    Comparison: TJSONObject;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -63,10 +64,10 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
+begin Comparison.Free; Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -139,7 +140,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['compare','open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -234,6 +235,23 @@ begin
               LifecycleResponse.Detached:=Request.Entry=''; LifecycleResponse.MessageText:='Saved runtime claims loaded (newest 50). No program executed; contributor evidence remains unverified.';
               if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
             finally LifecycleResponse.Free; end;
+            Continue;
+          end;
+          if Request.Command='compare' then begin
+            if (Request.BaselineGeneration<=0) or (Request.GenerationID<=0) then raise EArgumentException.Create('Select two saved generation IDs');
+            Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.BaselineGeneration)) as TJSONObject;
+            Document:=nil;
+            try
+              Document:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
+              if (Cached=nil) or (Document=nil) then raise EReadError.Create('A selected generation has no retained workspace cache. See Database tools; removed cache files cannot be reconstructed.');
+              LifecycleResponse:=TDPHWorkspaceResponse.Create;
+              try
+                LifecycleResponse.Comparison:=TDPHRevisionComparison.Compare(Cached,Document,Request.Body,Request.SearchOffset);
+                LifecycleResponse.SearchGeneration:=Request.GenerationID; LifecycleResponse.Detached:=Request.Entry='';
+                LifecycleResponse.MessageText:='Captured revision comparison ready; no selected source was read or changed.';
+                if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+              finally LifecycleResponse.Free; end;
+            finally Document.Free; Document:=nil; Cached.Free; Cached:=nil; end;
             Continue;
           end;
           if Request.Command='import_screenshot' then begin

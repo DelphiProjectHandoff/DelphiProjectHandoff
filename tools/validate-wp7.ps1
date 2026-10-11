@@ -13,6 +13,7 @@ foreach ($file in Get-ChildItem tests\fixtures -Recurse -File) { $beforeHashes[$
 $instructionHashes = @{
     'DPH_CODEX_HANDOFF.txt'='7613f963a7cc7ac10b9408058b82a1bc12624dac47119984a160f4fa8c03b8e4'
     'DPH_Master_Development_Specification_v1.md'='0e150cb409905b10512cbd72b4edd9439eb70cb1bc7fb585f1f56f92ee2f0469'
+    'DPH_PHASE1_MASTER_REQUIREMENTS.md'='ac149f4b8ca91f7dd766ab92c360f736a413aaa219a8dd76d4e88997eb3cb504'
     'C:\Users\marti\.codex\agents.md'='8026000ea01d0fbd7382b6e328a54068ee5230b6fe50952ed97733a5a15b44eb'
 }
 foreach ($name in $instructionHashes.Keys) {

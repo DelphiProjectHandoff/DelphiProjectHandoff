@@ -1,0 +1,78 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+tests\DPH.Tests.Phase1.dpr(14) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+1978 lines, 0.38 seconds, 8460824 bytes code, 324088 bytes data.
+PASS 1: Empty profile cannot claim a documented purpose
+PASS 2: Profile requires attribution and evidence context
+PASS 3: Unwritten project metadata is explicitly unknown
+PASS 4: Unknown typed field is rejected
+PASS 5: Profile fixture generation publishes
+PASS 6: Profile is attributed, revision-pinned and awaiting human review
+PASS 7: Exact structured fields survive SQLite publication
+PASS 8: Readable body and typed fields agree (stored 1343, expected 1343)
+PASS 9: Only one profile can belong to the selected project
+PASS 10: Text cannot diverge silently from structured profile fields
+PASS 11: Ordinary text editing cannot discard typed profile data
+PASS 12: Named review preserves structured fields in a new immutable revision
+PASS 13: A stale profile editor cannot overwrite newer review
+PASS 14: Editing reviewed ownership preserves history and reopens review
+PASS 15: Authored project profile participates in project search
+PASS 16: Typed profile updates preserve database integrity
+PASS 17: Reopened database retains exact profile fields
+PASS 18: IDE-designed profile fields validate and produce an attributed draft
+PASS 19: Native editor round-trips the saved owner field
+PASS Phase1 profile: 19 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+12917 lines, 1.24 seconds, 9889000 bytes code, 344520 bytes data.
+PASS 1: Source quality reports captured routine metrics
+PASS 2: Routine metric retains the actual source fingerprint
+PASS 3: Structural decision score counts the captured if and while without claiming exact cyclomatic complexity
+PASS 4: Equal nontrivial significant-token bodies become qualified duplicate candidates
+PASS 5: Different literal case is preserved and does not become equal-body evidence
+PASS 6: Private routine without a captured incoming reference is an investigation candidate
+PASS 7: Statement disconnected after Exit is surfaced with bounded CFG evidence
+PASS 8: Iterative call-cycle analysis finds a three-routine strongly connected component
+PASS 9: Same captured inputs produce deterministic source-quality evidence
+PASS 10: Candidate report explicitly rejects unsupported unused-code conclusions
+PASS 11: Quality evidence is retained in the captured workspace
+Native form created
+PASS 12: Native Source quality page lists captured routine metrics
+PASS 13: Native duplicate inspection supplies qualified explanation and member evidence
+PASS 14: Quality finding navigates to its canonical source-backed explanation
+PASS 15: Source quality analysis leaves selected input bytes unchanged
+PASS Phase1 source quality: 15 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(77) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(91) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(106) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'After' never used
+tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'Before' never used
+12939 lines, 1.22 seconds, 9888372 bytes code, 344724 bytes data.
+PASS 1: Changed file is identified by captured fingerprints
+PASS 2: Removed symbol is retained as Before evidence
+PASS 3: Added symbol is retained as After evidence
+PASS 4: Changed routine flow is distinguished from a file-level change
+PASS 5: Side-by-side evidence includes changed captured expressions
+PASS 6: Unchanged captured routine is qualified when another routine changes its file
+PASS 7: Comparison explains historical-source and inference limitations
+PASS 8: Native page displays the bounded revision results
+PASS 9: Native labeled panes show original and changed evidence
+PASS 10: Identical capture has no changes
+PASS 11: Control-flow edge changes are detected even when recorded expressions stay unchanged
+PASS 12: Configuration mismatch is rejected instead of reported as source changes
+PASS 13: Comparison result page is bounded and preserves the matching total
+PASS 14: Next comparison page reaches remaining changes
+PASS 15: Comparison leaves the project database consistent
+PASS 16: Background worker compares both verified retained database captures
+PASS 17: Missing historical cache is explained without inventing source history
+PASS revision comparison: 17 checks

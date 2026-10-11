@@ -1,4 +1,5 @@
 migrations/*.sql text eol=lf
+DPH_PHASE1_MASTER_REQUIREMENTS.md -text
 docs/*-validation.json text eol=lf
 tests/fixtures/** text eol=lf
 dependencies/DelphiAppTranslation/*.pas -text whitespace=cr-at-eol

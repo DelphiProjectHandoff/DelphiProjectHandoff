@@ -37,7 +37,8 @@
     <DCCReference Include="DPH.Project.Inventory.pas" />
     <DCCReference Include="DPH.Project.Analysis.pas" />
     <DCCReference Include="DPH.Analysis.Model.pas" />
-    <DCCReference Include="DPH.Analysis.Quality.pas" />
+        <DCCReference Include="DPH.Analysis.Quality.pas" />
+        <DCCReference Include="DPH.Workspace.Comparison.pas" />
     <DCCReference Include="DPH.Analysis.Symbols.pas" />
     <DCCReference Include="DPH.Analysis.Flow.pas" />
     <DCCReference Include="DPH.Analysis.Async.pas" />

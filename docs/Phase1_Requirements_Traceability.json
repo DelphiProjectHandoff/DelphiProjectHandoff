@@ -352,9 +352,16 @@
       "id": "02.20",
       "domain": "DPH-02",
       "requirement": "Source-code comparison across revisions",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Comparison.pas",
+        "DPH.Workspace.Worker.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.Comparison.dpr",
+        "docs/phase1-comparison-validation.json",
+        "docs/guides/Run_And_Test.txt"
+      ],
+      "limitation": "Retained captures from the same database and equivalent analysis contract: changed file fingerprints, added/removed symbol identities, declarations, flow expressions/edges and outgoing relationships, including event bindings. Bounded filtered pages with side-by-side evidence. Does not reconstruct historical source bytes, prove semantic equivalence or automatically approve rename/move continuity."
     },
     {
       "id": "03.01",
@@ -3053,9 +3060,16 @@
       "id": "22.08",
       "domain": "DPH-22",
       "requirement": "Prechange and postchange comparisons",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Comparison.pas",
+        "DPH.Workspace.Worker.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.Comparison.dpr",
+        "docs/phase1-comparison-validation.json",
+        "docs/guides/Run_And_Test.txt"
+      ],
+      "limitation": "Retained captures from the same database and equivalent analysis contract: changed file fingerprints, added/removed symbol identities, declarations, flow expressions/edges and outgoing relationships, including event bindings. Bounded filtered pages with side-by-side evidence. Does not reconstruct historical source bytes, prove semantic equivalence or automatically approve rename/move continuity."
     },
     {
       "id": "22.09",
@@ -3554,9 +3568,16 @@
       "id": "EX-046",
       "domain": "EX",
       "requirement": "Track changes to important procedures across revisions",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Comparison.pas",
+        "DPH.Workspace.Worker.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.Comparison.dpr",
+        "docs/phase1-comparison-validation.json",
+        "docs/guides/Run_And_Test.txt"
+      ],
+      "limitation": "Retained captures from the same database and equivalent analysis contract: changed file fingerprints, added/removed symbol identities, declarations, flow expressions/edges and outgoing relationships, including event bindings. Bounded filtered pages with side-by-side evidence. Does not reconstruct historical source bytes, prove semantic equivalence or automatically approve rename/move continuity."
     },
     {
       "id": "EX-047",
@@ -3906,9 +3927,16 @@
       "id": "EX-090",
       "domain": "EX",
       "requirement": "Detect changed source symbols and event bindings",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Comparison.pas",
+        "DPH.Workspace.Worker.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.Comparison.dpr",
+        "docs/phase1-comparison-validation.json",
+        "docs/guides/Run_And_Test.txt"
+      ],
+      "limitation": "Retained captures from the same database and equivalent analysis contract: changed file fingerprints, added/removed symbol identities, declarations, flow expressions/edges and outgoing relationships, including event bindings. Bounded filtered pages with side-by-side evidence. Does not reconstruct historical source bytes, prove semantic equivalence or automatically approve rename/move continuity."
     },
     {
       "id": "EX-091",

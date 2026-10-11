@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-6';
+const DPHPublishVersion = 'DPH-LEARNING-7';
 type
   TDPHDocumentModel = class
   private
@@ -19,7 +19,7 @@ type
     property LocalDisplay: Boolean read FLocalDisplay;
   end;
 implementation
-uses System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations;
+uses System.Classes, System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations;
 class function TDPHDocumentModel.HTML(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
 class function TDPHDocumentModel.Redact(const AText: string): string;
@@ -32,11 +32,17 @@ begin
   Result:=TRegEx.Replace(Result,'\beyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b','[REDACTED token]');
 end;
 class function TDPHDocumentModel.Scrub(AValue: TJSONValue): TJSONValue;
-var Pair: TJSONPair; V: TJSONValue; J: TJSONObject; A: TJSONArray;
+var Pair: TJSONPair; V,Structured: TJSONValue; J: TJSONObject; A: TJSONArray;
 begin
   if AValue is TJSONObject then begin J:=TJSONObject.Create; Result:=J; for Pair in TJSONObject(AValue) do
     if MatchText(Pair.JsonString.Value,['password','passwd','secret','api_key','apikey','access_token','authorization','private_key']) then J.AddPair(Pair.JsonString.Value,'[REDACTED]')
-    else J.AddPair(Pair.JsonString.Value,Scrub(Pair.JsonValue)); end
+    else if Pair.JsonString.Value='structured_json' then begin
+      Structured:=TJSONObject.ParseJSONValue(Pair.JsonValue.Value);
+      try
+        if not (Structured is TJSONObject) then raise EReadError.Create('Authored structured metadata must be a JSON object');
+        J.AddPair('structured_record',Scrub(Structured));
+      finally Structured.Free; end;
+    end else J.AddPair(Pair.JsonString.Value,Scrub(Pair.JsonValue)); end
   else if AValue is TJSONArray then begin A:=TJSONArray.Create; Result:=A; for V in TJSONArray(AValue) do A.AddElement(Scrub(V)); end
   else if AValue is TJSONString then Result:=TJSONString.Create(Redact(AValue.Value)) else Result:=AValue.Clone as TJSONValue;
 end;

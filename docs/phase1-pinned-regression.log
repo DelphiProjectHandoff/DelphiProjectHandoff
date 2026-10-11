@@ -1,0 +1,45 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6398 lines, 0.56 seconds, 3476640 bytes code, 148332 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+12983 lines, 1.16 seconds, 9897860 bytes code, 344892 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0
+PASS 2: Cached project verified; source fingerprints unchanged
+PASS 3: Moved database resolves its adjacent verified cache without old absolute paths
+PASS 4: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0 | human knowledge review pending
+PASS 5: Explicit relocation adopts only the verified copied source root
+PASS 6: Verified source relocation preserves logical symbols and exact source ranges
+PASS 7: Relocation preserves authored knowledge
+PASS 8: Relocation cannot manufacture human verification
+PASS 9: Relocation retains SQLite and foreign-key integrity
+PASS 10: Different source contents cannot be accepted as relocation
+PASS 11: Rejected relocation retains prior source identity
+PASS 12: Full fixture passes independent semantic and JSONL validation
+PASS 13: Rehashed but inconsistent JSONL is rejected against canonical facts
+PASS 14: Rehashed cross-generation source fact is rejected
+PASS 15: PARTIAL captured analysis; previous complete head retained | routines rebuilt 733, reused 0
+PASS 16: Pinned reference inventory matches approved v6.0 fingerprint
+PASS 17: Pinned reference retains honest partial coverage
+PASS 18: Pinned reference expanded symbol baseline survives normalized database publication
+PASS 19: Cached project verified; source fingerprints unchanged
+PASS 20: Cached reference preserves the exact semantic generation
+PASS 21: PARTIAL captured analysis; previous complete head retained | routines rebuilt 339, reused 394
+PASS 22: Full and incremental reference pipelines produce identical semantic graphs
+PASS 23: Reference Explorer locates convert event handler
+PASS 24: Reference FMX inspector presents the selected captured handler
+PASS 25: Pinned reference task handoff validates with explicit partial/stale evidence
+PASS 26: Default validation rejects a reference bundle explicitly marked stale
+PASS 27: Real FMX WebView2 loads the offline generated page and runs local search JavaScript
+PASS 28: Offline search filters actual rendered symbol articles
+PASS 29: Reference task includes an eligible redacted source browsing page
+PASS 30: Real FMX WebView2 renders source excerpts with original line anchors
+PASS 31: Source excerpt browser bitmap captured for visual review
+PASS 32: Large reference database retains integrity after multiple captures and export
+PASS WP7: 32 checks
+PASS read-only proof: 2448 unchanged files

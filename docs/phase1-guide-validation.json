@@ -1,0 +1,189 @@
+{
+  "guide_version": 5,
+  "source_hashes_verified": 37,
+  "renderer": "LibreOffice via document skill render_docx.py",
+  "reviewer": "implementing agent; visual document review is not independent product acceptance",
+  "guides": [
+    {
+      "name": "DPH_User_Guide",
+      "pdf_pages": 19,
+      "pdf_sha256": "00fc9e4cd8cabf70ff9989237d16e4ff60ba9dca6b838b493875412adbdc9fe7",
+      "docx_sha256": "59b066a7f4c9c4c119102372b3dc7e27f29a21c1d7d9015f76cc812fb40b24db",
+      "pages": [
+        {
+          "page": 1,
+          "sha256": "e1c2b138b33305926fa3d07dbc22a63159d7488f5d4792697d8b0c4167b84e3a",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 2,
+          "sha256": "ecf4ccc7d1bff3d297ed872624ef31a177f3751106ab890ff386b2bfd4029902",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 3,
+          "sha256": "0a039630558917b6c186410f43e4a30b63f8be38eae85878480bf177a11440cb",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 4,
+          "sha256": "58be511d11e5ae935f521a0c0cc5c2c302806398ec0c96b22acdce06f6190189",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 5,
+          "sha256": "b0b700426095baf47ea20cd6e255037e35e1563addb1951c7a4fcdb615e28409",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 6,
+          "sha256": "78b305d158b9face113a7aec1258338ebaebd9f8505332beed6a17efe670215a",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 7,
+          "sha256": "e27fb75ff8eaf1a3e76e2bf65d211e3f11bba596b9265b99c6cd7d15cf45365d",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 8,
+          "sha256": "865a6957a0dbdc2f41236ca05f3c8a10f0c04be6a17c0eb9403c366a3873c947",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 9,
+          "sha256": "1fa09c42549a14b2cdc4756ab83aee57ba86475d42a509b128f82826634558d6",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 10,
+          "sha256": "47fdb08ccb76291b031d4227b79d2aeb4c2cb2fe7fef9deb609460c15e4bc727",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 11,
+          "sha256": "f8ce91923ba1957b5e52314c45ed2a3e30e16d26a36aef143313d4e952d06abf",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 12,
+          "sha256": "f1bca382f9312b6c332a79b7aae36ee714398ec87360ff0df4fa259c7f8bf2d6",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 13,
+          "sha256": "7fcb494b917df4e82a0120a7451023dce9298908a73dd0aa0aea7e1f2eac5cfb",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 14,
+          "sha256": "354314cd5467203e12bd8e9c22fb6d2a43eb8287d0ee8eac332e9c2d592dff12",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 15,
+          "sha256": "abfa2712e0e1a9f3e0a57c86ca345b167d2d7da01a4372f6a3771b1af80848b5",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 16,
+          "sha256": "b90c9e13f1ddd97460295464801a8ea73000028589f26df06e0e93fcac8e4c84",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 17,
+          "sha256": "16f007c28f638d0099b03e17c40fb1a09eca97f48423f0610fee93b22ce01a96",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 18,
+          "sha256": "124106da73ce2566a3c6beceb81ab916a91a90bd0be05cccd944e918914119e8",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 19,
+          "sha256": "596b89faedc5850a7dab4892d022e242171fba32bb74dc2e0de7f41b65ffde70",
+          "visual_review": "inspected; readable with no observed clipping"
+        }
+      ]
+    },
+    {
+      "name": "DPH_Engineering_Guide",
+      "pdf_pages": 14,
+      "pdf_sha256": "7dd6b4f0e55aaa644a0fa91ef7086f245743e80f934916a131015764cd3176dd",
+      "docx_sha256": "f0dad5c7172bf159e51d5dcbe8ac647b3350b6b2e9ad33ce808fed8d0ddfe186",
+      "pages": [
+        {
+          "page": 1,
+          "sha256": "3586d3c4663ee21b6177482188d580f1f234fe752e83bdbb156c26b09cab81b2",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 2,
+          "sha256": "165162454ca02a469a06a2e54c7409ce56ee678dffef626909035816f5510e3c",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 3,
+          "sha256": "a9ba172d1ac195a6fe11216833ce5da459cc0964430d67843eecdc5b82f16d16",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 4,
+          "sha256": "e8d24ff0ef20fc1e2fb4791151cd1e29cc6cedc2dbb6480d4766f01af1835a0a",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 5,
+          "sha256": "ee9c7ac98d362730ec853fdfaa2a7aaec3fee6f8f893edead62a617557c5b792",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 6,
+          "sha256": "909e3c2c22f418711f70e3781cf8b35a22e6817ae8ab49186b4e102b263d928b",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 7,
+          "sha256": "99e540156d7f74d7d3feff79ecb20795c7056f2375e86bc162ba2fb4a548e53c",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 8,
+          "sha256": "bc6c955120c6d94770cce62971e3e702e89399bbea7eda487c64500cd07831b7",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 9,
+          "sha256": "c68d2eb47e985e2d90105e75bf00e66fb8658611caca9d83e879d11a4baf8c06",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 10,
+          "sha256": "e150e6d5a912bc96d0f3ef594ad87aade6cbecd70a9b46e4a5f70af65b43eb44",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 11,
+          "sha256": "130405c73700d85e6b88873af4418883c0c177349e243496d8b14362b361e2fe",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 12,
+          "sha256": "5055dff5300ae2cd81fc77ef4abadfa5cf272aef0a98fb45cf3c9d4aad371375",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 13,
+          "sha256": "b36c7aca024261957d630259d3f11e1d2b1308025dca1c8739cb40f88a4f0757",
+          "visual_review": "inspected; readable with no observed clipping"
+        },
+        {
+          "page": 14,
+          "sha256": "e923aa509b813efed9bd4ce487bf61e8e90f46a04f0c63994899f6d2905f8503",
+          "visual_review": "inspected; readable with no observed clipping"
+        }
+      ]
+    }
+  ]
+}

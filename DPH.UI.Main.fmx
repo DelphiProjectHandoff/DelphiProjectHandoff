@@ -37,6 +37,7 @@ Items.Strings = (
 'Details'
 'Coverage'
 'Source quality'
+'Revision comparison'
 'Knowledge'
 'Knowledge links'
 'Review tasks'
@@ -617,6 +618,101 @@ DefaultExt = 'dphdb'
 Filter = 'DPH project database (*.dphdb)|*.dphdb'
 Title = 'Restore to a NEW database outside the selected source project'
 end
+  object ComparisonTab: TTabItem
+    Text = 'Revision comparison'
+    object ComparisonPurpose: TLabel
+      Align = Top
+      Height = 76
+      Margins.Left = 12
+      Margins.Right = 12
+      WordWrap = True
+      Text = 'Compare saved generations of this selected project. First open Database tools and click Preview retention to find generation IDs and retained caches. Enter the Before ID here; After is the currently displayed generation. Click Compare. Select a result to read its evidence side by side. This compares captured fingerprints and structure; it does not reconstruct historical source text.'
+    end
+    object ComparisonToolbar: THorzScrollBox
+      Align = Top
+      Height = 48
+      ShowScrollBars = True
+      object ComparisonBaselineEdit: TEdit
+        Position.X = 8
+        Position.Y = 4
+        Width = 180
+        Height = 30
+        TextPrompt = 'Before: saved generation ID'
+      end
+      object ComparisonFilterEdit: TEdit
+        Position.X = 196
+        Position.Y = 4
+        Width = 240
+        Height = 30
+        TextPrompt = 'Optional name, path or change filter'
+      end
+      object ComparisonRunButton: TButton
+        Position.X = 444
+        Position.Y = 4
+        Width = 110
+        Height = 30
+        Text = 'Compare'
+        OnClick = ComparisonClick
+      end
+      object ComparisonNextButton: TButton
+        Position.X = 562
+        Position.Y = 4
+        Width = 110
+        Height = 30
+        Enabled = False
+        Text = 'Next 200'
+        OnClick = ComparisonClick
+      end
+    end
+    object ComparisonStatus: TLabel
+      Align = Top
+      Height = 108
+      Margins.Left = 12
+      Margins.Right = 12
+      WordWrap = True
+      Text = 'No comparison loaded.'
+    end
+    object ComparisonList: TListBox
+      Align = Top
+      Height = 130
+      OnChange = ComparisonSelectionClick
+    end
+    object ComparisonBeforePanel: TLayout
+      Align = Left
+      Width = 400
+      object ComparisonBeforeLabel: TLabel
+        Align = Top
+        Height = 30
+        Text = 'Before: saved evidence'
+        TextSettings.Font.Size = 16
+      end
+      object ComparisonBeforeMemo: TMemo
+        Align = Client
+        ReadOnly = True
+        WordWrap = True
+        TextSettings.Font.Size = 16
+      end
+    end
+    object ComparisonSplitter: TSplitter
+      Align = Left
+      Width = 8
+    end
+    object ComparisonAfterPanel: TLayout
+      Align = Client
+      object ComparisonAfterLabel: TLabel
+        Align = Top
+        Height = 30
+        Text = 'After: displayed generation evidence'
+        TextSettings.Font.Size = 16
+      end
+      object ComparisonAfterMemo: TMemo
+        Align = Client
+        ReadOnly = True
+        WordWrap = True
+        TextSettings.Font.Size = 16
+      end
+    end
+  end
   object QualityTab: TTabItem
     Text = 'Source quality'
     object QualityPurpose: TLabel

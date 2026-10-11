@@ -96,7 +96,7 @@ ENGINEERING = [
 ('Architecture and boundaries', [
 'DPH is an independent Delphi FMX application. It has no converter runtime or build dependency. The pinned VCL2FMXConverter v6.0.0 corpus is test input only, at commit e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d. No converter source was copied into the current analyzer. Preserve the original planning documents and global agents.md byte for byte.',
 'The pipeline is selected project, bounded inventory, read-only byte acquisition, lexical and conditional processing, Pascal and form IR, semantic relationships and control flow, revision-consistent SQLite capture, cached workspace projection, curated knowledge and derived publication. Contract data remains separate from FMX. Every unsupported construct or unavailable dependency must remain diagnosable rather than being promoted into false completeness.',
-'All application controls are serialized in DPH.UI.Main.fmx and editable in the IDE. List contents and paint-box geometry are data projections. No scanned component class is instantiated. Avoid adding runtime-only controls, Pascal class helpers or an alternative authoritative store without explicit authorization.'
+'Application controls are serialized in DPH.UI.Main.fmx and DPH.UI.ProjectProfile.fmx and editable in the IDE. List contents and paint-box geometry are data projections. No scanned component class is instantiated. Avoid adding runtime-only controls, Pascal class helpers or an alternative authoritative store without explicit authorization.'
 ]),
 ('Rework and acceptance status', [
 'The owner rejected the earlier WP7 delivery as inadequate for learning and handoff. The statement that implementation through WP7 was complete has been withdrawn. docs/Rework_Requirements_Audit.txt compares the original plan with the implemented product and outstanding work. Historical WP reports remain historical evidence, not acceptance of the reworked experience.',
@@ -334,7 +334,7 @@ ENGINEERING.extend([
 ('Offline translation and localized publication', [
 'Migration 008 adds the persistent translation cache key and JSON record. Cache identity covers saved knowledge revision, requested locales, provider pack hash, source segments and terminology. SQL state overlays cached metadata so source invalidation remains authoritative after database reopen. Approval requires current source review, complete translated prose and a named reviewer; it never updates authoritative source text.',
 'TDPHAtlasAdapter uses DAT.Runtime.LanguagePack plus its two copied core dependencies, original license and hashed snapshot provenance. Selected packs are bounded to 4 MiB, strictly UTF-8 and application scoped. Exact source phrase lookup and base-language fallback are explicit. Common code, SQL, paths and identifiers are protected during segmentation; unusual unmarked identifiers still need human review.',
-'DPH-LEARNING-6 publication writes localization.json and, when a locale is requested, a hashed HTML page and Localized_Sections.docx. Verified exact-revision cache entries are eligible only while the canonical source section is reviewed and has no pending tasks. Redacted source bodies use source fallback. The supplementary document explicitly limits its scope to authored bodies.',
+'DPH-LEARNING-7 publication writes localization.json and, when a locale is requested, a hashed HTML page and Localized_Sections.docx. Verified exact-revision cache entries are eligible only while the canonical source section is reviewed and has no pending tasks. Redacted source bodies use source fallback. The supplementary document explicitly limits its scope to authored bodies.',
 'Source navigation is separately opt-in. Only scoped captured text with matching source hashes is rendered as encoded, redacted HTML. Task masks use captured noncontainer ranges and original line starts. source-navigation.json records included line numbers and omission reasons. Validate checks scope, file identity, line order/counts, generations and disclosure metadata. No original source snapshot is shipped.'
 ]),
 ('Native validation and release evidence', [
@@ -344,12 +344,47 @@ ENGINEERING.extend([
 'The independent first-time programmer and source-review worksheet is docs\\WP7_Maintenance_Exercise.txt. Preserve actual participant answers, source citations, uncertainty judgments, assistance, timings and defects. Do not substitute automated tests or prepared instructions for AC-25 or independent explanation review.'
 ])])
 
+USER.extend([
+('Record the selected application profile', [
+'Open a saved project, choose Projects in the upper-right page selector and click Project profile. Enter the named contributor, purpose and scope, and attribution or evidence context. Fill the known company, department, business unit, criticality, ownership, support, environment, dependency, lifecycle, maturity, vendor, licensing and architecture fields. Unknown fields remain explicitly not supplied.',
+'Click Apply to Knowledge draft. Inspect the generated body and click Save on Knowledge to persist it. Apply alone does not save. Reopen Project profile to edit its structured fields; the generated body is read-only. Saving never independently verifies the statements. Exact fields survive new revisions, named review, database reopen and canonical publication.'
+]),
+('Investigate source quality candidates', [
+'Choose Source quality in the page selector. Select Routine metrics, Duplicate bodies, Unreferenced candidates, Unreachable statements or Call cycles. Enter an optional name or source filter and click Filter. Select a row to read its meaning, source locations, hashes, generation and qualifications. Next 250 advances the bounded result page. Open explanation inspects a routine or the first group member.',
+'Structural decision score counts captured decisions; it is not compiler-exact cyclomatic complexity or a maintainability index. Duplicate candidates compare nontrivial significant-token bodies with exact literals and normalized identifier case, only in completely parsed files. Equal token sequences do not prove equivalent behavior. Missing incoming references and disconnected captured statements do not prove that code is unused or safe to delete. Static call cycles do not establish feasible runtime recursion or termination.',
+'An older detached capture may have no quality report. Attach matching source and reassess to obtain one. DPH retains the original evidence of detached caches rather than inventing new analysis from missing source.'
+]),
+('Compare captured revisions', [
+'Choose Database tools and click Preview retention. Note an earlier generation ID with a retained workspace cache. Choose Revision comparison, enter that ID in Before: saved generation ID and optionally enter a name, relative path or change filter. Click Compare. After is the generation currently displayed by DPH.',
+'Select a result. The labeled Before and After panes show declarations, source references, fingerprints and captured expressions or relationships. Drag the divider and scroll each pane to inspect the evidence. Next 200 advances the bounded result page. A missing cache produces an explicit error. Configuration and analyzer contracts must match.',
+'File changed compares captured fingerprints and availability. Captured structure changed compares declarations, routine flow nodes and edges, and outgoing relationships including recorded event bindings. Source file changed only means the containing file changed while this symbol retained the same captured structure. Historical source bytes are not reconstructed. Partial parsing may miss changes, and removed or added identities require named continuity review before treating them as a move or rename.'
+]),
+('Understand implementation status', [
+'The supplied Phase 1 inventory contains 533 numbered requirements plus presentation rules. Implementation and item-by-item reconciliation are in progress. The traceability file docs\\Phase1_Requirements_Traceability.json distinguishes implemented manual capture, partial behavior and unassessed items with evidence and limitations. Earlier WP acceptance and 0.3.0 packages do not establish completion of that larger inventory.',
+'Exact launch and test commands are maintained in docs\\guides\\Run_And_Test.txt. The new tools\\build-phase1.cmd suite checks structured profiles, source-quality findings and captured revision comparison. A PASS applies only to the stated behavior and inputs; it does not make unassessed requirements complete.'
+])])
+ENGINEERING.extend([
+('Structured project profile contract', [
+'Migration 009 adds an object-valued structured_json field to append-only knowledge revisions. TDPHProjectProfile validates 15 known text fields, required purpose and attribution, per-field bounds and a 64 KiB record bound. SaveKnowledge enforces stable project scope, title, kind and generated body, prevents ordinary-record conversion, duplicate profiles and loss of typed data, and preserves structured fields during named review and continuity revisions. Publication decodes typed metadata before recursive redaction, including revision history.',
+'DPH.UI.ProjectProfile.fmx defines every editor control at design time. Apply returns an attributed draft to the existing Knowledge save pipeline. It does not bypass unsaved-edit guards or automatically approve information. tests\\DPH.Tests.Phase1.dpr verifies persistence, review, stale editors, history, field bounds and native form behavior; publishing regressions check canonical, HTML and DOCX inclusion.'
+]),
+('Quality analysis and revision comparison', [
+'DPH.Analysis.Quality emits DPH-QUALITY-1 evidence during workspace capture. Routine metrics, eligible token-body equality, conservative missing-inbound and disconnected-CFG findings, and iterative call-graph strongly connected components use captured inputs only. The worker invalidates an older connected cache without this analyzer version. All findings remain qualified candidates.',
+'DPH.Workspace.Comparison compares two hash-verified retained captures from the same project database. It rejects differing selection and syntax or semantic analyzer contracts. Deterministic identity indexes distinguish file changes, symbol additions or removals, captured structure changes and file-only changes. Routine-local flow numbering avoids global node-number shifts. Results use filtered 200-row pages; individual structure displays are limited to 4000 characters with full-content structure hashes and explicit truncation.',
+'Comparison runs on the existing background worker. It reads retained database artifacts rather than current selected source files. Native comparison controls and evidence panes are declared in DPH.UI.Main.fmx. tests\\DPH.Tests.Comparison.dpr checks literal-expression changes, unchanged neighboring routines, flow-edge rewiring, identity changes, contract rejection, pages, native panes, worker loading and missing caches.',
+'The Phase 1 traceability ledger preserves the supplied requirements and limitations. Source comparison remains partial until optional historical source retention supports actual source-text differences; captured structural comparison must never be described as reconstructing those bytes. Human business answers and independent first-time-user acceptance remain separate evidence.'
+])])
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        paragraphs = [paragraph.replace('all eight immutable migration files', 'all nine immutable migration files').replace('Schema 8 is created through eight checksum-verified migrations.', 'Schema 9 is created through nine checksum-verified migrations.').replace('Schema 8 uses checksum-verified migrations 001 through 008.', 'Schema 9 uses checksum-verified migrations 001 through 009.').replace('Keep the deployed migrations and help folders and the Win32 WebView2Loader.dll supplied by the build beside the executable.', 'Keep migrations and help in the source checkout root, and WebView2Loader.dll beside the executable. A development launch locates its source checkout; an extracted distribution keeps all three beside the executable.') for paragraph in paragraphs]
+        chapters[index] = (heading, paragraphs)
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
-    'Attach a source project', 'Open cached work', 'Manage the project catalog',
+    'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
-    'Read source and graph evidence', 'Choose graph scope and grouping',
+    'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
     'Read a routine as a beginner', 'Inspect screens', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
@@ -358,7 +393,7 @@ user_order = [
     'Publish manuals and handoffs', 'Translate and review saved sections',
     'Publish localized text and source browsing', 'Validate a bundle in the application',
     'Validate and preserve exports',
-    'Troubleshoot common states', 'Practice a maintenance handoff',
+    'Troubleshoot common states', 'Practice a maintenance handoff', 'Understand implementation status',
 ]
 if set(user_order) != {heading for heading, _ in USER}:
     raise RuntimeError('User-guide outline does not cover every maintained chapter')
@@ -405,9 +440,11 @@ def build(filename, title, audience, sections):
     field(doc.add_paragraph().add_run(), 'separate')
     for heading, _ in sections:
         entry = doc.add_paragraph(heading)
-        entry.paragraph_format.space_after = Pt(3)
+        entry.paragraph_format.space_after = Pt(0)
+        entry.paragraph_format.line_spacing = 1.0
     entry = doc.add_paragraph('Source and revision evidence')
-    entry.paragraph_format.space_after = Pt(3)
+    entry.paragraph_format.space_after = Pt(0)
+    entry.paragraph_format.line_spacing = 1.0
     field(doc.add_paragraph().add_run(), 'end')
     doc.add_page_break()
     for heading, paragraphs in sections:
@@ -433,7 +470,7 @@ def build(filename, title, audience, sections):
     evidence = []
     for source in sorted(ROOT.glob('DPH.*.pas')):
         evidence.append({'path': source.name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
-    for name in ['DPH.UI.Main.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
+    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
         source = ROOT / name
         evidence.append({'path': name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
     for item in evidence:
@@ -459,7 +496,9 @@ def build(filename, title, audience, sections):
     return evidence
 
 required = {
-    'DPH.UI.Main.pas': ['PublishClick', 'KnowledgeClick', 'DiscardKnowledgeClick', 'BrowserShouldLoad'],
+    'DPH.UI.Main.pas': ['PublishClick', 'KnowledgeClick', 'DiscardKnowledgeClick', 'BrowserShouldLoad', 'ProjectProfileClick', 'QualityClick', 'LoadComparison'],
+    'DPH.Workspace.Comparison.pas': ['Compare', 'EvidenceText'],
+    'DPH.Analysis.Quality.pas': ['DPHQualityVersion', 'Analyze'],
     'DPH.Storage.Database.pas': ['SaveKnowledge', 'ReviewKnowledge', 'RecordExport', 'PublishGeneration'],
     'DPH.Publish.Export.pas': ['WriteGuide', 'Validate'],
     'DPH.Publish.Translation.pas': ['TranslateProse', 'Review'],
@@ -472,5 +511,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 4, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 5, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

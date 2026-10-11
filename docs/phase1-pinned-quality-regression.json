@@ -1,0 +1,11 @@
+﻿{
+  "checks_passed": 32,
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp7-tests-{FC9608F6-3847-4F02-97D0-50B0FCA35EF2}",
+  "reference_bundle": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp7-tests-{FC9608F6-3847-4F02-97D0-50B0FCA35EF2}\\reference-task",
+  "reference_full_ms": 90684,
+  "reference_cached_ms": 6939,
+  "reference_incremental_ms": 86540,
+  "ui_message_pump_max_gap_ms": 238,
+  "peak_working_set_bytes": 1943461888,
+  "independent_first_time_programmer": "not_run; requires a human participant"
+}

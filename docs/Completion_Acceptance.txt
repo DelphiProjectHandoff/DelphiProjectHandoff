@@ -23,7 +23,7 @@ Run and test directions
 docs\guides\Run_And_Test.txt provides exact launch paths, first-use steps,
 translation practice, publishing/validation steps and developer commands.
 The full editable User and Engineering Guides are in docs\guides; companion PDFs
-are in docs\pdf. Current manuals identify 32 implementation source hashes,
+are in docs\pdf. Current manuals identify 37 implementation source hashes,
 have dated title pages and editable populated contents tables, and were rendered
 with LibreOffice and visually inspected page by page.
 
@@ -58,8 +58,10 @@ It contains 387 original features, 94 expansion records, 12 scope rules and
 numbered requirements and separately identifies unnumbered presentation rules.
 Reconciliation and implementation are IN PROGRESS. Earlier WP acceptance,
 manuals and 0.3.0 packages do not establish completion of this larger inventory.
-New structured project-profile and source-quality checks are recorded in the
-phase1-* evidence files. Unassessed and partial requirements are not passes.
+New structured project-profile, source-quality and retained-revision comparison
+checks are recorded in the phase1-* evidence files. Guide version 5 has 19 user
+pages and 14 engineering pages; phase1-guide-validation.json records current
+source, artifact and visually inspected page hashes. Unassessed and partial requirements are not passes.
 
 Translation and source disclosure
 The owner identified local VCL2FMX as the reference. DPH independently vendors

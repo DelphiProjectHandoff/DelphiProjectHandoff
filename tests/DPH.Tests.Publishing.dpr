@@ -250,12 +250,17 @@ begin
             try Check(J.GetValue<Integer>('source_fallback_count')=0,'Fenced code, SQL and paths are protected without becoming missing prose'); finally J.Free; end;
           finally Cache.Free; Provider:=nil; end;
           J:=TJSONObject.ParseJSONValue('{"record_type":"project_profile","fields":{"purpose":"Profile publication fixture","owner":"Named fixture owner","evidence":"Synthetic acceptance evidence; not a live program observation"}}') as TJSONObject;
-          try Store.SaveKnowledge(0,0,Generation,'Project profile',TDPHProjectProfile.Body(J),'Profile fixture author','orientation','','overview','all','','',J.ToJSON);
+          try J.GetValue<TJSONObject>('fields').AddPair('architecture','secret="synthetic-profile-secret"; synthetic redaction test');
+            Store.SaveKnowledge(0,0,Generation,'Project profile',TDPHProjectProfile.Body(J),'Profile fixture author','orientation','','overview','all','','',J.ToJSON);
           finally J.Free; end;
           Rows:=Store.KnowledgeJSON;
           try Again:=TDPHDocumentModel.Create(View,Rows,[],[],False,False);
             try
               Check(Again.Document.ToJSON.Contains('Profile publication fixture'),'Canonical publication includes attributed project profile text');
+              Check(not Again.Document.ToJSON.Contains('synthetic-profile-secret'),'Structured profile values are decoded before export redaction');
+              Failed:=False; for V in Again.Document.GetValue<TJSONArray>('knowledge') do
+                if V.GetValue<string>('title')='Project profile' then Failed:=V.GetValue<string>('structured_record.fields.purpose')='Profile publication fixture';
+              Check(Failed,'Canonical profile retains typed structured fields rather than an opaque encoded JSON string');
               TDPHPublisher.Export(Again,Store,TPath.Combine(Work,'project-profile'));
               TDPHPublisher.Validate(TPath.Combine(Work,'project-profile'),Again.Document.GetValue<string>('input_fingerprint'));
               Text:=TFile.ReadAllText(TPath.Combine(Work,'project-profile\index.html'),TEncoding.UTF8);

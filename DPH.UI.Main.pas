@@ -174,6 +174,17 @@ type
     QualityRefreshButton,QualityNextButton,QualityOpenButton: TButton;
     QualityList: TListBox;
     QualityMemo: TMemo;
+    ComparisonTab: TTabItem;
+    ComparisonPurpose,ComparisonStatus,ComparisonBeforeLabel,ComparisonAfterLabel: TLabel;
+    ComparisonToolbar: THorzScrollBox;
+    ComparisonBaselineEdit,ComparisonFilterEdit: TEdit;
+    ComparisonRunButton,ComparisonNextButton: TButton;
+    ComparisonList: TListBox;
+    ComparisonBeforePanel,ComparisonAfterPanel: TLayout;
+    ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
+    ComparisonSplitter: TSplitter;
+    procedure ComparisonClick(Sender: TObject);
+    procedure ComparisonSelectionClick(Sender: TObject);
     procedure QualityClick(Sender: TObject);
     procedure QualitySelectionClick(Sender: TObject);
     procedure TranslationClick(Sender: TObject);
@@ -295,6 +306,8 @@ type
     FKnowledgeStructuredJSON: string;
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
+    FComparison: TJSONObject;
+    FComparisonOffset: Integer;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
@@ -315,6 +328,7 @@ type
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
+    procedure LoadComparison(AReport: TJSONObject);
     procedure LoadTranslations(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
@@ -322,7 +336,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -367,7 +381,7 @@ begin
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
-  FQualityRows.Free;
+  FComparison.Free; FQualityRows.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -627,6 +641,8 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
+  ComparisonStatus.Text:='No comparison loaded.'; ComparisonNextButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
@@ -676,6 +692,7 @@ begin
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
+    if (R.Comparison<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadComparison(R.Comparison); R.Comparison:=nil; end;
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
@@ -733,6 +750,8 @@ begin
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
     SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
   SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
+  FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
+  ComparisonNextButton.Enabled:=False; ComparisonStatus.Text:='Compare two retained captures; the displayed project supplies the After generation.';
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:='Refresh tasks for this captured generation.'; ReviewAfterMemo.Text:='';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
@@ -782,6 +801,46 @@ begin
   RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions; QualityClick(nil);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
+end;
+procedure TDPHMainForm.ComparisonClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Baseline: Int64;
+begin
+  if FBusy then begin StatusLabel.Text:='Wait for the current operation to finish.'; Exit; end;
+  if (FView=nil) or (FDatabase='') then begin StatusLabel.Text:='Open a saved project database first.'; Exit; end;
+  if not TryStrToInt64(ComparisonBaselineEdit.Text.Trim,Baseline) or (Baseline<=0) then begin
+    StatusLabel.Text:='Enter a positive saved generation ID from Database tools > Preview retention.'; Exit;
+  end;
+  if Sender=ComparisonNextButton then Inc(FComparisonOffset,200) else FComparisonOffset:=0;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='compare'; Request.Database:=FDatabase; Request.Entry:=FEntry;
+  Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); Request.BaselineGeneration:=Baseline;
+  Request.Body:=ComparisonFilterEdit.Text; Request.SearchOffset:=FComparisonOffset;
+  FWorker.Submit(Request); FBusy:=True; FPendingCommand:='compare';
+  StatusLabel.Text:='Comparing saved evidence in the background...';
+end;
+procedure TDPHMainForm.LoadComparison(AReport: TJSONObject);
+var Value: TJSONValue;
+begin
+  ComparisonList.Items.Clear; FreeAndNil(FComparison); FComparison:=AReport;
+  ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
+  for Value in FComparison.GetValue<TJSONArray>('changes') do
+    ComparisonList.Items.Add(StringReplace(Value.GetValue<string>('kind'),'_',' ',[rfReplaceAll])+' | '+Value.GetValue<string>('key'));
+  ComparisonStatus.Text:='Before generation '+FComparison.GetValue('before_generation').Value+' > After generation '+
+    FComparison.GetValue('after_generation').Value+' | '+FComparison.GetValue('total_matching').Value+' matching changes | page begins at '+
+    IntToStr(FComparison.GetValue<Integer>('offset')+1)+sLineBreak+FComparison.GetValue<string>('definition');
+  ComparisonNextButton.Enabled:=FComparison.GetValue<Boolean>('more');
+  if ComparisonList.Count>0 then begin ComparisonList.ItemIndex:=0; ComparisonSelectionClick(nil); end
+  else ComparisonBeforeMemo.Text:='No matching changes in the captured evidence. This does not prove complete semantic equivalence.';
+end;
+procedure TDPHMainForm.ComparisonSelectionClick(Sender: TObject);
+var Row: TJSONObject; Value: TJSONValue;
+begin
+  if (FComparison=nil) or (ComparisonList.ItemIndex<0) then Exit;
+  if ComparisonList.ItemIndex>=FComparison.GetValue<TJSONArray>('changes').Count then Exit;
+  Row:=FComparison.GetValue<TJSONArray>('changes').Items[ComparisonList.ItemIndex] as TJSONObject;
+  Value:=Row.GetValue('before'); if Value is TJSONObject then ComparisonBeforeMemo.Text:=TDPHRevisionComparison.EvidenceText(Value as TJSONObject)
+  else ComparisonBeforeMemo.Text:='Absent from the Before capture.';
+  Value:=Row.GetValue('after'); if Value is TJSONObject then ComparisonAfterMemo.Text:=TDPHRevisionComparison.EvidenceText(Value as TJSONObject)
+  else ComparisonAfterMemo.Text:='Absent from the After capture.';
 end;
 procedure TDPHMainForm.QualityClick(Sender: TObject);
 const Names: array[0..4] of string = ('routines','duplicate_bodies','unreferenced_candidates','unreachable_candidates','call_cycles');
