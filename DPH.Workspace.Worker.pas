@@ -10,6 +10,7 @@ type
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
     DocumentKind,Audience: string;
     LinksJSON: string;
+    QuestionJSON: string;
     OldEntityKey: string;
     SearchKind: string;
     SearchOffset: Integer;
@@ -226,7 +227,7 @@ begin
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin
             if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,
-              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience,Request.LinksJSON);
+              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience,Request.LinksJSON,Request.QuestionJSON);
             if Request.Command='review_knowledge' then
             begin
               if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');

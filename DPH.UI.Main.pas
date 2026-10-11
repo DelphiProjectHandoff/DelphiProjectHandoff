@@ -130,6 +130,14 @@ type
     RefreshReviewTasksButton,OpenReviewKnowledgeButton,ReviewImpactButton,VerifyTaskButton,RetireTaskButton: TButton;
     ReviewComparison: TLayout;
     ReviewSplitter: TSplitter;
+    QuestionsTab: TTabItem;
+    QuestionsPurpose: TLabel;
+    QuestionsToolbar: TLayout;
+    QuestionsList: TListBox;
+    QuestionMemo: TMemo;
+    RefreshQuestionsButton,QuestionEvidenceButton,AnswerQuestionButton: TButton;
+    procedure QuestionsClick(Sender: TObject);
+    procedure QuestionSelectionClick(Sender: TObject);
     procedure ReviewTasksClick(Sender: TObject);
     procedure ReviewTaskSelectionClick(Sender: TObject);
     procedure KnowledgeLinksClick(Sender: TObject);
@@ -233,6 +241,9 @@ type
     FCoverage: TJSONObject;
     FLinkTargets,FEditableLinks: TJSONArray;
     FReviewTasks: TJSONArray;
+    FQuestions: TJSONArray;
+    FKnowledgeQuestionJSON: string;
+    procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
     procedure RefreshLearning;
@@ -297,7 +308,7 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free;
+  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -493,6 +504,7 @@ begin
     if KnowledgeDocumentCombo.ItemIndex>0 then R.DocumentKind:=KnowledgeDocumentCombo.Items[KnowledgeDocumentCombo.ItemIndex];
     if KnowledgeAudienceCombo.ItemIndex>0 then R.Audience:=KnowledgeAudienceCombo.Items[KnowledgeAudienceCombo.ItemIndex];
     R.LinksJSON:=FEditableLinks.ToJSON;
+    R.QuestionJSON:=FKnowledgeQuestionJSON;
   end;
   if ACommand='publish' then
   begin
@@ -503,7 +515,7 @@ begin
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
-  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON;
+  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 var SelectedDatabase: string;
@@ -561,6 +573,7 @@ begin
   FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
+  FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
@@ -595,7 +608,7 @@ begin
       if FView=nil then HelpClick(nil);
     end;
     if R.Knowledge<>nil then begin
-      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON) then FKnowledgeEdited:=False;
+      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
@@ -689,7 +702,7 @@ begin
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshLearning; RefreshCoverage;
+  RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions;
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
 end;
@@ -719,6 +732,51 @@ begin
       CoverageList.Items.Add(Row.GetValue<string>('severity')+' | '+Row.GetValue<string>('code')+' | '+Row.GetValue<string>('message'));
     end;
   finally Text.Free; end;
+end;
+procedure TDPHMainForm.RefreshQuestions;
+var V: TJSONValue;
+begin
+  FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:='Open a captured project to derive focused author questions.';
+  if FView=nil then Exit; FQuestions:=FView.Questions(FKnowledge);
+  for V in FQuestions do QuestionsList.Items.Add(V.GetValue<string>('title')+' | '+V.GetValue<string>('range.source'));
+  if FQuestions.Count>0 then begin QuestionsList.ItemIndex:=0; QuestionSelectionClick(nil); end
+  else QuestionMemo.Text:='No unanswered question was generated by the supported rules in this scope. This does not prove complete requirements or documentation.';
+end;
+procedure TDPHMainForm.QuestionSelectionClick(Sender: TObject);
+var Row,Range: TJSONObject;
+begin
+  if (FQuestions=nil) or (QuestionsList.ItemIndex<0) then Exit;
+  Row:=FQuestions.Items[QuestionsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
+  QuestionMemo.Text:=Row.GetValue<string>('prompt')+sLineBreak+sLineBreak+
+    'Why this question: '+Row.GetValue<string>('rule')+sLineBreak+'Source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Int64>('line').ToString+
+    sLineBreak+'Source SHA256: '+Row.GetValue<string>('source_hash')+sLineBreak+'Captured generation: '+Row.GetValue<string>('generation_id')+
+    sLineBreak+'Question ID: '+Row.GetValue<string>('id')+sLineBreak+sLineBreak+
+    'This is a question prompted by captured evidence or absent reviewed content. It is not an author answer or a finding of runtime failure. A source location is absent for project-level procedure questions.';
+end;
+procedure TDPHMainForm.QuestionsClick(Sender: TObject);
+var Row,Detail: TJSONObject; Kind: string;
+begin
+  if Sender=RefreshQuestionsButton then begin RefreshQuestions; Exit; end;
+  if (FQuestions=nil) or (QuestionsList.ItemIndex<0) then Exit; Row:=FQuestions.Items[QuestionsList.ItemIndex] as TJSONObject;
+  if Sender=QuestionEvidenceButton then begin
+    FreeAndNil(FDetails); FDetails:=TJSONArray.Create; Detail:=TJSONObject.Create; FDetails.AddElement(Detail);
+    Detail.AddPair('range',Row.GetValue<TJSONObject>('range').Clone as TJSONObject); Detail.AddPair('detail_kind','author_question');
+    Detail.AddPair('title',Row.GetValue<string>('title')); Detail.AddPair('text',Row.GetValue<string>('prompt'));
+    Detail.AddPair('resolution','unanswered'); Detail.AddPair('rule',Row.GetValue<string>('rule')); Detail.AddPair('source_hash',Row.GetValue<string>('source_hash'));
+    Detail.AddPair('object_key',Row.GetValue<string>('entity_key')); Detail.AddPair('generation_id',Row.GetValue<string>('generation_id'));
+    DetailsList.Items.Clear; DetailsList.Items.Add(Detail.GetValue<string>('title')); DetailsList.ItemIndex:=0; DetailsClick(nil); WorkspaceTabs.ActiveTab:=DetailsTab; Exit;
+  end;
+  if Sender<>AnswerQuestionButton then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current authored edit before drafting another answer.'; Exit; end;
+  NewKnowledgeClick(nil); FBinding:=True;
+  try
+    FKnowledgeQuestionJSON:=Row.ToJSON; FKnowledgeLink:=Row.GetValue<string>('entity_key');
+    KnowledgeTitleEdit.Text:='Answer: '+Row.GetValue<string>('title'); KnowledgeAuthorEdit.Text:='';
+    KnowledgeBodyMemo.Text:='Question: '+Row.GetValue<string>('prompt')+sLineBreak+sLineBreak+'Answer:'+sLineBreak;
+    Kind:=Row.GetValue<string>('answer_kind','unknown'); KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf(Kind);
+    KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; FKnowledgeEdited:=True;
+  finally FBinding:=False; end;
+  WorkspaceTabs.ActiveTab:=KnowledgeTab; StatusLabel.Text:='Enter the named author and their answer after Answer:, then Save. Named review is a separate action.';
 end;
 procedure TDPHMainForm.LoadReviewTasks(ARows: TJSONArray);
 var V: TJSONValue;
@@ -1269,7 +1327,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; RefreshCoverage; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -1294,6 +1352,7 @@ begin
   KnowledgeTitleEdit.Text:=Row.GetValue<string>('title'); KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf(Row.GetValue<string>('kind'));
   if KnowledgeKindCombo.ItemIndex<0 then KnowledgeKindCombo.ItemIndex:=0;
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
+  FKnowledgeQuestionJSON:=Row.GetValue<string>('question_json','');
   FEditableLinks.Free; if Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
   RefreshKnowledgeLinks;
   KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf(Row.GetValue<string>('document_kind','engineering'));
@@ -1308,6 +1367,7 @@ procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
+    FKnowledgeQuestionJSON:='';
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
     FreeAndNil(FEditableLinks); FEditableLinks:=TJSONArray.Create; RefreshKnowledgeLinks;
     KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';

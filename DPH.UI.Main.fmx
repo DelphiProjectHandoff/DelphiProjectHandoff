@@ -39,6 +39,7 @@ Items.Strings = (
 'Knowledge'
 'Knowledge links'
 'Review tasks'
+'Author questions'
 'Publish')
 OnChange = WorkspacePageChange
 end
@@ -1277,6 +1278,55 @@ StyledSettings = []
 TextSettings.Font.Size = 14
 WordWrap = True
 end
+end
+end
+object QuestionsTab: TTabItem
+Text = 'Author questions'
+object QuestionsPurpose: TLabel
+Align = Top
+Height = 76
+WordWrap = True
+Text = 'Focused questions from captured gaps, uncertain relationships, asynchronous work, SQL/output contracts and absent reviewed procedures. Up to 100 questions, at most 20 per category. Inspect evidence, then record the named author response. Saving does not verify an answer. Only an explicitly verified response with no pending review hides its exact question.'
+end
+object QuestionsToolbar: TLayout
+Align = Top
+Height = 38
+object RefreshQuestionsButton: TButton
+Position.X = 4
+Position.Y = 4
+Width = 140
+Height = 28
+Text = 'Refresh questions'
+OnClick = QuestionsClick
+end
+object QuestionEvidenceButton: TButton
+Position.X = 154
+Position.Y = 4
+Width = 140
+Height = 28
+Text = 'Inspect evidence'
+OnClick = QuestionsClick
+end
+object AnswerQuestionButton: TButton
+Position.X = 304
+Position.Y = 4
+Width = 180
+Height = 28
+Text = 'Record author answer'
+OnClick = QuestionsClick
+end
+end
+object QuestionsList: TListBox
+Align = Top
+Height = 210
+OnChange = QuestionSelectionClick
+end
+object QuestionMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 14
 end
 end
 object PublishTab: TTabItem

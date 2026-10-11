@@ -13,10 +13,10 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagno
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',
   DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas';
-var Root,Work,Fixture,Path,Key,ComponentKey,Kind,FilterText: string; ID: TGUID; Checks: Integer;
+var Root,Work,Fixture,Path,Key,ComponentKey,Kind,FilterText,QuestionID: string; ID: TGUID; Checks: Integer;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
-    View: TDPHWorkspaceView; Rows,RichLinks: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
-    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation,TargetNote,LinkNote,TargetRevision,LinkRevision: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
+    View: TDPHWorkspaceView; Rows,RichLinks,Questions: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
+    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation,TargetNote,LinkNote,TargetRevision,LinkRevision,AnswerID,AnswerRevision: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
     Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
     Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -266,6 +266,40 @@ begin
               'Review task opens affected source change-impact projection');
             Form.ReviewReviewerEdit.Text:=''; Form.ReviewTasksClick(Form.VerifyTaskButton);
             Check(Form.StatusLabel.Text.Contains('named reviewer'),'Review task cannot record anonymous approval');
+            Questions:=View.Questions;
+            try
+              Rows:=View.Questions; try Check((Rows.Count<=100) and (Rows.ToJSON=Questions.ToJSON),'Focused questions are bounded and deterministic for captured evidence'); finally Rows.Free; end;
+              Row:=nil; for Members:=0 to Questions.Count-1 do if Questions.Items[Members].GetValue<string>('kind')='unresolved_relationship' then begin Row:=Questions.Items[Members] as TJSONObject; Break; end;
+              Check((Row<>nil) and (Row.GetValue<string>('source_hash')<>'') and (Length(Row.GetValue<string>('id'))=64),
+                'Unresolved call question carries actual source hash and stable evidence identity');
+              QuestionID:=Row.GetValue<string>('id'); Form.QuestionsClick(Form.RefreshQuestionsButton); Form.QuestionsList.ItemIndex:=Members; Form.QuestionSelectionClick(nil);
+              Form.QuestionsClick(Form.QuestionEvidenceButton);
+              Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and Form.DetailsMemo.Text.StartsWith('author_question:'),'Question opens source-backed evidence details');
+              Form.QuestionsClick(Form.AnswerQuestionButton);
+              Check((Form.WorkspaceTabs.ActiveTab=Form.KnowledgeTab) and Form.KnowledgeBodyMemo.Text.EndsWith('Answer:'+sLineBreak) and
+                (Form.KnowledgeAuthorEdit.Text=''),'Question answer draft requires explicit named author and response');
+              with TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations')) do
+              try
+                Failed:=False; try SaveKnowledge(0,0,Generation,'Fixture answer','Question text'+sLineBreak+'Answer:','Fixture author','unknown',Row.GetValue<string>('entity_key'),'engineering','engineer','[]',Row.ToJSON); except Failed:=True; end;
+                Check(Failed,'Empty answer cannot create an attributed response');
+                AnswerID:=SaveKnowledge(0,0,Generation,'Fixture answer','Question: '+Row.GetValue<string>('prompt')+sLineBreak+'Answer: Fixture-only statement; not runtime evidence.',
+                  'Fixture author','unknown',Row.GetValue<string>('entity_key'),'engineering','engineer','[]',Row.ToJSON);
+                Rows:=KnowledgeJSON;
+                try AnswerRevision:=Rows.Items[Rows.Count-1].GetValue<Int64>('revision'); RichLinks:=View.Questions(Rows);
+                  try FoundChild:=False; for V in RichLinks do if V.GetValue<string>('id')=QuestionID then FoundChild:=True;
+                    Check(FoundChild,'Saved but unreviewed answer does not hide its author question');
+                  finally RichLinks.Free; end;
+                finally Rows.Free; end;
+                ReviewKnowledge(AnswerID,AnswerRevision,Generation,'Fixture reviewer','verified');
+                Rows:=KnowledgeJSON;
+                try RichLinks:=View.Questions(Rows);
+                  try FoundChild:=False; for V in RichLinks do if V.GetValue<string>('id')=QuestionID then FoundChild:=True;
+                    Check(not FoundChild,'Explicitly verified response suppresses only its exact evidence question');
+                  finally RichLinks.Free; end;
+                finally Rows.Free; end;
+              finally Free; end;
+              Form.DiscardKnowledgeClick(nil);
+            finally Questions.Free; end;
             Form.ScreenshotInspectClick(nil);
             Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
             Form.LoadView(View.Document.Clone as TJSONObject);

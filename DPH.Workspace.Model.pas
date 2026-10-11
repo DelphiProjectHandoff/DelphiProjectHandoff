@@ -23,6 +23,7 @@ type
     function Graph(const AKind,AKey: string; ALimit: Integer = 120): TJSONObject;
     function FlagsText: string;
     function Coverage: TJSONObject;
+    function Questions(AKnowledge: TJSONArray = nil): TJSONArray;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
     class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
@@ -308,6 +309,73 @@ begin
     end;
     Result.AddPair('truncated',TJSONBool.Create(Truncated));
   finally Queue.Free; EdgeKeys.Free; Seen.Free; end;
+end;
+function TDPHWorkspaceView.Questions(AKnowledge: TJSONArray): TJSONArray;
+var V: TJSONValue; Row,Range,Answer: TJSONObject; Diagnostics: TJSONArray;
+  Answered,Seen: TDictionary<string,Boolean>; Counts: TDictionary<string,Integer>;
+  Kind,Title,Prompt,Key,Code,Context: string; HasUser,HasBuild: Boolean;
+  procedure AddQuestion(const AKind,ATitle,APrompt,AKey,ARule: string; ARange: TJSONObject);
+  var Item,Location,Source: TJSONObject; ID,Hash: string; Count: Integer;
+  begin
+    if Result.Count>=100 then Exit; Count:=0; Counts.TryGetValue(AKind,Count); if Count>=20 then Exit;
+    if ARange<>nil then Location:=ARange.Clone as TJSONObject else begin Location:=TJSONObject.Create;
+      Location.AddPair('source',''); Location.AddPair('start',TJSONNumber.Create(0)); Location.AddPair('end',TJSONNumber.Create(0));
+      Location.AddPair('line',TJSONNumber.Create(0)); Location.AddPair('column',TJSONNumber.Create(0)); end;
+    Hash:=''; Source:=SourceFile(Location.GetValue<string>('source','')); if Source<>nil then Hash:=Source.GetValue<string>('sha256','');
+    ID:=THashSHA2.GetHashString(AKind+#0+AKey+#0+Location.ToJSON+#0+Hash+#0+APrompt+#0+ARule+#0+Context);
+    if Seen.ContainsKey(ID) or Answered.ContainsKey(ID) then begin Location.Free; Exit; end;
+    Seen.Add(ID,True); Counts.AddOrSetValue(AKind,Count+1); Item:=TJSONObject.Create; Result.AddElement(Item);
+    Item.AddPair('id',ID); Item.AddPair('kind',AKind); Item.AddPair('title',ATitle); Item.AddPair('prompt',APrompt);
+    Item.AddPair('entity_key',AKey); Item.AddPair('range',Location); Item.AddPair('source_hash',Hash); Item.AddPair('rule',ARule);
+    Item.AddPair('context_fingerprint',Context); Item.AddPair('generation_id',FDocument.GetValue<Int64>('generation_id').ToString);
+    Item.AddPair('verification_state','unanswered_question');
+    Item.AddPair('answer_kind',IfThen(ATitle='Document the operating procedure','user_help',IfThen(ATitle='Document build and deployment','build_deploy','unknown')));
+  end;
+begin
+  Result:=TJSONArray.Create; Answered:=TDictionary<string,Boolean>.Create; Seen:=TDictionary<string,Boolean>.Create; Counts:=TDictionary<string,Integer>.Create;
+  try
+    Context:=FDocument.GetValue<string>('semantics.context_fingerprint'); HasUser:=False; HasBuild:=False;
+    if AKnowledge<>nil then for V in AKnowledge do begin Row:=V as TJSONObject;
+      if (Row.GetValue<string>('state','')<>'verified') or (Row.GetValue<string>('pending','1')<>'0') then Continue;
+      HasUser:=HasUser or (Row.GetValue<string>('kind')='user_help'); HasBuild:=HasBuild or (Row.GetValue<string>('kind')='build_deploy');
+      Answer:=TJSONObject.ParseJSONValue(Row.GetValue<string>('question_json','')) as TJSONObject;
+      try if Answer<>nil then Answered.AddOrSetValue(Answer.GetValue<string>('id'),True); finally Answer.Free; end;
+    end;
+    Prompt:='For '+FDocument.GetValue<string>('entry')+' ('+FDocument.GetValue<string>('configuration')+' / '+FDocument.GetValue<string>('platform')+'), ';
+    if not HasUser then AddQuestion('missing_procedure','Document the operating procedure',Prompt+
+      'which user actions, required inputs, permissions, success checks and recovery steps should a new operator follow? No verified user-help record is captured. Provide an attributed procedure and examples; control names alone cannot establish it.','','absence_of_verified_user_help_record',nil);
+    if not HasBuild then AddQuestion('missing_procedure','Document build and deployment',Prompt+
+      'what exact toolchain, dependencies, environment settings, build commands, installation and rollback steps are required? No verified build/deployment record is captured. Passive scanning did not run the project.','','absence_of_verified_build_record',nil);
+    for V in FDocument.GetValue<TJSONArray>('semantics.relationships') do begin Row:=V as TJSONObject;
+      if not MatchText(Row.GetValue<string>('resolution'),['unresolved','possible_dynamic']) then Continue;
+      Kind:=Row.GetValue<string>('kind'); Key:=Row.GetValue<string>('from');
+      if not MatchText(Kind,['calls','binds','schedules','passes_callback','dynamic_sql','renders','shows_form','shows_modal_form']) then Continue;
+      Prompt:='At '+Row.GetValue<string>('range.source')+':'+Row.GetValue<Int64>('range.line').ToString+', the captured '+Kind+
+        ' relationship '+Row.GetValue<string>('label','')+' is '+Row.GetValue<string>('resolution')+'. Which concrete target or behavior is intended in this configuration, what selects it, and which example or test verifies that choice?';
+      AddQuestion('unresolved_relationship','Resolve '+Kind+' at '+Row.GetValue<string>('range.source'),Prompt,Key,Row.GetValue<string>('rule'),Row.GetValue<TJSONObject>('range'));
+    end;
+    Diagnostics:=TJSONArray.Create;
+    try
+      for V in FDocument.GetValue<TJSONArray>('syntax.diagnostics') do Diagnostics.AddElement(V.Clone as TJSONObject);
+      for V in FDocument.GetValue<TJSONArray>('semantics.diagnostics') do Diagnostics.AddElement(V.Clone as TJSONObject);
+      for V in Diagnostics do begin Row:=V as TJSONObject; Code:=Row.GetValue<string>('code'); Range:=Row.GetValue<TJSONObject>('range');
+        if not (ContainsText(Code,'UNRESOLVED') or ContainsText(Code,'UNSUPPORTED') or ContainsText(Code,'DYNAMIC') or ContainsText(Code,'REVIEW') or ContainsText(Code,'OPAQUE')) then Continue;
+        Prompt:='The captured diagnostic '+Code+' at '+Range.GetValue<string>('source')+':'+Range.GetValue<Int64>('line').ToString+
+          ' reports: '+Row.GetValue<string>('message')+'. Please explain the intended behavior at this location, its required inputs and effects, and a regression example. This is an analysis gap; it does not establish a runtime defect.';
+        AddQuestion('diagnostic_gap','Explain '+Code,Prompt,'',Code,Range);
+      end;
+    finally Diagnostics.Free; end;
+    for V in FDocument.GetValue<TJSONArray>('semantics.symbols') do begin Row:=V as TJSONObject; Kind:=Row.GetValue<string>('kind');
+      if not MatchText(Kind,['async_operation','sql_statement','output_artifact']) then Continue;
+      Title:=''; Prompt:='';
+      if Kind='async_operation' then begin Title:='Explain background-work ownership'; Prompt:='For captured operation '+Row.GetValue<string>('name')+', which thread or object owns the work, what signals completion, what cancels it, and what lifetime guarantees and tests are required? Captured scheduling does not establish runtime order.'; end;
+      if Kind='sql_statement' then begin Title:='Explain SQL contract'; Prompt:='For captured SQL statement '+Row.GetValue<string>('name')+', which schema, parameter constraints, transaction boundaries and failure handling are intended? Provide a safe test example and the expected data effect. No database connection was made.'; end;
+      if Kind='output_artifact' then begin Title:='Explain output acceptance'; Prompt:='For captured output '+Row.GetValue<string>('name')+', what destination and contents are required, which inputs determine them, how should a user verify success, and how should partial or failed writes be handled? Static writer evidence does not prove that a file was produced.'; end;
+      AddQuestion(Kind,Title,Prompt,Row.GetValue<string>('key'),'captured_object_missing_operational_contract',Row.GetValue<TJSONObject>('range'));
+    end;
+  except Result.Free; Counts.Free; Seen.Free; Answered.Free; raise;
+  end;
+  Counts.Free; Seen.Free; Answered.Free;
 end;
 function TDPHWorkspaceView.Coverage: TJSONObject;
 var Files,Relations,Diagnostics,Metrics,Nodes: TJSONArray; V,W,E: TJSONValue; R,IR,N,Edge: TJSONObject;

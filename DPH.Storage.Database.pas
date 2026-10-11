@@ -68,7 +68,7 @@ type
     procedure CommitFacts;
     procedure RollbackFacts;
     function SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''; const ALinksJSON: string = ''): Int64;
+      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''; const ALinksJSON: string = ''; const AQuestionJSON: string = ''): Int64;
     procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
@@ -100,7 +100,7 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions;
 
 const
-  CurrentSchemaVersion = 6;
+  CurrentSchemaVersion = 7;
   RichLinkProjectionSQL = 'SELECT l.target_kind,l.target_id,l.source_generation,l.link_role,l.label,'+
     'coalesce(e.canonical_key,a.canonical_key,'''') AS canonical_key,coalesce(b.canonical_key,'''') AS to_key,coalesce(ev.source_range_json,''{}'') AS source_range,'+
     'coalesce(ev.payload_ref,'''') AS evidence_payload,coalesce(rel.resolution_status,CASE WHEN ev.verification_state=''verified'' THEN ''confirmed_static'' ELSE ev.verification_state END,''inferred'') AS resolution,'+
@@ -322,7 +322,8 @@ begin
     else if Version = 3 then MigrationPath := MigrationPath + 'lifecycle.sql'
     else if Version = 4 then MigrationPath := MigrationPath + 'search.sql'
     else if Version = 5 then MigrationPath := MigrationPath + 'document_sections.sql'
-    else MigrationPath := MigrationPath + 'revision_links.sql';
+    else if Version = 6 then MigrationPath := MigrationPath + 'revision_links.sql'
+    else MigrationPath := MigrationPath + 'author_questions.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -770,9 +771,9 @@ begin
 end;
 
 function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON: string): Int64;
+  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON: string): Int64;
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
-  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow: TJSONObject; Ordinal: Integer;
+  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID: string;
 begin
   RequireWriter;
   if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
@@ -843,6 +844,26 @@ begin
       finally LinkRows.Free; end;
     end;
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:id',[Revision,Result]);
+    if AQuestionJSON<>'' then begin
+      if Length(AQuestionJSON)>65536 then raise EDPHStorage.Create('Question evidence exceeds 64 KiB');
+      ParsedLinks:=TJSONObject.ParseJSONValue(AQuestionJSON);
+      if not (ParsedLinks is TJSONObject) then begin ParsedLinks.Free; raise EDPHStorage.Create('Invalid question metadata'); end;
+      Question:=ParsedLinks as TJSONObject;
+      try
+        QuestionID:=Question.GetValue<string>('id');
+        ExpectedID:=THashSHA2.GetHashString(Question.GetValue<string>('kind')+#0+Question.GetValue<string>('entity_key')+#0+
+          Question.GetValue<TJSONObject>('range').ToJSON+#0+Question.GetValue<string>('source_hash')+#0+
+          Question.GetValue<string>('prompt')+#0+Question.GetValue<string>('rule')+#0+Question.GetValue<string>('context_fingerprint'));
+        if QuestionID<>ExpectedID then raise EDPHStorage.Create('Question identity does not match its captured evidence');
+        if (Pos('Answer:',ABody)=0) or (Trim(Copy(ABody,Pos('Answer:',ABody)+7,MaxInt))='') then raise EDPHStorage.Create('Enter an attributed answer after Answer: before saving');
+        PriorQuestion:=VarToStr(Scalar('SELECT question_key FROM knowledge_questions WHERE knowledge_id=:id',[Result]));
+        if (PriorQuestion<>'') and (PriorQuestion<>QuestionID) then raise EDPHStorage.Create('A response cannot be reassigned to another question');
+        if PriorQuestion='' then begin
+          if Question.GetValue<Int64>('generation_id')<>AGenerationID then raise EDPHStorage.Create('Refresh the question against the selected generation first');
+          FConnection.ExecSQL('INSERT INTO knowledge_questions VALUES(:id,:key,:json,:generation)',[Result,QuestionID,AQuestionJSON,AGenerationID]);
+        end;
+      finally Question.Free; end;
+    end;
     FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) SELECT 1,:id,''Human content changed'',''pending'',:generation '+
       'WHERE NOT EXISTS(SELECT 1 FROM review_tasks WHERE knowledge_id=:id2 AND state=''pending'')',[Result,AGenerationID,Result]);
     FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=1 WHERE project_id=1');
@@ -997,9 +1018,11 @@ begin
     'coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
     'coalesce(s.section_id,''knowledge-''||k.knowledge_id) AS section_id,coalesce(s.document_kind,''engineering'') AS document_kind,'+
     'coalesce(s.audience,''engineer'') AS audience,coalesce(s.source_generation,0) AS source_generation,'+
+    'coalesce(q.question_json,'''') AS question_json,'+
     'EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'') AS pending '+
     'FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id '+
-    'LEFT JOIN document_section_versions s ON s.revision_id=r.knowledge_revision_id WHERE k.project_id=1 ORDER BY k.knowledge_id',[]);
+    'LEFT JOIN document_section_versions s ON s.revision_id=r.knowledge_revision_id LEFT JOIN knowledge_questions q ON q.knowledge_id=k.knowledge_id '+
+    'WHERE k.project_id=1 ORDER BY k.knowledge_id',[]);
   try
     while not Query.Eof do begin
       Row:=TJSONObject.Create; Result.AddElement(Row);

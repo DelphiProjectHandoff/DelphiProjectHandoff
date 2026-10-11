@@ -177,8 +177,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     revision checks. Native comparison rendered and inspected; workspace 106.
     Knowledge suite adds baseline/content/entity and native comparison checks.
     No baseline is labeled missing; static impact never claims runtime impact.
-5.4-5.6 Pending: focused questions, educational explanations and runtime
-    observation import.
+5.4 Expanded: bounded deterministic questions from uncertain relationships,
+    diagnostics, async/SQL/output contracts and missing reviewed procedures.
+    Each question carries range/hash/rule/context identity. Schema seven preserves
+    the exact question with attributed response revisions. Empty answers are
+    rejected; unreviewed answers remain visible; only explicit verified responses
+    without pending review suppress the exact question. Native evidence/draft
+    workflow and scoped guide questions pass; workspace 113, publishing 71.
+5.5-5.6 Pending: deeper educational explanations and runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time

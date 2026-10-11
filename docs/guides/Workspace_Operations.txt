@@ -243,6 +243,19 @@ the section is obsolete; its revisions remain preserved. A resolved task is not
 proof that every operating procedure or undocumented requirement is complete.
 Drag the divider between BEFORE and AFTER to resize the comparison panes.
 
+Focused questions for the original author
+Choose Author questions in the top-right page selector. Select a question to
+read its prompt, evidence rule, source location/hash and captured generation.
+Click Inspect evidence to open Details. Project-level procedure questions have
+no precise source location. Lists are bounded to 100 questions, 20 per category.
+Click Record author answer. DPH opens Knowledge with the prompt and an empty
+Answer: field. Enter the named author and their actual response after Answer:,
+then click Save. An empty response is rejected. Saving leaves human review pending.
+Use named Verify review only after checking the response against current source
+and its intended scope. A verified response without a pending task hides its
+exact question. Changed evidence or renewed review can bring questions back.
+DPH never supplies the author's business rationale or runtime results itself.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

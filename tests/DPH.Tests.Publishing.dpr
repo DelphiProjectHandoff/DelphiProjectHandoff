@@ -74,6 +74,9 @@ begin
           try
             Check(Pos('DO_NOT_EXPORT',Model.Document.ToJSON)=0,'Credential assignment is redacted throughout canonical model');
             Check(Model.Document.GetValue<TJSONArray>('exclusions').Count=1,'Explicit source exclusion is recorded');
+            Check(Model.Document.GetValue<TJSONArray>('author_questions').Count>0,'Canonical handoff includes evidence-derived unanswered author questions');
+            Failed:=False; for V in Model.Document.GetValue<TJSONArray>('author_questions') do if V.GetValue<string>('range.source')='worker.pas' then Failed:=True;
+            Check(not Failed,'Scoped author questions omit evidence from excluded source files');
             Check((Model.Document.GetValue<TJSONArray>('knowledge').Items[0].GetValue<TJSONArray>('rich_links').Count=1) and
               (Model.Document.GetValue<TJSONArray>('knowledge').Items[0].GetValue<Integer>('omitted_rich_links')=1),
               'Publication removes rich relationship links whose target unit is excluded');

@@ -44,7 +44,7 @@ constructor TDPHDocumentModel.Create(AView: TDPHWorkspaceView; AKnowledge: TJSON
 var AllowedFiles,Selected,AllKeys,FlowIDs: TDictionary<string,Boolean>; Queue: TQueue<string>;
     V,W,LinkFileValue: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
     Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID,SectionAudience: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
-    Startup,Nodes,Comments,AuthoredSections: TJSONArray; Node,FileRow,LinkedRow,LinkRange: TJSONObject; Explanations: TDPHExplanationModel; CommentCount,LinkIndex,Omitted: Integer;
+    Startup,Nodes,Comments,AuthoredSections,Questions: TJSONArray; Node,FileRow,LinkedRow,LinkRange,QuestionMetadata: TJSONObject; Explanations: TDPHExplanationModel; CommentCount,LinkIndex,Omitted: Integer;
     LinkRecords: TList<TJSONObject>; LinkValue,TargetRecord,TargetRevision: TJSONValue; TargetFound: Boolean;
   function CaptureValue(AValue: TJSONValue): TJSONValue;
   begin
@@ -151,8 +151,33 @@ begin
           if Exclude then IncludeRow:=False; end;
       end; end;
       if (AAudience<>'all') and not MatchText(R.GetValue<string>('audience','engineer'),['all',AAudience]) then IncludeRow:=False;
-      if IncludeRow then begin J:=CaptureValue(R) as TJSONObject; J.AddPair('publication_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
+      if IncludeRow and (R.GetValue<string>('question_json','')<>'') then begin
+        QuestionMetadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('question_json')) as TJSONObject;
+        try if QuestionMetadata<>nil then begin Path:=QuestionMetadata.GetValue<string>('range.source','');
+          if Path<>'' then begin Exclude:=True; for LinkFileValue in Files do if LinkFileValue.GetValue<string>('path')=Path then begin Exclude:=False; Break; end;
+            if Exclude then IncludeRow:=False;
+          end;
+        end; finally QuestionMetadata.Free; end;
+      end;
+      if IncludeRow then begin J:=CaptureValue(R) as TJSONObject;
+        if R.GetValue<string>('question_json','')<>'' then begin
+          QuestionMetadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('question_json')) as TJSONObject;
+          try J.RemovePair('question_json').Free; J.AddPair('question_metadata',CaptureValue(QuestionMetadata)); finally QuestionMetadata.Free; end;
+        end;
+        J.AddPair('publication_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J);
+      end;
     end;
+    Questions:=AView.Questions(AKnowledge);
+    try
+      Links:=TJSONArray.Create; FDocument.AddPair('author_questions',Links);
+      for V in Questions do begin R:=V as TJSONObject; Path:=R.GetValue<string>('range.source'); Key:=R.GetValue<string>('entity_key');
+        IncludeRow:=Path=''; if Path<>'' then for W in Files do if W.GetValue<string>('path')=Path then begin IncludeRow:=True; Break; end;
+        if (Key<>'') and not Selected.ContainsKey(Key) then IncludeRow:=False;
+        Kind:=R.GetValue<string>('answer_kind','unknown'); SectionAudience:='engineer'; if Kind='user_help' then SectionAudience:='user' else if Kind='build_deploy' then SectionAudience:='builder';
+        if (AAudience<>'all') and (AAudience<>SectionAudience) then IncludeRow:=False;
+        if IncludeRow then Links.AddElement(CaptureValue(R));
+      end;
+    finally Questions.Free; end;
     J:=TJSONObject.Create; FDocument.AddPair('coverage',J); J.AddPair('included_files',TJSONNumber.Create(Files.Count)); J.AddPair('excluded_files',TJSONNumber.Create(Excluded.Count));
     J.AddPair('included_symbols',TJSONNumber.Create(Symbols.Count)); J.AddPair('relationships_denominator',TJSONNumber.Create(Relations.Count));
     J.AddPair('confirmed_static_numerator',TJSONNumber.Create(Confirmed)); J.AddPair('unresolved_relationships',TJSONNumber.Create(Unresolved));
