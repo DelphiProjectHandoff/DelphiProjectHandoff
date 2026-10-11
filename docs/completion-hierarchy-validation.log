@@ -1,0 +1,71 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(54) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(55) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(57) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(59) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(59) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Workspace.dpr(62) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+8499 lines, 0.88 seconds, 9490556 bytes code, 344492 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Component details distinguish serialized values from unknown defaults
+PASS 8: Routine details retain statement text and immutable source evidence
+PASS 9: Reverse references retain event evidence
+PASS 10: Collapsed hierarchy shows only ownership roots
+PASS 11: Expanding a module reveals its immediate owned objects
+PASS 12: Collapsing a branch restores root rows without changing the source model
+PASS 13: Hierarchy pagination is applied after branch visibility
+PASS 14: Execution graph is bounded
+PASS 15: Execution graph has static provenance
+PASS 16: Procedure CFG graph is bounded
+PASS 17: Procedure CFG graph has static provenance
+PASS 18: Caller / callee graph is bounded
+PASS 19: Caller / callee graph has static provenance
+PASS 20: Form navigation graph is bounded
+PASS 21: Form navigation graph has static provenance
+PASS 22: Data flow graph is bounded
+PASS 23: Data flow graph has static provenance
+PASS 24: Change impact graph is bounded
+PASS 25: Change impact graph has static provenance
+PASS 26: Design-time screen contains form and button
+PASS 27: Screen reconstruction never claims runtime capture
+PASS 28: FMX Explorer displays canonical cached objects
+PASS 29: IDE-editable expand button opens the selected Explorer branch
+PASS 30: Explorer branch collapse preserves other roots
+PASS 31: FMX choices come from captured project options
+PASS 32: Captured code page is visible in the source settings
+PASS 33: Explorer selection populates source-backed inspector
+PASS 34: Detached source view does not follow cached filesystem paths
+PASS 35: Selected routine populates IDE-editable statement/evidence rows
+PASS 36: Evidence pane labels certainty, rule and source hash
+PASS 37: Detached evidence command retains cached details without following filesystem paths
+PASS 38: Whole program command opens startup execution projection
+PASS 39: Whole program projection preserves the inspected object context
+PASS 40: Canonical selection can be bookmarked
+PASS 41: Render screen mode Thumbnail
+PASS 42: Render screen mode Fit
+PASS 43: Render screen mode Native
+PASS 44: Render screen mode Zoom 200%
+PASS 45: Render screen mode Full screen
+PASS 46: Cached database opens without analysis
+PASS 47: Cached open verifies available source automatically
+PASS 48: Cached open preserves generation
+PASS 49: Fixture cached open completes within 5 seconds
+PASS 50: Cached document is delivered before background verification completes
+PASS 51: Unavailable source opens safely detached
+PASS 52: Unchanged connected check skips analysis
+PASS 53: Configuration change reassesses unchanged source bytes
+PASS 54: Source modification triggers background reassessment
+PASS 55: Controlled edit changes its input fingerprint
+PASS 56: Updated cached workspace can reopen
+PASS 57: Artifact tampering is rejected
+PASS 58: Idle worker shutdown returns without a queue loop
+PASS WP4: 58 checks

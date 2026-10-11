@@ -14,9 +14,14 @@ type
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
-    WholeProgramGraphButton: TButton;
+    WholeProgramGraphButton,ExplorerExpandButton: TButton;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
     ExplorerList,RelationsList: TListBox;
+    DetailsList: TListBox;
+    DetailsMemo: TMemo;
+    DetailsTitle: TLabel;
+    DetailsSourceButton: TButton;
+    DetailsTab: TTabItem;
     WorkspaceTabs: TTabControl;
     OverviewTab,SourceTab,GraphTab,ScreenTab,RelationsTab: TTabItem;
     OverviewMemo,SourceMemo,InspectorMemo: TMemo;
@@ -117,6 +122,9 @@ type
     procedure ChangeTimerTimer(Sender: TObject);
     procedure SearchChange(Sender: TObject);
     procedure ExplorerClick(Sender: TObject);
+    procedure ExplorerExpandClick(Sender: TObject);
+    procedure DetailsClick(Sender: TObject);
+    procedure DetailsSourceClick(Sender: TObject);
     procedure RelationsClick(Sender: TObject);
     procedure BackClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
@@ -144,7 +152,9 @@ type
     FWorker: TDPHWorkspaceWorker;
     FView: TDPHWorkspaceView;
     FGraph,FScreen: TJSONObject;
-    FExplorerKeys,FRelationKeys,FHistory,FBookmarks: TList<string>;
+    FExplorerKeys,FRelationKeys,FHistory,FBookmarks,FExpandedKeys: TList<string>;
+    FHierarchyVisible: Boolean;
+    FDetails: TJSONArray;
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
     FPendingEntry,FPendingDatabase: string;
     FPage: Integer;
@@ -192,7 +202,7 @@ uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
 begin
-  FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create;
+  FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
@@ -227,7 +237,7 @@ begin
   FContinuity.Free;
   FSearchResults.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
-  FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free;
+  FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
   // Remove only this form's three generated preview files, never a recursive tree.
   if FLearningDirectory<>'' then
@@ -483,6 +493,8 @@ begin
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  FExpandedKeys.Clear; FHierarchyVisible:=False;
+  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object in Explorer to inspect its statements, serialized properties and evidence.';
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
@@ -555,6 +567,7 @@ begin
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object to inspect evidence from this generation.';
   if (FCatalog<>nil) and (FDatabase<>'') then
   try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);
   except on E: Exception do StatusLabel.Text:='Project opened, but catalog could not be saved: '+E.Message; end;
@@ -669,14 +682,25 @@ begin
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.RefreshExplorer;
-var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind: string;
+var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,LabelText,Prefix: string; Depth: Integer;
 begin
   if FView=nil then Exit; Kind:=''; if KindCombo.ItemIndex>0 then Kind:=KindCombo.Items[KindCombo.ItemIndex];
-  Rows:=FView.Search(SearchEdit.Text,Kind,FScope,FPage,250);
+  FHierarchyVisible:=(Trim(SearchEdit.Text)='') and (Kind='') and (FScope='');
+  ExplorerExpandButton.Enabled:=FHierarchyVisible;
+  if FHierarchyVisible then Rows:=FView.Hierarchy(FExpandedKeys.ToArray,FPage,250)
+  else Rows:=FView.Search(SearchEdit.Text,Kind,FScope,FPage,250);
   try
     ExplorerList.Items.BeginUpdate;
     try ExplorerList.Items.Clear; FExplorerKeys.Clear;
-      for V in Rows do begin S:=V as TJSONObject; ExplorerList.Items.Add(S.GetValue<string>('kind')+'  '+S.GetValue<string>('name')); FExplorerKeys.Add(S.GetValue<string>('key')); end;
+      for V in Rows do begin S:=V as TJSONObject; LabelText:=S.GetValue<string>('name'); Prefix:='';
+        if FHierarchyVisible then begin
+          Depth:=S.GetValue<Integer>('depth'); Prefix:=StringOfChar(' ',Min(Depth,20)*2);
+          if S.GetValue<Boolean>('has_children') then begin if S.GetValue<Boolean>('expanded') then Prefix:=Prefix+'[-] ' else Prefix:=Prefix+'[+] '; end
+          else Prefix:=Prefix+'    ';
+          if Depth>0 then LabelText:=Copy(LabelText,LastDelimiter('.',LabelText)+1,MaxInt);
+        end;
+        ExplorerList.Items.Add(Prefix+S.GetValue<string>('kind')+'  '+LabelText); FExplorerKeys.Add(S.GetValue<string>('key'));
+      end;
     finally ExplorerList.Items.EndUpdate; end;
     BreadcrumbLabel.Text:='Project / '+FScope+' | page '+IntToStr(FPage div 250+1)+' | '+IntToStr(Rows.Count)+' objects';
   finally Rows.Free; end;
@@ -685,6 +709,50 @@ procedure TDPHMainForm.SearchChange(Sender: TObject);
 begin if FBinding then Exit; FScope:=''; FPage:=0; RefreshExplorer; end;
 procedure TDPHMainForm.ExplorerClick(Sender: TObject);
 begin if (ExplorerList.ItemIndex>=0) and (ExplorerList.ItemIndex<FExplorerKeys.Count) then begin SelectSymbol(FExplorerKeys[ExplorerList.ItemIndex]); WorkspaceTabs.ActiveTab:=ExplainTab; end; end;
+procedure TDPHMainForm.ExplorerExpandClick(Sender: TObject);
+var Key: string; Index: Integer;
+begin
+  if not FHierarchyVisible or (ExplorerList.ItemIndex<0) or (ExplorerList.ItemIndex>=FExplorerKeys.Count) then Exit;
+  Key:=FExplorerKeys[ExplorerList.ItemIndex];
+  if FExpandedKeys.Contains(Key) then FExpandedKeys.Remove(Key) else FExpandedKeys.Add(Key);
+  FPage:=0; RefreshExplorer; Index:=FExplorerKeys.IndexOf(Key); if Index>=0 then ExplorerList.ItemIndex:=Index;
+end;
+procedure TDPHMainForm.DetailsClick(Sender: TObject);
+var Row,Range: TJSONObject;
+begin
+  if (FDetails=nil) or (DetailsList.ItemIndex<0) or (DetailsList.ItemIndex>=FDetails.Count) then Exit;
+  Row:=FDetails.Items[DetailsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
+  DetailsMemo.Text:=Row.GetValue<string>('detail_kind')+': '+Row.GetValue<string>('title')+sLineBreak+sLineBreak+
+    Row.GetValue<string>('text')+sLineBreak+sLineBreak+'Certainty: '+Row.GetValue<string>('resolution')+sLineBreak+
+    'Rule: '+Row.GetValue<string>('rule')+sLineBreak+'Source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Integer>('line').ToString+
+    sLineBreak+'Byte range: '+Range.GetValue('start').Value+' through '+Range.GetValue('end').Value+
+    sLineBreak+'SHA256: '+Row.GetValue<string>('source_hash','unavailable')+sLineBreak+
+    'Generation: '+FView.Document.GetValue('generation_id').Value+sLineBreak+sLineBreak+
+    'This is captured static evidence. Open matching source verifies the file hash before applying this range. Detached mode retains the evidence above.';
+end;
+
+procedure TDPHMainForm.DetailsSourceClick(Sender: TObject);
+var Row,Range,FileRow: TJSONObject; Path: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
+begin
+  if (FDetails=nil) or (DetailsList.ItemIndex<0) or (DetailsList.ItemIndex>=FDetails.Count) then Exit;
+  DetailsClick(nil);
+  if FDetached or (FEntry='') then begin DetailsMemo.Lines.Add('Original source is detached. The cached statement/value and source evidence remain available here.'); Exit; end;
+  Row:=FDetails.Items[DetailsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
+  FileRow:=FView.SourceFile(Range.GetValue<string>('source')); if FileRow=nil then Exit;
+  Path:=TPath.GetFullPath(TPath.Combine(ExtractFilePath(FEntry),Range.GetValue<string>('source')));
+  if not StartsText(IncludeTrailingPathDelimiter(ExtractFilePath(FEntry)),Path) then begin DetailsMemo.Lines.Add('Source location is outside the attached project.'); Exit; end;
+  Diagnostics:=TDPHDiagnostics.Create;
+  try
+    try Source:=TDPHSource.Create(Path,Range.GetValue<string>('source'),Diagnostics,FView.Document.GetValue<Integer>('code_page',0));
+      try
+        if not Source.Decoded or not SameText(Source.SHA256,Row.GetValue<string>('source_hash','')) then begin DetailsMemo.Lines.Add('Source is changed or undecodable; the cached range was not applied.'); Exit; end;
+        SourceMemo.Text:=Source.Text; SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
+        WorkspaceTabs.ActiveTab:=SourceTab;
+      finally Source.Free; end;
+    except on E: Exception do DetailsMemo.Lines.Add('Source unavailable: '+E.Message); end;
+  finally Diagnostics.Free; end;
+end;
+
 procedure TDPHMainForm.SelectSymbol(const AKey: string; AHistory: Boolean);
 var S,Range,Row: TJSONObject; Rows,Props: TJSONArray; V: TJSONValue; Path,Direction,Target: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
 begin
@@ -698,6 +766,11 @@ begin
     'Read Explain for the role, callers, effects and execution trace. Open Source to inspect the attached code. References contains the direct forward and reverse links.'+sLineBreak+sLineBreak+
     'Evidence SHA256:'+sLineBreak+S.GetValue<string>('source_hash');
   RelationsList.Items.Clear; FRelationKeys.Clear;
+  FreeAndNil(FDetails); FDetails:=FView.Details(AKey); DetailsList.Items.Clear;
+  for V in FDetails do begin Row:=V as TJSONObject;
+    DetailsList.Items.Add(Row.GetValue<string>('detail_kind')+' | '+Row.GetValue<string>('title')+' | line '+Row.GetValue<Integer>('range.line').ToString);
+  end;
+  DetailsMemo.Text:='Select a row to read its statement, serialized value or relationship and source evidence. Maximum 1,000 rows. Serialized properties are overrides; absent framework defaults are not inferred.';
   for Direction in ['forward','reverse'] do begin Rows:=FView.Neighbors(AKey,Direction); try for V in Rows do begin Row:=V as TJSONObject;
     Target:=Row.GetValue<string>('to',''); if Direction='reverse' then Target:=Row.GetValue<string>('from');
     RelationsList.Items.Add(Direction+' '+Row.GetValue<string>('kind')+' ['+Row.GetValue<string>('resolution')+'] '+Row.GetValue<string>('label')+' '+Target); FRelationKeys.Add(Target);
@@ -719,7 +792,7 @@ begin
       finally Diagnostics.Free; end;
     end;
   end;
-  if MatchText(S.GetValue<string>('kind'),['unit','type','component','routine','anonymous']) then begin FScope:=S.GetValue<string>('name'); FPage:=0; RefreshExplorer; end;
+  if not FHierarchyVisible and MatchText(S.GetValue<string>('kind'),['unit','type','component','routine','anonymous']) then begin FScope:=S.GetValue<string>('name'); FPage:=0; RefreshExplorer; end;
   RefreshGraphics; ShowExplanation;
 end;
 procedure TDPHMainForm.RelationsClick(Sender: TObject);
@@ -737,6 +810,7 @@ begin if (FSelected<>'') and not FBookmarks.Contains(FSelected) then FBookmarks.
 procedure TDPHMainForm.BookmarksClick(Sender: TObject);
 var Key: string; S: TJSONObject;
 begin
+  FHierarchyVisible:=False; ExplorerExpandButton.Enabled:=False;
   ExplorerList.Items.Clear; FExplorerKeys.Clear; if FView=nil then Exit;
   for Key in FBookmarks do begin S:=FView.Symbol(Key); if S<>nil then begin ExplorerList.Items.Add(S.GetValue<string>('name')); FExplorerKeys.Add(Key); end; end;
   BreadcrumbLabel.Text:='Bookmarks for this captured generation';

@@ -110,7 +110,17 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
     execution projection and preservation of inspected object context. Workspace
     suite now 47 checks. Selecting a graph object returns to focused navigation.
-4.1-4.2,4.4-4.10 Pending: hierarchy, detailed drill-down, form/data graphs, graph
+4.1 Implemented: collapsible ownership hierarchy in the IDE-editable Explorer,
+    visible-branch pagination, single-click inspection, explicit expand/collapse
+    button and double-click branch action. Filtered searches remain flat results.
+4.2 Implemented: IDE-editable Details page for source-ordered statements, distinct
+    CFG boundaries, serialized property overrides and relationship evidence.
+    Named evidence pane includes certainty/rule/hash/generation; matching-source
+    command verifies original bytes, while detached evidence remains readable.
+    Six hierarchy and five detail checks pass; workspace suite 58. Native FMX
+    rendering inspected, evidence font increased and clipped tab strip replaced
+    by the complete top-right page selector.
+4.4-4.10 Pending: form/data graphs, graph
     collapse, screen modes, screenshot viewing, coverage dashboard and navigation
     continuity.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused

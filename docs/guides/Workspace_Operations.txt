@@ -129,6 +129,21 @@ collection. Data flow shows derives_from connections. A literal filename does
 not verify the file format or prove the write succeeded. OUTPUT_PATH_DYNAMIC
 means the destination still needs runtime or authored explanation.
 
+Explorer hierarchy and evidence details
+Clear the Explorer search and choose All in its kind list to see ownership
+roots. Click an object once to inspect it. Select a [+] row and click Expand /
+collapse selected, or double-click that row. [-] means the branch is open.
+Next page pages through visible rows. Typing a search or selecting a kind shows
+flat matching results; clear the filter to return to the expanded hierarchy.
+Use the top-right page selector to choose Details. Select a statement, property
+or relationship row. Read its text, certainty, rule, source range, hash and
+generation in the right pane. Statements are sorted by source location, not
+claimed runtime order. CFG entry/exit markers are labeled flow boundaries.
+Properties are serialized overrides, not inferred framework defaults.
+Click Open matching source for selected row to verify and open attached source
+at its line. If source is detached or changed, cached evidence remains visible
+and the old range is not applied to mismatched source bytes.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

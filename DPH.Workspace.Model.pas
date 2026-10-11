@@ -16,8 +16,10 @@ type
     function Symbol(const AKey: string): TJSONObject;
     function Neighbors(const AKey,ADirection: string): TJSONArray;
     function Search(const AQuery,AKind,AScope: string; AOffset: Integer = 0; ALimit: Integer = 250): TJSONArray;
+    function Hierarchy(const AExpanded: TArray<string>; AOffset: Integer = 0; ALimit: Integer = 250): TJSONArray;
     function SourceFile(const APath: string): TJSONObject;
     function Properties(const AKey: string): TJSONArray;
+    function Details(const AKey: string): TJSONArray;
     function Graph(const AKind,AKey: string; ALimit: Integer = 120): TJSONObject;
     function FlagsText: string;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
@@ -25,7 +27,7 @@ type
     property Document: TJSONObject read FDocument;
   end;
 implementation
-uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, DPH.Project.Inventory;
+uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory;
 
 class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;
 var Files,Nodes: TJSONArray; FileValue,NodeValue: TJSONValue; Row,IR,Node: TJSONObject;
@@ -104,6 +106,48 @@ begin
     Inc(Count); if Result.Count>=ALimit then Break;
   end;
 end;
+function TDPHWorkspaceView.Hierarchy(const AExpanded: TArray<string>; AOffset,ALimit: Integer): TJSONArray;
+var Children: TObjectDictionary<string,TList<string>>; Parents: TDictionary<string,string>;
+    Expanded,Seen: TDictionary<string,Boolean>; Roots: TList<string>; Items: TList<string>;
+    V: TJSONValue; R: TJSONObject; Key,Owner,Child: string; VisibleCount: Integer;
+  procedure Visit(const AKey: string; Depth: Integer);
+  var Row,CopyRow: TJSONObject; Branch: TList<string>; ChildKey: string; HasChildren,IsExpanded: Boolean;
+  begin
+    if (Depth>128) or (Result.Count>=ALimit) or Seen.ContainsKey(AKey) then Exit;
+    Row:=Symbol(AKey); if Row=nil then Exit; Seen.Add(AKey,True);
+    HasChildren:=Children.TryGetValue(AKey,Branch); IsExpanded:=Expanded.ContainsKey(AKey);
+    if VisibleCount>=AOffset then begin
+      CopyRow:=Row.Clone as TJSONObject; Result.AddElement(CopyRow);
+      CopyRow.AddPair('depth',TJSONNumber.Create(Depth)); CopyRow.AddPair('has_children',TJSONBool.Create(HasChildren));
+      CopyRow.AddPair('expanded',TJSONBool.Create(IsExpanded));
+    end;
+    Inc(VisibleCount);
+    if HasChildren and IsExpanded then for ChildKey in Branch do Visit(ChildKey,Depth+1);
+  end;
+begin
+  if (AOffset<0) or (ALimit<1) or (ALimit>1000) then raise EArgumentException.Create('Invalid hierarchy page');
+  Result:=TJSONArray.Create;
+  Children:=TObjectDictionary<string,TList<string>>.Create([doOwnsValues]); Parents:=TDictionary<string,string>.Create;
+  Expanded:=TDictionary<string,Boolean>.Create; Seen:=TDictionary<string,Boolean>.Create; Roots:=TList<string>.Create;
+  try
+    try
+    for Key in AExpanded do Expanded.AddOrSetValue(Key,True);
+    for V in FDocument.GetValue<TJSONArray>('semantics.relationships') do begin
+      R:=V as TJSONObject; if R.GetValue<string>('kind')<>'owns' then Continue;
+      Owner:=R.GetValue<string>('from'); Child:=R.GetValue<string>('to','');
+      if (Owner=Child) or (Symbol(Owner)=nil) or (Symbol(Child)=nil) or Parents.ContainsKey(Child) then Continue;
+      Parents.Add(Child,Owner);
+      if not Children.TryGetValue(Owner,Items) then begin Items:=TList<string>.Create; Children.Add(Owner,Items); end;
+      Items.Add(Child);
+    end;
+    for V in FDocument.GetValue<TJSONArray>('semantics.symbols') do begin
+      Key:=(V as TJSONObject).GetValue<string>('key'); if not Parents.ContainsKey(Key) then Roots.Add(Key);
+    end;
+    VisibleCount:=0; for Key in Roots do Visit(Key,0);
+    except Result.Free; raise; end;
+  finally Roots.Free; Seen.Free; Expanded.Free; Parents.Free; Children.Free; end;
+end;
+
 function TDPHWorkspaceView.Neighbors(const AKey,ADirection: string): TJSONArray;
 var V: TJSONValue; R: TJSONObject; Field: string;
 begin
@@ -130,6 +174,55 @@ begin
   if NodeID<0 then Exit;
   for V in Nodes do begin N:=V as TJSONObject; if (N.GetValue<Integer>('parent')=NodeID) and (N.GetValue<string>('kind')='property') then Result.AddElement(N.Clone as TJSONObject); end;
 end;
+function TDPHWorkspaceView.Details(const AKey: string): TJSONArray;
+var V: TJSONValue; Row,CopyRow,FileRow: TJSONObject; PropertiesRows: TJSONArray; FlowRows: TList<TJSONObject>;
+begin
+  Result:=TJSONArray.Create; FlowRows:=TList<TJSONObject>.Create;
+  try
+    try
+    for V in FDocument.GetValue<TJSONArray>('semantics.flow_nodes') do begin
+      Row:=V as TJSONObject; if Row.GetValue<string>('routine')<>AKey then Continue;
+      FlowRows.Add(Row);
+    end;
+    FlowRows.Sort(TComparer<TJSONObject>.Construct(
+      function(const L,R: TJSONObject): Integer
+      var LeftBoundary,RightBoundary: Boolean;
+      begin
+        LeftBoundary:=MatchText(L.GetValue<string>('kind'),['entry','normal_exit','exception_exit']);
+        RightBoundary:=MatchText(R.GetValue<string>('kind'),['entry','normal_exit','exception_exit']);
+        if LeftBoundary<>RightBoundary then begin if LeftBoundary then Exit(1) else Exit(-1); end;
+        Result:=CompareStr(L.GetValue<string>('range.source'),R.GetValue<string>('range.source'));
+        if Result=0 then begin
+          if L.GetValue<Int64>('range.start')<R.GetValue<Int64>('range.start') then Result:=-1
+          else if L.GetValue<Int64>('range.start')>R.GetValue<Int64>('range.start') then Result:=1;
+        end;
+      end));
+    for Row in FlowRows do begin
+      CopyRow:=Row.Clone as TJSONObject; Result.AddElement(CopyRow);
+      if MatchText(Row.GetValue<string>('kind'),['entry','normal_exit','exception_exit']) then CopyRow.AddPair('detail_kind','flow boundary')
+      else CopyRow.AddPair('detail_kind','statement'); CopyRow.AddPair('title',Row.GetValue<string>('kind'));
+      CopyRow.AddPair('text',Row.GetValue<string>('expression')); CopyRow.AddPair('resolution','inferred');
+      CopyRow.AddPair('rule','captured_control_flow_not_runtime_trace'); if Result.Count>=1000 then Exit;
+    end;
+    PropertiesRows:=Properties(AKey);
+    try for V in PropertiesRows do begin
+      Row:=V as TJSONObject; CopyRow:=TJSONObject.Create; Result.AddElement(CopyRow);
+      CopyRow.AddPair('detail_kind','property'); CopyRow.AddPair('title',Row.GetValue<string>('name'));
+      CopyRow.AddPair('text',Row.GetValue<string>('value')); CopyRow.AddPair('range',Row.Clone as TJSONObject);
+      CopyRow.AddPair('resolution','confirmed_static'); CopyRow.AddPair('rule','serialized_override_not_framework_default');
+      FileRow:=SourceFile(Row.GetValue<string>('source')); if FileRow<>nil then CopyRow.AddPair('source_hash',FileRow.GetValue<string>('sha256'));
+      if Result.Count>=1000 then Exit;
+    end; finally PropertiesRows.Free; end;
+    for V in FDocument.GetValue<TJSONArray>('semantics.relationships') do begin
+      Row:=V as TJSONObject; if Row.GetValue<string>('from')<>AKey then Continue;
+      CopyRow:=Row.Clone as TJSONObject; Result.AddElement(CopyRow);
+      CopyRow.AddPair('detail_kind','relationship'); CopyRow.AddPair('title',Row.GetValue<string>('kind'));
+      CopyRow.AddPair('text',Row.GetValue<string>('label')); if Result.Count>=1000 then Exit;
+    end;
+    except Result.Free; raise; end;
+  finally FlowRows.Free; end;
+end;
+
 function TDPHWorkspaceView.Graph(const AKind,AKey: string; ALimit: Integer): TJSONObject;
 var Nodes,Edges,AllNodes,AllEdges: TJSONArray; V: TJSONValue; R,S,N: TJSONObject;
     Seen: TDictionary<string,Boolean>; Queue: TQueue<string>; Key,FromKey,ToKey,Kind: string;

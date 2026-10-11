@@ -32,6 +32,7 @@ Items.Strings = (
 'Form designs'
 'Screenshots'
 'References'
+'Details'
 'Knowledge'
 'Publish')
 OnChange = WorkspacePageChange
@@ -207,7 +208,7 @@ Align = Left
 Width = 240
 object FilterLayout: TLayout
 Align = Top
-Height = 76
+Height = 110
 object SearchEdit: TEdit
 Align = Top
 Height = 32
@@ -242,10 +243,19 @@ Items.Strings = (
 ItemIndex = 0
 OnChange = SearchChange
 end
+object ExplorerExpandButton: TButton
+Position.X = 0
+Position.Y = 76
+Width = 220
+Height = 28
+Text = 'Expand / collapse selected'
+OnClick = ExplorerExpandClick
+end
 end
 object ExplorerList: TListBox
 Align = Client
-OnDblClick = ExplorerClick
+OnClick = ExplorerClick
+OnDblClick = ExplorerExpandClick
 end
 end
 object ExplorerSplitter: TSplitter
@@ -272,7 +282,7 @@ Height = 80
 Margins.Left = 8
 Margins.Right = 8
 WordWrap = True
-Text = 'Double-click an object in the left list. Its name, type and source location appear below. Open Explain for what its code does.'
+Text = 'Click an object in Explorer to inspect it. Double-click a [+] or [-] branch to expand or collapse it. Open Explain for its code or Details for statements and evidence.'
 end
 object InspectorMemo: TMemo
 Align = Client
@@ -294,7 +304,7 @@ Width = 6
 end
 object WorkspaceTabs: TTabControl
 Align = Client
-TabPosition = Top
+TabPosition = None
 ActiveTab = OverviewTab
 OnChange = WorkspacePageChange
 object ProjectSearchTab: TTabItem
@@ -807,6 +817,36 @@ Text = 'References'
 object RelationsList: TListBox
 Align = Client
 OnDblClick = RelationsClick
+end
+end
+object DetailsTab: TTabItem
+Text = 'Details'
+object DetailsTitle: TLabel
+Align = Top
+Height = 68
+WordWrap = True
+Margins.Left = 8
+Margins.Right = 8
+Text = 'Statements, properties and evidence. Select an Explorer object, then a row below. The right pane explains the selected row and its source. Property values are serialized overrides; framework defaults are not inferred.'
+end
+object DetailsSourceButton: TButton
+Align = Top
+Height = 32
+Text = 'Open matching source for selected row'
+OnClick = DetailsSourceClick
+end
+object DetailsList: TListBox
+Align = Left
+Width = 330
+OnClick = DetailsClick
+end
+object DetailsMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Family = 'Segoe UI'
+TextSettings.Font.Size = 14
 end
 end
 object KnowledgeTab: TTabItem
