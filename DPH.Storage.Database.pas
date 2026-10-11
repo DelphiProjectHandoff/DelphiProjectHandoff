@@ -95,6 +95,7 @@ type
     procedure BuildSearchIndex(AGeneration: Int64);
     function SearchProject(AGeneration: Int64; const AQuery,AKind: string; AOffset: Integer): TJSONArray;
     property DatabasePath: string read FDatabasePath;
+    property SourceRoot: string read FSourceRoot;
   end;
 
 implementation

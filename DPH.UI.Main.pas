@@ -60,6 +60,7 @@ type
     PublishScopeCombo: TComboBox;
     PublishAudienceCombo: TComboBox;
     PublishAgentInstructions: TCheckBox;
+    PublishSourceNavigation: TCheckBox;
     ValidationTab: TTabItem;
     ValidationPurpose,ValidationFingerprintLabel: TLabel;
     ValidationToolbar: THorzScrollBox;
@@ -548,6 +549,7 @@ begin
     R.Exclusions:=PublishExclusionsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
     R.Audience:='all'; if PublishAudienceCombo.ItemIndex>=0 then R.Audience:=PublishAudienceCombo.Items[PublishAudienceCombo.ItemIndex];
     R.IncludeAgentInstructions:=PublishAgentInstructions.IsChecked;
+    R.IncludeSourceNavigation:=PublishSourceNavigation.IsChecked;
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';

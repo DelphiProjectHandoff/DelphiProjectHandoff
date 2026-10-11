@@ -4,12 +4,12 @@ uses System.SysUtils, System.JSON, DPH.Publish.Model, DPH.Storage.Database;
 type
   TDPHPublisher = class
   public
-    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean = False); static;
+    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean = False; AIncludeSourceNavigation: Boolean = False); static;
     class procedure Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean = True); static;
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
 var Archive: TZipFile; Document,Body,Headings: string; V,W,L: TJSONValue; R: TJSONObject; I: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
   procedure Part(const Name,Text: string);
@@ -71,11 +71,14 @@ begin
     Part('word/document.xml',Document);
   finally Archive.Free; end;
 end;
-class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean);
+class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions,AIncludeSourceNavigation: Boolean);
 var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValue: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
     ByFrom: TObjectDictionary<string,TList<TJSONObject>>; Neighbors: TList<TJSONObject>;
     Explanations: TDPHExplanationModel;
     Images: TJSONArray; ImageValue: TJSONValue; ImageRow: TJSONObject; ImagePath: string;
+    SourcePages: TObjectDictionary<string,TJSONObject>; Navigation,SourceRecord: TJSONObject; SourceRows: TJSONArray;
+    Source: TDPHSource; Diagnostics: TDPHDiagnostics; SourceLines: TArray<string>; SourceLine,ObjectPage,SourcePath: string; LineNumber,RenderedSources,OmittedSources: Integer;
+    IncludedLines: TJSONArray; LineStarts: TArray<Integer>; LineMask: TArray<Boolean>; CharacterIndex,LineIndex,RenderedLines: Integer; SourceSymbol: TJSONValue; TaskSource,SkippingLines,LineAvailable: Boolean;
   procedure Write(const Name,Text: string);
   var Target: string;
   begin Target:=TPath.Combine(Directory,Name.Replace('/',PathDelim)); TDirectory.CreateDirectory(ExtractFilePath(Target)); TFile.WriteAllBytes(Target,TEncoding.UTF8.GetBytes(Text)); end;
@@ -88,7 +91,76 @@ begin
   if TDirectory.Exists(Directory) or TFile.Exists(Directory) then raise EArgumentException.Create('Export destination must be new; existing files will not be overwritten');
   TDirectory.CreateDirectory(Directory); Lines:=TStringBuilder.Create; Page:=TStringBuilder.Create;
   ByFrom:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]); Explanations:=TDPHExplanationModel.Create(AModel.Document);
+  SourcePages:=TObjectDictionary<string,TJSONObject>.Create([doOwnsValues]); Navigation:=TJSONObject.Create;
   try
+    SourceRows:=TJSONArray.Create; Navigation.AddPair('files',SourceRows); RenderedSources:=0; OmittedSources:=0;
+    Navigation.AddPair('included',TJSONBool.Create(AIncludeSourceNavigation)); Navigation.AddPair('raw_source_snapshots',TJSONBool.Create(False));
+    Navigation.AddPair('disclosure','Optional redacted line-preserving browsing views. Original bytes are not included; inspect prose before sharing.');
+    if AIncludeSourceNavigation then begin
+      if AModel.Document.GetValue<Boolean>('detached') then raise EReadError.Create('Attach verified source before including source navigation');
+      for V in AModel.Document.GetValue<TJSONArray>('files') do begin
+        R:=V as TJSONObject; Relative:=R.GetValue<string>('path'); SourceRecord:=TJSONObject.Create; SourceRows.AddElement(SourceRecord);
+        SourceRecord.AddPair('source',Relative); SourceRecord.AddPair('original_sha256',R.GetValue<string>('sha256')); SourceRecord.AddPair('artifact','');
+        if R.GetValue<string>('availability')<>'available' then begin SourceRecord.AddPair('state','omitted_unavailable_at_capture'); Inc(OmittedSources); Continue; end;
+        if Relative.Contains('..') or Relative.Contains(':') or StartsText('/',Relative) or StartsText('external/',Relative) then raise EReadError.Create('Source browsing path is outside the captured project');
+        SourcePath:=TPath.GetFullPath(TPath.Combine(AStore.SourceRoot,Relative.Replace('/',PathDelim)));
+        if not StartsText(IncludeTrailingPathDelimiter(AStore.SourceRoot),SourcePath) or not TFile.Exists(SourcePath) then raise EReadError.Create('Captured source is missing; reassess before exporting source navigation');
+        if R.GetValue<Int64>('bytes')>4*1024*1024 then begin SourceRecord.AddPair('state','omitted_above_4_MiB_browsing_limit'); Inc(OmittedSources); Continue; end;
+        if not MatchText(ExtractFileExt(Relative),['.pas','.dpr','.dproj','.groupproj','.inc','.dfm','.fmx','.rc','.json','.xml','.ini','.txt','.cfg']) then begin
+          SourceRecord.AddPair('state','omitted_nontext_extension'); Inc(OmittedSources); Continue;
+        end;
+        Diagnostics:=TDPHDiagnostics.Create;
+        try Source:=TDPHSource.Create(SourcePath,Relative,Diagnostics,AModel.Document.GetValue<Integer>('analysis_configuration.code_page'));
+          try
+            if Source.SHA256<>R.GetValue<string>('sha256') then raise EReadError.Create('Source changed since capture: '+Relative+'; reassess before exporting source navigation');
+            if not Source.Decoded or ContainsText(Source.Text,'PRIVATE KEY-----') then begin SourceRecord.AddPair('state','omitted_binary_undecodable_or_private_key'); Inc(OmittedSources); Continue; end;
+            SourceLines:=Source.Text.Replace(#13#10,#10).Replace(#13,#10).Split([#10]);
+            if Length(SourceLines)>20000 then begin SourceRecord.AddPair('state','omitted_above_20000_line_browsing_limit'); Inc(OmittedSources); Continue; end;
+            TaskSource:=AModel.Document.GetValue<string>('scope')='task';
+            SetLength(LineStarts,Length(SourceLines)); SetLength(LineMask,Length(SourceLines));
+            for LineIndex:=0 to High(LineMask) do LineMask[LineIndex]:=not TaskSource;
+            if TaskSource then begin
+              LineIndex:=0; LineStarts[0]:=Source.ByteOffsets[0];
+              for CharacterIndex:=1 to Length(Source.Text) do if (Source.Text[CharacterIndex]=#10) or
+                ((Source.Text[CharacterIndex]=#13) and ((CharacterIndex=Length(Source.Text)) or (Source.Text[CharacterIndex+1]<>#10))) then begin
+                  Inc(LineIndex); if LineIndex<Length(LineStarts) then LineStarts[LineIndex]:=Source.ByteOffsets[CharacterIndex];
+                end;
+              for SourceSymbol in AModel.Document.GetValue<TJSONArray>('symbols') do
+                if (SourceSymbol.GetValue<string>('range.source')=Relative) and not MatchText(SourceSymbol.GetValue<string>('kind'),['unit','type','form']) then begin
+                  LineIndex:=SourceSymbol.GetValue<Integer>('range.line')-1;
+                  while (LineIndex>=0) and (LineIndex<Length(LineMask)) and (LineStarts[LineIndex]<SourceSymbol.GetValue<Integer>('range.end')) do begin
+                    LineMask[LineIndex]:=True; Inc(LineIndex);
+                  end;
+                end;
+            end;
+            RenderedLines:=0; for LineIndex:=0 to High(LineMask) do if LineMask[LineIndex] then Inc(RenderedLines);
+            if RenderedLines=0 then begin SourceRecord.AddPair('state','omitted_no_cited_noncontainer_ranges'); Inc(OmittedSources); Continue; end;
+            IncludedLines:=TJSONArray.Create; SourceRecord.AddPair('included_line_numbers',IncludedLines);
+            Path:='objects/'+THashSHA2.GetHashString('source'+#0+Relative+#0+Source.SHA256+#0+DPHPublishVersion+#0+AModel.Document.GetValue<string>('scope')+#0+AModel.Document.GetValue<TJSONArray>('task_seeds').ToJSON)+'.html';
+            Lines.Clear; Lines.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''self''; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><link rel="stylesheet" href="../assets/style.css"><title>Captured source browsing view</title></head><body><a href="../index.html">Back to handoff</a><h1 class="notranslate" translate="no">')
+              .Append(TDPHDocumentModel.HTML(Relative)).Append('</h1><p>Redacted browsing text; original source bytes are not included. Original SHA256: <code>')
+              .Append(Source.SHA256).Append('</code>. Line anchors refer to the captured file. Task scope includes only cited non-container line excerpts; omitted lines are marked. Shared lines may contain surrounding code. Redaction does not guarantee removal of every sensitive value; review before sharing.</p><pre class="notranslate" translate="no">');
+            LineNumber:=0; SkippingLines:=False;
+            for SourceLine in SourceLines do begin Inc(LineNumber);
+              if not LineMask[LineNumber-1] then begin
+                if not SkippingLines then Lines.Append('... uncited lines omitted ...').Append(#10);
+                SkippingLines:=True; Continue;
+              end;
+              SkippingLines:=False; IncludedLines.Add(LineNumber);
+              Lines.Append('<span id="L').Append(LineNumber).Append('"><a href="#L').Append(LineNumber).Append('">')
+                .Append(LineNumber).Append('</a> ').Append(TDPHDocumentModel.HTML(TDPHDocumentModel.Redact(SourceLine))).Append('</span>').Append(#10);
+            end;
+            Lines.Append('</pre></body></html>'); Write(Path,Lines.ToString);
+            SourceRecord.RemovePair('artifact').Free; SourceRecord.AddPair('artifact',Path); SourceRecord.AddPair('state','redacted_captured_text');
+            SourceRecord.AddPair('line_count',TJSONNumber.Create(LineNumber)); SourceRecord.AddPair('rendered_line_count',TJSONNumber.Create(RenderedLines));
+            SourceRecord.AddPair('task_excerpts',TJSONBool.Create(TaskSource)); SourceRecord.AddPair('generation_id',AModel.Document.GetValue('generation_id').Clone as TJSONValue);
+            SourcePages.Add(Relative,SourceRecord.Clone as TJSONObject); Inc(RenderedSources);
+          finally Source.Free; end;
+        finally Diagnostics.Free; end;
+      end;
+    end;
+    Navigation.AddPair('rendered_files',TJSONNumber.Create(RenderedSources)); Navigation.AddPair('omitted_files',TJSONNumber.Create(OmittedSources));
+    Write('source-navigation.json',Navigation.Format(2));
     for V in AModel.Document.GetValue<TJSONArray>('relationships') do begin J:=V as TJSONObject;
       if not ByFrom.TryGetValue(J.GetValue<string>('from'),Neighbors) then begin Neighbors:=TList<TJSONObject>.Create; ByFrom.Add(J.GetValue<string>('from'),Neighbors); end; Neighbors.Add(J);
     end;
@@ -113,6 +185,15 @@ begin
       IfThen(AModel.Document.GetValue<Boolean>('analysis_complete'),'Captured analysis complete','PARTIAL analysis')+' | '+IfThen(AModel.Document.GetValue<Boolean>('detached'),'Detached source','Connected capture')+' | '+IfThen(AModel.Document.GetValue<Boolean>('stale'),'STALE evidence','Captured fingerprint')+'</p><p>Static evidence; runtime behavior unobserved. Human verification is recorded separately.</p></header><nav>');
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<a href="#'+R.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</a>'); end;
     Page.Append('</nav><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
+    Page.Append('<section><h2>Source navigation</h2><p>'+IfThen(AIncludeSourceNavigation,'Explicitly included redacted browsing views: ','Excluded by default. ')+
+      RenderedSources.ToString+' rendered files; '+OmittedSources.ToString+' omitted files. Original source bytes are not included.</p>');
+    if AIncludeSourceNavigation then begin Page.Append('<details><summary>Browse captured source files and omissions</summary><ul>');
+      for V in SourceRows do begin Page.Append('<li>');
+        if V.GetValue<string>('artifact')<>'' then Page.Append('<a class="notranslate" translate="no" href="'+V.GetValue<string>('artifact')+'">'+TDPHDocumentModel.HTML(V.GetValue<string>('source'))+'</a>')
+        else Page.Append(TDPHDocumentModel.HTML(V.GetValue<string>('source'))+' - '+TDPHDocumentModel.HTML(V.GetValue<string>('state').Replace('_',' ')));
+        Page.Append('</li>');
+      end; Page.Append('</ul></details>');
+    end; Page.Append('</section>');
     for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
       Page.Append('<figure id="screenshot_'+R.GetValue<string>('artifact_hash','')+'"><img width="640" src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' | Contributor: '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+' | user supplied, unverified | generation '+R.GetValue('generation_id').Value+'</figcaption></figure>');
     end;
@@ -155,10 +236,17 @@ begin
     IndexText:='';
     for V in AModel.Document.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; Anchor:='s_'+THashSHA2.GetHashString(R.GetValue<string>('key'));
       Path:='objects/'+THashSHA2.GetHashString(R.GetValue<string>('key'))+'.html';
-      try Write(Path,Explanations.ObjectHTML(R.GetValue<string>('key')).Replace('href="#s_','href="../index.html#s_'));
+      try ObjectPage:=Explanations.ObjectHTML(R.GetValue<string>('key')).Replace('href="#s_','href="../index.html#s_');
+        LineAvailable:=False;
+        if SourcePages.TryGetValue(R.GetValue<string>('range.source'),SourceRecord) then for SourceSymbol in SourceRecord.GetValue<TJSONArray>('included_line_numbers') do
+          if SourceSymbol.Value=R.GetValue<Integer>('range.line').ToString then LineAvailable:=True;
+        if LineAvailable then
+          ObjectPage:=ObjectPage.Replace('<body>','<body><p><a href="'+ExtractFileName(SourceRecord.GetValue<string>('artifact'))+'#L'+R.GetValue<Integer>('range.line').ToString+'">Read captured redacted source at this line</a></p>');
+        Write(Path,ObjectPage);
       except on E: Exception do raise EReadError.Create('Object explanation '+R.GetValue<string>('name')+': '+E.ClassName+': '+E.Message); end;
       Page.Append('<p><a href="'+Path+'">Explain '+TDPHDocumentModel.HTML(R.GetValue<string>('name'))+' - role, callers, effects, execution trace and control flow</a></p>');
       Page.Append('<article id="'+Anchor+'" data-search="'+TDPHDocumentModel.HTML(LowerCase(R.GetValue<string>('name')+' '+R.GetValue<string>('kind')+' '+R.GetValue<string>('signature')))+'"><h2 class="notranslate" translate="no">'+TDPHDocumentModel.HTML(R.GetValue<string>('name'))+'</h2><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('kind'))+'</p><pre class="notranslate" translate="no">'+TDPHDocumentModel.HTML(R.GetValue<string>('signature'))+'</pre><p class="notranslate" translate="no">'+TDPHDocumentModel.HTML(R.GetValue<string>('range.source'))+' line '+R.GetValue<Integer>('range.line').ToString+' | SHA256 '+R.GetValue<string>('source_hash')+'</p>');
+      if LineAvailable then Page.Append('<p><a href="'+SourceRecord.GetValue<string>('artifact')+'#L'+R.GetValue<Integer>('range.line').ToString+'">Read captured redacted source</a></p>');
       if ByFrom.TryGetValue(R.GetValue<string>('key'),Neighbors) then for J in Neighbors do begin
         Page.Append('<p>'+TDPHDocumentModel.HTML(J.GetValue<string>('kind'))+' ['+TDPHDocumentModel.HTML(J.GetValue<string>('resolution'))+'] ');
         if J.GetValue<string>('to','')<>'' then Page.Append('<a class="notranslate" translate="no" href="#s_'+THashSHA2.GetHashString(J.GetValue<string>('to'))+'">'+TDPHDocumentModel.HTML(J.GetValue<string>('label'))+'</a>')
@@ -232,6 +320,7 @@ begin
       Manifest.AddPair('canonical_hash',THashSHA2.GetHashString(AModel.Document.ToJSON)); Manifest.AddPair('scope',AModel.Document.GetValue<string>('scope'));
       Manifest.AddPair('stale',TJSONBool.Create(AModel.Document.GetValue<Boolean>('stale'))); Manifest.AddPair('source_snapshots_included',TJSONBool.Create(False));
       Manifest.AddPair('agent_instructions_included',TJSONBool.Create(AIncludeAgentInstructions)); Manifest.AddPair('external_calls',TJSONBool.Create(False));
+      Manifest.AddPair('source_navigation_included',TJSONBool.Create(AIncludeSourceNavigation));
       Manifest.AddPair('project',AModel.Document.GetValue<string>('project')); Manifest.AddPair('captured_utc',AModel.Document.GetValue<string>('captured_utc'));
       Manifest.AddPair('audience',AModel.Document.GetValue<string>('audience'));
       Manifest.AddPair('source_revision',AModel.Document.GetValue<TJSONObject>('source_revision').Clone as TJSONValue);
@@ -241,7 +330,7 @@ begin
       Manifest.AddPair('included_sources',AModel.Document.GetValue<TJSONArray>('files').Clone as TJSONValue);
       Manifest.AddPair('excluded_sources',AModel.Document.GetValue<TJSONArray>('exclusions').Clone as TJSONValue);
       Manifest.AddPair('task_seeds',AModel.Document.GetValue<TJSONArray>('task_seeds').Clone as TJSONValue);
-      Manifest.AddPair('portability_scope','relative local routes, indexes and copied managed images; no original source or absolute dependency roots');
+      Manifest.AddPair('portability_scope','relative local routes, indexes, copied managed images and optional redacted source browsing pages; no original source bytes or absolute dependency roots');
       Manifest.AddPair('disclosure_limitations','Scoped redacted static evidence and attributed knowledge. Review explicit exclusions and remaining prose before sharing; redaction is not a confidentiality guarantee.');
       Manifest.AddPair('hash_index','validation/manifest-sha256.json'); Write('manifest.json',Manifest.Format(2));
     finally Manifest.Free; end;
@@ -251,11 +340,11 @@ begin
       Write('validation/manifest-sha256.json',Hashes.Format(2));
     finally Hashes.Free; end;
     Validate(Directory,AModel.Document.GetValue<string>('input_fingerprint'),False);
-  finally Explanations.Free; ByFrom.Free; Page.Free; Lines.Free; end;
+  finally Navigation.Free; SourcePages.Free; Explanations.Free; ByFrom.Free; Page.Free; Lines.Free; end;
 end;
 class procedure TDPHPublisher.Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean);
 var Hashes,Manifest,Canonical,Row,Referenced: TJSONObject; Pair: TJSONPair; Path,Root: string; Files: TArray<string>; V,W: TJSONValue; Generation: Int64;
-    Sources,Symbols,Evidence,Flow: TDictionary<string,TJSONObject>; ArtifactCount: Integer;
+    Sources,Symbols,Evidence,Flow: TDictionary<string,TJSONObject>; ArtifactCount,RenderedSources,OmittedSources,LastLine: Integer; BrowseInfo,BrowseSource: TJSONObject; BrowsedFiles: TDictionary<string,Boolean>;
   procedure CheckTree(const Directory: string);
   var Entry: string; Attributes: Cardinal;
   begin
@@ -321,7 +410,7 @@ begin
     if (Canonical.GetValue<Boolean>('stale')<>Manifest.GetValue<Boolean>('stale')) or
       (Canonical.GetValue<string>('template_version')<>Manifest.GetValue<string>('template_version')) or
       (Canonical.GetValue<string>('scope')<>Manifest.GetValue<string>('scope')) then raise EReadError.Create('Canonical publication metadata mismatch');
-    if Manifest.GetValue<string>('template_version')=DPHPublishVersion then begin
+    if Manifest.GetValue('analyzers')<>nil then begin
       for Path in ['project','captured_utc','audience','source_revision','analyzers','required_toolchain','task_seeds'] do
         if (Manifest.GetValue(Path)=nil) or (Canonical.GetValue(Path)=nil) or (Manifest.GetValue(Path).ToJSON<>Canonical.GetValue(Path).ToJSON) then
           raise EReadError.Create('Handoff provenance metadata mismatch: '+Path);
@@ -333,6 +422,38 @@ begin
         raise EReadError.Create('Generated agent instruction disclosure mismatch');
     end;
     for V in Canonical.GetValue<TJSONArray>('files') do begin Row:=V as TJSONObject; Sources.Add(Row.GetValue<string>('path'),Row); end;
+    if Manifest.GetValue('source_navigation_included')<>nil then begin
+      BrowseInfo:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Root,'source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
+      BrowsedFiles:=TDictionary<string,Boolean>.Create;
+      try
+        if (BrowseInfo=nil) or (BrowseInfo.GetValue<Boolean>('included')<>Manifest.GetValue<Boolean>('source_navigation_included')) or BrowseInfo.GetValue<Boolean>('raw_source_snapshots') then
+          raise EReadError.Create('Source navigation disclosure mismatch');
+        RenderedSources:=0; OmittedSources:=0;
+        if not BrowseInfo.GetValue<Boolean>('included') and (BrowseInfo.GetValue<TJSONArray>('files').Count<>0) then raise EReadError.Create('Unexpected source navigation records');
+        if BrowseInfo.GetValue<Boolean>('included') and (BrowseInfo.GetValue<TJSONArray>('files').Count<>Sources.Count) then raise EReadError.Create('Source navigation scope differs from canonical inventory');
+        for V in BrowseInfo.GetValue<TJSONArray>('files') do begin
+          if BrowsedFiles.ContainsKey(V.GetValue<string>('source')) then raise EReadError.Create('Duplicate source browsing record');
+          BrowsedFiles.Add(V.GetValue<string>('source'),True);
+          if not Sources.TryGetValue(V.GetValue<string>('source'),BrowseSource) or (BrowseSource.GetValue<string>('sha256')<>V.GetValue<string>('original_sha256')) then raise EReadError.Create('Source browsing references a different captured file');
+          Path:=V.GetValue<string>('artifact');
+          if Path='' then begin Inc(OmittedSources); if not StartsText('omitted_',V.GetValue<string>('state')) then raise EReadError.Create('Unexplained source browsing omission'); Continue; end;
+          if not StartsText('objects/',Path) or (Length(Path)<>77) or (V.GetValue<string>('state')<>'redacted_captured_text') or
+            (V.GetValue<Integer>('line_count')<1) or (V.GetValue<Integer>('line_count')>20000) or (V.GetValue<Int64>('generation_id')<>Generation) or (Hashes.GetValue(Path)=nil) then
+            raise EReadError.Create('Invalid redacted source browsing artifact');
+          if (V.GetValue<Boolean>('task_excerpts')<>(Canonical.GetValue<string>('scope')='task')) or
+            (V.GetValue<Integer>('rendered_line_count')<>V.GetValue<TJSONArray>('included_line_numbers').Count) or
+            (V.GetValue<Integer>('rendered_line_count')<1) then raise EReadError.Create('Source browsing excerpt scope mismatch');
+          LastLine:=0;
+          for W in V.GetValue<TJSONArray>('included_line_numbers') do begin
+            if (StrToInt(W.Value)<=LastLine) or (StrToInt(W.Value)>V.GetValue<Integer>('line_count')) then raise EReadError.Create('Invalid source line anchor identity');
+            LastLine:=StrToInt(W.Value);
+          end;
+          if not V.GetValue<Boolean>('task_excerpts') and (V.GetValue<Integer>('rendered_line_count')<>V.GetValue<Integer>('line_count')) then raise EReadError.Create('Incomplete full-source browsing page');
+          Inc(RenderedSources);
+        end;
+        if (RenderedSources<>BrowseInfo.GetValue<Integer>('rendered_files')) or (OmittedSources<>BrowseInfo.GetValue<Integer>('omitted_files')) then raise EReadError.Create('Source browsing coverage count mismatch');
+      finally BrowsedFiles.Free; BrowseInfo.Free; end;
+    end;
     for V in Canonical.GetValue<TJSONArray>('symbols') do begin Row:=V as TJSONObject; CheckRange(Row); Symbols.Add(Row.GetValue<string>('key'),Row);
       if Row.GetValue('source_comments')<>nil then for W in Row.GetValue<TJSONArray>('source_comments') do CheckRange(W as TJSONObject);
     end;
@@ -360,7 +481,7 @@ begin
     end;
     CheckJSONL('indexes/symbols.jsonl','symbols',[]); CheckJSONL('indexes/relationships.jsonl','relationships',[]);
     CheckJSONL('evidence/references.jsonl','evidence',[]); CheckJSONL('indexes/control-flow.jsonl','flow_nodes',[]);
-    if Canonical.GetValue<string>('template_version')=DPHPublishVersion then begin
+    if Canonical.GetValue('analysis_configuration')<>nil then begin
       if TFile.ReadAllText(TPath.Combine(Root,'indexes/configuration.jsonl'),TEncoding.UTF8)<>Canonical.GetValue<TJSONObject>('analysis_configuration').ToJSON+#10 then
         raise EReadError.Create('Configuration index differs from canonical model');
       CheckJSONL('indexes/files.jsonl','files',[]);

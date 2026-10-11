@@ -256,7 +256,18 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Eight native/worker checks added (126 workspace total); app/form build passes.
     Valid, stale, wrong-fingerprint and tampered bundles are exercised. Native
     report rendering is inspected; integrity does not establish author identity.
-6.7 Pending: offline source navigation.
+6.7 Expanded: explicit unchecked source-browsing export option. Reads only scoped
+    captured text with matching original SHA256 and approved code page; changed or
+    missing source rejects export. Derives HTML-encoded, redacted, line-anchored
+    pages without copying original bytes or granting native file access. Full
+    exports browse eligible files; task exports include cited noncontainer line
+    excerpts, mark omissions and disclose shared-line context. Binary, private-key,
+    unavailable, >4 MiB and >20000-line files are omitted with reasons. Relative
+    object-to-line links use the existing hashed object-page allowlist. Manifest,
+    scope/line metadata and artifacts validate after relocation. Eleven new
+    publishing checks pass (105 total); workspace 127, app/form build pass.
+    Live WebView source-page visual acceptance remains a final-review task;
+    generated HTML, route policy, worker export and integrity are exercised.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
 

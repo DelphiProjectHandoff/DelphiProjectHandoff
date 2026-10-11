@@ -1581,7 +1581,17 @@ object PublishTab: TTabItem
 Text = 'Publish'
 object PublishToolbar: THorzScrollBox
 Align = Top
-Height = 116
+Height = 152
+object PublishSourceNavigation: TCheckBox
+Position.X = 4
+Position.Y = 112
+Width = 570
+Height = 28
+Text = 'Include redacted source browsing pages (review before sharing)'
+IsChecked = False
+Hint = 'Reads only hash-matching captured text. Original source bytes are not copied. Redaction cannot guarantee removal of every sensitive value.'
+ShowHint = True
+end
 object PublishAgentInstructions: TCheckBox
 Position.X = 4
 Position.Y = 78

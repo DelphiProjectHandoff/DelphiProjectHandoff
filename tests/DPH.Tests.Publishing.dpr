@@ -25,7 +25,7 @@ var Root,Work,Fixture,Path,Key,Text,CacheKey: string; IDValue: TGUID; Checks: In
     Store: TDPHKnowledgeStore; Config,Generation,TranslationNote,TranslationRevision: Int64; View: TDPHWorkspaceView; Model,Task,Again: TDPHDocumentModel;
     Knowledge,Rows,RichLinks: TJSONArray; J: TJSONObject; V: TJSONValue; Failed: Boolean;
     Cache: TDPHTranslationCache; Provider: IDPHTranslationProvider; Segments: TArray<TDPHTranslationSegment>;
-    Archive: TZipFile; Bytes: TBytes;
+    Archive: TZipFile; Bytes,CapturedMainBytes: TBytes;
 procedure Check(OK: Boolean; const MessageText: string);
 begin if not OK then raise Exception.Create('FAIL '+MessageText); Inc(Checks); Writeln('PASS ',Checks,': ',MessageText); end;
 begin
@@ -46,6 +46,7 @@ begin
     Check(not ContainsText(TDPHDocumentModel.Redact('Authorization: Bearer abcdefghijklmnop'),'abcdefghijklmnop'),'Bearer authorization tokens are redacted');
     Check(not ContainsText(TDPHDocumentModel.Redact('{"password":"quoted secret words"}'),'quoted secret'),'JSON credential text is redacted');
     for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do TFile.Copy(Path,TPath.Combine(Fixture,ExtractFileName(Path)));
+    TFile.AppendAllText(TPath.Combine(Fixture,'Main.pas'),sLineBreak+'// password=SOURCE_SECRET_FOR_REDACTION'+sLineBreak,TEncoding.UTF8);
     Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
     Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'publish.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
     try
@@ -96,6 +97,8 @@ begin
             TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint'));
             Check(True,'Full handoff passes filename and SHA256 validation');
             Check(not TFile.Exists(TPath.Combine(Work,'full\AGENTS.md')),'Owner guardrails and generated agent instructions are excluded by default');
+            J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'full\source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
+            try Check(not J.GetValue<Boolean>('included') and (J.GetValue<TJSONArray>('files').Count=0),'Source browsing is excluded by default'); finally J.Free; end;
             for Path in ['project-summary.md','architecture.md','build-and-test.md','known-risks.md','decisions-and-unknowns.md'] do
               Check(TFile.Exists(TPath.Combine(Work,'full\'+Path)),'Handoff includes planned narrative '+Path);
             J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'full\manifest.json'),TEncoding.UTF8)) as TJSONObject;
@@ -121,11 +124,46 @@ begin
             try Check(Again.Document.ToJSON=Model.Document.ToJSON,'Canonical output is deterministic for fixed capture, scope and knowledge'); finally Again.Free; end;
             Task:=TDPHDocumentModel.Create(View,Knowledge,[Key],[],False,False);
             try Check(Task.Document.GetValue<string>('scope')='task','Task bundle records its technical scope'); Check(Task.Document.GetValue<TJSONArray>('symbols').Count<View.Document.GetValue<TJSONArray>('semantics.symbols').Count,'Task bundle selects incident context rather than a blind full-export truncation');
-              TDPHPublisher.Export(Task,Store,TPath.Combine(Work,'task')); finally Task.Free; end;
+              TDPHPublisher.Export(Task,Store,TPath.Combine(Work,'task'));
+              TDPHPublisher.Export(Task,Store,TPath.Combine(Work,'task-source'),False,True);
+              TDPHPublisher.Validate(TPath.Combine(Work,'task-source'),Task.Document.GetValue<string>('input_fingerprint'));
+              J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'task-source\source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
+              try Failed:=False; for V in J.GetValue<TJSONArray>('files') do if V.GetValue<string>('artifact')<>'' then begin
+                if V.GetValue<Integer>('rendered_line_count')<V.GetValue<Integer>('line_count') then Failed:=True;
+                Check(V.GetValue<Boolean>('task_excerpts'),'Task source browsing is explicitly limited to cited noncontainer line excerpts');
+              end;
+              Check(Failed,'Task source browsing omits uncited source instead of disclosing every line of an included file');
+              finally J.Free; end;
+            finally Task.Free; end;
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'agent-opt-in'),True);
             TDPHPublisher.Validate(TPath.Combine(Work,'agent-opt-in'),Model.Document.GetValue<string>('input_fingerprint'));
             Check(TFile.ReadAllText(TPath.Combine(Work,'agent-opt-in\AGENTS.md'),TEncoding.UTF8).Contains('grants no authority'),
               'Explicit agent-instruction opt-in produces bounded generated instructions and a valid disclosed manifest');
+            TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'source-opt-in'),False,True);
+            TDPHPublisher.Validate(TPath.Combine(Work,'source-opt-in'),Model.Document.GetValue<string>('input_fingerprint'));
+            J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'source-opt-in\source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
+            try
+              Check(J.GetValue<Boolean>('included') and not J.GetValue<Boolean>('raw_source_snapshots') and (J.GetValue<Integer>('rendered_files')>0),
+                'Explicit source browsing generates validated derived pages without copying original source bytes');
+              Text:=''; for V in J.GetValue<TJSONArray>('files') do if V.GetValue<string>('source')='main.pas' then Text:=TFile.ReadAllText(TPath.Combine(Work,'source-opt-in\'+V.GetValue<string>('artifact')),TEncoding.UTF8);
+              Check(Text.Contains('id="L1"') and Text.Contains('[REDACTED]') and not Text.Contains('SOURCE_SECRET_FOR_REDACTION'),
+                'Source pages preserve line anchors and redact recognized credential assignments');
+              Failed:=False; for V in J.GetValue<TJSONArray>('files') do if V.GetValue<string>('source')='worker.pas' then Failed:=True;
+              Check(not Failed,'Excluded source cannot leak through browsing pages');
+            finally J.Free; end;
+            Text:=TFile.ReadAllText(TPath.Combine(Work,'source-opt-in\objects\'+THashSHA2.GetHashString(Key)+'.html'),TEncoding.UTF8);
+            Check(Text.Contains('Read captured redacted source at this line') and Text.Contains('#L'),
+              'Object explanation links to its exact captured source line using a relative allowlisted route');
+            if not StartsText(IncludeTrailingPathDelimiter(TPath.Combine(Root,'bin')),TPath.Combine(Work,'source-opt-in')) or
+              not StartsText(IncludeTrailingPathDelimiter(TPath.Combine(Root,'bin')),TPath.Combine(Work,'source-relocated')) then raise Exception.Create('Fixture relocation escaped test output');
+            TDirectory.Move(TPath.Combine(Work,'source-opt-in'),TPath.Combine(Work,'source-relocated'));
+            TDPHPublisher.Validate(TPath.Combine(Work,'source-relocated'),Model.Document.GetValue<string>('input_fingerprint'));
+            Check(True,'Redacted source navigation bundle validates after folder relocation');
+            CapturedMainBytes:=TFile.ReadAllBytes(TPath.Combine(Fixture,'Main.pas'));
+            TFile.AppendAllText(TPath.Combine(Fixture,'Main.pas'),sLineBreak+'// changed after capture',TEncoding.UTF8);
+            Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'source-changed'),False,True); except Failed:=True; end;
+            Check(Failed,'Changed source is rejected before it can masquerade as the captured browsing revision');
+            TFile.WriteAllBytes(TPath.Combine(Fixture,'Main.pas'),CapturedMainBytes);
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),StringOfChar('0',64)); except Failed:=True; end; Check(Failed,'Changed input fingerprint rejects a stale bundle');
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Fixture,'forbidden')); except Failed:=True; end; Check(Failed,'Publishing cannot write into the analyzed source');
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full')); except Failed:=True; end; Check(Failed,'Publishing cannot overwrite an existing folder');

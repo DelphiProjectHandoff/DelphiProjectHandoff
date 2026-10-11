@@ -369,6 +369,29 @@ Validate a handoff inside DPH
    incomplete inspection only, check Allow historical/partial inspection and
    select the same manifest again. A qualified PASS still does not establish
    current source, complete analysis, reviewed procedures or author identity.
+
+Optional offline source browsing
+1. Attach the original source and open its captured project. In Publish, check
+   Include redacted source browsing pages only when you intend to share captured
+   code excerpts. It is unchecked by default. Review exclusions before export.
+2. Export to a new folder. DPH verifies each eligible text file against its
+   captured SHA256 and source code page. Changed or missing source rejects the
+   request; reassess first. An incomplete failed export is not a validated handoff.
+3. Open index.html. Expand Browse captured source files and omissions, or click
+   Read captured redacted source beside an object. The object's Explain page has
+   a corresponding exact line link when that line is included.
+4. The page shows original line numbers and the original file hash, but its text
+   is an encoded, redacted derived view. Original source bytes are not copied.
+   Task bundles include only cited noncontainer line excerpts and mark omitted
+   lines. A shared source line can contain surrounding code; task/audience scope
+   is not a confidentiality boundary.
+5. Read omission reasons. Binary/undecodable/private-key material, unavailable
+   files, files above 4 MiB and files above 20000 lines are not browsed. Full
+   exports retain eligible complete text; task excerpts retain original line IDs.
+6. Inspect the output before sharing. Common credential patterns are redacted,
+   but no recognizer guarantees removal of every sensitive value. Use explicit
+   exclusions for sensitive source. Relative routes continue to work after moving
+   the complete bundle folder; links do not open arbitrary original source paths.
 Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
 checks without native browser tests. Full build-learning.cmd additionally tests
 worker recovery and native WebView rendering (49 checks pass). Do not interpret

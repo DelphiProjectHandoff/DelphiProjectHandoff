@@ -334,8 +334,11 @@ begin
               'Background worker loads the exact revision translation through the DAT adapter and persistent cache'); finally Response.Free; end;
             TranslationRequest:=Request; TranslationRequest.Command:='publish'; TranslationRequest.GenerationID:=Generation;
             TranslationRequest.ExportDirectory:=TPath.Combine(Work,'validation-bundle'); TranslationRequest.Audience:='all';
+            TranslationRequest.IncludeSourceNavigation:=True;
             Worker.Submit(TranslationRequest); Response:=WaitResponse;
             try Check(not Response.Failed and (Response.ExportDirectory<>''),'Background publisher creates a fixture bundle for native validation'); finally Response.Free; end;
+            Check(not Form.PublishSourceNavigation.IsChecked and not Form.PublishAgentInstructions.IsChecked,
+              'Source browsing and generated agent boundaries require separate explicit export opt-ins');
             TranslationRequest:=Default(TDPHWorkspaceRequest); TranslationRequest.Command:='validate_bundle';
             TranslationRequest.ExportDirectory:=TPath.Combine(Work,'validation-bundle'); TranslationRequest.Title:=View.Document.GetValue<string>('semantics.input_fingerprint');
             TranslationRequest.AllowStaleBundle:=True; Worker.Submit(TranslationRequest); Response:=WaitResponse;
