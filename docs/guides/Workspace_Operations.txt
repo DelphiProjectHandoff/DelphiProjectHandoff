@@ -112,6 +112,15 @@ An unresolved rethrow or dynamic type stays visible as a diagnostic. test_covers
 links require a recognized explicit test attribute and a captured direct call.
 They do not certify assertion quality or show a test result.
 
+Dynamic controls
+Choose dynamic_control in the Explorer kind selector. Select a $control object
+and open References to inspect its constructor and assigned handle. Select the
+containing routine to inspect mutates_property and candidate event assignments.
+Form navigation includes these qualified relationships. A dynamic_control is
+a source creation site, not a reconstructed runtime instance. Its count,
+parent, geometry, visibility and lifetime require runtime or authored evidence.
+DYNAMIC_CONTROL_REVIEW identifies these remaining questions.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

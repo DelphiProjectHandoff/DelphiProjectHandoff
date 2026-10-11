@@ -41,6 +41,35 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure VisualTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
+    BuildIndex,SiteIndex,HandleIndex,HandlerIndex: Integer; R: TDPHRelation; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'VisualControls.pas'),
+    'unit FMX.StdCtrls; interface type TButton=class Text:string; Parent:TButton; OnClick:TProc; constructor Create; end; '+
+    'implementation constructor TButton.Create; begin end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'VisualCases.pas'),
+    'unit VisualCases; interface uses FMX.StdCtrls; procedure Build; implementation procedure Handler; begin end; '+
+    'procedure Build; var Button:TButton; begin Button:=TButton.Create; Button.Text:=''Run''; Button.Parent:=nil; Button.OnClick:=Handler; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'VisualCases.dpr'),'program VisualCasesApp; uses VisualCases in ''VisualCases.pas'', FMX.StdCtrls in ''VisualControls.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try Scan:=A.Scan(TPath.Combine(Fixture,'VisualCases.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        BuildIndex:=Find(G,'VisualCases.Build','*'); SiteIndex:=Find(G,'VisualCases.Build.$control1','*');
+        HandleIndex:=Find(G,'VisualCases.Build.Button','*'); HandlerIndex:=Find(G,'VisualCases.Handler','*');
+        Check((SiteIndex>=0) and Relation(G,BuildIndex,SiteIndex,'creates','inferred'),'VIS01','Framework control constructor has a separate qualified source creation site');
+        Check(Relation(G,SiteIndex,HandleIndex,'assigned_to','inferred'),'VIS02','Dynamic control site links to its lexical handle without a runtime identity claim');
+        Found:=False; for R in G.Relations do if (R.FromSymbol=BuildIndex) and (R.ToSymbol=HandleIndex) and (R.Kind='mutates_property') and (R.LabelText='Button.Text') then Found:=True;
+        Check(Found,'VIS03','Runtime text/property assignment links to its visual receiver and source evidence');
+        Check(Relation(G,Find(G,'FMX.StdCtrls.TButton.OnClick','*'),HandlerIndex,'assigns_callback','inferred'),'VIS04','Dynamic event assignment retains its candidate callback connection');
+        Check(not G.Complete and (G.Symbols[SiteIndex].Kind='dynamic_control'),'VIS05','Runtime control construction remains separate from design-time component geometry');
+        Cached:=Analyzer.Analyze(Scan); try Check(JSON(G)=JSON(Cached),'VIS06','Visual creation and property facts agree after routine cache reuse'); finally Cached.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure RelationshipTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G,Cached: TDPHSemanticGraph;
     WorkIndex,ThingIndex,LocalIndex,ProblemIndex,TestIndex: Integer; R: TDPHRelation; Found: Boolean;
@@ -554,7 +583,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

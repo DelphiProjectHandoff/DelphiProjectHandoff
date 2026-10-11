@@ -39,12 +39,14 @@ type
     function Candidates(const AName: string; ARoutine: Integer): TArray<Integer>;
     function SelectCall(const APath: string; ARoutine: Integer; const Arguments: TArray<string>): TArray<Integer>;
     function ExpressionType(const AText: string; ARoutine: Integer): string;
+    function IsVisualType(const AName,AUnit: string): Boolean;
     procedure Header(S: TDPHSymbol; const Tokens: TDPHTokens; AStart,AEnd: Integer);
     procedure Collect(const AFile: string; IR: TDPHParseResult);
     procedure Variables(const AFile: string; IR: TDPHParseResult);
     procedure PropertyAccessors(const AFile: string; IR: TDPHParseResult);
     procedure ModulePhases;
     procedure TestCoverage;
+    procedure VisualSites;
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
@@ -686,6 +688,42 @@ begin
   finally CandidatesFound.Free; end;
 end;
 
+function TDPHSemanticAnalyzer.IsVisualType(const AName,AUnit: string): Boolean;
+var Index,Base,Count: Integer; Name,UnitName,ImportName: string; Imports: TList<string>; Framework: Boolean;
+begin
+  Name:=AName; UnitName:=AUnit; Index:=FindType(Name,AUnit); Framework:=False;
+  for Count:=0 to 31 do begin
+    if Index<0 then Break;
+    Name:=FGraph.Symbols[Index].Name; UnitName:=FGraph.Symbols[Index].UnitName;
+    if StartsText('FMX.',UnitName) or StartsText('Vcl.',UnitName) then begin Framework:=True; Break; end;
+    if not FBaseTypes.TryGetValue(Index,Base) then Exit(False); Index:=Base;
+  end;
+  if not Framework and FImports.TryGetValue(LowerCase(AUnit),Imports) then
+    for ImportName in Imports do if StartsText('FMX.',ImportName) or StartsText('Vcl.',ImportName) then Framework:=True;
+  if Name.Contains('.') then Name:=Copy(Name,LastDelimiter('.',Name)+1,MaxInt);
+  Result:=Framework and MatchText(Name,['TControl','TWinControl','TForm','TFrame','TButton','TLabel','TEdit','TMemo','TListBox','TComboBox','TCheckBox','TRadioButton','TPanel','TLayout','TGrid','TStringGrid','TScrollBox','TImage','TTreeView','TTabControl','TTabItem','TSpeedButton','TGroupBox','TRectangle','TText']);
+end;
+
+procedure TDPHSemanticAnalyzer.VisualSites;
+var I,Count,Ordinal,Index: Integer; R: TDPHRelation; S,Owner: TDPHSymbol; Ordinals: TDictionary<Integer,Integer>;
+begin
+  Ordinals:=TDictionary<Integer,Integer>.Create;
+  try
+    Count:=FGraph.Relations.Count;
+    for I:=0 to Count-1 do begin
+      R:=FGraph.Relations[I]; if R.Kind<>'creates_control_candidate' then Continue;
+      if not Ordinals.TryGetValue(R.FromSymbol,Ordinal) then Ordinal:=0; Inc(Ordinal); Ordinals.AddOrSetValue(R.FromSymbol,Ordinal);
+      Owner:=FGraph.Symbols[R.FromSymbol]; S:=TDPHSymbol.Create; S.Kind:='dynamic_control'; S.Owner:=R.FromSymbol;
+      S.Name:='$control'+IntToStr(Ordinal); S.QualifiedName:=Owner.QualifiedName+'.'+S.Name; S.UnitName:=Owner.UnitName;
+      S.TypeName:=R.LabelText; S.Signature:=LowerCase(R.LabelText); S.Variant:=Owner.Variant; S.Location:=R.Location;
+      S.SourceHash:=FGraph.SourceHashes[R.Location.Source]; S.Dispatch:='possible_dynamic'; Index:=AddSymbol(S);
+      FGraph.AddRelation(R.FromSymbol,Index,'creates','inferred','recognized_visual_constructor_site_not_runtime_instance',R.LabelText,R.Location,R.Condition);
+      if R.ToSymbol>=0 then FGraph.AddRelation(Index,R.ToSymbol,'assigned_to','inferred','lexical_control_handle_assignment_alias_state_unverified',FGraph.Symbols[R.ToSymbol].QualifiedName,R.Location,R.Condition);
+      FGraph.Complete:=False; FGraph.Diagnostics.Report('DYNAMIC_CONTROL_REVIEW','Source creation site retained; runtime instance count, ownership, parent, layout and event connections require review',R.Location);
+    end;
+  finally Ordinals.Free; end;
+end;
+
 procedure TDPHSemanticAnalyzer.TestCoverage;
 var S: TDPHSymbol; Imports: TList<string>; Tokens: TDPHTokens; L: TDPHRange;
     I,J,Count: Integer; DeclaredTest,UsesDUnitX: Boolean; R: TDPHRelation; ImportName: string;
@@ -794,10 +832,16 @@ begin
         ((I=Body.FirstToken+1) or MatchText(Tokens[I-1].Text,[';','begin','then','else','do',':','inherited'])) then IsCall:=True;
       if not IsCall and EndsText('.Create',Path) and (Stop+1<=Body.LastToken) and
         MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
-        (FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName)>=0) then IsCall:=True;
+        ((FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName)>=0) or
+         IsVisualType(Copy(Path,1,Length(Path)-7),Routine.UnitName)) then IsCall:=True;
       if IsCall and EndsText('.Create',Path) then begin
         InputSymbol:=FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName);
         if InputSymbol>=0 then FGraph.AddRelation(ARoutine,InputSymbol,'creates','inferred','declared_type_create_spelling_allocation_and_ownership_unverified',Path,L,Tokens[I].Condition);
+        if IsVisualType(Copy(Path,1,Length(Path)-7),Routine.UnitName) then begin
+          InputSymbol:=-1;
+          if (I>=Body.FirstToken+3) and (Tokens[I-1].Text=':=') then InputSymbol:=ResolveValue(Tokens[I-2].Text,ARoutine);
+          FGraph.AddRelation(ARoutine,InputSymbol,'creates_control_candidate','inferred','visual_type_constructor_source_candidate',Copy(Path,1,Length(Path)-7),L,Tokens[I].Condition);
+        end;
       end;
       if IsCall and (EndsText('.Free',Path) or EndsText('.Destroy',Path) or SameText(Path,'FreeAndNil')) then begin
         InputSymbol:=-1;
@@ -849,6 +893,14 @@ begin
         end;
       end;
       Variable:=ResolveValue(Path,ARoutine);
+      if (Stop+1<=Body.LastToken) and (Tokens[Stop+1].Text=':=') and Path.Contains('.') then begin
+        InputPath:=Path; InputSymbol:=-1;
+        while InputPath.Contains('.') and (InputSymbol<0) do begin
+          InputPath:=Copy(InputPath,1,LastDelimiter('.',InputPath)-1); InputSymbol:=ResolveValue(InputPath,ARoutine);
+        end;
+        if (InputSymbol>=0) and IsVisualType(FGraph.Symbols[InputSymbol].TypeName,Routine.UnitName) then
+          FGraph.AddRelation(ARoutine,InputSymbol,'mutates_property','inferred','visual_receiver_property_assignment_runtime_layout_unverified',Path,L,Tokens[I].Condition);
+      end;
       if (Variable>=0) and (FGraph.Symbols[Variable].Kind<>'type') then
       begin
         IsWrite:=(Stop+1<=Body.LastToken) and (Tokens[Stop+1].Text=':='); Kind:='reads'; if IsWrite then Kind:='writes';
@@ -969,6 +1021,7 @@ begin
       for Item in AScan.Inventory.Manifest do if MatchText(Item.Kind,['.fmx','.dfm']) and AScan.Results.TryGetValue(Item.RelativePath,IR) then BindForms(Item.RelativePath,IR);
       ModulePhases;
       TestCoverage;
+      VisualSites;
       for Reference in AScan.Inventory.DefinitionReferences do begin
         Consumer:=-1; Resource:=-1;
         for I:=0 to FGraph.Symbols.Count-1 do begin S:=FGraph.Symbols[I];

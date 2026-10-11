@@ -233,6 +233,7 @@ Items.Strings = (
 'resource'
 'definition'
 'async_operation'
+'dynamic_control'
 'sql_statement'
 'sql_table'
 'sql_column'

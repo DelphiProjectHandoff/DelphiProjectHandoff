@@ -95,9 +95,13 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     links do not prove assertions or execution results. Dynamic exception types,
     aliases, framework attribute variants and indirect test coverage remain
     qualified. Seven focused checks pass; semantic suite 113.
-3.8-3.9 Pending:
-    dynamic
-    controls/property changes and fuller output lineage.
+3.8 Expanded: recognized FMX/VCL control creation sites are distinct semantic
+    objects with lexical handle assignments; property mutations and candidate
+    event callbacks retain source evidence. Known captured ancestry is followed;
+    unresolved/custom factories and runtime instance count/layout/ownership
+    remain explicit gaps. Six focused checks pass; semantic suite 119 and app/
+    workspace regressions pass. No source-only site becomes a screenshot.
+3.9 Pending: fuller output lineage.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
     execution projection and preservation of inspected object context. Workspace
     suite now 47 checks. Selecting a graph object returns to focused navigation.
