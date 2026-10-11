@@ -79,7 +79,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "2131deebd75572ca43ddfb5c578f1a331aea4367939fae6de7cf6582d95f3b49"
+      "sha256": "110895d8ebbd59931db370fa191e366d911cb8a9851eb85bb1f2b3e4cb5cbc5e"
     },
     {
       "path": "DPH.Workspace.Model.pas",
@@ -95,7 +95,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "783b9857ceb068bc06c1b6a2499755159af0c80cff1c1b96b968f25cdefa6889"
+      "sha256": "641d2dd12553254273ba9384689ef5f55a28dfe3c5a50f61c3f7be63de24d6a4"
     },
     {
       "path": "DelphiProjectHandoff.dpr",

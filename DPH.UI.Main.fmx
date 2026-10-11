@@ -2,8 +2,9 @@ object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
-Constraints.MinWidth = 1340
-Constraints.MinHeight = 700
+Constraints.MinWidth = 960
+Constraints.MinHeight = 600
+  WindowState = wsMaximized
   Fill.Color = claWhite
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -30,9 +31,14 @@ TextSettings.Font.Size = 24
 TextSettings.FontColor = xFF146CB4
 end
 end
-object CommandLayout: TLayout
+object CommandScroll: THorzScrollBox
 Align = Top
-Height = 100
+Height = 106
+ShowScrollBars = True
+AutoHide = True
+object CommandLayout: TLayout
+Width = 1320
+Height = 84
 object OpenProjectButton: TButton
 Text = 'Attach project'
 Position.X = 8
@@ -149,16 +155,18 @@ Height = 28
 OnClick = RelocateClick
 end
 end
+end
 object StatusLabel: TLabel
 Text = 'Ready | source projects are read only'
 Align = Bottom
 Height = 48
 WordWrap = True
 Margins.Left = 8
+Margins.Right = 8
 end
 object ExplorerLayout: TLayout
 Align = Left
-Width = 300
+Width = 240
 object FilterLayout: TLayout
 Align = Top
 Height = 76
@@ -171,7 +179,7 @@ end
 object KindCombo: TComboBox
 Position.X = 0
 Position.Y = 38
-Width = 280
+Width = 220
 Height = 28
 Items.Strings = (
 'All'
@@ -200,10 +208,38 @@ Width = 6
 end
 object InspectorLayout: TLayout
 Align = Right
-Width = 350
+Width = 300
+Margins.Right = 8
+object InspectorTitle: TLabel
+Align = Top
+Height = 32
+Margins.Left = 8
+Margins.Right = 8
+Text = 'Selection details'
+StyledSettings = []
+TextSettings.Font.Size = 18
+TextSettings.FontColor = xFF146CB4
+end
+object InspectorPurpose: TLabel
+Align = Top
+Height = 80
+Margins.Left = 8
+Margins.Right = 8
+WordWrap = True
+Text = 'Double-click an object in the left list. Its name, type and source location appear below. Open Explain for what its code does.'
+end
 object InspectorMemo: TMemo
 Align = Client
 ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+Margins.Left = 8
+Margins.Right = 8
+Lines.Strings = (
+'No object selected.'
+''
+'Double-click an object in the left list, or follow an object link in Learn the project.'
+)
 end
 end
 object InspectorSplitter: TSplitter
@@ -224,6 +260,7 @@ end
 object OverviewMemo: TMemo
 Align = Client
 ReadOnly = True
+WordWrap = True
 TextSettings.Font.Size = 15
 end
 object LearningBrowser: TWebBrowser
@@ -239,6 +276,7 @@ Text = 'Getting started'
 object HelpFallback: TMemo
 Align = Client
 ReadOnly = True
+WordWrap = True
 TextSettings.Font.Size = 16
 Lines.Strings = (
 'Welcome to Delphi Project Handoff'
@@ -246,12 +284,13 @@ Lines.Strings = (
 '1. Choose Debug / Win32 and enter required compiler defines.'
 '2. Choose Attach project; select a .dproj, .dpr or .groupproj.'
 '3. Save its .dphdb knowledge database outside the source folder.'
-'4. Wait for the captured generation; check PARTIAL and coverage gaps.'
-'5. Open Learn the project, then How the program starts.'
-'6. Choose a familiar control in Screens and user actions.'
-'7. Follow its event into Explain; inspect callers, branches and outputs.'
-'8. Use Source for exact code, Knowledge for attributed author answers.'
-'9. Publish an offline bundle after reviewing exclusions and privacy.'
+'4. Read the status line along the bottom of the window. PARTIAL means incomplete evidence.'
+'5. Click Learn the project, then Coverage and troubleshooting in its topic list to read the gaps.'
+'6. In that same topic list, click How the program starts.'
+'7. In that same topic list, click Screens and user actions; choose a control link.'
+'8. Read Explain for callers, decisions and outputs. Selection details on the right identifies the object.'
+'9. Click Source for exact code, or Knowledge to record a named author answer.'
+'10. Click Publish to export a bundle after reviewing exclusions and privacy.'
 ''
 'Open cache shows saved historical evidence without executing the program.'
 'Form designs are approximate reconstructions. Screenshots imports actual PNG images you supply.'

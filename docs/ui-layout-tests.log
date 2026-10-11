@@ -1,0 +1,20 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6144 lines, 0.81 seconds, 9270168 bytes code, 344308 bytes data.
+PASS: Application opens maximized
+PASS: Maximized window fits the monitor work area
+PASS: Right pane has a visible purpose heading
+PASS: Details text wraps inside the pane
+PASS: Right pane stays inside a 960 pixel client width
+PASS: Central workspace retains usable width at 960
+PASS: Long signature and source path stay wrapped at 960
+PASS: Rightmost command remains reachable by scrolling at 960
+PASS: Right pane stays inside a 1200 pixel client width
+PASS: Central workspace retains usable width at 1200
+PASS: Long signature and source path stay wrapped at 1200
+PASS: Rightmost command remains reachable by scrolling at 1200
+PASS: Right pane stays inside a 1400 pixel client width
+PASS: Central workspace retains usable width at 1400
+PASS: Long signature and source path stay wrapped at 1400
+PASS: Rightmost command remains reachable by scrolling at 1400

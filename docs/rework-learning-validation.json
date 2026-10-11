@@ -1,7 +1,7 @@
 ﻿{
   "checks_passed": 53,
-  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\learning-tests-{C6858DED-7CA7-42A5-8866-C83D99EB74DD}",
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\learning-tests-{3FC66416-E3C9-4D5B-9079-EA763B97386A}",
   "reference_cache": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp7-tests-{412C233D-D845-46E9-8FED-48FDA37C65B8}\\reference.dphdb",
   "human_acceptance": "not_run",
-  "reference_learning_projection_ms": 5532
+  "reference_learning_projection_ms": 5332
 }

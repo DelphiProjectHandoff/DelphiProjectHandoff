@@ -12,6 +12,8 @@ The owner rejected the original WP7 experience as inadequate. The 11 October 202
 4. Start with **Learn the project → How the program starts**. Choose a control under **Screens and user actions**, follow its event, and read **Explain**. Compare its decisions and connections with **Source** and **Graphs**.
 5. Preserve missing business explanations in **Knowledge** with a named author. Use **Publish** to create a scoped offline handoff after reviewing exclusions and private information.
 
+DPH opens maximized. The right-hand **Selection details** pane identifies the object you double-click in the far-left list; its text wraps and scrolls vertically. Click the central **Explain** tab for behavior or **Source** for code. The **status line** is along the bottom edge of the window. For analysis gaps, click the central **Learn the project** tab, then **Coverage and troubleshooting** in that tab's topic list. In a smaller restored window, the horizontal scrollbar below the top command buttons reveals commands that do not fit.
+
 **Form designs** are approximate serialized reconstructions. **Screenshots** displays actual PNG images explicitly imported by a contributor, retaining their generation and unverified attribution. DPH does not run the input application to obtain screenshots.
 
 For the pinned converter example, select `samples\reference-vcl2fmx-v6.0.0\VCL2FMXConverter.dproj`, Debug / Win32, with extra defines `MSWINDOWS;WIN32`. The reference remains PARTIAL; missing dependencies and unsupported syntax are visible gaps.

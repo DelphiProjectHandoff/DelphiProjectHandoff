@@ -1,0 +1,58 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6298 lines, 0.72 seconds, 9292488 bytes code, 344560 bytes data.
+PASS 1: Object explanation identifies a real cross-unit dependency
+PASS 2: Explanation carries the actual branch condition
+PASS 3: Execution trace preserves asynchronous or dispatch uncertainty
+PASS 4: Flow diagram uses captured branch edges
+PASS 5: Attributed knowledge appears in the linked explanation
+PASS 6: Explanation is not a raw JSON dump
+PASS 7: Captured source comment is available as author documentation
+PASS 8: Learning topic 0 renders a complete offline page
+PASS 9: Learning topic 1 renders a complete offline page
+PASS 10: Learning topic 2 renders a complete offline page
+PASS 11: Learning topic 3 renders a complete offline page
+PASS 12: Learning topic 4 renders a complete offline page
+PASS 13: Learning topic 5 renders a complete offline page
+PASS 14: Learning topic 6 renders a complete offline page
+PASS 15: Learning topic 7 renders a complete offline page
+PASS 16: Learning topic 8 renders a complete offline page
+PASS 17: Learning topic 9 renders a complete offline page
+PASS 18: Learning topic 10 renders a complete offline page
+PASS 19: Export includes the selected object explanation
+PASS 20: Narrative export preserves generation, canonical and artifact integrity
+PASS 21: Unredacted local display projection cannot be published
+PASS 22: Preview permits only the generated object route shape
+PASS 23: Preview rejects an arbitrary local object filename
+PASS 24: Imported image persists with metadata
+PASS 25: Imported image cannot silently become runtime-verified
+PASS 26: Managed image hash matches contributor evidence
+PASS 27: Export includes matching attributed image evidence
+PASS 28: Private image storage path is absent from canonical export
+PASS 29: Excluding the linked source also excludes its screenshot
+PASS 30: Non-PNG input is rejected
+PASS 31: Image cannot be linked to an object absent from its generation
+PASS 32: Detached copy resolves its own adjacent screenshot assets
+PASS 33: Damaged managed screenshot is rejected before display or export
+PASS 34: Damaged supplemental image does not block the valid cached analysis
+PASS 35: First launch provides directions before a project is loaded
+PASS 36: Real WebView2 renders the learning workspace
+PASS 37: Real WebView2 renders the readable selected-object explanation
+PASS 38: Explorer selection opens Explain
+PASS 39: Native WebView2 image capture is available for visual QA
+PASS 40: Selected fixture source remains unchanged
+PASS 41: Large routine collapses straight-line statements into a usable diagram
+PASS 42: Collapsed flow preserves loop-back and branch-exit evidence
+PASS 43: Startup explanation excludes expressions inside declared routines
+PASS 44: Pinned program startup is captured from its DPR body
+PASS 45: Startup lesson cites actual form creation
+PASS 46: Reference convert explanation reaches its actual callback evidence
+PASS 47: Reference trace reaches the actual conversion worker through its callback
+PASS 48: Reference object explanation works in the actual FMX form
+PASS 49: Reference execution trace is present in the actual rendered explanation
+PASS 50: Reference procedure CFG renders labeled captured edges
+PASS 51: Reference startup lesson renders actual initialization evidence
+PASS 52: Narrow learning view wraps long source citations without horizontal overflow
+PASS 53: Learning does not clear partial reference coverage
+PASS Learning: 53 checks

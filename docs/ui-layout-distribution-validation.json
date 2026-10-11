@@ -1,0 +1,11 @@
+﻿{
+    "version":  "DPH-0.2.1-experimental-Win32",
+    "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.2.1-experimental-Win32.zip",
+    "binary_sha256":  "6d86b3e135014cb893381eb47aeeece0d22490d73be074815d32cce79b9ccd5e",
+    "source":  "C:\\New Delphi Projects\\Delphi Project Handoff\\source distributions\\DPH-0.2.1-experimental-source.zip",
+    "source_sha256":  "a222c39239fef8e3efacdf79df63150d8eba2f87a59d48c73d937b915c393e57",
+    "extracted_files":  24,
+    "validated_utc":  "2026-10-11T13:55:42.0367913Z",
+    "verification_directory":  "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\distribution-verify-7a07bd46ef4b4851b9e887314c0c754e",
+    "acceptance":  "experimental layout correction; see explicit remaining requirements and human acceptance"
+}

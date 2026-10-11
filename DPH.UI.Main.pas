@@ -7,7 +7,8 @@ uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON,
   DPH.Publish.Model, DPH.Analysis.Explanations;
 type
   TDPHMainForm = class(TForm)
-    BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend: TLabel;
+    BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
+    CommandScroll: THorzScrollBox;
     HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout,ScreenToolbar,GraphToolbar: TLayout;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;

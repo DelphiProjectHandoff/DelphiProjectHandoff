@@ -1,0 +1,9 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  6192 lines, 0.75 seconds, 9267072 bytes code, 344244 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6100 lines, 0.72 seconds, 9267112 bytes code, 344224 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding

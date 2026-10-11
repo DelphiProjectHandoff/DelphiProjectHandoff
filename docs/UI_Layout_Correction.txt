@@ -1,0 +1,41 @@
+DPH 0.2.1 display correction - 11 October 2026
+
+DPH opens maximized using the form's design-time WindowState property.
+The former 1340-pixel minimum width has been reduced to 960 logical pixels.
+The right-hand pane is labeled Selection details and explains what it displays.
+Its read-only text wraps to fit, including long signatures and source paths.
+The command bar scrolls horizontally in smaller restored windows.
+The plain-text help and learning fallbacks also wrap to fit.
+These settings and controls remain editable in the RAD Studio Object Inspector.
+
+Directions
+1. Start bin\Win32\Debug\DelphiProjectHandoff.exe, or extract the 0.2.1
+   binary ZIP and start DelphiProjectHandoff.exe from the extracted folder.
+2. Attach project or Open cache using the buttons along the top.
+3. Double-click an object in the far-left list. Read its identity, signature,
+   source location, generation and evidence hash under Selection details
+   on the right. Scroll inside this pane to read all of its text.
+4. Click Explain in the central tab strip for behavior and connections.
+   Click Source in the same tab strip for its code.
+5. Read current activity and PARTIAL/complete status along the bottom edge
+   of the window. PARTIAL means incomplete evidence.
+6. For analysis gaps, click Learn the project in the central tab strip.
+   In the topic list inside that tab, click Coverage and troubleshooting.
+7. Use the Windows Restore button to resize the maximized window if desired.
+   Drag the vertical divider beside Selection details to adjust pane width.
+   In a narrow window, use the horizontal scrollbar below the command buttons
+   to reach the remaining commands. Small arrow buttons at the right end of
+   the central tab strip reveal tabs that do not fit.
+
+Validation
+tools\build-wp0.cmd: elevated application build and FMX binding check.
+tools\build-layout.cmd: actual maximized Windows state, monitor work-area fit,
+right-pane bounds, wrapping and command reachability at 960/1200/1400 client
+widths. Rendered-control PNGs use explicit example text for layout verification;
+they are not screenshots of the selected input application's runtime behavior.
+tools\build-learning.cmd: existing real-WebView2 and pinned-reference checks.
+See ui-layout-build.log, ui-layout-tests.log and ui-layout-learning-tests.log.
+
+D: backups are suspended at the owner's request. Local Git and both GitHub
+remotes remain enabled. Remaining original-plan gaps have not been cleared
+by this display correction; see Rework_Requirements_Audit.txt.
