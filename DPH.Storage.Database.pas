@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.Variants, System.Generics.Collections,
-  System.SyncObjs, Winapi.Windows,
+  System.SyncObjs, System.JSON, Winapi.Windows,
   FireDAC.Comp.Client, DPH.Storage.Types;
 
 type
@@ -66,13 +66,18 @@ type
     procedure BeginFacts(AGenerationID: Int64);
     procedure CommitFacts;
     procedure RollbackFacts;
+    function SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
+      const ATitle,ABody,AEditor,AKind,AEntityKey: string): Int64;
+    procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
+      const AReviewer,AState: string);
+    function KnowledgeJSON: TJSONArray;
     property DatabasePath: string read FDatabasePath;
   end;
 
 implementation
 
 uses
-  System.IOUtils, System.Hash, System.JSON, System.StrUtils, System.DateUtils,
+  System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
   FireDAC.Phys.SQLiteWrapper.Stat;
@@ -415,6 +420,16 @@ begin
   try
     if Scalar('SELECT count(*) FROM configurations WHERE project_id=1 AND config_id=:config',[AConfigurationID]) <> 1 then
       raise EDPHStorage.Create('Unknown configuration');
+    if VarToStr(Scalar('SELECT coalesce(active_config,0) FROM projects WHERE project_id=1',[]))<>IntToStr(AConfigurationID) then
+    begin
+      FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) '+
+        'SELECT 1,knowledge_id,''Configuration changed'',''pending'',(SELECT published_generation_id FROM project_state WHERE project_id=1) FROM knowledge_records k '+
+        'WHERE state NOT IN (''retired'',''rejected'') AND NOT EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'')');
+      FConnection.ExecSQL('UPDATE knowledge_records SET state=''needs_review'' WHERE state IN (''verified'',''inferred'')');
+      FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=EXISTS(SELECT 1 FROM review_tasks WHERE state=''pending'') WHERE project_id=1');
+      FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+      FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review''');
+    end;
     FConnection.ExecSQL('UPDATE project_state SET analysis_stale=1 WHERE project_id=1 AND EXISTS '+
       '(SELECT 1 FROM projects WHERE project_id=1 AND (active_config IS NULL OR active_config<>:config))',[AConfigurationID]);
     FConnection.ExecSQL('UPDATE projects SET active_config=:config WHERE project_id=1',[AConfigurationID]);
@@ -480,6 +495,8 @@ begin
         'WHERE state NOT IN (''retired'',''rejected'') AND NOT EXISTS '+
         '(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=knowledge_records.knowledge_id AND t.state=''pending'')');
       FConnection.ExecSQL('UPDATE knowledge_records SET state=''needs_review'' WHERE state IN (''verified'',''inferred'')');
+      FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+      FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review''');
       FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=EXISTS '+
         '(SELECT 1 FROM review_tasks WHERE state=''pending'') WHERE project_id=1');
     end;
@@ -717,6 +734,111 @@ begin
       'VALUES(1,''knowledge'',:note,''created'',:editor,:stamp,:hash)',[Result,AEditor,UTCNow,THashSHA2.GetHashString(ABody)]);
     FConnection.Commit;
   except FConnection.Rollback; raise; end;
+end;
+
+function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
+  const ATitle,ABody,AEditor,AKind,AEntityKey: string): Int64;
+var Revision,Entity: Int64; Prior: string;
+begin
+  RequireWriter;
+  if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
+  if Length(ABody)>1024*1024 then raise EDPHStorage.Create('Knowledge text exceeds 1 MiB');
+  if not MatchText(AKind,['note','business_rule','engineering_rule','user_help','maintenance','build_deploy','troubleshooting','orientation','decision','unknown']) then raise EDPHStorage.Create('Unknown knowledge kind');
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND project_id=1 AND status IN (''current'',''partial'')',[AGenerationID])<>1 then raise EDPHStorage.Create('Select a captured generation first');
+  Entity:=0;
+  if AEntityKey<>'' then begin
+    Entity:=VarAsType(Scalar('SELECT coalesce(max(e.entity_id),0) FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id '+
+      'WHERE e.project_id=1 AND e.canonical_key=:key AND v.generation_id=:generation',[AEntityKey,AGenerationID]),varInt64);
+    if Entity=0 then raise EDPHStorage.Create('Linked entity does not exist in this generation');
+  end;
+  FConnection.StartTransaction;
+  try
+    Result:=AKnowledgeID; Prior:='';
+    if Result=0 then begin
+      if AExpectedRevision<>0 then raise EDPHStorage.Create('New knowledge cannot have a prior revision');
+      FConnection.ExecSQL('INSERT INTO knowledge_records(project_id,kind,title,source_language,state,owner) VALUES(1,:kind,:title,''en'',''needs_review'',:author)',[AKind,ATitle,AEditor]);
+      Result:=Scalar('SELECT last_insert_rowid()',[]);
+      if Entity<>0 then FConnection.ExecSQL('INSERT INTO knowledge_links(project_id,knowledge_id,entity_id,link_role) VALUES(1,:id,:entity,''annotates'')',[Result,Entity]);
+    end else begin
+      if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision AND title=:title AND kind=:kind',
+        [Result,AExpectedRevision,ATitle,AKind])<>1 then raise EDPHStorage.Create('Knowledge changed since loading, or its stable title/kind was changed; reload first');
+      Prior:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[AExpectedRevision]));
+    end;
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state) VALUES(:id,:body,:author,:stamp,''needs_review'')',[Result,ABody,AEditor,UTCNow]);
+    Revision:=Scalar('SELECT last_insert_rowid()',[]);
+    FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:id',[Revision,Result]);
+    FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) SELECT 1,:id,''Human content changed'',''pending'',:generation '+
+      'WHERE NOT EXISTS(SELECT 1 FROM review_tasks WHERE knowledge_id=:id2 AND state=''pending'')',[Result,AGenerationID,Result]);
+    FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=1 WHERE project_id=1');
+    FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+    FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review'' WHERE knowledge_revision_id IN (SELECT knowledge_revision_id FROM knowledge_revisions WHERE knowledge_id=:id)',[Result]);
+    FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,before_hash,after_hash) '+
+      'VALUES(1,''knowledge'',:id,''authored'',:actor,:stamp,:before,:after)',[Result,AEditor,UTCNow,THashSHA2.GetHashString(Prior),THashSHA2.GetHashString(ABody)]);
+    FConnection.Commit;
+  except FConnection.Rollback; raise; end;
+end;
+
+procedure TDPHKnowledgeStore.ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
+  const AReviewer,AState: string);
+var Body,Manifest,GenerationState: string; Revision: Int64;
+begin
+  RequireWriter;
+  if AReviewer.Trim='' then raise EDPHStorage.Create('Review requires a named reviewer');
+  if not MatchText(AState,['verified','needs_review','rejected','retired']) then raise EDPHStorage.Create('Unknown review disposition');
+  GenerationState:=VarToStr(Scalar('SELECT status FROM analysis_generations WHERE generation_id=:id AND project_id=1',[AGenerationID]));
+  if not MatchText(GenerationState,['current','partial']) then raise EDPHStorage.Create('Review requires a captured generation');
+  Manifest:=VarToStr(Scalar('SELECT manifest_hash FROM analysis_generations WHERE generation_id=:id',[AGenerationID]));
+  if (Manifest<>ManifestHash(ReadManifest)) or (Scalar('SELECT config_id FROM analysis_generations WHERE generation_id=:id',[AGenerationID])<>
+    Scalar('SELECT active_config FROM projects WHERE project_id=1',[])) then raise EDPHStorage.Create('Review source/configuration has changed; reassess first');
+  if (AState='verified') and (Scalar('SELECT count(*) FROM knowledge_links l WHERE l.knowledge_id=:id AND l.entity_id IS NOT NULL '+
+    'AND NOT EXISTS(SELECT 1 FROM entity_versions v WHERE v.entity_id=l.entity_id AND v.generation_id=:generation)',[AKnowledgeID,AGenerationID])<>0) then
+    raise EDPHStorage.Create('Linked entity is missing or renamed; continuity requires human investigation');
+  FConnection.StartTransaction;
+  try
+    if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision',[AKnowledgeID,AExpectedRevision])<>1 then
+      raise EDPHStorage.Create('Knowledge revision changed; reload before reviewing');
+    Body:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[AExpectedRevision]));
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,verified_by,verified_at) '+
+      'VALUES(:id,:body,:editor,:stamp,:state,:reviewer,:reviewed)',[AKnowledgeID,Body,AReviewer,UTCNow,AState,AReviewer,UTCNow]);
+    Revision:=Scalar('SELECT last_insert_rowid()',[]);
+    FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=:state WHERE knowledge_id=:id',[Revision,AState,AKnowledgeID]);
+    if AState<>'needs_review' then begin
+      FConnection.ExecSQL('UPDATE review_tasks SET state=''resolved'',resolved_generation_id=:generation,reviewer=:reviewer WHERE knowledge_id=:id AND state=''pending''',[AGenerationID,AReviewer,AKnowledgeID]);
+      if AState='verified' then FConnection.ExecSQL('UPDATE knowledge_links SET last_verified_generation_id=:generation WHERE knowledge_id=:id',[AGenerationID,AKnowledgeID]);
+    end else FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) SELECT 1,:id,''Human review requested'',''pending'',:generation '+
+      'WHERE NOT EXISTS(SELECT 1 FROM review_tasks WHERE knowledge_id=:id2 AND state=''pending'')',[AKnowledgeID,AGenerationID,AKnowledgeID]);
+    FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=EXISTS(SELECT 1 FROM review_tasks WHERE state=''pending'') WHERE project_id=1');
+    FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+    FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,after_hash) VALUES(1,''knowledge'',:id,:action,:actor,:stamp,:hash)',
+      [AKnowledgeID,AState,AReviewer,UTCNow,THashSHA2.GetHashString(Body)]);
+    FConnection.Commit;
+  except FConnection.Rollback; raise; end;
+end;
+
+function TDPHKnowledgeStore.KnowledgeJSON: TJSONArray;
+var Query,Detail: TFDQuery; Row,Item: TJSONObject; Links,History: TJSONArray; I: Integer;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT k.knowledge_id AS id,k.current_revision_id AS revision,k.kind,k.title,k.state,k.owner,r.body_md AS body,r.editor,r.created_at,r.verification_state AS revision_state,'+
+    'coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
+    'EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'') AS pending '+
+    'FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 ORDER BY k.knowledge_id',[]);
+  try
+    while not Query.Eof do begin
+      Row:=TJSONObject.Create; Result.AddElement(Row);
+      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Links:=TJSONArray.Create; Row.AddPair('links',Links);
+      Detail:=NewQuery('SELECT e.canonical_key,e.entity_kind,coalesce(l.last_verified_generation_id,0) AS verified_generation '+
+        'FROM knowledge_links l LEFT JOIN entities e ON e.entity_id=l.entity_id WHERE l.knowledge_id=:id ORDER BY l.link_id',[Query.FieldByName('id').AsLargeInt]);
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      History:=TJSONArray.Create; Row.AddPair('history',History);
+      Detail:=NewQuery('SELECT knowledge_revision_id AS revision,body_md AS body,editor,created_at,verification_state,coalesce(verified_by,'''') AS reviewer,coalesce(verified_at,'''') AS reviewed_at '+
+        'FROM knowledge_revisions WHERE knowledge_id=:id ORDER BY knowledge_revision_id',[Query.FieldByName('id').AsLargeInt]);
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; History.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      Query.Next;
+    end;
+  except Query.Free; Result.Free; raise; end;
+  Query.Free;
 end;
 
 function TDPHKnowledgeStore.Status: TDPHProjectStatus;

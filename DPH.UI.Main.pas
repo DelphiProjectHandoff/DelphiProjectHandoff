@@ -22,6 +22,15 @@ type
     OpenProjectDialog,OpenCacheDialog: TOpenDialog;
     DatabaseDialog: TSaveDialog;
     PollTimer,ChangeTimer: TTimer;
+    KnowledgeTab: TTabItem;
+    KnowledgeToolbar,KnowledgeEditorLayout: TLayout;
+    KnowledgeList: TListBox;
+    KnowledgeTitleEdit,KnowledgeAuthorEdit: TEdit;
+    KnowledgeKindCombo: TComboBox;
+    KnowledgeBodyMemo,KnowledgeHistoryMemo: TMemo;
+    NewKnowledgeButton,SaveKnowledgeButton,RefreshKnowledgeButton,VerifyKnowledgeButton,RejectKnowledgeButton,RetireKnowledgeButton,DiscardKnowledgeButton: TButton;
+    PendingKnowledgeCheck: TCheckBox;
+    KnowledgeWarning: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -44,6 +53,14 @@ type
     procedure ScreenPaintPaint(Sender: TObject; Canvas: TCanvas);
     procedure ScreenMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Single);
     procedure FullscreenClick(Sender: TObject);
+    procedure KnowledgeClick(Sender: TObject);
+    procedure NewKnowledgeClick(Sender: TObject);
+    procedure SaveKnowledgeClick(Sender: TObject);
+    procedure RefreshKnowledgeClick(Sender: TObject);
+    procedure ReviewKnowledgeClick(Sender: TObject);
+    procedure KnowledgeFilterChange(Sender: TObject);
+    procedure KnowledgeEdited(Sender: TObject);
+    procedure DiscardKnowledgeClick(Sender: TObject);
   private
     FWorker: TDPHWorkspaceWorker;
     FView: TDPHWorkspaceView;
@@ -53,6 +70,12 @@ type
     FPage: Integer;
     FBusy,FDetached,FClosing,FBinding: Boolean;
     FScreenScale: Single;
+    FKnowledge: TJSONArray;
+    FKnowledgeRows: TList<TJSONObject>;
+    FKnowledgeID,FKnowledgeRevision: Int64;
+    FReviewState: string;
+    FKnowledgeEdited: Boolean;
+    FPendingCommand,FSavedKnowledgeText,FKnowledgeLink: string;
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
@@ -60,6 +83,7 @@ type
     function GraphRect(AIndex: Integer): TRectF;
   public
     procedure LoadView(ADocument: TJSONObject);
+    procedure LoadKnowledge(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
 var DPHMainForm: TDPHMainForm;
@@ -72,6 +96,7 @@ var I: Integer; Pref: TJSONObject; PrefPath: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
+  FKnowledgeRows:=TList<TJSONObject>.Create;
   FBaseDirectory:=ExtractFilePath(ParamStr(0));
   for I:=0 to 5 do begin if TDirectory.Exists(TPath.Combine(FBaseDirectory,'migrations')) then Break; FBaseDirectory:=ExtractFileDir(ExcludeTrailingPathDelimiter(FBaseDirectory)); end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
@@ -95,9 +120,13 @@ begin
     Pref:=TJSONObject.Create; try Pref.AddPair('database',FDatabase); TFile.WriteAllText(TPath.Combine(PrefPath,'workspace.json'),Pref.ToJSON,TEncoding.UTF8); finally Pref.Free; end;
   except end;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free;
+  FKnowledge.Free; FKnowledgeRows.Free;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-begin CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary…'; end; end;
+begin
+  if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
+  CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary…'; end;
+end;
 procedure TDPHMainForm.Submit(const ACommand: string);
 var R: TDPHWorkspaceRequest;
 begin
@@ -105,17 +134,29 @@ begin
   R.Command:=ACommand; R.Database:=FDatabase; R.Entry:=FEntry;
   R.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex]; R.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
   R.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); R.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  if MatchText(ACommand,['knowledge','save_knowledge','review_knowledge']) then
+  begin
+    if FView=nil then begin StatusLabel.Text:='Open or analyze a project first'; Exit; end;
+    R.KnowledgeID:=FKnowledgeID; R.ExpectedRevision:=FKnowledgeRevision; R.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
+    R.Title:=KnowledgeTitleEdit.Text; R.Body:=KnowledgeBodyMemo.Text; R.Editor:=KnowledgeAuthorEdit.Text;
+    R.Kind:=KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]; R.EntityKey:=FKnowledgeLink; R.ReviewState:=FReviewState;
+  end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background…';
+  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 begin
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenProjectDialog.Execute then Exit;
   if (FDatabase='') or ((FView<>nil) and not SameFileName(FView.Document.GetValue<string>('root'),ExtractFilePath(OpenProjectDialog.FileName))) then
   begin if not DatabaseDialog.Execute then Exit; FDatabase:=DatabaseDialog.FileName; end;
   FEntry:=OpenProjectDialog.FileName; FDetached:=False; Submit('incremental');
 end;
 procedure TDPHMainForm.OpenCacheClick(Sender: TObject);
-begin if FBusy or not OpenCacheDialog.Execute then Exit; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open'); end;
+begin
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
+  if FBusy or not OpenCacheDialog.Execute then Exit; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open');
+end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
 begin if FEntry='' then StatusLabel.Text:='Attach the source project first' else Submit('full'); end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
@@ -126,6 +167,9 @@ begin
   try
     FBusy:=R.Busy; FDetached:=R.Detached;
     if R.Document<>nil then begin LoadView(R.Document); R.Document:=nil; end;
+    if R.Knowledge<>nil then begin
+      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
+      LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
   finally R.Free; end;
 end;
@@ -137,6 +181,12 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
   FBinding:=True;
   try
+    ConfigurationCombo.ItemIndex:=ConfigurationCombo.Items.IndexOf(ADocument.GetValue<string>('configuration'));
+    if ConfigurationCombo.ItemIndex<0 then ConfigurationCombo.ItemIndex:=0;
+    PlatformCombo.ItemIndex:=PlatformCombo.Items.IndexOf(ADocument.GetValue<string>('platform'));
+    if PlatformCombo.ItemIndex<0 then PlatformCombo.ItemIndex:=0;
+    DefinesEdit.Text:=''; for V in ADocument.GetValue<TJSONArray>('defines') do begin if DefinesEdit.Text<>'' then DefinesEdit.Text:=DefinesEdit.Text+';'; DefinesEdit.Text:=DefinesEdit.Text+V.Value; end;
+    ExternalRootsEdit.Text:=''; for V in ADocument.GetValue<TJSONArray>('external_roots') do begin if ExternalRootsEdit.Text<>'' then ExternalRootsEdit.Text:=ExternalRootsEdit.Text+';'; ExternalRootsEdit.Text:=ExternalRootsEdit.Text+V.Value; end;
     FormCombo.Items.Clear;
     for V in ADocument.GetValue<TJSONArray>('syntax.files') do begin Row:=V as TJSONObject; Path:=Row.GetValue<string>('path');
       if MatchText(ExtractFileExt(Path),['.fmx','.dfm']) and (Row.GetValue('ir')<>nil) then FormCombo.Items.Add(Path);
@@ -286,4 +336,51 @@ begin
 end;
 procedure TDPHMainForm.FullscreenClick(Sender: TObject);
 begin if WindowState=TWindowState.wsMaximized then WindowState:=TWindowState.wsNormal else WindowState:=TWindowState.wsMaximized; end;
+procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); end;
+procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
+begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
+procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
+begin FKnowledgeEdited:=False; NewKnowledgeClick(nil); end;
+procedure TDPHMainForm.KnowledgeFilterChange(Sender: TObject);
+var V: TJSONValue; Row: TJSONObject;
+begin
+  KnowledgeList.Items.Clear; FKnowledgeRows.Clear; if FKnowledge=nil then Exit;
+  for V in FKnowledge do begin Row:=V as TJSONObject;
+    if PendingKnowledgeCheck.IsChecked and (Row.GetValue<string>('pending')<>'1') and (Row.GetValue<string>('state')<>'needs_review') then Continue;
+    KnowledgeList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('kind')+' / '+Row.GetValue<string>('title')); FKnowledgeRows.Add(Row);
+  end;
+end;
+procedure TDPHMainForm.KnowledgeClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before selecting another record'; Exit; end;
+  if (KnowledgeList.ItemIndex<0) or (KnowledgeList.ItemIndex>=FKnowledgeRows.Count) then Exit; Row:=FKnowledgeRows[KnowledgeList.ItemIndex];
+  FBinding:=True;
+  try
+  FKnowledgeID:=StrToInt64(Row.GetValue<string>('id')); FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision'));
+  KnowledgeTitleEdit.Text:=Row.GetValue<string>('title'); KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf(Row.GetValue<string>('kind'));
+  if KnowledgeKindCombo.ItemIndex<0 then KnowledgeKindCombo.ItemIndex:=0;
+  KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
+  KnowledgeHistoryMemo.Text:='Author: '+Row.GetValue<string>('owner')+' | current state: '+Row.GetValue<string>('state')+sLineBreak+
+    'Links: '+Row.GetValue<TJSONArray>('links').Format(2)+sLineBreak+'Immutable revision history: '+Row.GetValue<TJSONArray>('history').Format(2);
+  finally FBinding:=False; end;
+end;
+procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
+begin
+  if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
+  FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
+    KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
+    FKnowledgeEdited:=False; FKnowledgeLink:=FSelected; finally FBinding:=False; end;
+end;
+procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
+begin Submit('save_knowledge'); end;
+procedure TDPHMainForm.RefreshKnowledgeClick(Sender: TObject);
+begin Submit('knowledge'); end;
+procedure TDPHMainForm.ReviewKnowledgeClick(Sender: TObject);
+begin
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save the authored edit before reviewing its revision'; Exit; end;
+  if FKnowledgeID=0 then begin StatusLabel.Text:='Select a saved knowledge revision first'; Exit; end;
+  FReviewState:='verified'; if Sender=RejectKnowledgeButton then FReviewState:='rejected'; if Sender=RetireKnowledgeButton then FReviewState:='retired'; Submit('review_knowledge');
+end;
 end.

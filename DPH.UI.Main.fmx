@@ -314,6 +314,128 @@ Align = Client
 OnDblClick = RelationsClick
 end
 end
+object KnowledgeTab: TTabItem
+Text = 'Knowledge'
+object KnowledgeToolbar: TLayout
+Align = Top
+Height = 150
+object KnowledgeTitleEdit: TEdit
+Position.X = 4
+Position.Y = 4
+Width = 310
+Height = 28
+TextPrompt = 'Stable title'
+OnChange = KnowledgeEdited
+end
+object KnowledgeAuthorEdit: TEdit
+Position.X = 320
+Position.Y = 4
+Width = 260
+Height = 28
+TextPrompt = 'Named author or reviewer (required)'
+end
+object KnowledgeKindCombo: TComboBox
+Position.X = 4
+Position.Y = 38
+Width = 170
+Height = 28
+Items.Strings = (
+'note'
+'business_rule'
+'engineering_rule'
+'user_help'
+'maintenance'
+'build_deploy'
+'troubleshooting'
+'orientation'
+'decision'
+'unknown')
+ItemIndex = 0
+end
+object PendingKnowledgeCheck: TCheckBox
+Position.X = 184
+Position.Y = 38
+Width = 170
+Height = 28
+Text = 'Pending reviews only'
+OnChange = KnowledgeFilterChange
+end
+object NewKnowledgeButton: TButton
+Position.X = 4
+Position.Y = 74
+Width = 70
+Text = 'New'
+OnClick = NewKnowledgeClick
+end
+object SaveKnowledgeButton: TButton
+Position.X = 80
+Position.Y = 74
+Width = 70
+Text = 'Save'
+OnClick = SaveKnowledgeClick
+end
+object RefreshKnowledgeButton: TButton
+Position.X = 156
+Position.Y = 74
+Width = 70
+Text = 'Refresh'
+OnClick = RefreshKnowledgeClick
+end
+object VerifyKnowledgeButton: TButton
+Position.X = 232
+Position.Y = 74
+Width = 100
+Text = 'Verify review'
+OnClick = ReviewKnowledgeClick
+end
+object RejectKnowledgeButton: TButton
+Position.X = 338
+Position.Y = 74
+Width = 70
+Text = 'Reject'
+OnClick = ReviewKnowledgeClick
+end
+object RetireKnowledgeButton: TButton
+Position.X = 414
+Position.Y = 74
+Width = 70
+Text = 'Retire'
+OnClick = ReviewKnowledgeClick
+end
+object DiscardKnowledgeButton: TButton
+Position.X = 490
+Position.Y = 74
+Width = 80
+Text = 'Discard edit'
+OnClick = DiscardKnowledgeClick
+end
+object KnowledgeWarning: TLabel
+Position.X = 4
+Position.Y = 108
+Width = 650
+Height = 40
+WordWrap = True
+Text = 'Human knowledge is attributed. Save creates a pending revision. Verify records your review of the selected generation; parser success cannot approve it.'
+end
+end
+object KnowledgeList: TListBox
+Align = Top
+Height = 150
+OnClick = KnowledgeClick
+end
+object KnowledgeEditorLayout: TLayout
+Align = Client
+object KnowledgeHistoryMemo: TMemo
+Align = Bottom
+Height = 150
+ReadOnly = True
+end
+object KnowledgeBodyMemo: TMemo
+Align = Client
+OnChange = KnowledgeEdited
+end
+end
+end
 end
 object GraphNodeStyle: TRectangle
 Visible = False

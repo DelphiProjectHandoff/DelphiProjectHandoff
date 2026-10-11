@@ -6,10 +6,13 @@ type
   TDPHWorkspaceRequest = record
     Command,Database,Entry,Configuration,Platform: string;
     Defines,ExternalRoots: TArray<string>;
+    KnowledgeID,ExpectedRevision,GenerationID: Int64;
+    Title,Body,Editor,Kind,EntityKey,ReviewState: string;
   end;
   TDPHWorkspaceResponse = class
   public
     Document: TJSONObject;
+    Knowledge: TJSONArray;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -19,7 +22,7 @@ type
     FRequests: TThreadedQueue<TDPHWorkspaceRequest>;
     FResponses: TThreadedQueue<TDPHWorkspaceResponse>;
     FBaseDirectory: string;
-    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean);
+    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil);
   protected
     procedure Execute; override;
   public
@@ -35,7 +38,7 @@ uses System.IOUtils, System.StrUtils, Winapi.ActiveX, DPH.Storage.Database, DPH.
   DPH.Analysis.Persistence, DPH.Workspace.Model;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; inherited; end;
+begin Document.Free; Knowledge.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -54,10 +57,11 @@ procedure TDPHWorkspaceWorker.Submit(const ARequest: TDPHWorkspaceRequest);
 begin if FRequests.PushItem(ARequest)<>wrSignaled then raise EInvalidOperation.Create('Workspace request queue is full'); end;
 function TDPHWorkspaceWorker.Poll(out AResponse: TDPHWorkspaceResponse): Boolean;
 begin Result:=(FResponses.PopItem(AResponse)=wrSignaled) and (AResponse<>nil); end;
-procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean);
+procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray);
 var Response: TDPHWorkspaceResponse;
 begin
   Response:=TDPHWorkspaceResponse.Create; Response.Document:=ADocument; Response.MessageText:=AMessage;
+  Response.Knowledge:=AKnowledge;
   Response.Busy:=ABusy; Response.Changed:=AChanged; Response.Detached:=ADetached; Response.Failed:=AFailed;
   if Terminated or (FResponses.PushItem(Response)<>wrSignaled) then Response.Free;
 end;
@@ -74,10 +78,28 @@ begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
         Respond(nil,'Working in background…',True,False,False,False);
-        if Request.Command='open' then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
+          begin
+            if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,
+              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey);
+            if Request.Command='review_knowledge' then
+            begin
+              if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');
+              Cached:=TJSONObject.ParseJSONValue(Store.LoadWorkspaceView(Request.GenerationID)) as TJSONObject;
+              try if (Cached=nil) or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots)) then
+                raise EReadError.Create('Selected configuration differs from the evidence being reviewed; reassess first'); finally Cached.Free; end;
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end;
+              Store.ReviewKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,Request.Editor,Request.ReviewState);
+            end;
+            MessageText:='Knowledge saved; named review remains explicit';
+            if Store.Status.KnowledgeReviewNeeded then MessageText:=MessageText+' | human review pending';
+            Respond(nil,MessageText,False,False,Request.Entry='',False,Store.KnowledgeJSON); Continue;
+          end;
           if Request.Command='open' then
           begin
             Text:=Store.LoadWorkspaceView;
@@ -89,7 +111,7 @@ begin
             if Status.ModificationDetected then MessageText:=MessageText+' | source modification detected';
             if Status.KnowledgeReviewNeeded then MessageText:=MessageText+' | human review pending';
             if Status.AnalysisFailed then MessageText:=MessageText+' | last analysis failed';
-            Respond(Document,MessageText,False,False,True,False); Continue;
+            Respond(Document,MessageText,False,False,True,False,Store.KnowledgeJSON); Continue;
           end;
           Store.InitializeProject(ExtractFileName(Request.Entry),'Delphi');
           RunScan:=True; Changed:=False;
@@ -133,7 +155,8 @@ begin
                   Document.Free; Document:=nil; Respond(nil,MessageText,False,True,False,False); Continue;
                 end
                 else MessageText:='PARTIAL captured analysis; previous complete head retained';
-                Respond(Document,MessageText,False,Changed,False,False); Document:=nil;
+                if Store.Status.KnowledgeReviewNeeded then MessageText:=MessageText+' | human knowledge review pending';
+                Respond(Document,MessageText,False,Changed,False,False,Store.KnowledgeJSON); Document:=nil;
               finally Document.Free; end;
             finally Graph.Free; end;
           finally Scan.Free; end;

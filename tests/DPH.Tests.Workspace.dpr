@@ -69,7 +69,7 @@ begin
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;
             Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
               if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-              Bitmap.SaveToFile(TPath.Combine(Root,'docs\wp4-workspace.png')); finally Bitmap.Free; end;
+              if ParamStr(2)<>'no-report' then Bitmap.SaveToFile(TPath.Combine(Root,'docs\wp4-workspace.png')); finally Bitmap.Free; end;
             Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
             for Kind in ['Thumbnail','Fit','Native','Zoom 200%','Full screen'] do begin
               Form.ScreenModeCombo.ItemIndex:=Form.ScreenModeCombo.Items.IndexOf(Kind); Form.ViewChange(nil); Application.ProcessMessages;
@@ -98,7 +98,7 @@ begin
       finally Worker.Free; end;
       Check(True,'Idle worker shutdown returns without a queue loop');
       J:=TJSONObject.Create; try J.AddPair('checks_passed',TJSONNumber.Create(Checks)); J.AddPair('corpus','copied semantic fixture'); J.AddPair('work',Work);
-        TFile.WriteAllText(TPath.Combine(Root,'docs\wp4-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
+        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\wp4-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
       Writeln('PASS WP4: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
   finally CoUninitialize; end;

@@ -1,0 +1,41 @@
+WP5 - Curated knowledge and human review
+Owner pre-approved WP4-WP7 through completion.
+Pre-change backup: D:\DPH Backups\WP5_PreChange_20261010_211022
+Verified 3,476 files / 1,538,188,040 bytes before WP5 changes.
+
+Implemented:
+Attributed notes, business/engineering rules, user help, maintenance,
+build/deploy, troubleshooting, orientation, decisions and unknowns.
+Stable knowledge IDs and entity links; append-only authored/review revisions.
+Named verification, rejection and retirement; optimistic revision checks.
+Pending review filter, full text/history inspector and explicit discard action.
+Source and configuration changes invalidate review and derived artifacts;
+translations become pending. Parser success never approves human content.
+Missing/renamed entity links remain historical and cannot silently transfer.
+Review checks captured generation, source fingerprints and configuration.
+The connected worker re-acquires fingerprints before a review; detached mode
+allows authoring but requires source attachment before review.
+Unsaved text survives background refresh; close/project switch/review cannot
+silently discard or approve a different stored revision. All controls are FMX
+design-time resources. Existing schema 2 supports this without migration edits.
+
+Validation:
+34 knowledge checks PASS; WP0 FMX smoke PASS; WP1 46 checks PASS;
+WP4 41 workspace regressions PASS. See wp5-build.log,
+wp5-regression.log and wp5-validation.json.
+AT-13 and AC-24 exercised: notes survive generations and backup/restore;
+human review stays pending after successful source analysis.
+
+Limits:
+Single local author/reviewer attribution is declarative, not authenticated
+enterprise identity. A verified rule means a named human approved its text;
+DPH does not infer or independently establish historical business rationale.
+Knowledge titles/kinds are stable after creation; revise the body or create
+and retire a replacement. Ambiguous renames require investigation and new
+links rather than automatic reassignment. Conservative manifest/configuration
+invalidation may request more human review than strictly necessary.
+
+Next: already-authorized WP6 canonical publishing, offline manuals,
+translation contract and AI handoff bundles. Exact Atlas provider remains
+unidentified; implement a disabled neutral adapter and mock validation,
+without external translation or AI calls.
