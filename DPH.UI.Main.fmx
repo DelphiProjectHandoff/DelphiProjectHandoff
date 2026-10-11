@@ -250,6 +250,115 @@ object WorkspaceTabs: TTabControl
 Align = Client
 TabPosition = Top
 ActiveTab = OverviewTab
+object LifecycleTab: TTabItem
+Text = 'Database tools'
+object LifecyclePurpose: TLabel
+Align = Top
+Height = 110
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Retention controls remove older cached view files, preserving immutable analysis facts and authored history. Set the number of recent generations, then Preview retention to inspect the policy. Keep current release protects the displayed generation under the label and reviewer you enter. Apply retention removes only eligible cached views; it keeps the baseline, published head, latest available generation, retained releases and linked review/screenshot evidence.'
+end
+object LifecycleToolbar: TLayout
+Align = Top
+Height = 86
+object RetentionCountEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 130
+Height = 30
+Text = '10'
+TextPrompt = 'Recent generations'
+end
+object PreviewRetentionButton: TButton
+Position.X = 146
+Position.Y = 4
+Width = 160
+Height = 30
+Text = 'Preview retention'
+OnClick = RetentionClick
+end
+object ApplyRetentionButton: TButton
+Position.X = 314
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Apply retention'
+OnClick = RetentionClick
+end
+object ReleaseLabelEdit: TEdit
+Position.X = 8
+Position.Y = 44
+Width = 190
+Height = 30
+TextPrompt = 'Release label to retain'
+end
+object ReleaseReviewerEdit: TEdit
+Position.X = 206
+Position.Y = 44
+Width = 190
+Height = 30
+TextPrompt = 'Named release reviewer'
+end
+object PinReleaseButton: TButton
+Position.X = 404
+Position.Y = 44
+Width = 170
+Height = 30
+Text = 'Keep current release'
+OnClick = RetentionClick
+end
+end
+object LifecycleMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+end
+end
+object ProjectsTab: TTabItem
+Text = 'Projects'
+object ProjectsPurpose: TLabel
+Align = Top
+Height = 70
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Known project databases. Select a row and click Open selected, or double-click it. Missing entries remain visible so you can locate a moved database. Remove from list forgets the entry; it never deletes a database or source project.'
+end
+object ProjectsToolbar: TLayout
+Align = Top
+Height = 42
+object OpenKnownProjectButton: TButton
+Position.X = 8
+Position.Y = 4
+Width = 140
+Height = 30
+Text = 'Open selected'
+OnClick = OpenKnownProjectClick
+end
+object ForgetProjectButton: TButton
+Position.X = 156
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Remove from list'
+OnClick = ForgetProjectClick
+end
+object RefreshProjectsButton: TButton
+Position.X = 314
+Position.Y = 4
+Width = 100
+Height = 30
+Text = 'Refresh'
+OnClick = RefreshProjectsClick
+end
+end
+object ProjectsList: TListBox
+Align = Client
+OnDblClick = OpenKnownProjectClick
+end
+end
 object OverviewTab: TTabItem
 Text = 'Learn the project'
 object LearningTopics: TListBox

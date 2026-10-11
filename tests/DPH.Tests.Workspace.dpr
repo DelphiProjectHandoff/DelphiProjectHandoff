@@ -14,7 +14,7 @@ var Root,Work,Fixture,Path,Key,ComponentKey,Kind: string; ID: TGUID; Checks: Int
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
     View: TDPHWorkspaceView; Rows: TJSONArray; J,Screen: TJSONObject; V: TJSONValue;
     Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation: Int64;
-    Before,After: string; Failed: Boolean;
+    Before,After: string; Failed,CachedShownBeforeVerification: Boolean;
 procedure Check(OK: Boolean; const MessageText: string);
 begin if not OK then raise Exception.Create('FAIL '+MessageText); Inc(Checks); Writeln('PASS ',Checks,': ',MessageText); end;
 function WaitResponse: TDPHWorkspaceResponse;
@@ -23,7 +23,10 @@ begin
   Start:=TStopwatch.StartNew;
   repeat
     Application.ProcessMessages;
-    if Worker.Poll(Result) then begin if not Result.Busy then Exit; Result.Free; end;
+    if Worker.Poll(Result) then begin
+      if Result.Busy and (Result.Document<>nil) then CachedShownBeforeVerification:=True;
+      if not Result.Busy then Exit; Result.Free;
+    end;
     if Start.ElapsedMilliseconds>60000 then raise Exception.Create('Worker timed out');
     TThread.Sleep(10);
   until False;
@@ -77,9 +80,16 @@ begin
             end;
             Form.Hide;
           finally Form.Free; end;
+          CachedShownBeforeVerification:=False;
           Request.Command:='open'; Worker.Submit(Request); Watch:=TStopwatch.StartNew; Response:=WaitResponse;
-          try Check(not Response.Failed and (Response.Document<>nil),'Cached database opens without analysis'); Check(Response.Detached,'Cached open requires explicit source attachment');
+          try Check(not Response.Failed and (Response.Document<>nil),'Cached database opens without analysis'); Check(not Response.Detached and (Response.SourceEntry<>''),'Cached open verifies available source automatically');
             Check(Response.Document.GetValue<Int64>('generation_id')=Generation,'Cached open preserves generation'); Check(Watch.ElapsedMilliseconds<5000,'Fixture cached open completes within 5 seconds'); finally Response.Free; end;
+          Check(CachedShownBeforeVerification,'Cached document is delivered before background verification completes');
+          TFile.Move(Request.Entry,Request.Entry+'.offline');
+          try
+            Worker.Submit(Request); Response:=WaitResponse;
+            try Check(not Response.Failed and Response.Detached and (Response.Document<>nil),'Unavailable source opens safely detached'); finally Response.Free; end;
+          finally TFile.Move(Request.Entry+'.offline',Request.Entry); end;
           Request.Command:='check'; Worker.Submit(Request); Response:=WaitResponse;
           try Check(not Response.Failed and not Response.Changed and (Response.Document=nil),'Unchanged connected check skips analysis'); finally Response.Free; end;
           Request.Defines:=['EXTRA']; Worker.Submit(Request); Response:=WaitResponse;

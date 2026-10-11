@@ -16,6 +16,9 @@ type
     Document: TJSONObject;
     Knowledge,Screenshots: TJSONArray;
     ExportDirectory: string;
+    SourceEntry: string;
+    Lifecycle: TJSONArray;
+    RetentionCount: Integer;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -25,7 +28,7 @@ type
     FRequests: TThreadedQueue<TDPHWorkspaceRequest>;
     FResponses: TThreadedQueue<TDPHWorkspaceResponse>;
     FBaseDirectory: string;
-    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil; const AExportDirectory: string = ''; AImages: TJSONArray = nil);
+    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil; const AExportDirectory: string = ''; AImages: TJSONArray = nil; const ASourceEntry: string = '');
   protected
     procedure Execute; override;
   public
@@ -41,7 +44,7 @@ uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.D
   DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -60,22 +63,23 @@ procedure TDPHWorkspaceWorker.Submit(const ARequest: TDPHWorkspaceRequest);
 begin if FRequests.PushItem(ARequest)<>wrSignaled then raise EInvalidOperation.Create('Workspace request queue is full'); end;
 function TDPHWorkspaceWorker.Poll(out AResponse: TDPHWorkspaceResponse): Boolean;
 begin Result:=(FResponses.PopItem(AResponse)=wrSignaled) and (AResponse<>nil); end;
-procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray; const AExportDirectory: string; AImages: TJSONArray);
+procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray; const AExportDirectory: string; AImages: TJSONArray; const ASourceEntry: string);
 var Response: TDPHWorkspaceResponse;
 begin
   Response:=TDPHWorkspaceResponse.Create; Response.Document:=ADocument; Response.MessageText:=AMessage;
   Response.Knowledge:=AKnowledge;
   Response.Screenshots:=AImages;
   Response.ExportDirectory:=AExportDirectory;
+  Response.SourceEntry:=ASourceEntry;
   Response.Busy:=ABusy; Response.Changed:=AChanged; Response.Detached:=ADetached; Response.Failed:=AFailed;
   if Terminated or (FResponses.PushItem(Response)<>wrSignaled) then Response.Free;
 end;
 procedure TDPHWorkspaceWorker.Execute;
 var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer;
     Scan: TDPHScan; Graph: TDPHSemanticGraph; Store: TDPHKnowledgeStore; Inventory: TDPHInventory;
-    Root,Text,MessageText: string; Document,Cached: TJSONObject; Config,Generation: Int64;
-    Defines: TJSONArray; Value: string; Status: TDPHProjectStatus; Changed,RunScan: Boolean;
-    View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray;
+    Root,Text,MessageText,SourceEntry: string; Document,Cached: TJSONObject; Config,Generation: Int64;
+    Defines: TJSONArray; Value: string; JSONValue: TJSONValue; Status: TDPHProjectStatus; Changed,RunScan,OpeningCached: Boolean;
+    View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray; LifecycleResponse: TDPHWorkspaceResponse;
 begin
   CoInitializeEx(nil,COINIT_APARTMENTTHREADED); Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
   try
@@ -83,6 +87,7 @@ begin
     begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
+        OpeningCached:=Request.Command='open';
         Respond(nil,'Working in background...',True,False,False,False);
         if (Request.Entry<>'') and MatchText(Request.Command,['incremental','full','relocate']) then
         begin
@@ -90,10 +95,23 @@ begin
           try if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if StartsText('retention_',Request.Command) then begin
+            if Request.Command='retention_apply' then Store.ApplyRetention(StrToInt(Request.Body));
+            if Request.Command='retention_pin' then Store.RetainGeneration(Request.GenerationID,Request.Title,Request.Editor);
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try
+              LifecycleResponse.Lifecycle:=Store.RetentionReport(StrToInt(Request.Body));
+              LifecycleResponse.RetentionCount:=Store.RecentRetentionCount;
+              LifecycleResponse.Detached:=Request.Entry='';
+              LifecycleResponse.MessageText:='Retention report ready. Immutable evidence and authored history are preserved.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
           if Request.Command='import_screenshot' then begin
             Store.ImportScreenshot(Request.GenerationID,Request.Body,Request.Editor,Request.Title,Request.EntityKey);
             Respond(nil,'Screenshot imported as attributed, unverified image evidence',False,False,Request.Entry='',False,nil,'',Store.ScreenshotsJSON); Continue;
@@ -163,10 +181,23 @@ begin
               Knowledge:=Store.KnowledgeJSON;
               try Images:=Store.ScreenshotsJSON;
               except on E: Exception do begin Images:=TJSONArray.Create; MessageText:=MessageText+' | Screenshot evidence unavailable: '+E.Message; end; end;
-              Respond(Document,MessageText,False,False,True,False,Knowledge,'',Images);
+              SourceEntry:='';
+              Text:=Document.GetValue<string>('entry');
+              if (Text<>'') and (ExtractFileName(Text)=Text) and TFile.Exists(TPath.Combine(Root,Text)) then
+                SourceEntry:=TPath.Combine(Root,Text);
+              if SourceEntry<>'' then begin
+                Request.Entry:=SourceEntry; Request.Command:='check';
+                Request.Configuration:=Document.GetValue<string>('configuration');
+                Request.Platform:=Document.GetValue<string>('platform');
+                Request.Defines:=[]; Request.ExternalRoots:=[];
+                for JSONValue in Document.GetValue<TJSONArray>('defines') do Request.Defines:=Request.Defines+[JSONValue.Value];
+                for JSONValue in Document.GetValue<TJSONArray>('external_roots') do Request.ExternalRoots:=Request.ExternalRoots+[JSONValue.Value];
+                MessageText:='Cached project loaded; verifying attached source in background';
+              end;
+              Respond(Document,MessageText,SourceEntry<>'',False,SourceEntry='',False,Knowledge,'',Images,SourceEntry);
               Document:=nil; Knowledge:=nil; Images:=nil;
             finally Document.Free; Knowledge.Free; Images.Free; end;
-            Continue;
+            if SourceEntry='' then Continue;
           end;
           Store.InitializeProject(ExtractFileName(Request.Entry),'Delphi');
           RunScan:=True; Changed:=False;
@@ -177,12 +208,14 @@ begin
             try
               Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
               try
+                if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
                 Changed:=(Cached=nil) or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>Cached.GetValue<TJSONObject>('semantics').GetValue<string>('input_fingerprint'))
                   or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
               RunScan:=Changed;
               if Changed then Respond(nil,'Source modification detected; analysis stale; reassessing...',True,True,False,False)
+              else if OpeningCached then Respond(Cached.Clone as TJSONObject,'Cached project verified; source fingerprints unchanged',False,False,False,False,nil,'',nil,Request.Entry)
               else Respond(nil,'Source fingerprints unchanged',False,False,False,False);
             finally Cached.Free; end;
           end;

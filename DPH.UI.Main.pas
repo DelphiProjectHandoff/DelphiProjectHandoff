@@ -4,7 +4,7 @@ uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
   FMX.Objects, FMX.Graphics, FMX.WebBrowser, DPH.Workspace.Model, DPH.Workspace.Worker,
-  DPH.Publish.Model, DPH.Analysis.Explanations;
+  DPH.Publish.Model, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
 type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
@@ -58,6 +58,21 @@ type
     HelpTab: TTabItem;
     HelpBrowser: TWebBrowser;
     HelpFallback: TMemo;
+    ProjectsTab: TTabItem;
+    ProjectsToolbar: TLayout;
+    ProjectsList: TListBox;
+    ProjectsPurpose: TLabel;
+    OpenKnownProjectButton,ForgetProjectButton,RefreshProjectsButton: TButton;
+    LifecycleTab: TTabItem;
+    LifecycleToolbar: TLayout;
+    LifecyclePurpose: TLabel;
+    RetentionCountEdit,ReleaseLabelEdit,ReleaseReviewerEdit: TEdit;
+    PreviewRetentionButton,ApplyRetentionButton,PinReleaseButton: TButton;
+    LifecycleMemo: TMemo;
+    procedure RetentionClick(Sender: TObject);
+    procedure OpenKnownProjectClick(Sender: TObject);
+    procedure ForgetProjectClick(Sender: TObject);
+    procedure RefreshProjectsClick(Sender: TObject);
     procedure HelpClick(Sender: TObject);
     procedure ImportScreenshotClick(Sender: TObject);
     procedure ScreenshotClick(Sender: TObject);
@@ -118,6 +133,8 @@ type
     FExplanations: TDPHExplanationModel;
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
     FImages: TJSONArray;
+    FCatalog: TDPHWorkspaceCatalog;
+    FCatalogPaths: TList<string>;
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure RefreshLearning;
     procedure ShowExplanation;
@@ -139,11 +156,15 @@ uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
-var I: Integer; Pref: TJSONObject; PrefPath,DatabaseDirectory: string;
+var I: Integer; DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
+  FCatalogPaths:=TList<string>.Create;
+  try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
+  except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
+  RefreshProjectsClick(nil);
   FBaseDirectory:=ExtractFilePath(ParamStr(0));
   for I:=0 to 5 do begin if TDirectory.Exists(TPath.Combine(FBaseDirectory,'migrations')) then Break; FBaseDirectory:=ExtractFileDir(ExcludeTrailingPathDelimiter(FBaseDirectory)); end;
   DatabaseDirectory:=TPath.Combine(FBaseDirectory,DatabaseDialog.InitialDir);
@@ -159,22 +180,14 @@ begin
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
-    PrefPath:=TPath.Combine(TPath.GetHomePath,'AppData\Local\DPH\workspace.json');
-    if TFile.Exists(PrefPath) then
-    try Pref:=TJSONObject.ParseJSONValue(TFile.ReadAllText(PrefPath,TEncoding.UTF8)) as TJSONObject;
-      try if Pref<>nil then begin PrefPath:=Pref.GetValue<string>('database',''); if TFile.Exists(PrefPath) then OpenSelection('',PrefPath); end; finally Pref.Free; end;
-    except on E: Exception do StatusLabel.Text:='Workspace preferences unavailable: '+E.Message; end;
+    if (FCatalog<>nil) and TFile.Exists(FCatalog.LastDatabase) then OpenSelection('',FCatalog.LastDatabase);
   end;
 end;
 procedure TDPHMainForm.FormDestroy(Sender: TObject);
-var Pref: TJSONObject; PrefPath,Directory: string;
+var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
-  if (FDatabase<>'') and (FView<>nil) then
-  try
-    PrefPath:=TPath.Combine(TPath.GetHomePath,'AppData\Local\DPH'); TDirectory.CreateDirectory(PrefPath);
-    Pref:=TJSONObject.Create; try Pref.AddPair('database',FDatabase); TFile.WriteAllText(TPath.Combine(PrefPath,'workspace.json'),Pref.ToJSON,TEncoding.UTF8); finally Pref.Free; end;
-  except end;
+  FCatalog.Free; FCatalogPaths.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -191,6 +204,51 @@ procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
   CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; end;
+end;
+procedure TDPHMainForm.RefreshProjectsClick(Sender: TObject);
+var Rows: TJSONArray; Value: TJSONValue; Path,LabelText: string;
+begin
+  ProjectsList.Items.Clear; FCatalogPaths.Clear;
+  if FCatalog=nil then Exit;
+  Rows:=FCatalog.Projects;
+  try
+    for Value in Rows do begin
+      Path:=(Value as TJSONObject).GetValue<string>('database');
+      LabelText:=TPath.GetFileNameWithoutExtension(Path)+' | '+Path;
+      if not TFile.Exists(Path) then LabelText:='Missing database | '+LabelText;
+      ProjectsList.Items.Add(LabelText); FCatalogPaths.Add(Path);
+    end;
+  finally Rows.Free; end;
+end;
+procedure TDPHMainForm.RetentionClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest;
+begin
+  if FBusy or (FView=nil) then begin StatusLabel.Text:='Open a project and wait for its current operation to finish'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest);
+  Request.Command:='retention_preview';
+  if Sender=ApplyRetentionButton then Request.Command:='retention_apply';
+  if Sender=PinReleaseButton then Request.Command:='retention_pin';
+  Request.Database:=FDatabase; Request.Entry:=FEntry;
+  Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
+  Request.Body:=RetentionCountEdit.Text; Request.Title:=ReleaseLabelEdit.Text; Request.Editor:=ReleaseReviewerEdit.Text;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Preparing retention report...';
+end;
+procedure TDPHMainForm.OpenKnownProjectClick(Sender: TObject);
+var Index: Integer;
+begin
+  Index:=ProjectsList.ItemIndex;
+  if (Index<0) or (Index>=FCatalogPaths.Count) then begin StatusLabel.Text:='Select a known project first'; Exit; end;
+  if not TFile.Exists(FCatalogPaths[Index]) then begin StatusLabel.Text:='Database is missing. Use Open cache to locate its new location, or remove this entry.'; Exit; end;
+  OpenSelection('',FCatalogPaths[Index]);
+end;
+procedure TDPHMainForm.ForgetProjectClick(Sender: TObject);
+var Index: Integer;
+begin
+  Index:=ProjectsList.ItemIndex;
+  if (FCatalog=nil) or (Index<0) or (Index>=FCatalogPaths.Count) then Exit;
+  try FCatalog.Forget(FCatalogPaths[Index]); FCatalog.Save; RefreshProjectsClick(nil);
+    StatusLabel.Text:='Removed from known projects. The database and source files were not deleted.';
+  except on E: Exception do StatusLabel.Text:='Cannot remove catalog entry: '+E.Message; end;
 end;
 procedure TDPHMainForm.Submit(const ACommand: string);
 var R: TDPHWorkspaceRequest;
@@ -276,7 +334,7 @@ end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
 begin if FEntry='' then StatusLabel.Text:='Attach the source project first' else Submit('full'); end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
-var R: TDPHWorkspaceResponse;
+var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
   while FWorker.Poll(R) do
@@ -290,6 +348,7 @@ begin
       end;
       LoadView(R.Document); R.Document:=nil;
     end;
+    if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.Failed then begin
       FPendingEntry:=''; FPendingDatabase:='';
       if FView=nil then HelpClick(nil);
@@ -298,6 +357,16 @@ begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if R.Lifecycle<>nil then begin
+      LifecycleMemo.Lines.Clear;
+      LifecycleMemo.Lines.Add('Saved policy: keep '+IntToStr(R.RetentionCount)+' recent generations. Preview below uses '+RetentionCountEdit.Text+'.');
+      LifecycleMemo.Lines.Add('Generation | state | saved | cached views | retention reason | release label');
+      for Value in R.Lifecycle do begin Row:=Value as TJSONObject;
+        LifecycleMemo.Lines.Add(Row.GetValue<string>('generation_id')+' | '+Row.GetValue<string>('status')+' | '+
+          Row.GetValue<string>('started_at')+' | '+Row.GetValue<string>('cached_views')+' | '+
+          Row.GetValue<string>('retention_reason')+' | '+Row.GetValue<string>('release_label'));
+      end;
+    end;
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
     StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
@@ -309,6 +378,9 @@ procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
 var V: TJSONValue; Row: TJSONObject; Path: string;
 begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  if (FCatalog<>nil) and (FDatabase<>'') then
+  try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);
+  except on E: Exception do StatusLabel.Text:='Project opened, but catalog could not be saved: '+E.Message; end;
   FBinding:=True;
   try
     ConfigurationCombo.ItemIndex:=ConfigurationCombo.Items.IndexOf(ADocument.GetValue<string>('configuration'));

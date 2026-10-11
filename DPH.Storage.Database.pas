@@ -76,6 +76,10 @@ type
     function GenerationIsStale(AGenerationID: Int64): Boolean;
     procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
     function ScreenshotsJSON: TJSONArray;
+    function RetentionReport(ARecent: Integer): TJSONArray;
+    function RecentRetentionCount: Integer;
+    procedure ApplyRetention(ARecent: Integer);
+    procedure RetainGeneration(AGeneration: Int64; const ALabel,AReviewer: string);
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -88,7 +92,7 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat;
 
 const
-  CurrentSchemaVersion = 2;
+  CurrentSchemaVersion = 3;
 
 constructor TDPHKnowledgeStore.Create(const ADatabasePath, ASourceRoot,
   AMigrationDirectory: string; AUseWAL: Boolean);
@@ -294,7 +298,8 @@ begin
     MigrationPath := TPath.Combine(AMigrationDirectory,
       Format('%.3d_', [Version]));
     if Version = 1 then MigrationPath := MigrationPath + 'foundation.sql'
-    else MigrationPath := MigrationPath + 'constraints.sql';
+    else if Version = 2 then MigrationPath := MigrationPath + 'constraints.sql'
+    else MigrationPath := MigrationPath + 'lifecycle.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -1059,6 +1064,96 @@ begin
 end;
 function TDPHKnowledgeStore.SQLiteVersion: string;
 begin RequireWriter; Result := VarToStr(Scalar('SELECT sqlite_version()',[])); end;
+
+function TDPHKnowledgeStore.RecentRetentionCount: Integer;
+begin
+  RequireWriter;
+  Result:=Scalar('SELECT coalesce((SELECT recent_generations FROM retention_policy WHERE project_id=1),10)',[]);
+end;
+
+function TDPHKnowledgeStore.RetentionReport(ARecent: Integer): TJSONArray;
+var Query: TFDQuery; Row: TJSONObject; I: Integer;
+begin
+  RequireWriter;
+  if (ARecent<1) or (ARecent>10000) then raise EDPHStorage.Create('Keep between 1 and 10000 recent generations');
+  Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT g.generation_id,g.status,g.started_at,coalesce(p.label,'''') AS release_label,'+
+    'CASE WHEN g.generation_id=(SELECT min(generation_id) FROM analysis_generations WHERE status IN (''current'',''partial'')) THEN ''baseline'' '+
+    'WHEN g.generation_id=(SELECT published_generation_id FROM project_state WHERE project_id=1) THEN ''published head'' '+
+    'WHEN g.generation_id=(SELECT max(generation_id) FROM analysis_generations WHERE status IN (''current'',''partial'')) THEN ''latest available'' '+
+    'WHEN p.generation_id IS NOT NULL THEN ''retained release'' '+
+    'WHEN g.generation_id IN (SELECT generation_id FROM analysis_generations ORDER BY generation_id DESC LIMIT :recent) THEN ''recent'' '+
+    'WHEN EXISTS(SELECT 1 FROM knowledge_links WHERE last_verified_generation_id=g.generation_id) OR '+
+    'EXISTS(SELECT 1 FROM review_tasks WHERE opened_generation_id=g.generation_id OR resolved_generation_id=g.generation_id) THEN ''knowledge evidence'' '+
+    'WHEN EXISTS(SELECT 1 FROM artifacts WHERE generation_id=g.generation_id AND kind=''user_screenshot'') THEN ''screenshot evidence'' '+
+    'ELSE ''eligible cached views'' END AS retention_reason,'+
+    '(SELECT count(*) FROM artifacts a WHERE a.generation_id=g.generation_id AND a.kind=''workspace_view'') AS cached_views '+
+    'FROM analysis_generations g LEFT JOIN retained_generations p ON p.generation_id=g.generation_id '+
+    'WHERE g.status<>''running'' ORDER BY g.generation_id DESC',[ARecent]);
+  try
+    while not Query.Eof do begin
+      Row:=TJSONObject.Create; Result.AddElement(Row);
+      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Query.Next;
+    end;
+  finally Query.Free; end;
+end;
+
+procedure TDPHKnowledgeStore.RetainGeneration(AGeneration: Int64; const ALabel,AReviewer: string);
+begin
+  RequireWriter;
+  if (Trim(ALabel)='') or (Trim(AReviewer)='') then raise EDPHStorage.Create('Release label and named reviewer are required');
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGeneration])<>1 then
+    raise EDPHStorage.Create('Select a completed captured generation');
+  FConnection.ExecSQL('INSERT INTO retained_generations(project_id,generation_id,label,reviewer,recorded_at) '+
+    'VALUES(1,:id,:label,:reviewer,:stamp) ON CONFLICT(project_id,generation_id) DO UPDATE SET label=excluded.label,reviewer=excluded.reviewer,recorded_at=excluded.recorded_at',
+    [AGeneration,ALabel,AReviewer,UTCNow]);
+end;
+
+procedure TDPHKnowledgeStore.ApplyRetention(ARecent: Integer);
+var Report: TJSONArray; Value: TJSONValue; Row: TJSONObject; Query: TFDQuery;
+    Paths: TList<string>; Path,Hash: string; Generation: Int64; HashCharacter: Char;
+begin
+  RequireWriter; Report:=RetentionReport(ARecent); Paths:=TList<string>.Create;
+  try
+    // Validate every candidate before changing records or deleting exact files.
+    for Value in Report do begin
+      Row:=Value as TJSONObject;
+      if Row.GetValue<string>('retention_reason')<>'eligible cached views' then Continue;
+      Generation:=StrToInt64(Row.GetValue<string>('generation_id'));
+      Query:=NewQuery('SELECT content_hash FROM artifacts WHERE generation_id=:id AND kind=''workspace_view''',[Generation]);
+      try
+        while not Query.Eof do begin
+          Hash:=Query.Fields[0].AsString;
+          if Length(Hash)<>64 then raise EDPHStorage.Create('Invalid managed artifact hash');
+          for HashCharacter in Hash do if not CharInSet(HashCharacter,['0'..'9','a'..'f','A'..'F']) then
+            raise EDPHStorage.Create('Invalid managed artifact hash');
+          Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
+          if Hash<>THashSHA2.GetHashStringFromFile(Path) then
+            raise EDPHStorage.Create('Retention candidate is missing or damaged; nothing was removed');
+          Paths.Add(Path); Query.Next;
+        end;
+      finally Query.Free; end;
+    end;
+    FConnection.StartTransaction;
+    try
+      FConnection.ExecSQL('INSERT INTO retention_policy(project_id,recent_generations) VALUES(1,:recent) '+
+        'ON CONFLICT(project_id) DO UPDATE SET recent_generations=excluded.recent_generations',[ARecent]);
+      for Value in Report do begin
+        Row:=Value as TJSONObject;
+        if Row.GetValue<string>('retention_reason')='eligible cached views' then
+          FConnection.ExecSQL('DELETE FROM artifacts WHERE generation_id=:id AND kind=''workspace_view''',[StrToInt64(Row.GetValue<string>('generation_id'))]);
+      end;
+      FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at) VALUES(1,''retention'',1,:action,''local operator'',:stamp)',
+        ['Keep baseline, releases, linked evidence and '+IntToStr(ARecent)+' recent cached generations',UTCNow]);
+      FConnection.Commit;
+    except FConnection.Rollback; raise; end;
+    for Path in Paths do
+      if TFile.Exists(Path) and (Scalar('SELECT count(*) FROM artifacts WHERE content_hash=:hash',
+        [TPath.GetFileNameWithoutExtension(Path)])=0) then TFile.Delete(Path);
+    // Generation facts, manual revisions, screenshots and exported files remain immutable.
+  finally Paths.Free; Report.Free; end;
+end;
 
 function TDPHKnowledgeStore.SupportsFTS5: Boolean;
 begin RequireWriter; Result := Scalar('SELECT sqlite_compileoption_used(''ENABLE_FTS5'')',[]) = 1; end;

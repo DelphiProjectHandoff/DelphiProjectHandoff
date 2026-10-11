@@ -33,6 +33,7 @@
     <DCCReference Include="DPH.Analysis.Flow.pas" />
     <DCCReference Include="DPH.Analysis.Persistence.pas" />
     <DCCReference Include="DPH.Workspace.Model.pas" />
+    <DCCReference Include="DPH.Workspace.Catalog.pas" />
     <DCCReference Include="DPH.Workspace.Worker.pas" />
     <DCCReference Include="DPH.Workspace.Screen.pas" />
     <DCCReference Include="DPH.Publish.Model.pas" />
