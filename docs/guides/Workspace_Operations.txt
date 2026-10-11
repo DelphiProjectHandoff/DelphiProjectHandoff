@@ -62,6 +62,10 @@ unit initialization/finalization sections. In Explorer search for $entry,
 $initialization or $finalization to inspect one phase. Select it and choose
 Procedure CFG to see its statements. These are static source projections;
 qualified phase links do not prove runtime ordering or successful completion.
+Procedure CFG shows separate case labels/default sequences and explicit goto
+targets where the label resolves within the same finally scope. Unknown or
+cross-finally jumps are labeled unresolved_jump_target. With bodies run in
+sequence, while ambiguous unqualified member bindings remain qualified.
 
 Resources and external definitions
 Object references now include declared property read/write accessors. An indexed

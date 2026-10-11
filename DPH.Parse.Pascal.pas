@@ -359,12 +359,16 @@ begin
 end;
 
 procedure TDPHPascalParser.Statement(AParent: Integer);
-var Node,Before: Integer; Kind: string;
+var Node,Before,Arm: Integer; Kind: string; Row: TDPHIRNode;
 begin
   Inc(FDepth);
   try
     if FDepth>DPHMaxNesting then begin Opaque(AParent,'Statement nesting limit',[';','end']); Exit; end;
     if IsToken('begin') then begin Block(AParent); Exit; end;
+    if (FPosition<High(FTokens)) and (FTokens[FPosition].Kind in [tkIdentifier,tkNumber]) and (FTokens[FPosition+1].Text=':') then begin
+      Node:=AddNode('statement_label',FTokens[FPosition].Text,AParent,FPosition); Inc(FPosition,2);
+      Statement(Node); Finish(Node); Exit;
+    end;
     Kind:=Current; Node:=AddNode('statement_'+Kind,'',AParent,FPosition);
     if Take('if') then
     begin Expression(Node); Expect('then'); Statement(Node); if Take('else') then Statement(Node); end
@@ -402,16 +406,28 @@ begin
       while (FTokens[FPosition].Kind<>tkEOF) and not IsToken('end') do
       begin
         Before:=FPosition;
-        if not Take('else') then
-        begin Expression(Node); if Take('..') then Expression(Node);
-          while Take(',') do begin Expression(Node); if Take('..') then Expression(Node); end; Expect(':'); end;
-        Statement(Node); Take(';'); if FPosition=Before then Inc(FPosition);
+        if IsToken('else') then begin
+          Arm:=AddNode('case_default','else',Node,FPosition); Inc(FPosition);
+          while (FTokens[FPosition].Kind<>tkEOF) and not IsToken('end') do begin
+            Before:=FPosition; Statement(Arm); Take(';'); if FPosition=Before then Inc(FPosition);
+          end;
+          Finish(Arm); Break;
+        end else begin
+          Arm:=AddNode('case_arm','',Node,FPosition);
+          Expression(Arm); if Take('..') then Expression(Arm);
+          while Take(',') do begin Expression(Arm); if Take('..') then Expression(Arm); end; Expect(':');
+          Finish(Arm); Statement(Arm); Take(';'); Finish(Arm);
+        end;
+        if FPosition=Before then Inc(FPosition);
       end;
       Expect('end');
     end
     else if Take('raise') then begin if not MatchText(Current,[';','end']) then Expression(Node); end
     else if Take('asm') then begin Opaque(Node,'Assembler block',['end']); Expect('end'); end
-    else if Take('goto') then begin if FTokens[FPosition].Kind in [tkNumber,tkIdentifier] then Inc(FPosition) else Expect('label'); end
+    else if Take('goto') then begin
+      if FTokens[FPosition].Kind in [tkNumber,tkIdentifier] then begin Row:=FResult.Nodes[Node]; Row.Name:=FTokens[FPosition].Text; FResult.Nodes[Node]:=Row; Inc(FPosition); end
+      else Expect('label');
+    end
     else if Take('var') or Take('const') then
     begin
       while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,[':=','=',';','end']) do Inc(FPosition);

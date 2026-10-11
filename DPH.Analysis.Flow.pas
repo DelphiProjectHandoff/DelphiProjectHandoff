@@ -3,6 +3,11 @@ unit DPH.Analysis.Flow;
 interface
 uses System.SysUtils, System.Generics.Collections, DPH.Parse.Model, DPH.Analysis.Model;
 type
+  TDPHGotoLink = record
+    Node: Integer;
+    Target,FinallyContext: string;
+    Location: TDPHRange;
+  end;
   TDPHFlowBuilder = class
   private
     FGraph: TDPHSemanticGraph;
@@ -10,6 +15,10 @@ type
     FTokens: TDPHTokens;
     FRoutine,FDepth: Integer;
     FChildren: TObjectDictionary<Integer,TList<Integer>>;
+    FLabels: TDictionary<string,Integer>;
+    FLabelContexts: TDictionary<string,string>;
+    FGotos: TList<TDPHGotoLink>;
+    FFinallyContext: string;
     function Node(const Kind,ExpressionText: string; const Location: TDPHRange): Integer;
     procedure Edge(AFrom,ATo: Integer; const Kind: string; const Resolution: string = 'confirmed_static');
     function Sequence(const Items: TArray<Integer>; ANext,AReturn,AException,ABreak,AContinue: Integer): Integer;
@@ -44,7 +53,7 @@ end;
 function TDPHFlowBuilder.Statement(AIndex,ANext,AReturn,AException,ABreak,AContinue: Integer): Integer;
 var N,C: TDPHIRNode; All: TList<Integer>; Items,ProtectedItems,HandlerItems: TList<Integer>;
     I,J,Boundary,Start,Finish,ReturnVia,ExceptionVia,BreakVia,ContinueVia,Handler,Condition: Integer;
-    ExpressionText,Kind: string;
+    ExpressionText,Kind,SavedContext: string; HasDefault: Boolean; Jump: TDPHGotoLink;
 begin
   N:=FIR.Nodes[AIndex]; Inc(FDepth);
   try
@@ -56,10 +65,13 @@ begin
       begin
         C:=FIR.Nodes[I];
         if C.Kind='expression' then begin if ExpressionText<>'' then ExpressionText:=ExpressionText+'; '; ExpressionText:=ExpressionText+C.Value; end
-        else if (C.Kind='block') or C.Kind.StartsWith('statement_') or (C.Kind='opaque') then Items.Add(I);
+        else if MatchText(C.Kind,['block','case_arm','case_default','opaque']) or C.Kind.StartsWith('statement_') then Items.Add(I);
       end;
       if MatchText(N.Kind,['block','initialization','finalization']) then Exit(Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue));
       Kind:=N.Kind; if Kind.StartsWith('statement_') then Delete(Kind,1,10);
+      if MatchText(Kind,['case_arm','case_default']) then ExpressionText:=N.Value;
+      if Kind='case_default' then ExpressionText:='else';
+      if MatchText(Kind,['label','goto']) then ExpressionText:=N.Name;
       Result:=Node(Kind,ExpressionText,N.Location);
       if Kind='if' then
       begin
@@ -100,7 +112,9 @@ begin
             ExceptionVia:=Sequence(HandlerItems.ToArray,AException,AReturn,AException,ABreak,AContinue);
             BreakVia:=Sequence(HandlerItems.ToArray,ABreak,AReturn,AException,ABreak,AContinue);
             ContinueVia:=Sequence(HandlerItems.ToArray,AContinue,AReturn,AException,ABreak,AContinue);
-            Start:=Sequence(ProtectedItems.ToArray,Finish,ReturnVia,ExceptionVia,BreakVia,ContinueVia);
+            SavedContext:=FFinallyContext; FFinallyContext:=SavedContext+'/'+IntToStr(AIndex);
+            try Start:=Sequence(ProtectedItems.ToArray,Finish,ReturnVia,ExceptionVia,BreakVia,ContinueVia);
+            finally FFinallyContext:=SavedContext; end;
           end
           else
           begin
@@ -117,7 +131,31 @@ begin
       else if Kind='raise' then Edge(Result,AException,'raise')
       else if (Kind='break') and (ABreak>=0) then Edge(Result,ABreak,'break')
       else if (Kind='continue') and (AContinue>=0) then Edge(Result,AContinue,'continue')
-      else if MatchText(Kind,['case','goto','asm','opaque','with']) then
+      else if Kind='case' then begin
+        HasDefault:=False;
+        for I in Items do begin
+          if FIR.Nodes[I].Kind='case_default' then begin HasDefault:=True; Edge(Result,Statement(I,ANext,AReturn,AException,ABreak,AContinue),'case_else'); end
+          else Edge(Result,Statement(I,ANext,AReturn,AException,ABreak,AContinue),'case_match');
+        end;
+        if not HasDefault then Edge(Result,ANext,'case_no_match');
+        Edge(Result,AException,'condition_may_raise','possible_dynamic');
+      end
+      else if MatchText(Kind,['case_arm','case_default']) then Edge(Result,Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue),'case_body')
+      else if Kind='label' then begin
+        ExpressionText:=LowerCase(N.Name);
+        if FLabels.ContainsKey(ExpressionText) then begin FLabels[ExpressionText]:=-1; FGraph.Complete:=False; end
+        else begin FLabels.Add(ExpressionText,Result); FLabelContexts.Add(ExpressionText,FFinallyContext); end;
+        Edge(Result,Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue),'label_body');
+      end
+      else if Kind='goto' then begin
+        Jump.Node:=Result; Jump.Target:=LowerCase(N.Name); Jump.FinallyContext:=FFinallyContext; Jump.Location:=N.Location; FGotos.Add(Jump);
+      end
+      else if Kind='with' then begin
+        Edge(Result,Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue),'with_body');
+        Edge(Result,AException,'receiver_may_raise','possible_dynamic'); FGraph.Complete:=False;
+        FGraph.Diagnostics.Report('WITH_SCOPE_PARTIAL','With body executes sequentially; unqualified member binding remains qualified',N.Location);
+      end
+      else if MatchText(Kind,['asm','opaque']) then
       begin
         FGraph.Complete:=False;
         FGraph.Diagnostics.Report('CFG_CONSERVATIVE_CONSTRUCT','Control flow alternatives require conservative interpretation: '+Kind,N.Location);
@@ -130,10 +168,12 @@ begin
 end;
 procedure TDPHFlowBuilder.Build(AGraph: TDPHSemanticGraph; ARoutine: Integer; AIR: TDPHParseResult;
   const ATokens: TDPHTokens; ABody: Integer);
-var I,Entry,NormalExit,ExceptionExit,Start: Integer; Children: TList<Integer>;
+var I,Entry,NormalExit,ExceptionExit,Start,Target,Unknown: Integer; Children: TList<Integer>; Jump: TDPHGotoLink;
 begin
   FGraph:=AGraph; FRoutine:=ARoutine; FIR:=AIR; FTokens:=ATokens; FDepth:=0;
   FChildren:=TObjectDictionary<Integer,TList<Integer>>.Create([doOwnsValues]);
+  FLabels:=TDictionary<string,Integer>.Create; FLabelContexts:=TDictionary<string,string>.Create;
+  FGotos:=TList<TDPHGotoLink>.Create; FFinallyContext:='';
   try
     for I:=0 to AIR.Nodes.Count-1 do
     begin
@@ -145,6 +185,13 @@ begin
     NormalExit:=Node('normal_exit','',AIR.Nodes[ABody].Location);
     ExceptionExit:=Node('exception_exit','',AIR.Nodes[ABody].Location);
     Start:=Statement(ABody,NormalExit,NormalExit,ExceptionExit,-1,-1); Edge(Entry,Start,'enter');
-  finally FChildren.Free; end;
+    for Jump in FGotos do begin
+      if FLabels.TryGetValue(Jump.Target,Target) and (Target>=0) and (FLabelContexts[Jump.Target]=Jump.FinallyContext) then Edge(Jump.Node,Target,'goto')
+      else begin
+        Unknown:=Node('unresolved_jump_target',Jump.Target,Jump.Location); Edge(Jump.Node,Unknown,'unresolved_jump','unresolved');
+        FGraph.Complete:=False; FGraph.Diagnostics.Report('GOTO_TARGET_PARTIAL','Missing/ambiguous label or jump across finally scope requires further flow analysis: '+Jump.Target,Jump.Location);
+      end;
+    end;
+  finally FGotos.Free; FLabelContexts.Free; FLabels.Free; FChildren.Free; end;
 end;
 end.

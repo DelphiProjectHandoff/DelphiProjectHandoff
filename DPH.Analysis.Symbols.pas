@@ -688,18 +688,22 @@ end;
 procedure TDPHSemanticAnalyzer.RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
 var Routine,S: TDPHSymbol; Body,N: TDPHIRNode; I,J,K,Stop,Depth,Next,Variable,Target,Child,CallEnd: Integer;
     Path,Resolution,Kind,Argument,TypeName: string; Args: TList<string>; Matches: TArray<Integer>; L: TDPHRange;
-    IsCall,IsWrite: Boolean; Flow: TDPHFlowBuilder;
+    IsCall,IsWrite,WithinWith: Boolean; Flow: TDPHFlowBuilder;
     Nested: TDictionary<Integer,Integer>; Closures: TList<Integer>;
+    WithScopes: TList<TDPHRange>; WithRange: TDPHRange;
 begin
   Routine:=FGraph.Symbols[ARoutine]; if not Routine.HasBody then Exit; Body:=IR.Nodes[Routine.BodyNode];
   Flow:=TDPHFlowBuilder.Create;
   try Flow.Build(FGraph,ARoutine,IR,Tokens,Routine.BodyNode); finally Flow.Free; end;
   Args:=TList<string>.Create;
   Nested:=TDictionary<Integer,Integer>.Create; Closures:=TList<Integer>.Create;
+  WithScopes:=TList<TDPHRange>.Create;
   try
     for J:=Routine.NodeIndex+1 to IR.Nodes.Count-1 do
     begin
       N:=IR.Nodes[J];
+      if (N.Parent>=0) and (IR.Nodes[N.Parent].Kind='statement_with') and
+        ((N.Kind='block') or N.Kind.StartsWith('statement_')) then WithScopes.Add(N.Location);
       if N.Kind.StartsWith('routine_') or N.Kind.StartsWith('anonymous_') then Nested.AddOrSetValue(N.FirstToken,N.LastToken+1);
       if N.Kind.StartsWith('anonymous_') and (ParentSymbol(Routine.Location.Source,IR,N.Parent)=ARoutine) then Closures.Add(J);
     end;
@@ -711,7 +715,11 @@ begin
       Nested.TryGetValue(I,Next); if Next=0 then Next:=I;
       if Next<>I then begin I:=Next; Continue; end;
       if Tokens[I].Kind<>tkIdentifier then begin Inc(I); Continue; end;
-      if MatchText(Tokens[I].Text,['begin','end','if','then','else','while','do','for','to','downto','in','repeat','until','try','except','finally','on','raise','case','of','var','const','not','and','or','xor','div','mod','is','as','nil','true','false','exit','break','continue','inherited']) then begin Inc(I); Continue; end;
+      if MatchText(Tokens[I].Text,['begin','end','if','then','else','while','with','goto','do','for','to','downto','in','repeat','until','try','except','finally','on','raise','case','of','var','const','not','and','or','xor','div','mod','is','as','nil','true','false','exit','break','continue','inherited']) or
+        ((I<Body.LastToken) and (Tokens[I+1].Text=':')) or ((I>Body.FirstToken) and SameText(Tokens[I-1].Text,'goto')) then begin Inc(I); Continue; end;
+      WithinWith:=False;
+      for WithRange in WithScopes do if (WithRange.Source=Tokens[I].Location.Source) and
+        (WithRange.StartByte<=Tokens[I].Location.StartByte) and (WithRange.EndByte>=Tokens[I].Location.EndByte) then begin WithinWith:=True; Break; end;
       Path:=Tokens[I].Text; Stop:=I;
       while (Stop+2<=Body.LastToken) and (Tokens[Stop+1].Text='.') and (Tokens[Stop+2].Kind=tkIdentifier) do begin Inc(Stop,2); Path:=Path+'.'+Tokens[Stop].Text; end;
       if (I>Body.FirstToken) and SameText(Tokens[I-1].Text,'inherited') then Path:='inherited.'+Path;
@@ -751,6 +759,7 @@ begin
         begin
           S:=FGraph.Symbols[Target]; if S.Dispatch='dynamic' then Resolution:='possible_dynamic';
           if StartsText('inherited.',Path) then Resolution:='confirmed_static';
+          if WithinWith and not Path.Contains('.') then Resolution:='possible_dynamic';
           if (S.Owner>=0) and SameText(FGraph.Symbols[S.Owner].TypeName,'interface') then Resolution:='possible_dynamic';
           FGraph.AddRelation(ARoutine,Target,'calls',Resolution,'lexical_scope_declared_receiver_and_signature',Path,L,Tokens[I].Condition);
           if MatchText(S.Name.Substring(LastDelimiter('.',S.Name)),['Render','RenderBody','Save']) and (Args.Count>0) then
@@ -775,6 +784,7 @@ begin
       begin
         IsWrite:=(Stop+1<=Body.LastToken) and (Tokens[Stop+1].Text=':='); Kind:='reads'; if IsWrite then Kind:='writes';
         Resolution:='confirmed_static'; if FGraph.Symbols[Variable].Kind='property' then Resolution:='inferred';
+        if WithinWith and not Path.Contains('.') then Resolution:='possible_dynamic';
         FGraph.AddRelation(ARoutine,Variable,Kind,Resolution,'lexical_def_use_not_runtime_value',Path,L,Tokens[I].Condition);
         if IsWrite and (Stop+2<=Body.LastToken) then
         begin
@@ -800,7 +810,7 @@ begin
       I:=Stop+1;
     end;
     if not IR.Complete then FGraph.Diagnostics.Report('ROUTINE_PARTIAL_PARSE','Routine facts derived from partial syntax; coverage is not complete',Routine.Location);
-  finally Closures.Free; Nested.Free; Args.Free; end;
+  finally WithScopes.Free; Closures.Free; Nested.Free; Args.Free; end;
 end;
 
 function TDPHSemanticAnalyzer.Analyze(AScan: TDPHScan; AIncremental: Boolean): TDPHSemanticGraph;

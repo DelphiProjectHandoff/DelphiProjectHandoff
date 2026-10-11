@@ -4,7 +4,7 @@ interface
 
 uses System.SysUtils, System.Generics.Collections, System.JSON;
 
-const DPHAnalyzerVersion = 'DPH-WP2-3';
+const DPHAnalyzerVersion = 'DPH-WP2-4';
       DPHIRVersion = 1;
       DPHMaxSourceBytes = 16 * 1024 * 1024;
       DPHMaxNesting = 128;

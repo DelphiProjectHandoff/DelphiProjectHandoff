@@ -41,6 +41,53 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure FlowDetailTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
+    CaseRoutine,LabelRoutine,CrossRoutine,WithRoutine,CaseNode,GotoNode,LabelNode,Count,Matches,ElseEdges,Index: Integer;
+    E: TDPHFlowEdge; N: TDPHFlowNode; R: TDPHRelation; D: TDPHDiagnostic; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'FlowCases.pas'),
+    'unit FlowCases; interface type TObj=class Value:Integer; procedure Ping; end; var Value:Integer; '+
+    'procedure Ping; procedure CaseWork(X:Integer); procedure LabelWork; procedure CrossWork; procedure WithWork(C:TObj); '+
+    'implementation procedure Ping; begin end; procedure TObj.Ping; begin end; '+
+    'procedure CaseWork(X:Integer); begin case X of 1,2: Ping; 3..5: begin Ping; Ping; end; else Ping; Ping; end; end; '+
+    'procedure LabelWork; label Done; begin goto Done; Ping; Done: Ping; end; '+
+    'procedure CrossWork; label Done; begin try goto Done; finally Ping; end; Done: Ping; end; '+
+    'procedure WithWork(C:TObj); begin with C do begin Ping; Value:=1; end; end; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'FlowCases.dpr'),'program FlowCasesApp; uses FlowCases in ''FlowCases.pas''; begin end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try
+    Scan:=A.Scan(TPath.Combine(Fixture,'FlowCases.dpr'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        CaseRoutine:=Find(G,'FlowCases.CaseWork','*'); LabelRoutine:=Find(G,'FlowCases.LabelWork','*');
+        CrossRoutine:=Find(G,'FlowCases.CrossWork','*'); WithRoutine:=Find(G,'FlowCases.WithWork','*');
+        CaseNode:=-1; GotoNode:=-1; LabelNode:=-1; Count:=0;
+        for Index:=0 to G.FlowNodes.Count-1 do begin N:=G.FlowNodes[Index];
+          if N.Routine=CaseRoutine then begin if N.Kind='case' then CaseNode:=Index; if N.Kind='ping' then Inc(Count); end;
+          if N.Routine=LabelRoutine then begin if N.Kind='goto' then GotoNode:=Index; if N.Kind='label' then LabelNode:=Index; end;
+        end;
+        Check((CaseNode>=0) and (Count=5),'FLOW01','Case arms and all default statements survive as separate control-flow nodes');
+        Matches:=0; ElseEdges:=0; Found:=False;
+        for E in G.FlowEdges do if E.FromNode=CaseNode then begin
+          if E.Kind='case_match' then Inc(Matches); if E.Kind='case_else' then Inc(ElseEdges); if E.Kind='case_no_match' then Found:=True;
+        end;
+        Check((Matches=2) and (ElseEdges=1) and not Found,'FLOW02','Case labels have separate alternatives and explicit else has no invented fallthrough');
+        Count:=0; Found:=False; for E in G.FlowEdges do if E.FromNode=GotoNode then begin Inc(Count); if (E.ToNode=LabelNode) and (E.Kind='goto') and (E.Resolution='confirmed_static') then Found:=True; end;
+        Check(Found and (Count=1),'FLOW03','Resolved goto targets its label without a false sequential edge');
+        Found:=False; for E in G.FlowEdges do if (G.FlowNodes[E.FromNode].Routine=CrossRoutine) and (E.Kind='unresolved_jump') then Found:=True;
+        Check(Found and not G.Complete,'FLOW04','Goto crossing a finally scope remains explicitly unresolved instead of bypassing cleanup');
+        Found:=False; for E in G.FlowEdges do if (G.FlowNodes[E.FromNode].Routine=WithRoutine) and (E.Kind='with_body') then Found:=True;
+        Check(Found,'FLOW05','With executes its body sequentially rather than as independent possible branches');
+        Found:=False; for R in G.Relations do if (R.FromSymbol=WithRoutine) and (R.Kind='calls') and (R.Resolution='possible_dynamic') then Found:=True;
+        Check(Found,'FLOW06','Unqualified call under with cannot falsely confirm the global candidate');
+        Found:=False; for D in G.Diagnostics do if D.Code='WITH_SCOPE_PARTIAL' then Found:=True;
+        Check(Found,'FLOW07','With member-binding coverage gap is visible in diagnostics');
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure StartupTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
     ProgramRoot,Entry,Init,Final,DepInit,Unused,WorkIndex: Integer; View: TDPHWorkspaceView; Projection: TJSONObject; V: TJSONValue; Found,HasFlow: Boolean; N: TDPHFlowNode;
@@ -238,7 +285,7 @@ begin
         Found:=False; for E in G.FlowEdges do if (E.Kind='possible_handler') and (E.Resolution='possible_dynamic') then Found:=True;
         Check(Found,'CFG04','Typed exception matching remains a possible handler edge');
         Found:=False; for N in G.FlowNodes do if N.Kind='case' then Found:=True;
-        Check(Found and not G.Complete,'CFG05','Case dispatch is explicitly conservative and keeps analysis partial');
+        Check(Found and not G.Complete,'CFG05','Case dispatch is structured while unresolved source calls keep analysis partial');
         Refs:=G.ReverseReferences(G.Symbols[PublicWork].Key);
         try Check(Refs.Count>=4,'IMPACT01','Reverse references include direct calls and callbacks'); finally Refs.Free; end;
         J:=G.Impact([G.Symbols[PublicWork].Key],8,100);
@@ -402,7 +449,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

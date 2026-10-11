@@ -69,7 +69,13 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     acquire startup reachability. Execution with no selection starts at module
     roots. Phase reachability is not a claimed runtime total order. Seven
     focused startup checks pass; semantic suite 80, discovery 88.
-3.4-3.9 Pending:
+3.4 Expanded: explicit case arms/default statement sequences, label nodes,
+    same-finally-scope goto edges without false fallthrough, sequential with
+    bodies and qualified unqualified-member candidates. Missing/ambiguous labels
+    and jumps crossing finally scopes remain explicit partial targets. Seven
+    focused flow checks pass; semantic suite 87. This does not claim a compiler-
+    complete label legality or finally-unwind model.
+3.5-3.9 Pending:
     additional control flow, async, data/SQL, relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
 4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
