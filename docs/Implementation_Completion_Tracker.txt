@@ -56,7 +56,14 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     and resource/form links still rebuild. Seven focused cache checks plus the
     existing semantic cases pass (67 total), including independent clean-build
     equivalence after source and ancestry changes. Status shows reuse counts.
-3.2-3.9 Pending: resolution, startup graphs,
+3.2 Expanded: bounded alias chains, qualified aliases, primitive aliases for
+    overload selection, inherited field/property lookup, indexed property
+    result types and declared read/write accessor links. Unknown argument types
+    never turn a single candidate into confirmed dispatch. Generic substitution,
+    compiler-exact overload conversions and advanced RTTI remain qualified gaps.
+    Six focused resolution checks pass; full semantic suite now 73. Cached open
+    also compares semantic analyzer version before claiming unchanged analysis.
+3.3-3.9 Pending: startup graphs,
     additional control flow, async, data/SQL, relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
 4.1-4.10 Pending: hierarchy, detailed drill-down, execution/form/data graphs,

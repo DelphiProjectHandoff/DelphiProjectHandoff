@@ -27,10 +27,13 @@ type
     FRoutineCache: TObjectDictionary<string,TDPHRoutineSummary>;
     FCacheWeight: Integer;
     FReusedRoutines,FRecomputedRoutines: Integer;
+    FCallExact: Boolean;
     function NodeKey(const AFile: string; ANode: Integer): string;
     function ParentSymbol(const AFile: string; IR: TDPHParseResult; ANode: Integer): Integer;
     function AddSymbol(S: TDPHSymbol): Integer;
     function FindType(const AName,AUnit: string): Integer;
+    function FindDeclaredType(const AName,AUnit: string): Integer;
+    function CanonicalType(const AName,AUnit: string): string;
     function FindVariable(const AName: string; ARoutine: Integer): Integer;
     function ResolveValue(const APath: string; ARoutine: Integer): Integer;
     function Candidates(const AName: string; ARoutine: Integer): TArray<Integer>;
@@ -39,6 +42,7 @@ type
     procedure Header(S: TDPHSymbol; const Tokens: TDPHTokens; AStart,AEnd: Integer);
     procedure Collect(const AFile: string; IR: TDPHParseResult);
     procedure Variables(const AFile: string; IR: TDPHParseResult);
+    procedure PropertyAccessors(const AFile: string; IR: TDPHParseResult);
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
@@ -165,17 +169,50 @@ begin
   if S.Owner>=0 then FGraph.AddRelation(S.Owner,Result,'owns','confirmed_static','lexical_declaration',S.Name,S.Location,S.Condition);
 end;
 
-function TDPHSemanticAnalyzer.FindType(const AName,AUnit: string): Integer;
-var Items: TList<Integer>; I: Integer; S: TDPHSymbol; Found: Integer; Imports: TList<string>; U: string;
+function TDPHSemanticAnalyzer.FindDeclaredType(const AName,AUnit: string): Integer;
+var Items: TList<Integer>; I: Integer; S: TDPHSymbol; Found: Integer; Imports: TList<string>; U,Name: string;
 begin
+  Name:=AName; I:=Pos('<',Name); if I>0 then Name:=Copy(Name,1,I-1);
   Found:=-1;
-  if FNames.TryGetValue(LowerCase(AUnit+'.'+AName),Items) or FNames.TryGetValue(LowerCase(AName),Items) then
+  if FNames.TryGetValue(LowerCase(AUnit+'.'+Name),Items) or FNames.TryGetValue(LowerCase(Name),Items) then
     for I in Items do if FGraph.Symbols[I].Kind='type' then begin if Found>=0 then Exit(-1); Found:=I; end;
   if Found>=0 then Exit(Found);
   if FImports.TryGetValue(LowerCase(AUnit),Imports) then
-    for U in Imports do if FNames.TryGetValue(LowerCase(U+'.'+AName),Items) then
+    for U in Imports do if FNames.TryGetValue(LowerCase(U+'.'+Name),Items) then
       for I in Items do begin S:=FGraph.Symbols[I]; if (S.Kind='type') and S.Exported then begin if Found>=0 then Exit(-1); Found:=I; end; end;
   Result:=Found;
+end;
+function TDPHSemanticAnalyzer.FindType(const AName,AUnit: string): Integer;
+var Pass,Next: Integer; Name,UnitName: string; Seen: TList<Integer>;
+begin
+  Seen:=TList<Integer>.Create;
+  try
+    Name:=AName; UnitName:=AUnit; Result:=-1;
+    for Pass:=0 to 32 do begin
+      Next:=FindDeclaredType(Name,UnitName); if Next<0 then Exit;
+      if Seen.Contains(Next) then Exit(-1); Seen.Add(Next); Result:=Next;
+      Name:=FGraph.Symbols[Next].TypeName; UnitName:=FGraph.Symbols[Next].UnitName;
+      if (Name='') or MatchText(Name,['class','record','interface','dispinterface','object','type','array','set','procedure','function','reference','packed']) then Exit;
+    end;
+    Result:=-1;
+  finally Seen.Free; end;
+end;
+function TDPHSemanticAnalyzer.CanonicalType(const AName,AUnit: string): string;
+var Index,Pass,GenericAt: Integer; UnitName,GenericArguments: string; Seen: TList<Integer>;
+begin
+  Result:=LowerCase(AName); UnitName:=AUnit; Seen:=TList<Integer>.Create;
+  try
+    for Pass:=0 to 32 do begin
+      Index:=FindDeclaredType(Result,UnitName); if Index<0 then Exit;
+      if Seen.Contains(Index) then Exit(''); Seen.Add(Index);
+      if MatchText(FGraph.Symbols[Index].TypeName,['class','record','interface','dispinterface','object','type','array','set','procedure','function','reference','packed','(','^']) then begin
+        GenericArguments:=''; GenericAt:=Pos('<',Result); if GenericAt>0 then GenericArguments:=Copy(Result,GenericAt,MaxInt);
+        Exit(LowerCase(FGraph.Symbols[Index].QualifiedName)+GenericArguments);
+      end;
+      Result:=LowerCase(FGraph.Symbols[Index].TypeName); UnitName:=FGraph.Symbols[Index].UnitName;
+    end;
+    Result:='';
+  finally Seen.Free; end;
 end;
 function TDPHSemanticAnalyzer.FindVariable(const AName: string; ARoutine: Integer): Integer;
 var Scope,I,OwnerType,Pass,Base: Integer; S: TDPHSymbol; R: TDPHRelation; Qualified: string; Items: TList<Integer>;
@@ -199,7 +236,7 @@ begin
   end;
 end;
 function TDPHSemanticAnalyzer.ResolveValue(const APath: string; ARoutine: Integer): Integer;
-var Parts: TArray<string>; I,TypeIndex,Member: Integer; Items: TList<Integer>; U: string;
+var Parts: TArray<string>; I,TypeIndex,Member,Pass,Base: Integer; Items: TList<Integer>; U: string;
 begin
   Parts:=APath.Split(['.']); Result:=-1; if Length(Parts)=0 then Exit;
   U:=FGraph.Symbols[ARoutine].UnitName;
@@ -211,8 +248,12 @@ begin
     if Result<0 then Exit;
     if FGraph.Symbols[Result].Kind='type' then TypeIndex:=Result else TypeIndex:=FindType(FGraph.Symbols[Result].TypeName,U);
     Result:=-1; if TypeIndex<0 then Exit;
-    if FNames.TryGetValue(LowerCase(FGraph.Symbols[TypeIndex].QualifiedName+'.'+Parts[I]),Items) then
-      for Member in Items do if MatchText(FGraph.Symbols[Member].Kind,['field','property']) then begin Result:=Member; Break; end;
+    for Pass:=0 to 32 do begin
+      if FNames.TryGetValue(LowerCase(FGraph.Symbols[TypeIndex].QualifiedName+'.'+Parts[I]),Items) then
+        for Member in Items do if MatchText(FGraph.Symbols[Member].Kind,['field','property']) then begin Result:=Member; Break; end;
+      if Result>=0 then Break;
+      if not FBaseTypes.TryGetValue(TypeIndex,Base) or (Base<0) then Break; TypeIndex:=Base;
+    end;
   end;
 end;
 function TDPHSemanticAnalyzer.Candidates(const AName: string; ARoutine: Integer): TArray<Integer>;
@@ -304,11 +345,12 @@ begin
   end;
   if TryStrToInt64(AText,Number) then Exit('integer');
   if MatchText(AText,['True','False']) then Exit('boolean');
-  V:=ResolveValue(AText,ARoutine); if V>=0 then Result:=LowerCase(FGraph.Symbols[V].TypeName);
+  V:=ResolveValue(AText,ARoutine); if V>=0 then Result:=CanonicalType(FGraph.Symbols[V].TypeName,FGraph.Symbols[V].UnitName);
 end;
 function TDPHSemanticAnalyzer.SelectCall(const APath: string; ARoutine: Integer; const Arguments: TArray<string>): TArray<Integer>;
 var Items,Exact: TList<Integer>; Candidate,I: Integer; S: TDPHSymbol; Matches,Known: Boolean; TypeName: string;
 begin
+  FCallExact:=False;
   Items:=TList<Integer>.Create; Exact:=TList<Integer>.Create;
   try
     if (not APath.Contains('.')) and (FindVariable(APath,ARoutine)>=0) then Exit(nil);
@@ -319,11 +361,11 @@ begin
       for I:=0 to High(Arguments) do
       begin
         TypeName:=ExpressionType(Arguments[I],ARoutine);
-        if TypeName='' then Known:=False else if not SameText(TypeName,S.ParameterTypes[I]) then Matches:=False;
+        if TypeName='' then Known:=False else if not SameText(TypeName,CanonicalType(S.ParameterTypes[I],S.UnitName)) then Matches:=False;
       end;
       if Matches then begin Items.Add(Candidate); if Known then Exact.Add(Candidate); end;
     end;
-    if Exact.Count>0 then Result:=Exact.ToArray else Result:=Items.ToArray;
+    if Exact.Count>0 then begin FCallExact:=True; Result:=Exact.ToArray; end else Result:=Items.ToArray;
   finally Exact.Free; Items.Free; end;
 end;
 
@@ -419,7 +461,13 @@ begin
         S.Kind:='type'; S.QualifiedName:=UnitName+'.'+N.Name;
         if OwnerIndex>=0 then S.QualifiedName:=FGraph.Symbols[OwnerIndex].QualifiedName+'.'+N.Name;
         J:=N.FirstToken; while (J<=N.LastToken) and (Tokens[J].Text<>'=') do Inc(J);
-        if J<N.LastToken then S.TypeName:=LowerCase(Tokens[J+1].Text);
+        if J<N.LastToken then begin
+          S.TypeName:=LowerCase(Tokens[J+1].Text);
+          if (Tokens[J+1].Kind=tkIdentifier) and not MatchText(S.TypeName,['class','record','interface','dispinterface','object','type','array','set','procedure','function','reference','packed']) then begin
+            S.TypeName:=''; K:=J+1;
+            while (K<=N.LastToken) and (Tokens[K].Text<>';') do begin S.TypeName:=S.TypeName+LowerCase(Tokens[K].Text); Inc(K); end;
+          end;
+        end;
       end
       else
       begin
@@ -466,7 +514,7 @@ begin
 end;
 
 procedure TDPHSemanticAnalyzer.Variables(const AFile: string; IR: TDPHParseResult);
-var N: TDPHIRNode; S,Routine: TDPHSymbol; Tokens: TDPHTokens; I,J,K,Colon,Owner,Index,TypeIndex: Integer;
+var N: TDPHIRNode; S,Routine: TDPHSymbol; Tokens: TDPHTokens; I,J,K,Colon,Owner,Index,TypeIndex,Depth: Integer;
     Name,TypeName: string; Names: TList<string>;
   procedure VariableSymbol(const VName,VType,VKind: string; VOwner: Integer; const Location: TDPHRange);
   var V: TDPHSymbol;
@@ -492,10 +540,14 @@ begin
       end;
       if not MatchText(N.Kind,['field','property','declaration_var','declaration_threadvar']) then Continue;
       Owner:=ParentSymbol(AFile,IR,N.Parent); if Owner<0 then Continue; Names.Clear;
-      Colon:=N.FirstToken;
-      while (Colon<=N.LastToken) and (Tokens[Colon].Text<>':') do Inc(Colon);
+      Colon:=N.FirstToken; Depth:=0;
+      while Colon<=N.LastToken do begin
+        if MatchText(Tokens[Colon].Text,['[','(']) then Inc(Depth) else if MatchText(Tokens[Colon].Text,[']',')']) then Dec(Depth);
+        if (Depth=0) and (Tokens[Colon].Text=':') then Break; Inc(Colon);
+      end;
       if Colon>N.LastToken then Continue;
-      for J:=N.FirstToken to Colon-1 do if (Tokens[J].Kind=tkIdentifier) and not SameText(Tokens[J].Text,'property') then Names.Add(Tokens[J].Text);
+      if N.Kind='property' then Names.Add(N.Name)
+      else for J:=N.FirstToken to Colon-1 do if (Tokens[J].Kind=tkIdentifier) and not SameText(Tokens[J].Text,'property') then Names.Add(Tokens[J].Text);
       TypeName:=''; J:=Colon+1;
       while (J<=N.LastToken) and not MatchText(Tokens[J].Text,[';','=','read','write','default','stored']) do
       begin TypeName:=TypeName+Tokens[J].Text; Inc(J); end;
@@ -508,6 +560,29 @@ begin
       end;
     end;
   finally Names.Free; end;
+end;
+
+procedure TDPHSemanticAnalyzer.PropertyAccessors(const AFile: string; IR: TDPHParseResult);
+var N: TDPHIRNode; Tokens: TDPHTokens; Owner,PropertyIndex,Target,J: Integer;
+    Items: TList<Integer>; Found: TArray<Integer>; Kind,Name: string;
+begin
+  Tokens:=FTokens[AFile];
+  for N in IR.Nodes do if N.Kind='property' then begin
+    Owner:=ParentSymbol(AFile,IR,N.Parent); if Owner<0 then Continue;
+    if not FNames.TryGetValue(LowerCase(FGraph.Symbols[Owner].QualifiedName+'.'+N.Name),Items) or (Items.Count<>1) then Continue;
+    PropertyIndex:=Items[0];
+    for J:=N.FirstToken to N.LastToken-1 do if MatchText(Tokens[J].Text,['read','write']) then begin
+      Kind:='read_accessor'; if SameText(Tokens[J].Text,'write') then Kind:='write_accessor'; Name:=Tokens[J+1].Text;
+      Found:=Candidates(Name,Owner); Target:=-1;
+      if Length(Found)=1 then Target:=Found[0]
+      else if Length(Found)=0 then Target:=FindVariable(Name,Owner);
+      if Target>=0 then FGraph.AddRelation(PropertyIndex,Target,Kind,'confirmed_static','declared_property_accessor',Name,Tokens[J+1].Location,N.Condition)
+      else begin
+        FGraph.AddRelation(PropertyIndex,-1,Kind,'unresolved','property_accessor_ambiguous_or_missing',Name,Tokens[J+1].Location,N.Condition);
+        FGraph.Diagnostics.Report('PROPERTY_ACCESSOR_UNRESOLVED',Name,Tokens[J+1].Location);
+      end;
+    end;
+  end;
 end;
 
 procedure TDPHSemanticAnalyzer.Dependencies(const AFile: string; IR: TDPHParseResult);
@@ -625,7 +700,7 @@ begin
       if IsCall and not MatchText(Path,['Assigned','Default','Length','SetLength','High','Low','Ord','Chr','Inc','Dec','SizeOf','New','Dispose','Include','Exclude']) and (FindType(Path,Routine.UnitName)<0) then
       begin
         Matches:=SelectCall(Path,ARoutine,Args.ToArray);
-        Resolution:='confirmed_static'; if Length(Matches)<>1 then Resolution:='possible_dynamic';
+        Resolution:='confirmed_static'; if (Length(Matches)<>1) or not FCallExact then Resolution:='possible_dynamic';
         if Length(Matches)=0 then
         begin
           Variable:=ResolveValue(Path,ARoutine); Resolution:='unresolved';
@@ -714,6 +789,7 @@ begin
         FTokens.Add(Item.RelativePath,Tokens.ToArray); Collect(Item.RelativePath,IR);
       end;
       for Item in AScan.Inventory.Manifest do if AScan.Results.TryGetValue(Item.RelativePath,IR) and (Length(FTokens[Item.RelativePath])>0) then Variables(Item.RelativePath,IR);
+      for Item in AScan.Inventory.Manifest do if AScan.Results.TryGetValue(Item.RelativePath,IR) and (Length(FTokens[Item.RelativePath])>0) then PropertyAccessors(Item.RelativePath,IR);
       for Item in AScan.Inventory.Manifest do if AScan.Results.TryGetValue(Item.RelativePath,IR) and (Length(FTokens[Item.RelativePath])>0) then Dependencies(Item.RelativePath,IR);
       BindingHash:=THashSHA2.Create;
       BindingHash.Update(DPHSemanticVersion+#0+AScan.Inventory.Root+#0+FGraph.Configuration);

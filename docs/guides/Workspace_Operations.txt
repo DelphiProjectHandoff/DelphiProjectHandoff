@@ -56,6 +56,10 @@ BOMs take precedence; decoding must round-trip the exact source bytes. DPH does
 not guess a legacy encoding. Unsupported encodings leave diagnostic evidence.
 
 Resources and external definitions
+Object references now include declared property read/write accessors. An indexed
+property's result type is separate from its index parameters. Alias and inherited
+member lookup link to captured declarations. A unique call candidate with unknown
+argument types remains qualified, since a source parser cannot prove dispatch.
 The Explorer kind selector includes resource and definition. JSON, XML and INI
 entries have hierarchy and source evidence. RC lines and RES directories retain
 explicit partial coverage for macros and opaque compiled payloads. JSON/XML

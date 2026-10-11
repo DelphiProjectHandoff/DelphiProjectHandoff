@@ -40,6 +40,42 @@ function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
 
+procedure ResolutionTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
+    WorkIndex,PropertyIndex,Getter,Setter,TakeInteger,Solo,Index: Integer; R: TDPHRelation; Found: Boolean;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'Resolution.pas'),
+    'unit Resolution; interface type TCount=Integer; TBase=class private FValue:TCount; '+
+    'function GetValue:TCount; procedure SetValue(V:TCount); public function GetItem(A:Integer; B:Integer):TCount; '+
+    'property Value:TCount read GetValue write SetValue; property Items[A:Integer; B:Integer]:TCount read GetItem; end; '+
+    'TChild=class(TBase) end; TAlias=TChild; procedure Work; procedure Take(V:Integer); overload; procedure Take(V:string); overload; procedure Solo(V:Integer); '+
+    'implementation function TBase.GetValue:TCount; begin Result:=FValue; end; procedure TBase.SetValue(V:TCount); begin FValue:=V; end; '+
+    'function TBase.GetItem(A:Integer; B:Integer):TCount; begin Result:=FValue; end; '+
+    'procedure Take(V:Integer); begin end; procedure Take(V:string); begin end; procedure Solo(V:Integer); begin end; '+
+    'procedure Work; var C:TAlias; N:TCount; begin Take(N); N:=C.Value; C.Value:=N; N:=C.Items[1,2]; Solo(UnknownValue); end; end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try
+    TFile.WriteAllText(TPath.Combine(Fixture,'Resolution.dpr'),'program ResolutionApp; uses Resolution in ''Resolution.pas''; begin end.',TEncoding.UTF8);
+    Scan:=A.Scan(TPath.Combine(Fixture,'Resolution.dpr'),'Debug','Win32',[],[]);
+    try
+      G:=Analyzer.Analyze(Scan);
+      try
+        WorkIndex:=Find(G,'Resolution.Work','*'); PropertyIndex:=Find(G,'Resolution.TBase.Value','*');
+        Getter:=Find(G,'Resolution.TBase.GetValue','*'); Setter:=Find(G,'Resolution.TBase.SetValue','*');
+        TakeInteger:=Find(G,'Resolution.Take','(integer):'); Solo:=Find(G,'Resolution.Solo','*');
+        Check(Relation(G,WorkIndex,TakeInteger,'calls','confirmed_static'),'RESOLVE01','Primitive type alias selects the correct overload');
+        Check(Relation(G,PropertyIndex,Getter,'read_accessor','confirmed_static') and Relation(G,PropertyIndex,Setter,'write_accessor','confirmed_static'),'RESOLVE02','Property read/write declarations link to their actual accessor methods');
+        Check(Relation(G,WorkIndex,PropertyIndex,'reads','inferred') and Relation(G,WorkIndex,PropertyIndex,'writes','inferred'),'RESOLVE03','Class aliases and inherited properties retain def-use links');
+        Index:=Find(G,'Resolution.TBase.Items','*');
+        Check((Index>=0) and (G.Symbols[Index].TypeName='TCount') and (Find(G,'Resolution.TBase.A','*')<0),'RESOLVE04','Indexed property parameters are not mistaken for property names or result types');
+        Check(Relation(G,WorkIndex,Solo,'calls','possible_dynamic') and not Relation(G,WorkIndex,Solo,'calls','confirmed_static'),'RESOLVE05','A unique candidate with unknown argument type remains qualified');
+        Found:=False; for R in G.Relations do if (R.FromSymbol=WorkIndex) and (R.ToSymbol=Index) and (R.Kind='reads') then Found:=True;
+        Check(Found,'RESOLVE06','Indexed inherited property reads have a captured property target');
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
+
 procedure CacheBindingTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan,Changed: TDPHScan;
     Graph,Incremental,Full: TDPHSemanticGraph; Source: string;
@@ -329,7 +365,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

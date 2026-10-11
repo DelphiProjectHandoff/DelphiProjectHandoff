@@ -1,0 +1,79 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+tests\DPH.Tests.Semantics.dpr(210) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+5222 lines, 0.47 seconds, 4549392 bytes code, 231780 bytes data.
+PASS SYM01: Method prototype and implementation share one identity
+PASS SYM02: Overload identities retain parameter types
+PASS SYM03: Cross-unit class and interface ancestry
+PASS CALL01: Literal argument types select separate overloads
+PASS CALL02: Public routine resolved through uses
+PASS CALL03: Implementation-private cross-unit routine stays unresolved
+PASS CALL04: Virtual receiver is a possible dynamic target
+PASS CALL05: Interface dispatch is a possible dynamic target
+PASS CALL07: Explicit inherited invocation resolves to the ancestor implementation
+PASS UNCERTAIN01: Unknown overload argument retains multiple possible targets
+PASS UNCERTAIN02: Known incompatible argument does not become a confirmed call
+PASS UNCERTAIN04: Unknown parameterless invocation remains an explicit unresolved call
+PASS UNCERTAIN05: Unknown read on an assignment right-hand side remains explicit
+PASS CALL06: Local procedural variable shadows a public routine
+PASS ASYNC01: Anonymous local-var callback passed and possibly scheduled
+PASS ASYNC02: Callback body uses its own local lexical scope
+PASS ASYNC03: Nested queue callback retains a second asynchronous boundary
+PASS EVENT01: Serialized event binds to its form method
+PASS NEG01: Comment containing a fake call produces no semantic call
+PASS CFG_SCOPE: CFG edges never enter another routine or callback
+PASS CFG01: Branch, loop, break and continue transfers
+PASS CFG02: Return and raise traverse finally before their destinations
+PASS CFG03: Loop break crosses its finally body before leaving the loop
+PASS CFG04: Typed exception matching remains a possible handler edge
+PASS CFG05: Case dispatch is explicitly conservative and keeps analysis partial
+PASS IMPACT01: Reverse references include direct calls and callbacks
+PASS IMPACT02: Bounded reverse traversal reaches possible dependents
+PASS IMPACT04: Each non-seed impact result links its derivation evidence
+PASS IMPACT03: Impact budget also bounds multiple seeds
+PASS DEF01: Def-use facts coexist with explicit unresolved coverage
+PASS PROVENANCE: Every relation has a captured source range and hash
+PASS INC_CACHE01: Unchanged binding context reuses routine semantics
+PASS INC_CACHE02: Explicit full analysis rebuilds semantics independently of its cache
+PASS INCR01: Full and cached syntax produce identical complete semantic graphs
+PASS VAR01: Same source under changed defines has distinct conditional semantic identities
+PASS STORE_CONTEXT: Same byte manifest cannot mix semantic facts from different defines
+PASS STORE01: Partial semantic generation cannot become published head
+PASS STORE02: Semantic entities, evidence, relations and normalized CFG satisfy SQLite constraints
+PASS SAFE01: Captured semantic fixture bytes remain unchanged
+PASS IDENTITY01: Whitespace shift preserves symbol identity while changing provenance
+PASS INC_CACHE03: Source change rebuilds affected file routines and reuses unaffected routines
+PASS INC_CACHE04: Affected routine reuse exactly matches an independent clean semantic rebuild
+PASS STORE03: Complete empty fixture publishes atomically
+PASS STORE04: Published head points to the matching semantic generation
+PASS STORE05: Partial reassessment retains the previous complete head
+PASS STORE_CFG01: CFG API rejects an edge between different routines
+PASS STORE_CFG02: CFG API rejects an out-of-capture byte range
+PASS STORE_CFG03: CFG API rejects a routine without a version in this generation
+PASS STORE06: Mid-analysis source change supersedes semantics and requests reassessment
+PASS STORE07: Negative generation and CFG checks preserve database integrity
+PASS UNCERTAIN03: Executable module entry outside routine coverage is explicitly partial
+PASS RESOLVE01: Primitive type alias selects the correct overload
+PASS RESOLVE02: Property read/write declarations link to their actual accessor methods
+PASS RESOLVE03: Class aliases and inherited properties retain def-use links
+PASS RESOLVE04: Indexed property parameters are not mistaken for property names or result types
+PASS RESOLVE05: A unique candidate with unknown argument type remains qualified
+PASS RESOLVE06: Indexed inherited property reads have a captured property target
+PASS INC_CACHE05: Ancestry change invalidates dependent routine bindings across unchanged files
+PASS INC_CACHE06: Changed ancestry resolves the unchanged caller to its new inherited method
+PASS INC_CACHE07: Binding-invalidated semantics match a clean full rebuild
+PASS DEF01: Literal loader acquires only its bounded referenced definition file
+PASS DEF02: Referenced JSON definitions receive parsed resource IR
+PASS DEF03: Definition source links to its consuming routine without claiming compiler resolution
+PASS DEF04: Configuration dependency exposes lexical loader order with runtime precedence qualified
+PASS DEF05: Resource and loader relationships persist with valid captured source evidence
+PASS REF01: Reference btnConvert.OnClick resolves to btnConvertClick
+PASS REF02: Reference anonymous worker has an explicit possible asynchronous boundary
+PASS REF03: Reference callback resolves through ConversionThreadProc to Engine.Convert
+PASS REF04: DryRunPreview condition is located in engine control flow
+PASS REF05: Report model-to-renderer relationship has typed static evidence
+PASS REF06: Missing framework and opaque constructs keep reference analysis partial
+PASS REF07: Full and incremental reference graphs are exactly equivalent, including bounded cache fallback
+PASS REF08: Reference capture rehashes unchanged after semantics
+PASS WP3: 73 checks; evidence: C:\New Delphi Projects\Delphi Project Handoff\bin\wp3-tests-{BF5EC41B-05B1-4938-A5BB-834ABCF8AD9B}

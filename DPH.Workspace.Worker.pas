@@ -268,6 +268,7 @@ begin
                 if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
                 Changed:=(Cached=nil) or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>Cached.GetValue<TJSONObject>('semantics').GetValue<string>('input_fingerprint'))
                   or (Cached.GetValue<string>('syntax.analyzer','')<>DPHAnalyzerVersion)
+                  or (Cached.GetValue<string>('semantics.analyzer','')<>DPHSemanticVersion)
                   or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
