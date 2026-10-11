@@ -1,0 +1,1 @@
+{"schema_version":1,"files":5,"complete":true,"objects":["Example:TExample","Button:TButton"],"binding":"OnClick=Click","routines":["TExample.Click","TExample.SetValue","TExample.SetValue"],"conditions":["FEATURE"]}

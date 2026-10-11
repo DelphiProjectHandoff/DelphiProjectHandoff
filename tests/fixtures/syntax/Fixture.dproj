@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup><MainSource>Fixture.dpr</MainSource><Base>true</Base></PropertyGroup>
+  <PropertyGroup Condition="'$(Config)' == 'Debug' And '$(Platform)' == 'Win32'">
+    <DCC_Define>FEATURE;$(DCC_Define)</DCC_Define>
+  </PropertyGroup>
+  <ItemGroup><DelphiCompile Include="$(MainSource)"/><DCCReference Include="Model.pas"/></ItemGroup>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+</Project>

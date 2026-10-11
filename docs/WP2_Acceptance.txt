@@ -1,0 +1,64 @@
+DPH WP2 acceptance record: safe inventory and syntax
+Last changed: 10 October 2026
+
+Status: implementation and validation complete; submitted for owner review.
+WP3 has not started and requires separate explicit approval.
+
+Authorization and backup
+Owner approved WP1 and directed WP2 to proceed. The existing user-approved Windows desktop target is used. Global agents.md, master specification and handoff were read; their instructions were distinguished from the owner's implementation authorization.
+Pre-change backup: D:\DPH Backups\WP2_PreChange_20261010_193242.
+All 2,683 original files, including Git and the reference checkout, were SHA-256 verified before edits. DPH_Backup_Verification.json remains in that backup. No post-change disk backup was made.
+Before WP2, local main, origin/main and private/main matched 58ca91de8f247ff7131c1ce2ecb7cbf74b1ff9b2. Both remotes were fetched and checked again before the WP2 commit.
+
+Delivered
+- Bounded project/group/package inventory with explicit external roots, content fingerprints and missing/excluded-input diagnostics.
+- Encoding-aware read-only byte acquisition; original-byte offsets and line/column mappings.
+- Trivia-preserving lexer and tri-state conditional/include preprocessor.
+- Version 1 structural Pascal/project/form IR, partial recovery and quantified opaque syntax.
+- Passive text and binary DFM/FMX hierarchy, serialized property and event-name extraction.
+- Headless scan cache, exact full/incremental equivalence fixtures and revision-aware staging/publication through WP1.
+- Stable syntax identities across harmless offset shifts; manual notes retained across parser generations.
+- Deterministic golden, malformed/conditional, encoding, boundary, package and resource fixtures.
+- Reproducible build, acceptance, reference coverage and unchanged-input records.
+The application compiles the new units; the FMX design-time shell is unchanged. No runtime UI construction, class helpers, semantic graph implementation, translation, or AI adapter was added.
+
+Final validation
+Command: powershell -NoProfile -ExecutionPolicy Bypass -File tools\validate-wp2.ps1 (elevated).
+Application: Win32 Debug MSBuild PASS.
+WP0: FMX resource/component smoke PASS.
+WP1: all 46 storage checks PASS, including crash recovery, WAL consistency, generation constraints, migration rollback and manual retention.
+WP2: all 68 checks PASS; exact per-check results are docs\wp2-validation.json.
+Input verification: all 2,430 tracked pinned-reference files, 9 fixture files and 3 instruction files were checked before and after validation: 2,442 inputs, zero changed.
+Compiler: RAD Studio 37.0.59082.6021. SQLite schema remains 2; parser IR schema is 1.
+Expected build warning W1002 identifies GetFinalPathNameByHandle as Windows-specific. This implements the approved Windows initial target and verifies the path of the actual opened source handle. No build errors occurred.
+Full log: docs\wp2-build.log. Compiler/source fingerprints and input verification: docs\wp2-input-validation.json.
+
+Pinned reference result
+Tag v6.0.0, commit e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d.
+Selected VCL2FMXConverter.dproj, Debug/Win32, explicit MSWINDOWS and WIN32 defines; no external source roots were whitelisted and no build imports were executed.
+Bounded manifest: 28 available inputs and 63 missing framework/RTL unit paths. This is the selected project graph, not the 2,430-file repository inventory.
+IR: 27 parsed inputs, 76,847 structural nodes, 183,655 significant Pascal tokens, 580 opaque tokens. These counts do not assert compiler/type/semantic correctness.
+MainForm.fmx: complete structural parse; 130 objects, 1,260 property overrides, 25 serialized event-name bindings (1,415 nodes).
+btnConvert OnClick = btnConvertClick: MainForm.fmx byte range [24974,25007), line 420.
+TfrmMain.btnConvertClick declaration: MainForm.pas [5233,5276), line 181.
+TfrmMain.btnConvertClick implementation: MainForm.pas [73412,76778), line 1996.
+These are independent syntax facts. Confirming the binding through class/unit resolution and analyzing its call chain belongs to WP3.
+Overall reference analysis is PARTIAL: 512 diagnostics (201 unavailable-file occurrences for 63 distinct paths, 170 opaque syntax, 131 statement-separator errors, 6 expected-token errors, 3 unknown project conditions and 1 opaque resource). Its partial result cannot replace a completed knowledge head.
+Per-file counts/hashes: docs\wp2-reference-validation.json. Full derived diagnostic IR is retained only in ignored bin\wp2-tests-* test output.
+
+Acceptance mapping
+AT-02 foundation: PASS for serialized hierarchy, properties, text/binary fixtures and pinned MainForm.fmx. The Explorer presentation belongs to WP4.
+AT-03 foundation: PASS for btnConvert event text and matching declaration/implementation syntax ranges; confirmed semantic resolution remains WP3.
+AT-11 foundation: PASS for exact fingerprint changes, superseded capture, modification/stale flags and reassessment request.
+AT-12 / AC-17 foundation: PASS for deterministic full/incremental syntax equivalence and source-offset identity continuity. Semantic graph equivalence is deferred until graphs exist.
+AT-13 persistence regression: PASS; manual note survives new syntax generations.
+AT-14: PASS; malformed, conditional, missing, excluded, oversized and unsupported inputs remain visibly partial and cannot replace a complete head.
+AT-16: PASS for all pinned reference bytes, fixture/instruction verification, and captured read-only source fingerprints. No analyzed project, build hook, script or reference executable was run.
+Other acceptance items remain assigned to their approved later work packages. This record does not claim WP7 owner acceptance or complete Delphi grammar coverage.
+
+Limits and decisions
+See docs\WP2_Parser_Contract.txt for acquisition limits, supported syntax, configuration responsibilities and persistence semantics. Legacy code pages need explicit selection; unsupported resources remain opaque; shared sources under conflicting project defines are partial. Syntax identities are not yet semantic identities. The in-memory cache is deliberately bounded and conservative; file watching, automatic worker scheduling, persistent parse caching, semantic resolution, CFG, impact and UI integration remain later work.
+No source snapshots or reference-code adaptation were introduced. Original instruction files and migration checksums remain unchanged.
+
+Git completion
+The reviewed WP2 implementation, fixtures and records are committed together and pushed to both the public origin and private backup remote. Verify the exact final commit with git log -1; the acceptance file is part of that commit and therefore does not embed its own hash.

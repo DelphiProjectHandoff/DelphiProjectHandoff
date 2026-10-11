@@ -41,7 +41,9 @@ type
     function BeginGeneration(AConfigurationID: Int64; const AAnalyzerVersion: string;
       const AFiles: TDPHManifest): Int64;
     function AddSourceEntity(AGenerationID: Int64; const APath, AKey,
-      AKind, AName, ASignature: string; AStartOffset, AEndOffset: Int64): Int64;
+      AKind, AName, ASignature: string; AStartOffset, AEndOffset: Int64;
+      const AStructuralJSON: string = '{}'): Int64;
+    procedure AddDiagnostic(AGenerationID: Int64; const ASeverity,ACode,AMessage,ARangeJSON: string);
     function AddEvidence(AGenerationID: Int64; const APath, ARangeJSON,
       AKind, APayload, AVerification: string): Int64;
     procedure AddRelationship(AGenerationID, AFromEntityID, AToEntityID,
@@ -527,12 +529,14 @@ begin
 end;
 
 function TDPHKnowledgeStore.AddSourceEntity(AGenerationID: Int64;
-  const APath, AKey, AKind, AName, ASignature: string; AStartOffset, AEndOffset: Int64): Int64;
+  const APath, AKey, AKind, AName, ASignature: string; AStartOffset, AEndOffset: Int64;
+  const AStructuralJSON: string): Int64;
 var
   Query: TFDQuery;
   FileID, RevisionID: Int64;
 begin
   RequireRunning(AGenerationID);
+  if Scalar('SELECT json_valid(:value)',[AStructuralJSON])<>1 then raise EDPHStorage.Create('Invalid structural JSON');
   Query := NewQuery('SELECT gf.file_id,gf.file_revision_id,fr.size_bytes FROM generation_files gf '+
     'JOIN source_files sf ON sf.file_id=gf.file_id JOIN file_revisions fr ON fr.file_revision_id=gf.file_revision_id '+
     'WHERE gf.generation_id=:generation AND sf.canonical_relpath=:path',[AGenerationID,APath]);
@@ -550,10 +554,19 @@ begin
     if Scalar('SELECT owner_file_id FROM entities WHERE entity_id=:id',[Result]) <> FileID then
       raise EDPHStorage.Create('Entity moved between files; continuity requires review');
     FConnection.ExecSQL('INSERT INTO entity_versions(entity_id,project_id,generation_id,signature,structural_json,'+
-      'source_revision_id,start_offset,end_offset,analysis_status) VALUES(:entity,1,:generation,:signature,''{}'',:revision,:start,:finish,''partial'')',
-      [Result,AGenerationID,ASignature,RevisionID,AStartOffset,AEndOffset]);
+      'source_revision_id,start_offset,end_offset,analysis_status) VALUES(:entity,1,:generation,:signature,:structure,:revision,:start,:finish,''partial'')',
+      [Result,AGenerationID,ASignature,AStructuralJSON,RevisionID,AStartOffset,AEndOffset]);
     FConnection.Commit;
   except FConnection.Rollback; raise; end;
+end;
+
+procedure TDPHKnowledgeStore.AddDiagnostic(AGenerationID: Int64;
+  const ASeverity,ACode,AMessage,ARangeJSON: string);
+begin
+  RequireRunning(AGenerationID);
+  if Scalar('SELECT json_valid(:value)',[ARangeJSON])<>1 then raise EDPHStorage.Create('Invalid diagnostic range JSON');
+  FConnection.ExecSQL('INSERT INTO diagnostics(project_id,generation_id,severity,code,message,source_range_json) '+
+    'VALUES(1,:generation,:severity,:code,:message,:range)',[AGenerationID,ASeverity,ACode,AMessage,ARangeJSON]);
 end;
 
 function TDPHKnowledgeStore.AddEvidence(AGenerationID: Int64;

@@ -1,0 +1,12 @@
+object Example: TExample
+  Width = 640
+  Height = 480
+  Caption = 'Read only'
+  object Button: TButton
+    Position.X = 10.0
+    OnClick = Click
+    Items.Strings = (
+      'First'
+      'Second')
+  end
+end

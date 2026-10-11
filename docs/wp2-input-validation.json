@@ -1,0 +1,32 @@
+﻿{
+    "schema_version":  1,
+    "validated_utc":  "2026-10-11T00:07:01.0471495Z",
+    "reference_commit":  "e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d",
+    "reference_files_verified_before_and_after":  2430,
+    "total_read_only_inputs_verified":  2442,
+    "changed_inputs":  [
+
+                       ],
+    "compiler_version":  "37.0.59082.6021",
+    "compiler_sha256":  "3059219583e71a75872678517d55f257c20455bf8896b1f98c1b4ca5ccbb7842",
+    "database_schema_version":  2,
+    "ir_schema_version":  1,
+    "instruction_hashes":  {
+                               "C:\\Users\\marti\\.codex\\agents.md":  "8026000ea01d0fbd7382b6e328a54068ee5230b6fe50952ed97733a5a15b44eb",
+                               "DPH_CODEX_HANDOFF.txt":  "7613f963a7cc7ac10b9408058b82a1bc12624dac47119984a160f4fa8c03b8e4",
+                               "DPH_Master_Development_Specification_v1.md":  "0e150cb409905b10512cbd72b4edd9439eb70cb1bc7fb585f1f56f92ee2f0469"
+                           },
+    "source_hashes":  {
+                          "DPH.Parse.Forms.pas":  "8b0a82186f7831bd1c27bf377409ac6e49b77c228666e6087fca8758c85d4cc7",
+                          "DPH.Project.Analysis.pas":  "95a820e0316e8337323889cd877060b2d5e5b8f38bfaf60cb1e57820c6a13559",
+                          "DPH.Parse.Pascal.pas":  "0b15d1e4705f588aa1e4f0a4e4b9cb1c600d357814995710ba7a795b7a85d809",
+                          "DPH.Parse.Lexer.pas":  "6ce5bbc66f8170b17eaeda536b8e500ca9992131477c09bc8e1a33bb6dd1c7f0",
+                          "DPH.Project.Inventory.pas":  "929908dae4b08d16779d599e218f67c6a3915bceb3937cb399ba36fc7c3324ff",
+                          "DPH.Storage.Types.pas":  "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219",
+                          "DPH.Parse.Preprocessor.pas":  "34b7513019a41bc9911babfda72041addd563959ee54c54d0759b8cc9fa7fefc",
+                          "DPH.Parse.Model.pas":  "5eb5afb595a879cde199cd029349890990cc58cefdea20e643447dca7bca4f4e",
+                          "DPH.Project.Source.pas":  "c2e1ff86fc0ee3435be23cb6fd07bd9df6d43c6954def70cca23f2edf62162cd",
+                          "DPH.UI.Main.pas":  "f688b8d626ea444cf382f14c8f9ba09d4e37ad713961cfd8876ca02fc2ba38f8",
+                          "DPH.Storage.Database.pas":  "690035fb52866e53a042cbd76402fe3bbaeb3c31367864bca37e22d7e4898a0c"
+                      }
+}

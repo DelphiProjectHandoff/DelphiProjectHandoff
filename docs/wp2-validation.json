@@ -1,0 +1,347 @@
+﻿{
+    "analyzer": "DPH-WP2-1",
+    "ir_schema": 1,
+    "checks_passed": 68,
+    "checks": [
+        {
+            "id": "ENC01",
+            "result": "pass",
+            "message": "UTF-8 BOM and multibyte offsets"
+        },
+        {
+            "id": "ENC02",
+            "result": "pass",
+            "message": "Line ending metadata retained"
+        },
+        {
+            "id": "LEX01",
+            "result": "pass",
+            "message": "Token starts after BOM"
+        },
+        {
+            "id": "LEXRANGE3",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE7",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE8",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE12",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE13",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE14",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE19",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE21",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE24",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "LEXRANGE25",
+            "result": "pass",
+            "message": "Token byte range inside captured source"
+        },
+        {
+            "id": "ENC03",
+            "result": "pass",
+            "message": "UTF-16 LE byte mapping"
+        },
+        {
+            "id": "ENC04",
+            "result": "pass",
+            "message": "UTF-16 BE round trip"
+        },
+        {
+            "id": "ENC05",
+            "result": "pass",
+            "message": "Malformed UTF-8 never silently treated as ANSI"
+        },
+        {
+            "id": "ENC06",
+            "result": "pass",
+            "message": "Explicit legacy code page round trips"
+        },
+        {
+            "id": "ENC07",
+            "result": "pass",
+            "message": "Supplementary Unicode scalar byte range"
+        },
+        {
+            "id": "COND01",
+            "result": "pass",
+            "message": "Supported project expression"
+        },
+        {
+            "id": "COND02",
+            "result": "pass",
+            "message": "Compiler symbols require explicit known value"
+        },
+        {
+            "id": "COND03",
+            "result": "pass",
+            "message": "Conditional recursion is bounded"
+        },
+        {
+            "id": "PAS01",
+            "result": "pass",
+            "message": "Declaration and implementation stay separate"
+        },
+        {
+            "id": "PAS02",
+            "result": "pass",
+            "message": "Generic type structural discovery"
+        },
+        {
+            "id": "PAS03",
+            "result": "pass",
+            "message": "Nested routines and anonymous callback syntax"
+        },
+        {
+            "id": "PAS04",
+            "result": "pass",
+            "message": "Assembler stays opaque and partial"
+        },
+        {
+            "id": "PAS05",
+            "result": "pass",
+            "message": "Malformed source yields diagnostics and partial IR"
+        },
+        {
+            "id": "COND04",
+            "result": "pass",
+            "message": "Unknown branches and conditional definitions remain uncertain"
+        },
+        {
+            "id": "LEX02",
+            "result": "pass",
+            "message": "Comments, whitespace and escaped strings preserved"
+        },
+        {
+            "id": "LEX03",
+            "result": "pass",
+            "message": "Malformed binary numeric literal is diagnosed"
+        },
+        {
+            "id": "PAS06",
+            "result": "pass",
+            "message": "Package terminator and dependency clauses"
+        },
+        {
+            "id": "PAS07",
+            "result": "pass",
+            "message": "Unsupported class storage syntax cannot be mistaken for a routine"
+        },
+        {
+            "id": "FORM01",
+            "result": "pass",
+            "message": "Direct binary form parser requires no component classes"
+        },
+        {
+            "id": "FORM02",
+            "result": "pass",
+            "message": "Truncated binary form is partial"
+        },
+        {
+            "id": "FORM03",
+            "result": "pass",
+            "message": "Inherited text form and binary property range"
+        },
+        {
+            "id": "INV01",
+            "result": "pass",
+            "message": "Golden inventory file count"
+        },
+        {
+            "id": "INV02",
+            "result": "pass",
+            "message": "Golden narrow project has complete syntax coverage"
+        },
+        {
+            "id": "INV03",
+            "result": "pass",
+            "message": "Golden hierarchy and event binding"
+        },
+        {
+            "id": "INV04",
+            "result": "pass",
+            "message": "Overload prototypes and implementations"
+        },
+        {
+            "id": "INV06",
+            "result": "pass",
+            "message": "Published Pascal property name retained"
+        },
+        {
+            "id": "GOLD01",
+            "result": "pass",
+            "message": "Exact versioned golden IR including ranges, manifests and diagnostics"
+        },
+        {
+            "id": "COND05",
+            "result": "pass",
+            "message": "Release and Debug select distinct known branches"
+        },
+        {
+            "id": "INV05",
+            "result": "pass",
+            "message": "All captured source hashes remain unchanged"
+        },
+        {
+            "id": "INC01",
+            "result": "pass",
+            "message": "Incremental parse reuse equals clean full IR and diagnostics"
+        },
+        {
+            "id": "STORE01",
+            "result": "pass",
+            "message": "Complete syntax generation publishes atomically"
+        },
+        {
+            "id": "STORE02",
+            "result": "pass",
+            "message": "Mid-analysis source edit keeps the previous head and requests reassessment"
+        },
+        {
+            "id": "INC02",
+            "result": "pass",
+            "message": "Edited include incremental/full equivalence"
+        },
+        {
+            "id": "STORE03",
+            "result": "pass",
+            "message": "Syntax evidence and entity storage preserve integrity"
+        },
+        {
+            "id": "STORE04",
+            "result": "pass",
+            "message": "Changed include generation publishes after revalidation"
+        },
+        {
+            "id": "STORE05",
+            "result": "pass",
+            "message": "Shifted source publishes valid new ranges"
+        },
+        {
+            "id": "STORE06",
+            "result": "pass",
+            "message": "Syntax entity identities survive source offset shifts"
+        },
+        {
+            "id": "STORE07",
+            "result": "pass",
+            "message": "Manual note retained across parser generations"
+        },
+        {
+            "id": "SAFE01",
+            "result": "pass",
+            "message": "Traversal outside selected root is excluded"
+        },
+        {
+            "id": "SAFE02",
+            "result": "pass",
+            "message": "Project DTD rejected before XML parsing"
+        },
+        {
+            "id": "SAFE03",
+            "result": "pass",
+            "message": "Include cycles are bounded and diagnosed"
+        },
+        {
+            "id": "SAFE04",
+            "result": "pass",
+            "message": "Build targets remain passive and missing references visible"
+        },
+        {
+            "id": "SAFE05",
+            "result": "pass",
+            "message": "Explicit external root uses traversal-free canonical manifest"
+        },
+        {
+            "id": "SAFE06",
+            "result": "pass",
+            "message": "Unprovided path macro cannot collapse into an unintended filename"
+        },
+        {
+            "id": "INV07",
+            "result": "pass",
+            "message": "Project-group member graph parsed without executing its targets"
+        },
+        {
+            "id": "SAFE07",
+            "result": "pass",
+            "message": "Project graph cycle terminates"
+        },
+        {
+            "id": "INV08",
+            "result": "pass",
+            "message": "Explicit project search paths, include paths and unit scopes retained during parsing"
+        },
+        {
+            "id": "SAFE08",
+            "result": "pass",
+            "message": "Oversized input rejected before token allocation"
+        },
+        {
+            "id": "REF01",
+            "result": "pass",
+            "message": "Pinned reference FMX acquired"
+        },
+        {
+            "id": "REF02",
+            "result": "pass",
+            "message": "Pinned form hierarchy and event values extracted"
+        },
+        {
+            "id": "REF03",
+            "result": "pass",
+            "message": "Pinned reference MainForm acquired"
+        },
+        {
+            "id": "REF04",
+            "result": "pass",
+            "message": "btnConvertClick declaration and implementation ranges found"
+        },
+        {
+            "id": "REF05",
+            "result": "pass",
+            "message": "btnConvert event names btnConvertClick; semantic resolution reserved for WP3"
+        },
+        {
+            "id": "REF06",
+            "result": "pass",
+            "message": "Unavailable framework dependencies and unsupported syntax visibly partial"
+        },
+        {
+            "id": "REF07",
+            "result": "pass",
+            "message": "Reference captured bytes unchanged after analysis"
+        }
+    ]
+}
