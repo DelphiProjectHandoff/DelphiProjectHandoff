@@ -1,0 +1,46 @@
+DPH workspace operations - 11 October 2026
+
+Run bin\Win32\Debug\DelphiProjectHandoff.exe from this project folder.
+Use the page selector at the top right to reach any workspace page.
+Select an application project with Open project; DPH rejects its own project.
+Choose a new database filename in the offered Databases folder. Analysis reads
+the selected application's source without building or running it.
+
+Projects
+Select Projects in the page selector. Select a saved database and click Open.
+Remove removes only its catalog entry; it does not delete the database.
+Opening saved results displays them before checking the available original
+source. When original source is absent, the saved workspace stays detached.
+
+Database tools
+Preview retention before applying it. Recent count controls cached JSON views;
+baseline, head, releases and review/image evidence remain protected. Immutable
+database facts and authored revision history are not purged by this operation.
+To protect a release, supply a release label and reviewer, then Keep release.
+Integrity checks SQLite, foreign keys and referenced managed artifact hashes.
+Backup asks for a NEW .dphdb filename. Keep that file together with the adjacent
+.dphdb.views folder, including backup-manifest.json. Restore asks for the backup
+database and a NEW destination database; it never replaces existing data.
+These are explicit user operations; DPH does not schedule D: backups.
+
+Rename review
+Use this after reassessment identifies missing links in authored knowledge.
+Enter a replacement name/file filter, click Find and select a proposal.
+Inspect old/new declarations; the proposal is a candidate, not proven identity.
+Enter the responsible reviewer and approve only the correct replacement.
+Approval preserves text and old link history, adds the replacement link and
+requires a separate knowledge-content review against the new source.
+
+Search project
+Enter words, choose all or a category, and click Search. Select a result to
+read its excerpt and review state. Open result opens its object explanation
+or authored record. Next 50 advances results; editing the query/category starts
+a new search. Diagnostics show their message and source path in the excerpt.
+Search covers captured object metadata, flow evidence, diagnostics and notes.
+It does not search arbitrary neighboring files or execute query syntax.
+
+Validation for this checkpoint
+Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
+project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage
+migration/durability checks. A nonzero exit or FAIL indicates a failed check.
+These automated checks do not substitute for first-time-user acceptance.

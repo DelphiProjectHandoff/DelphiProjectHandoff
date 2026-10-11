@@ -87,7 +87,7 @@ begin
     Probe.Params.Values['LockingMode'] := 'Normal';
     Probe.Params.Values['ForeignKeys'] := 'On'; Probe.Connected := True;
     Probe.ExecSQL('PRAGMA foreign_keys=ON');
-    Check(Probe.ExecSQLScalar('PRAGMA user_version')=3,'WP1-02','schema ledger version 3');
+    Check(Probe.ExecSQLScalar('PRAGMA user_version')=4,'WP1-02','schema ledger version 4');
     Rejected := False;
     try SecondWriter := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
       SecondWriter.Free; except on E: EDPHStorage do Rejected := True; end;
@@ -187,7 +187,7 @@ begin
     try Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
       except on E: EDPHStorage do Rejected := True; end;
     Check(Rejected,'WP1-24','newer incompatible database rejected');
-    Probe.Open; Probe.ExecSQL('PRAGMA user_version=3'); Probe.Close;
+    Probe.Open; Probe.ExecSQL('PRAGMA user_version=4'); Probe.Close;
     Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
     Store.ObserveManifest(Files);
     ChangedFiles := Copy(Files);

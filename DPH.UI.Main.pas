@@ -69,7 +69,32 @@ type
     RetentionCountEdit,ReleaseLabelEdit,ReleaseReviewerEdit: TEdit;
     PreviewRetentionButton,ApplyRetentionButton,PinReleaseButton: TButton;
     LifecycleMemo: TMemo;
+    BackupButton,RestoreBackupButton,IntegrityButton: TButton;
+    BackupDialog,RestoreDestinationDialog: TSaveDialog;
+    RestoreBackupDialog: TOpenDialog;
+    ContinuityTab: TTabItem;
+    ContinuityPurpose: TLabel;
+    ContinuityToolbar: TLayout;
+    ContinuityQueryEdit,ContinuityReviewerEdit: TEdit;
+    FindContinuityButton,ApproveContinuityButton: TButton;
+    ContinuityList: TListBox;
+    ContinuityMemo: TMemo;
+    ProjectSearchTab: TTabItem;
+    ProjectSearchPurpose: TLabel;
+    ProjectSearchToolbar: TLayout;
+    ProjectSearchEdit: TEdit;
+    ProjectSearchKind: TComboBox;
+    RunProjectSearchButton,NextProjectSearchButton,OpenSearchResultButton: TButton;
+    ProjectSearchList: TListBox;
+    ProjectSearchMemo: TMemo;
+    WorkspacePageCombo: TComboBox;
+    procedure WorkspacePageChange(Sender: TObject);
+    procedure ProjectSearchClick(Sender: TObject);
+    procedure ProjectSearchSelectionClick(Sender: TObject);
     procedure RetentionClick(Sender: TObject);
+    procedure DatabaseToolsClick(Sender: TObject);
+    procedure ContinuityClick(Sender: TObject);
+    procedure ContinuitySelectionClick(Sender: TObject);
     procedure OpenKnownProjectClick(Sender: TObject);
     procedure ForgetProjectClick(Sender: TObject);
     procedure RefreshProjectsClick(Sender: TObject);
@@ -135,6 +160,11 @@ type
     FImages: TJSONArray;
     FCatalog: TDPHWorkspaceCatalog;
     FCatalogPaths: TList<string>;
+    FContinuity: TJSONArray;
+    FSearchResults: TJSONArray;
+    FSearchOffset: Integer;
+    FSearchQuery: string;
+    FSearchKind: string;
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure RefreshLearning;
     procedure ShowExplanation;
@@ -171,6 +201,8 @@ begin
   try
     TDirectory.CreateDirectory(DatabaseDirectory);
     DatabaseDialog.InitialDir:=DatabaseDirectory; OpenCacheDialog.InitialDir:=DatabaseDirectory;
+    BackupDialog.InitialDir:=DatabaseDirectory; RestoreBackupDialog.InitialDir:=DatabaseDirectory;
+    RestoreDestinationDialog.InitialDir:=DatabaseDirectory;
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   for I:=0 to 10 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
@@ -188,6 +220,8 @@ var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
+  FContinuity.Free;
+  FSearchResults.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
@@ -220,6 +254,61 @@ begin
     end;
   finally Rows.Free; end;
 end;
+procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
+var Index: Integer;
+begin
+  if FBinding then Exit;
+  if Sender=WorkspacePageCombo then begin
+    if WorkspacePageCombo.ItemIndex<0 then Exit;
+    for Index:=0 to WorkspaceTabs.TabCount-1 do
+      if WorkspaceTabs.Tabs[Index].Text=WorkspacePageCombo.Items[WorkspacePageCombo.ItemIndex] then begin
+        WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
+      end;
+  end else if WorkspaceTabs.ActiveTab<>nil then begin
+    FBinding:=True;
+    try WorkspacePageCombo.ItemIndex:=WorkspacePageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
+    finally FBinding:=False; end;
+  end;
+end;
+procedure TDPHMainForm.ProjectSearchClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject; Index: Integer; Key: string;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if (Sender=OpenSearchResultButton) or (Sender=ProjectSearchList) then begin
+    Index:=ProjectSearchList.ItemIndex;
+    if (FSearchResults=nil) or (Index<0) then Exit;
+    Row:=FSearchResults.Items[Index] as TJSONObject; Key:=Row.GetValue<string>('entity_key');
+    if Key<>'' then begin SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
+    if Row.GetValue<string>('kind')='knowledge' then begin
+      if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current authored edit first'; Exit; end;
+      PendingKnowledgeCheck.IsChecked:=False; KnowledgeFilterChange(nil);
+      for Index:=0 to FKnowledgeRows.Count-1 do
+        if FKnowledgeRows[Index].GetValue<string>('id')=Row.GetValue<string>('knowledge_id') then begin
+          KnowledgeList.ItemIndex:=Index; KnowledgeClick(nil); WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit;
+        end;
+    end;
+    StatusLabel.Text:='This result is a diagnostic. Its message and source location are shown in the search details.'; Exit;
+  end;
+  Key:='';
+  if ProjectSearchKind.ItemIndex>0 then Key:=ProjectSearchKind.Items[ProjectSearchKind.ItemIndex];
+  if (Sender=NextProjectSearchButton) and (FSearchQuery=ProjectSearchEdit.Text) and (FSearchKind=Key) then
+    Inc(FSearchOffset,50) else FSearchOffset:=0;
+  FSearchQuery:=ProjectSearchEdit.Text; FSearchKind:=Key;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='search';
+  Request.Database:=FDatabase; Request.Entry:=FEntry; Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
+  Request.Body:=ProjectSearchEdit.Text; Request.SearchOffset:=FSearchOffset;
+  Request.SearchKind:=FSearchKind;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Searching the indexed project evidence and knowledge...';
+end;
+procedure TDPHMainForm.ProjectSearchSelectionClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  if (FSearchResults=nil) or (ProjectSearchList.ItemIndex<0) then Exit;
+  Row:=FSearchResults.Items[ProjectSearchList.ItemIndex] as TJSONObject;
+  ProjectSearchMemo.Text:=Row.GetValue<string>('title')+sLineBreak+'Category: '+Row.GetValue<string>('kind')+
+    ' | Status: '+Row.GetValue<string>('verification_state')+sLineBreak+'Source: '+Row.GetValue<string>('source_path')+
+    sLineBreak+sLineBreak+Row.GetValue<string>('excerpt');
+end;
 procedure TDPHMainForm.RetentionClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest;
 begin
@@ -232,6 +321,63 @@ begin
   Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
   Request.Body:=RetentionCountEdit.Text; Request.Title:=ReleaseLabelEdit.Text; Request.Editor:=ReleaseReviewerEdit.Text;
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Preparing retention report...';
+end;
+procedure TDPHMainForm.DatabaseToolsClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest;
+begin
+  if FBusy then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored edit before database operations'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Database:=FDatabase; Request.Entry:=FEntry;
+  if Sender=RestoreBackupButton then begin
+    if not RestoreBackupDialog.Execute then Exit;
+    Request.Database:=RestoreBackupDialog.FileName;
+    if not RestoreDestinationDialog.Execute then Exit;
+    Request.ExportDirectory:=RestoreDestinationDialog.FileName; Request.Command:='restore_backup';
+  end else begin
+    if FView=nil then begin StatusLabel.Text:='Open a project database first'; Exit; end;
+    Request.Command:='integrity';
+    if Sender=BackupButton then begin
+      BackupDialog.FileName:=TPath.GetFileNameWithoutExtension(FDatabase)+'-backup.dphdb';
+      if not BackupDialog.Execute then Exit;
+      Request.ExportDirectory:=BackupDialog.FileName; Request.Command:='save_backup';
+    end;
+  end;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Checking database files...';
+end;
+procedure TDPHMainForm.ContinuityClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject; Index: Integer;
+begin
+  if FBusy or (FView=nil) then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored edit before continuity review'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Command:='continuity_preview';
+  Request.Database:=FDatabase; Request.Entry:=FEntry; Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
+  Request.Body:=ContinuityQueryEdit.Text; Request.Editor:=ContinuityReviewerEdit.Text;
+  Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
+  Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
+  Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  if Sender=ApproveContinuityButton then begin
+    Index:=ContinuityList.ItemIndex;
+    if (FContinuity=nil) or (Index<0) then begin StatusLabel.Text:='Select a proposed old-to-new identity match first'; Exit; end;
+    Row:=FContinuity.Items[Index] as TJSONObject; Request.Command:='continuity_approve';
+    Request.KnowledgeID:=StrToInt64(Row.GetValue<string>('knowledge_id'));
+    Request.ExpectedRevision:=StrToInt64(Row.GetValue<string>('current_revision_id'));
+    Request.OldEntityKey:=Row.GetValue<string>('old_key'); Request.EntityKey:=Row.GetValue<string>('new_key');
+  end;
+  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Checking identity continuity...';
+end;
+procedure TDPHMainForm.ContinuitySelectionClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  if (FContinuity=nil) or (ContinuityList.ItemIndex<0) then Exit;
+  Row:=FContinuity.Items[ContinuityList.ItemIndex] as TJSONObject;
+  ContinuityMemo.Text:='Knowledge: '+Row.GetValue<string>('title')+sLineBreak+
+    'Historical identity: '+Row.GetValue<string>('old_name')+' in '+Row.GetValue<string>('old_file')+sLineBreak+
+    Row.GetValue<string>('old_signature')+sLineBreak+sLineBreak+
+    'Proposed replacement: '+Row.GetValue<string>('new_name')+' in '+Row.GetValue<string>('new_file')+sLineBreak+
+    Row.GetValue<string>('new_signature')+sLineBreak+sLineBreak+
+    'This proposal uses declaration kind and signature shape; it is not proof of a rename. Inspect the replacement in Explain and Source. Approve only if you establish continuity. The authored content will remain pending review.';
+  SelectSymbol(Row.GetValue<string>('new_key'));
 end;
 procedure TDPHMainForm.OpenKnownProjectClick(Sender: TObject);
 var Index: Integer;
@@ -324,6 +470,8 @@ begin
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
+  FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
+  FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
@@ -357,6 +505,22 @@ begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if (R.SearchResults<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
+      FSearchResults.Free; FSearchResults:=R.SearchResults; R.SearchResults:=nil; ProjectSearchList.Items.Clear;
+      for Value in FSearchResults do begin Row:=Value as TJSONObject;
+        ProjectSearchList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('verification_state'));
+      end;
+      NextProjectSearchButton.Enabled:=FSearchResults.Count=50;
+      ProjectSearchMemo.Text:='Results '+IntToStr(FSearchOffset+1)+' through '+IntToStr(FSearchOffset+FSearchResults.Count)+'. Select a row for its excerpt and status; Open result navigates to its object or authored record.';
+      if FSearchResults.Count=0 then ProjectSearchMemo.Text:='No matching results on this page. Enter another search or click Search to start again from the first page.';
+    end;
+    if R.Continuity<>nil then begin
+      FContinuity.Free; FContinuity:=R.Continuity; R.Continuity:=nil; ContinuityList.Items.Clear;
+      for Value in FContinuity do begin Row:=Value as TJSONObject;
+        ContinuityList.Items.Add(Row.GetValue<string>('title')+' | '+Row.GetValue<string>('old_name')+' -> '+Row.GetValue<string>('new_name'));
+      end;
+      ContinuityMemo.Text:='Select a proposal to inspect old and new declarations. Up to 500 proposals are shown; narrow the replacement name/file filter when needed.';
+    end;
     if R.Lifecycle<>nil then begin
       LifecycleMemo.Lines.Clear;
       LifecycleMemo.Lines.Add('Saved policy: keep '+IntToStr(R.RetentionCount)+' recent generations. Preview below uses '+RetentionCountEdit.Text+'.');
@@ -367,6 +531,7 @@ begin
           Row.GetValue<string>('retention_reason')+' | '+Row.GetValue<string>('release_label'));
       end;
     end;
+    if R.RestoredDatabase<>'' then OpenSelection('',R.RestoredDatabase);
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
     StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
@@ -377,6 +542,8 @@ begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
 procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
 var V: TJSONValue; Row: TJSONObject; Path: string;
 begin
+  FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
+  FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
   if (FCatalog<>nil) and (FDatabase<>'') then
   try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);

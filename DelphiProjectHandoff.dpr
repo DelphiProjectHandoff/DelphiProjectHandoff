@@ -6,6 +6,7 @@ uses
   DPH.UI.Main in 'DPH.UI.Main.pas' {DPHMainForm},
   DPH.Storage.Types in 'DPH.Storage.Types.pas',
   DPH.Storage.Database in 'DPH.Storage.Database.pas',
+  DPH.Storage.Backup in 'DPH.Storage.Backup.pas',
   DPH.Parse.Model in 'DPH.Parse.Model.pas',
   DPH.Project.Source in 'DPH.Project.Source.pas',
   DPH.Parse.Lexer in 'DPH.Parse.Lexer.pas',

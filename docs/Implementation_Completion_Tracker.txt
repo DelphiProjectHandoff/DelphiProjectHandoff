@@ -13,9 +13,19 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     named release pinning and protection for baseline/head/latest/review/image
     evidence. Immutable generation facts and authored history are kept, not
     purged. Thirteen focused lifecycle checks and 46 storage checks pass.
-1.4 Pending: rename/move review and knowledge continuity.
-1.5 Pending: backup, integrity, restore UI.
-1.6 Pending: indexed project-wide search.
+1.4 Implemented: filtered missing-identity proposals, explicit named reviewer,
+    stale-revision/source checks, preserved historical links, appended authored
+    revision and pending content review. Proposals never approve themselves.
+1.5 Implemented: Database tools backup, integrity and restore-to-new-file UI;
+    consistent SQLite backup plus referenced managed views/screenshots and
+    SHA-256 manifest. Restore verifies hashes and integrity before opening.
+1.6 Implemented: current-generation object signatures/metadata, control-flow
+    evidence, diagnostics and authored knowledge indexed with FTS5; word-index
+    fallback for SQLite without FTS5. Filtered results, excerpts and navigation,
+    50-row pages, index refresh after knowledge revisions. It does not index
+    uncaptured source files or claim compiler-complete expression semantics.
+    Lifecycle suite: 35 checks; storage suite: 46 checks with schema 4;
+    workspace: 43; knowledge: 34; selection: 18; startup: 2; FMX binding passes.
 2.1-2.6 Pending: grammar, variants, project configurations, encodings, resources,
     referenced external definitions.
 3.1-3.9 Pending: affected semantic recomputation, resolution, startup graphs,

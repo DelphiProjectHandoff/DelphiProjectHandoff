@@ -80,6 +80,12 @@ type
     function RecentRetentionCount: Integer;
     procedure ApplyRetention(ARecent: Integer);
     procedure RetainGeneration(AGeneration: Int64; const ALabel,AReviewer: string);
+    function ContinuityCandidates(AGeneration: Int64; const AQuery: string): TJSONArray;
+    procedure ApproveContinuity(AKnowledge,AExpectedRevision,AGeneration: Int64;
+      const AOldKey,ANewKey,AReviewer: string);
+    function ManagedArtifactPaths: TArray<string>;
+    procedure BuildSearchIndex(AGeneration: Int64);
+    function SearchProject(AGeneration: Int64; const AQuery,AKind: string; AOffset: Integer): TJSONArray;
     property DatabasePath: string read FDatabasePath;
   end;
 
@@ -89,10 +95,10 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions;
 
 const
-  CurrentSchemaVersion = 3;
+  CurrentSchemaVersion = 4;
 
 constructor TDPHKnowledgeStore.Create(const ADatabasePath, ASourceRoot,
   AMigrationDirectory: string; AUseWAL: Boolean);
@@ -299,7 +305,8 @@ begin
       Format('%.3d_', [Version]));
     if Version = 1 then MigrationPath := MigrationPath + 'foundation.sql'
     else if Version = 2 then MigrationPath := MigrationPath + 'constraints.sql'
-    else MigrationPath := MigrationPath + 'lifecycle.sql';
+    else if Version = 3 then MigrationPath := MigrationPath + 'lifecycle.sql'
+    else MigrationPath := MigrationPath + 'search.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -801,7 +808,7 @@ begin
   if (Manifest<>ManifestHash(ReadManifest)) or (Scalar('SELECT config_id FROM analysis_generations WHERE generation_id=:id',[AGenerationID])<>
     Scalar('SELECT active_config FROM projects WHERE project_id=1',[])) then raise EDPHStorage.Create('Review source/configuration has changed; reassess first');
   if (AState='verified') and (Scalar('SELECT count(*) FROM knowledge_links l WHERE l.knowledge_id=:id AND l.entity_id IS NOT NULL '+
-    'AND NOT EXISTS(SELECT 1 FROM entity_versions v WHERE v.entity_id=l.entity_id AND v.generation_id=:generation)',[AKnowledgeID,AGenerationID])<>0) then
+    'AND l.link_role<>''historical_annotation'' AND NOT EXISTS(SELECT 1 FROM entity_versions v WHERE v.entity_id=l.entity_id AND v.generation_id=:generation)',[AKnowledgeID,AGenerationID])<>0) then
     raise EDPHStorage.Create('Linked entity is missing or renamed; continuity requires human investigation');
   FConnection.StartTransaction;
   try
@@ -839,7 +846,7 @@ begin
       for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
       Links:=TJSONArray.Create; Row.AddPair('links',Links);
       Detail:=NewQuery('SELECT e.canonical_key,e.entity_kind,coalesce(l.last_verified_generation_id,0) AS verified_generation '+
-        'FROM knowledge_links l LEFT JOIN entities e ON e.entity_id=l.entity_id WHERE l.knowledge_id=:id ORDER BY l.link_id',[Query.FieldByName('id').AsLargeInt]);
+        'FROM knowledge_links l LEFT JOIN entities e ON e.entity_id=l.entity_id WHERE l.knowledge_id=:id AND l.link_role<>''historical_annotation'' ORDER BY l.link_id',[Query.FieldByName('id').AsLargeInt]);
       try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
       History:=TJSONArray.Create; Row.AddPair('history',History);
       Detail:=NewQuery('SELECT knowledge_revision_id AS revision,body_md AS body,editor,created_at,verification_state,coalesce(verified_by,'''') AS reviewer,coalesce(verified_at,'''') AS reviewed_at '+
@@ -1064,6 +1071,186 @@ begin
 end;
 function TDPHKnowledgeStore.SQLiteVersion: string;
 begin RequireWriter; Result := VarToStr(Scalar('SELECT sqlite_version()',[])); end;
+
+procedure TDPHKnowledgeStore.BuildSearchIndex(AGeneration: Int64);
+var Revision: Int64; Query: TFDQuery; Match: TMatch; FTS: Boolean;
+begin
+  RequireWriter; FTS:=SupportsFTS5;
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGeneration])<>1 then
+    raise EDPHStorage.Create('Search requires a captured generation');
+  if FTS then FConnection.ExecSQL('CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(title,body)');
+  Revision:=Scalar('SELECT coalesce(max(knowledge_revision_id),0) FROM knowledge_revisions',[]);
+  if Scalar('SELECT count(*) FROM search_index_state WHERE generation_id=:generation AND knowledge_revision=:revision AND search_version=:version',
+    [AGeneration,Revision,'DPH-SEARCH-1-'+BoolToStr(FTS,True)])=1 then Exit;
+  FConnection.StartTransaction;
+  try
+    if FTS then FConnection.ExecSQL('DELETE FROM search_fts WHERE rowid IN (SELECT document_id FROM search_documents WHERE generation_id=:id)',[AGeneration]);
+    FConnection.ExecSQL('DELETE FROM search_documents WHERE generation_id=:id',[AGeneration]);
+    FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,entity_key,source_path,verification_state) '+
+      'SELECT :generation,''object'',e.display_name,v.signature||'' ''||v.structural_json,e.canonical_key,coalesce(f.canonical_relpath,''''),''source-derived'' '+
+      'FROM entity_versions v JOIN entities e ON e.entity_id=v.entity_id LEFT JOIN source_files f ON f.file_id=e.owner_file_id '+
+      'WHERE v.generation_id=:generation AND e.entity_kind LIKE ''semantic_%''',[AGeneration]);
+    FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,entity_key,source_path,verification_state) '+
+      'SELECT :generation,''evidence'',e.display_name||'' / ''||c.node_kind,coalesce(c.expression_ref,''''),e.canonical_key,'+
+      'coalesce(json_extract(c.source_range_json,''$.source''),''''),''static flow evidence'' '+
+      'FROM control_flow_nodes c JOIN entity_versions v ON v.entity_version_id=c.routine_version_id JOIN entities e ON e.entity_id=v.entity_id '+
+      'WHERE c.generation_id=:generation',[AGeneration]);
+    FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,source_path,verification_state) '+
+      'SELECT :generation,''diagnostic'',code,message,coalesce(json_extract(source_range_json,''$.source''),''''),severity '+
+      'FROM diagnostics WHERE generation_id=:generation',[AGeneration]);
+    FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,knowledge_id,verification_state) '+
+      'SELECT :generation,''knowledge'',k.title,r.body_md,k.knowledge_id,k.state FROM knowledge_records k '+
+      'JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1',[AGeneration]);
+    if FTS then FConnection.ExecSQL('INSERT INTO search_fts(rowid,title,body) SELECT document_id,title,body FROM search_documents WHERE generation_id=:id',[AGeneration])
+    else begin
+      Query:=NewQuery('SELECT document_id,title,body FROM search_documents WHERE generation_id=:id',[AGeneration]);
+      try
+        while not Query.Eof do begin
+          for Match in TRegEx.Matches(LowerCase(Query.Fields[1].AsString+' '+Query.Fields[2].AsString),'[\p{L}\p{N}_]+') do
+            FConnection.ExecSQL('INSERT OR IGNORE INTO search_terms(term,document_id) VALUES(:term,:id)',[Match.Value,Query.Fields[0].AsLargeInt]);
+          Query.Next;
+        end;
+      finally Query.Free; end;
+    end;
+    FConnection.ExecSQL('INSERT INTO search_index_state(generation_id,knowledge_revision,search_version) VALUES(:id,:revision,:version) '+
+      'ON CONFLICT(generation_id) DO UPDATE SET knowledge_revision=excluded.knowledge_revision,search_version=excluded.search_version',
+      [AGeneration,Revision,'DPH-SEARCH-1-'+BoolToStr(FTS,True)]);
+    FConnection.Commit;
+  except FConnection.Rollback; raise; end;
+end;
+
+function TDPHKnowledgeStore.SearchProject(AGeneration: Int64; const AQuery,AKind: string; AOffset: Integer): TJSONArray;
+var Match: TMatch; ExpressionText,SQLText: string; Query: TFDQuery; Row: TJSONObject; I,TokenCount: Integer;
+    Values: TArray<Variant>; FTS: Boolean;
+begin
+  RequireWriter;
+  if (Length(AQuery)>1000) or (AOffset<0) or (AOffset>1000000) then raise EDPHStorage.Create('Invalid search query or page');
+  if not MatchText(AKind,['','object','evidence','knowledge','diagnostic']) then raise EDPHStorage.Create('Invalid search category');
+  BuildSearchIndex(AGeneration); FTS:=SupportsFTS5; ExpressionText:=''; TokenCount:=0;
+  Values:=[AGeneration,AKind];
+  for Match in TRegEx.Matches(LowerCase(AQuery),'[\p{L}\p{N}_]+') do begin
+    Inc(TokenCount); if TokenCount>12 then raise EDPHStorage.Create('Use at most twelve search words');
+    if FTS then begin
+      if ExpressionText<>'' then ExpressionText:=ExpressionText+' AND ';
+      ExpressionText:=ExpressionText+'"'+Match.Value+'"*';
+    end else begin
+      ExpressionText:=ExpressionText+' AND d.document_id IN (SELECT document_id FROM search_terms WHERE term LIKE :word'+IntToStr(TokenCount)+')';
+      Values:=Values+[Match.Value+'%'];
+    end;
+  end;
+  if TokenCount=0 then raise EDPHStorage.Create('Enter at least one word to search');
+  SQLText:='SELECT d.document_id,d.kind,d.title,substr(d.body,1,1200) AS excerpt,d.entity_key,coalesce(d.knowledge_id,0) AS knowledge_id,'+
+    'd.source_path,d.verification_state FROM search_documents d ';
+  if FTS then SQLText:=SQLText+'JOIN search_fts ON search_fts.rowid=d.document_id ';
+  SQLText:=SQLText+'WHERE d.generation_id=:generation AND (:kind='''' OR d.kind=:kind) ';
+  if FTS then begin SQLText:=SQLText+'AND search_fts MATCH :query '; Values:=Values+[ExpressionText]; end
+  else SQLText:=SQLText+ExpressionText;
+  SQLText:=SQLText+' ORDER BY d.kind,d.title,d.document_id LIMIT 50 OFFSET :offset'; Values:=Values+[AOffset];
+  Result:=TJSONArray.Create; Query:=NewQuery(SQLText,Values);
+  try
+    while not Query.Eof do begin
+      Row:=TJSONObject.Create; Result.AddElement(Row);
+      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Query.Next;
+    end;
+  finally Query.Free; end;
+end;
+
+function TDPHKnowledgeStore.ManagedArtifactPaths: TArray<string>;
+var Query: TFDQuery; Paths: TList<string>; Hash,Path,ImageHash: string; Metadata: TJSONObject; C: Char;
+begin
+  RequireWriter; Paths:=TList<string>.Create;
+  Query:=NewQuery('SELECT content_hash,kind FROM artifacts WHERE kind IN (''workspace_view'',''user_screenshot'') ORDER BY artifact_id',[]);
+  try
+    while not Query.Eof do begin
+      Hash:=Query.Fields[0].AsString;
+      if Length(Hash)<>64 then raise EDPHStorage.Create('Invalid managed artifact identity');
+      for C in Hash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Invalid managed artifact identity');
+      Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
+      if THashSHA2.GetHashStringFromFile(Path)<>Hash then raise EDPHStorage.Create('Managed artifact is damaged');
+      if not Paths.Contains(Path) then Paths.Add(Path);
+      if Query.Fields[1].AsString='user_screenshot' then begin
+        if TFile.GetSize(Path)>1024*1024 then raise EDPHStorage.Create('Screenshot metadata exceeds limit');
+        Metadata:=TJSONObject.ParseJSONValue(TFile.ReadAllText(Path,TEncoding.UTF8)) as TJSONObject;
+        try
+          if Metadata=nil then raise EDPHStorage.Create('Invalid screenshot metadata');
+          ImageHash:=Metadata.GetValue<string>('image_sha256');
+          if (Length(ImageHash)<>64) or (Metadata.GetValue<string>('image')<>ImageHash+'.png') then raise EDPHStorage.Create('Invalid screenshot image identity');
+          for C in ImageHash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Invalid screenshot image identity');
+          Path:=TPath.Combine(FDatabasePath+'.views',ImageHash+'.png'); CheckOutsideSource(Path);
+          if THashSHA2.GetHashStringFromFile(Path)<>ImageHash then raise EDPHStorage.Create('Screenshot image is damaged');
+          if not Paths.Contains(Path) then Paths.Add(Path);
+        finally Metadata.Free; end;
+      end;
+      Query.Next;
+    end;
+    Result:=Paths.ToArray;
+  finally Query.Free; Paths.Free; end;
+end;
+
+function TDPHKnowledgeStore.ContinuityCandidates(AGeneration: Int64; const AQuery: string): TJSONArray;
+var Query: TFDQuery; Row: TJSONObject; I: Integer;
+begin
+  RequireWriter; Result:=TJSONArray.Create;
+  Query:=NewQuery('SELECT k.knowledge_id,k.current_revision_id,k.title,old.canonical_key AS old_key,old.display_name AS old_name,'+
+    'ov.signature AS old_signature,new.canonical_key AS new_key,new.display_name AS new_name,nv.signature AS new_signature,'+
+    'old.entity_kind,os.canonical_relpath AS old_file,ns.canonical_relpath AS new_file '+
+    'FROM knowledge_records k JOIN knowledge_links l ON l.knowledge_id=k.knowledge_id '+
+    'JOIN entities old ON old.entity_id=l.entity_id JOIN entity_versions ov ON ov.entity_id=old.entity_id '+
+    'JOIN entities new ON new.entity_kind=old.entity_kind JOIN entity_versions nv ON nv.entity_id=new.entity_id AND nv.generation_id=:generation '+
+    'LEFT JOIN source_files os ON os.file_id=old.owner_file_id LEFT JOIN source_files ns ON ns.file_id=new.owner_file_id '+
+    'WHERE k.state NOT IN (''retired'',''rejected'') AND l.link_role<>''historical_annotation'' '+
+    'AND ov.generation_id=(SELECT max(generation_id) FROM entity_versions WHERE entity_id=old.entity_id) '+
+    'AND NOT EXISTS(SELECT 1 FROM entity_versions WHERE entity_id=old.entity_id AND generation_id=:generation) '+
+    'AND (instr(ov.signature,''('')=0 OR substr(ov.signature,instr(ov.signature,''(''))=substr(nv.signature,instr(nv.signature,''(''))) '+
+    'AND instr(lower(new.display_name||'' ''||coalesce(ns.canonical_relpath,'''')),lower(:query))>0 '+
+    'ORDER BY k.knowledge_id,new.display_name LIMIT 500',[AGeneration,AQuery]);
+  try
+    while not Query.Eof do begin
+      Row:=TJSONObject.Create; Result.AddElement(Row);
+      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Query.Next;
+    end;
+  finally Query.Free; end;
+end;
+
+procedure TDPHKnowledgeStore.ApproveContinuity(AKnowledge,AExpectedRevision,AGeneration: Int64;
+  const AOldKey,ANewKey,AReviewer: string);
+var OldEntity,NewEntity,Revision: Int64; Body,Manifest: string;
+begin
+  RequireWriter;
+  if Trim(AReviewer)='' then raise EDPHStorage.Create('Continuity approval requires a named reviewer');
+  Manifest:=VarToStr(Scalar('SELECT manifest_hash FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGeneration]));
+  if (Manifest<>ManifestHash(ReadManifest)) or
+    (Scalar('SELECT config_id FROM analysis_generations WHERE generation_id=:id',[AGeneration])<>
+     Scalar('SELECT active_config FROM projects WHERE project_id=1',[])) then
+    raise EDPHStorage.Create('Reassess the current source/configuration before continuity review');
+  OldEntity:=VarAsType(Scalar('SELECT coalesce(max(e.entity_id),0) FROM entities e JOIN knowledge_links l ON l.entity_id=e.entity_id '+
+    'WHERE l.knowledge_id=:note AND e.canonical_key=:key AND l.link_role<>''historical_annotation'' '+
+    'AND NOT EXISTS(SELECT 1 FROM entity_versions WHERE entity_id=e.entity_id AND generation_id=:generation)',[AKnowledge,AOldKey,AGeneration]),varInt64);
+  NewEntity:=VarAsType(Scalar('SELECT coalesce(max(e.entity_id),0) FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id '+
+    'WHERE e.canonical_key=:key AND v.generation_id=:generation AND e.entity_kind=(SELECT entity_kind FROM entities WHERE entity_id=:old)',[ANewKey,AGeneration,OldEntity]),varInt64);
+  if (OldEntity=0) or (NewEntity=0) then raise EDPHStorage.Create('Select a missing historical link and a current replacement of the same kind');
+  FConnection.StartTransaction;
+  try
+    if Scalar('SELECT count(*) FROM knowledge_records WHERE knowledge_id=:id AND current_revision_id=:revision AND state NOT IN (''retired'',''rejected'')',[AKnowledge,AExpectedRevision])<>1 then
+      raise EDPHStorage.Create('Knowledge changed; refresh candidates before approving');
+    Body:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:revision',[AExpectedRevision]));
+    FConnection.ExecSQL('UPDATE knowledge_links SET link_role=''historical_annotation'' WHERE knowledge_id=:note AND entity_id=:old',[AKnowledge,OldEntity]);
+    FConnection.ExecSQL('INSERT INTO knowledge_links(project_id,knowledge_id,entity_id,link_role) VALUES(1,:note,:new,''reviewed_continuity'')',[AKnowledge,NewEntity]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state) VALUES(:note,:body,:reviewer,:stamp,''needs_review'')',[AKnowledge,Body,AReviewer,UTCNow]);
+    Revision:=Scalar('SELECT last_insert_rowid()',[]);
+    FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:note',[Revision,AKnowledge]);
+    FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) VALUES(1,:note,''Reviewed identity continuity; content requires review'',''pending'',:generation)',[AKnowledge,AGeneration]);
+    FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=1 WHERE project_id=1');
+    FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
+    FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review'' WHERE knowledge_revision_id IN (SELECT knowledge_revision_id FROM knowledge_revisions WHERE knowledge_id=:note)',[AKnowledge]);
+    FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,before_hash,after_hash) '+
+      'VALUES(1,''knowledge'',:note,''Human approved identity continuity'',:reviewer,:stamp,:before,:after)',
+      [AKnowledge,AReviewer,UTCNow,THashSHA2.GetHashString(AOldKey),THashSHA2.GetHashString(ANewKey)]);
+    FConnection.Commit;
+  except FConnection.Rollback; raise; end;
+end;
 
 function TDPHKnowledgeStore.RecentRetentionCount: Integer;
 begin

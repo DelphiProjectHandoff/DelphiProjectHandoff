@@ -20,6 +20,7 @@
     <DCCReference Include="DPH.UI.Main.pas"><Form>DPHMainForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.Storage.Types.pas" />
     <DCCReference Include="DPH.Storage.Database.pas" />
+    <DCCReference Include="DPH.Storage.Backup.pas" />
     <DCCReference Include="DPH.Parse.Model.pas" />
     <DCCReference Include="DPH.Project.Source.pas" />
     <DCCReference Include="DPH.Parse.Lexer.pas" />

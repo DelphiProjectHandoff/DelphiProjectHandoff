@@ -8,6 +8,9 @@ type
     Defines,ExternalRoots: TArray<string>;
     KnowledgeID,ExpectedRevision,GenerationID: Int64;
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
+    OldEntityKey: string;
+    SearchKind: string;
+    SearchOffset: Integer;
     ExportDirectory: string;
     Seeds,Exclusions: TArray<string>;
   end;
@@ -18,7 +21,11 @@ type
     ExportDirectory: string;
     SourceEntry: string;
     Lifecycle: TJSONArray;
+    Continuity: TJSONArray;
     RetentionCount: Integer;
+    RestoredDatabase: string;
+    SearchResults: TJSONArray;
+    SearchGeneration: Int64;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -41,10 +48,10 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -89,16 +96,63 @@ begin
       try
         OpeningCached:=Request.Command='open';
         Respond(nil,'Working in background...',True,False,False,False);
+        if Request.Command='restore_backup' then begin
+          TDPHProjectBackup.Restore(Request.Database,Request.ExportDirectory,TPath.Combine(FBaseDirectory,'migrations'));
+          LifecycleResponse:=TDPHWorkspaceResponse.Create;
+          LifecycleResponse.RestoredDatabase:=Request.ExportDirectory;
+          LifecycleResponse.MessageText:='Backup restored to a new database; opening the verified copy';
+          if FResponses.PushItem(LifecycleResponse)<>wrSignaled then LifecycleResponse.Free;
+          Continue;
+        end;
         if (Request.Entry<>'') and MatchText(Request.Command,['incremental','full','relocate']) then
         begin
           Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
           try if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
+          if Request.Command='search' then begin
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try
+              LifecycleResponse.SearchResults:=Store.SearchProject(Request.GenerationID,Request.Body,Request.SearchKind,Request.SearchOffset);
+              LifecycleResponse.SearchGeneration:=Request.GenerationID;
+              LifecycleResponse.Knowledge:=Store.KnowledgeJSON;
+              LifecycleResponse.Detached:=Request.Entry='';
+              LifecycleResponse.MessageText:='Indexed search returned '+IntToStr(LifecycleResponse.SearchResults.Count)+' results. Excerpts retain their evidence/review classification.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
+          if Request.Command='save_backup' then begin
+            TDPHProjectBackup.Save(Store,Request.ExportDirectory);
+            Respond(nil,'Backup saved: '+Request.ExportDirectory+'. Keep its adjacent .views folder with it.',False,False,Request.Entry='',False); Continue;
+          end;
+          if Request.Command='integrity' then begin
+            Text:=Store.IntegrityCheck;
+            if Text<>'ok' then raise EReadError.Create('Database integrity check failed: '+Text);
+            Store.ManagedArtifactPaths;
+            Respond(nil,'Database integrity: '+Text+'. All managed view/image checksums verified.',False,False,Request.Entry='',False); Continue;
+          end;
+          if StartsText('continuity_',Request.Command) then begin
+            if Request.Command='continuity_approve' then begin
+              if Request.Entry='' then raise EReadError.Create('Attach available source before approving identity continuity');
+              Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+              try Store.ObserveManifest(Inventory.Manifest); finally Inventory.Free; end;
+              Store.ApproveContinuity(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,Request.OldEntityKey,Request.EntityKey,Request.Editor);
+            end;
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try
+              LifecycleResponse.Continuity:=Store.ContinuityCandidates(Request.GenerationID,Request.Body);
+              LifecycleResponse.Knowledge:=Store.KnowledgeJSON;
+              LifecycleResponse.Detached:=Request.Entry='';
+              LifecycleResponse.MessageText:='Identity candidates are proposals only. Approved links still require knowledge-content review.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
           if StartsText('retention_',Request.Command) then begin
             if Request.Command='retention_apply' then Store.ApplyRetention(StrToInt(Request.Body));
             if Request.Command='retention_pin' then Store.RetainGeneration(Request.GenerationID,Request.Title,Request.Editor);

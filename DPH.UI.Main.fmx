@@ -13,6 +13,29 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 56
+object WorkspacePageCombo: TComboBox
+Align = Right
+Width = 210
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 12
+Items.Strings = (
+'Getting started'
+'Projects'
+'Database tools'
+'Rename review'
+'Search project'
+'Learn the project'
+'Explain'
+'Source'
+'Graphs'
+'Form designs'
+'Screenshots'
+'References'
+'Knowledge'
+'Publish')
+OnChange = WorkspacePageChange
+end
 object HelpButton: TButton
 Align = Right
 Width = 130
@@ -250,6 +273,128 @@ object WorkspaceTabs: TTabControl
 Align = Client
 TabPosition = Top
 ActiveTab = OverviewTab
+OnChange = WorkspacePageChange
+object ProjectSearchTab: TTabItem
+Text = 'Search project'
+object ProjectSearchPurpose: TLabel
+Align = Top
+Height = 90
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Search source objects, captured flow evidence, diagnostics and authored knowledge. Enter up to twelve words and click Search. Each word matches the beginning of an indexed word; all words must match. Select a result for its excerpt, then Open result to visit its object or note. Review status stays separate from static evidence. Use the page selector beside Getting started to reach any workspace page when tabs do not fit.'
+end
+object ProjectSearchToolbar: TLayout
+Align = Top
+Height = 84
+object ProjectSearchEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 280
+Height = 30
+TextPrompt = 'Search project evidence and knowledge'
+end
+object ProjectSearchKind: TComboBox
+Position.X = 296
+Position.Y = 4
+Width = 150
+Height = 30
+Items.Strings = ('All' 'object' 'evidence' 'knowledge' 'diagnostic')
+ItemIndex = 0
+end
+object RunProjectSearchButton: TButton
+Position.X = 8
+Position.Y = 44
+Width = 100
+Height = 30
+Text = 'Search'
+OnClick = ProjectSearchClick
+end
+object NextProjectSearchButton: TButton
+Position.X = 116
+Position.Y = 44
+Width = 120
+Height = 30
+Text = 'Next 50 results'
+Enabled = False
+OnClick = ProjectSearchClick
+end
+object OpenSearchResultButton: TButton
+Position.X = 244
+Position.Y = 44
+Width = 140
+Height = 30
+Text = 'Open result'
+OnClick = ProjectSearchClick
+end
+end
+object ProjectSearchMemo: TMemo
+Align = Bottom
+Height = 220
+ReadOnly = True
+WordWrap = True
+end
+object ProjectSearchList: TListBox
+Align = Client
+OnChange = ProjectSearchSelectionClick
+OnDblClick = ProjectSearchClick
+end
+end
+object ContinuityTab: TTabItem
+Text = 'Rename review'
+object ContinuityPurpose: TLabel
+Align = Top
+Height = 90
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Review missing or renamed objects with linked knowledge. Click Find candidates, then select a proposed replacement. Inspect its Explain and Source views. Enter your reviewer name and approve only after establishing that it is the same logical object. Historical links and authored revisions are retained; knowledge content still needs separate review. Proposals never approve themselves.'
+end
+object ContinuityToolbar: TLayout
+Align = Top
+Height = 84
+object ContinuityQueryEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 280
+Height = 30
+TextPrompt = 'Filter replacement name or file'
+end
+object FindContinuityButton: TButton
+Position.X = 296
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Find candidates'
+OnClick = ContinuityClick
+end
+object ContinuityReviewerEdit: TEdit
+Position.X = 8
+Position.Y = 44
+Width = 280
+Height = 30
+TextPrompt = 'Named continuity reviewer'
+end
+object ApproveContinuityButton: TButton
+Position.X = 296
+Position.Y = 44
+Width = 190
+Height = 30
+Text = 'Approve selected match'
+OnClick = ContinuityClick
+end
+end
+object ContinuityMemo: TMemo
+Align = Bottom
+Height = 220
+ReadOnly = True
+WordWrap = True
+end
+object ContinuityList: TListBox
+Align = Client
+OnChange = ContinuitySelectionClick
+end
+end
 object LifecycleTab: TTabItem
 Text = 'Database tools'
 object LifecyclePurpose: TLabel
@@ -262,7 +407,31 @@ Text = 'Retention controls remove older cached view files, preserving immutable 
 end
 object LifecycleToolbar: TLayout
 Align = Top
-Height = 86
+Height = 126
+object BackupButton: TButton
+Position.X = 8
+Position.Y = 84
+Width = 160
+Height = 30
+Text = 'Save project backup'
+OnClick = DatabaseToolsClick
+end
+object RestoreBackupButton: TButton
+Position.X = 176
+Position.Y = 84
+Width = 160
+Height = 30
+Text = 'Restore to new file'
+OnClick = DatabaseToolsClick
+end
+object IntegrityButton: TButton
+Position.X = 344
+Position.Y = 84
+Width = 150
+Height = 30
+Text = 'Check integrity'
+OnClick = DatabaseToolsClick
+end
 object RetentionCountEdit: TEdit
 Position.X = 8
 Position.Y = 4
@@ -358,6 +527,20 @@ object ProjectsList: TListBox
 Align = Client
 OnDblClick = OpenKnownProjectClick
 end
+end
+object BackupDialog: TSaveDialog
+DefaultExt = 'dphdb'
+Filter = 'DPH project backup (*.dphdb)|*.dphdb'
+Title = 'Save a new project backup; keep its adjacent .views folder'
+end
+object RestoreBackupDialog: TOpenDialog
+Filter = 'DPH project backup (*.dphdb)|*.dphdb'
+Title = 'Select the backup database; its .views folder must be beside it'
+end
+object RestoreDestinationDialog: TSaveDialog
+DefaultExt = 'dphdb'
+Filter = 'DPH project database (*.dphdb)|*.dphdb'
+Title = 'Restore to a NEW database outside the selected source project'
 end
 object OverviewTab: TTabItem
 Text = 'Learn the project'
