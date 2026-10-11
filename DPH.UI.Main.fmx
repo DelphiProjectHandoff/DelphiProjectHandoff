@@ -37,6 +37,7 @@ Items.Strings = (
 'Details'
 'Coverage'
 'Knowledge'
+'Knowledge links'
 'Publish')
 OnChange = WorkspacePageChange
 end
@@ -1105,6 +1106,81 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object KnowledgeLinksTab: TTabItem
+Text = 'Knowledge links'
+object KnowledgeLinksPurpose: TLabel
+Align = Top
+Height = 82
+WordWrap = True
+Text = 'Multiple links for the section being edited in Knowledge. Choose a target kind and optional name filter, then Find targets. Select a target on the left, choose its role and click Add link. Select a link on the right to remove it. Return to Knowledge and Save; links share that immutable revision. At most 200 matching candidates and 64 saved links per section.'
+end
+object KnowledgeLinksToolbar: TLayout
+Align = Top
+Height = 76
+object LinkKindCombo: TComboBox
+Position.X = 4
+Position.Y = 4
+Width = 150
+Height = 28
+Items.Strings = ('entity' 'relationship' 'evidence' 'screenshot' 'section')
+ItemIndex = 0
+end
+object LinkFilterEdit: TEdit
+Position.X = 164
+Position.Y = 4
+Width = 240
+Height = 28
+TextPrompt = 'Filter target names'
+end
+object RefreshLinkTargetsButton: TButton
+Position.X = 414
+Position.Y = 4
+Width = 130
+Height = 28
+Text = 'Find targets'
+OnClick = KnowledgeLinksClick
+end
+object LinkRoleCombo: TComboBox
+Position.X = 4
+Position.Y = 40
+Width = 150
+Height = 28
+Items.Strings = ('explains' 'cites' 'depends_on' 'illustrates')
+ItemIndex = 0
+end
+object AddKnowledgeLinkButton: TButton
+Position.X = 164
+Position.Y = 40
+Width = 130
+Height = 28
+Text = 'Add link'
+OnClick = KnowledgeLinksClick
+end
+object RemoveKnowledgeLinkButton: TButton
+Position.X = 304
+Position.Y = 40
+Width = 130
+Height = 28
+Text = 'Remove link'
+OnClick = KnowledgeLinksClick
+end
+object OpenKnowledgeLinkButton: TButton
+Position.X = 444
+Position.Y = 40
+Width = 140
+Height = 28
+Text = 'Open saved target'
+OnClick = OpenKnowledgeLinkClick
+end
+end
+object LinkTargetsList: TListBox
+Align = Left
+Width = 380
+end
+object KnowledgeLinksList: TListBox
+Align = Client
 end
 end
 object PublishTab: TTabItem

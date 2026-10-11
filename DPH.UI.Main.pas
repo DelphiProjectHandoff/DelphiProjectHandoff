@@ -43,6 +43,14 @@ type
     KnowledgeKindCombo: TComboBox;
     KnowledgeDocumentCombo,KnowledgeAudienceCombo: TComboBox;
     KnowledgeSectionLabel: TLabel;
+    KnowledgeLinksTab: TTabItem;
+    KnowledgeLinksToolbar: TLayout;
+    KnowledgeLinksPurpose: TLabel;
+    LinkKindCombo,LinkRoleCombo: TComboBox;
+    LinkFilterEdit: TEdit;
+    RefreshLinkTargetsButton,AddKnowledgeLinkButton,RemoveKnowledgeLinkButton: TButton;
+    OpenKnowledgeLinkButton: TButton;
+    LinkTargetsList,KnowledgeLinksList: TListBox;
     KnowledgeBodyMemo,KnowledgeHistoryMemo: TMemo;
     NewKnowledgeButton,SaveKnowledgeButton,RefreshKnowledgeButton,VerifyKnowledgeButton,RejectKnowledgeButton,RetireKnowledgeButton,DiscardKnowledgeButton: TButton;
     PendingKnowledgeCheck: TCheckBox;
@@ -112,6 +120,8 @@ type
     CoverageList: TListBox;
     CoveragePurpose: TLabel;
     CoverageInspectButton: TButton;
+    procedure KnowledgeLinksClick(Sender: TObject);
+    procedure OpenKnowledgeLinkClick(Sender: TObject);
     procedure CoverageInspectClick(Sender: TObject);
     procedure WorkspacePageChange(Sender: TObject);
     procedure WholeProgramGraphClick(Sender: TObject);
@@ -207,8 +217,10 @@ type
     FSearchQuery: string;
     FSearchKind: string;
     FWholeGraph: Boolean;
-    FFlowPages: TList<string>;
+    FPreviewPages: TList<string>;
     FCoverage: TJSONObject;
+    FLinkTargets,FEditableLinks: TJSONArray;
+    procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
     procedure RefreshLearning;
     procedure ShowExplanation;
@@ -237,7 +249,8 @@ procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
-  FFlowPages:=TList<string>.Create;
+  FPreviewPages:=TList<string>.Create;
+  FEditableLinks:=TJSONArray.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
@@ -270,13 +283,13 @@ begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FContinuity.Free;
-  FSearchResults.Free; FCoverage.Free;
+  FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
-  for Directory in FFlowPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
-  FFlowPages.Free;
-  // Remove only this form's three generated preview files, never a recursive tree.
+  for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
+  FPreviewPages.Free;
+  // Remove only this form's generated preview files, never a recursive tree.
   if FLearningDirectory<>'' then
   try
     for Directory in [FExplainDirectory,FFlowDirectory,FLearningDirectory] do begin
@@ -465,6 +478,7 @@ begin
     R.Kind:=KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]; R.EntityKey:=FKnowledgeLink; R.ReviewState:=FReviewState;
     if KnowledgeDocumentCombo.ItemIndex>0 then R.DocumentKind:=KnowledgeDocumentCombo.Items[KnowledgeDocumentCombo.ItemIndex];
     if KnowledgeAudienceCombo.ItemIndex>0 then R.Audience:=KnowledgeAudienceCombo.Items[KnowledgeAudienceCombo.ItemIndex];
+    R.LinksJSON:=FEditableLinks.ToJSON;
   end;
   if ACommand='publish' then
   begin
@@ -475,7 +489,7 @@ begin
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
-  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex);
+  FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 var SelectedDatabase: string;
@@ -532,6 +546,7 @@ begin
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
   FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
+  FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
   FExpandedKeys.Clear; FHierarchyVisible:=False;
@@ -565,9 +580,13 @@ begin
       if FView=nil then HelpClick(nil);
     end;
     if R.Knowledge<>nil then begin
-      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)) then FKnowledgeEdited:=False;
+      if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if (R.LinkCandidates<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
+      FLinkTargets.Free; FLinkTargets:=R.LinkCandidates; R.LinkCandidates:=nil; LinkTargetsList.Items.Clear;
+      for Value in FLinkTargets do LinkTargetsList.Items.Add(Value.GetValue<string>('label'));
+    end;
     if (R.SearchResults<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
       FSearchResults.Free; FSearchResults:=R.SearchResults; R.SearchResults:=nil; ProjectSearchList.Items.Clear;
       for Value in FSearchResults do begin Row:=Value as TJSONObject;
@@ -609,6 +628,7 @@ begin
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
     SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
   SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
+  FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
@@ -710,21 +730,25 @@ begin
   LearningClick(nil); ShowExplanation; RefreshGraphics;
 end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
+var HTML,PreviewPath: string;
 begin
   if FExplanations=nil then Exit;
   OverviewMemo.Text:=FExplanations.TopicText(Max(0,LearningTopics.ItemIndex));
-  TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.TopicHTML(Max(0,LearningTopics.ItemIndex))));
+  HTML:=FExplanations.TopicHTML(Max(0,LearningTopics.ItemIndex)); PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
-    LearningBrowser.Navigate('file://'+TPath.Combine(FLearningDirectory,'index.html'));
+    LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin LearningBrowser.Visible:=False; StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.ShowExplanation;
+var HTML,PreviewPath: string;
 begin
   if FExplanations=nil then Exit;
   ExplainFallback.Text:=FExplanations.ObjectText(FSelected);
-  TFile.WriteAllBytes(TPath.Combine(FExplainDirectory,'index.html'),TEncoding.UTF8.GetBytes(FExplanations.ObjectHTML(FSelected)));
+  HTML:=FExplanations.ObjectHTML(FSelected); PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
-    ExplainBrowser.Navigate('file://'+TPath.Combine(FExplainDirectory,'index.html'));
+    ExplainBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
@@ -733,7 +757,7 @@ begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=TPath.Combine(FBaseDirectory,'help');
-  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory); if ACancel then Exit;
+  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,Sender<>HelpBrowser); if ACancel then Exit;
   P:=Pos('#g_',AURL);
   if (P>0) and (FGraph<>nil) then begin
     ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
@@ -872,7 +896,7 @@ begin
     'Rule: '+Row.GetValue<string>('rule')+sLineBreak+'Source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Integer>('line').ToString+
     sLineBreak+'Byte range: '+Range.GetValue('start').Value+' through '+Range.GetValue('end').Value+
     sLineBreak+'SHA256: '+Row.GetValue<string>('source_hash','unavailable')+sLineBreak+
-    'Generation: '+FView.Document.GetValue('generation_id').Value+sLineBreak+sLineBreak+
+    'Generation: '+Row.GetValue<string>('generation_id',FView.Document.GetValue('generation_id').Value)+sLineBreak+sLineBreak+
     'This is captured static evidence. Open matching source verifies the file hash before applying this range. Detached mode retains the evidence above.';
 end;
 
@@ -890,6 +914,7 @@ begin
   DetailsClick(nil);
   if FDetached or (FEntry='') then begin DetailsMemo.Lines.Add('Original source is detached. The cached statement/value and source evidence remain available here.'); Exit; end;
   Row:=FDetails.Items[DetailsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
+  if Row.GetValue<Int64>('generation_id',FView.Document.GetValue<Int64>('generation_id'))<>FView.Document.GetValue<Int64>('generation_id') then begin DetailsMemo.Lines.Add('Historical evidence: source navigation is disabled until this target is reviewed against the current generation.'); Exit; end;
   FileRow:=FView.SourceFile(Range.GetValue<string>('source')); if FileRow=nil then Exit;
   Path:=TPath.GetFullPath(TPath.Combine(ExtractFilePath(FEntry),Range.GetValue<string>('source')));
   if not StartsText(IncludeTrailingPathDelimiter(ExtractFilePath(FEntry)),Path) then begin DetailsMemo.Lines.Add('Source location is outside the attached project.'); Exit; end;
@@ -1012,8 +1037,8 @@ begin
   if (FGraph<>nil) and (FExplanations<>nil) then begin
     if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
     GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
-    if not FFlowPages.Contains(GraphPath) then begin
-      TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FFlowPages.Add(GraphPath);
+    if not FPreviewPages.Contains(GraphPath) then begin
+      TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(GraphPath);
     end;
     try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
       FlowBrowser.Navigate('file://'+GraphPath);
@@ -1173,7 +1198,7 @@ begin
   end;
 end;
 procedure TDPHMainForm.KnowledgeClick(Sender: TObject);
-var Row: TJSONObject;
+var Row: TJSONObject; Links: TJSONArray;
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before selecting another record'; Exit; end;
   if (KnowledgeList.ItemIndex<0) or (KnowledgeList.ItemIndex>=FKnowledgeRows.Count) then Exit; Row:=FKnowledgeRows[KnowledgeList.ItemIndex];
@@ -1183,11 +1208,14 @@ begin
   KnowledgeTitleEdit.Text:=Row.GetValue<string>('title'); KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf(Row.GetValue<string>('kind'));
   if KnowledgeKindCombo.ItemIndex<0 then KnowledgeKindCombo.ItemIndex:=0;
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
+  FEditableLinks.Free; if Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+  RefreshKnowledgeLinks;
   KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf(Row.GetValue<string>('document_kind','engineering'));
   KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf(Row.GetValue<string>('audience','engineer'));
   KnowledgeSectionLabel.Text:='Section '+Row.GetValue<string>('section_id','')+' | revision '+Row.GetValue<string>('revision');
   KnowledgeHistoryMemo.Text:='Author: '+Row.GetValue<string>('owner')+' | current state: '+Row.GetValue<string>('state')+sLineBreak+
     'Links: '+Row.GetValue<TJSONArray>('links').Format(2)+sLineBreak+'Immutable revision history: '+Row.GetValue<TJSONArray>('history').Format(2);
+  if Row.TryGetValue<TJSONArray>('backlinks',Links) then KnowledgeHistoryMemo.Lines.Add('Sections linking to this exact revision: '+Links.Format(2));
   finally FBinding:=False; end;
 end;
 procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
@@ -1195,11 +1223,86 @@ begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
+    FreeAndNil(FEditableLinks); FEditableLinks:=TJSONArray.Create; RefreshKnowledgeLinks;
     KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
     FKnowledgeEdited:=False; FKnowledgeLink:=FSelected; finally FBinding:=False; end;
 end;
 procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
 begin Submit('save_knowledge'); end;
+procedure TDPHMainForm.RefreshKnowledgeLinks;
+var V: TJSONValue;
+begin
+  KnowledgeLinksList.Items.Clear;
+  if FEditableLinks<>nil then for V in FEditableLinks do KnowledgeLinksList.Items.Add(
+    V.GetValue<string>('link_role')+' | '+V.GetValue<string>('target_kind')+' | '+V.GetValue<string>('label'));
+end;
+procedure TDPHMainForm.OpenKnowledgeLinkClick(Sender: TObject);
+var Link,Row,Payload,Range,RecordRow,RevisionRow: TJSONObject; V,W: TJSONValue; Kind,Key,Body: string; Index: Integer;
+begin
+  if (FView=nil) or (KnowledgeLinksList.ItemIndex<0) then Exit;
+  Link:=FEditableLinks.Items[KnowledgeLinksList.ItemIndex] as TJSONObject; Kind:=Link.GetValue<string>('target_kind');
+  Key:=Link.GetValue<string>('canonical_key','');
+  if (Kind='entity') and (Key<>'') and (FView.Symbol(Key)<>nil) then begin SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
+  if (Kind='screenshot') and (FImages<>nil) then begin
+    for Index:=0 to FImages.Count-1 do if FImages.Items[Index].GetValue<string>('artifact_hash','')=Link.GetValue<string>('screenshot_hash','unavailable') then begin
+      ScreenshotList.ItemIndex:=Index; ScreenshotClick(nil); WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit;
+    end;
+  end;
+  if Kind='section' then begin
+    if FKnowledge<>nil then for V in FKnowledge do begin RecordRow:=V as TJSONObject;
+      for W in RecordRow.GetValue<TJSONArray>('history') do begin RevisionRow:=W as TJSONObject;
+        if RevisionRow.GetValue<Int64>('revision')<>Link.GetValue<Int64>('target_id') then Continue;
+        Body:=RecordRow.GetValue<string>('title')+sLineBreak+'Exact revision '+RevisionRow.GetValue<string>('revision')+
+          ' | '+RevisionRow.GetValue<string>('verification_state')+' | author '+RevisionRow.GetValue<string>('editor')+sLineBreak+RevisionRow.GetValue<string>('body');
+        FreeAndNil(FDetails); FDetails:=TJSONArray.Create; DetailsList.Items.Clear; DetailsMemo.Text:=Body; WorkspaceTabs.ActiveTab:=DetailsTab; Exit;
+      end;
+    end;
+  end;
+  if MatchText(Kind,['relationship','evidence']) and (Link.GetValue<string>('source_range','')<>'') then begin
+    Range:=TJSONObject.ParseJSONValue(Link.GetValue<string>('source_range')) as TJSONObject;
+    if Range=nil then Range:=TJSONObject.Create;
+    if Range.GetValue('source')=nil then Range.AddPair('source','');
+    if Range.GetValue('start')=nil then Range.AddPair('start',TJSONNumber.Create(0));
+    if Range.GetValue('end')=nil then Range.AddPair('end',TJSONNumber.Create(0));
+    if Range.GetValue('line')=nil then Range.AddPair('line',TJSONNumber.Create(0));
+    if Range.GetValue('column')=nil then Range.AddPair('column',TJSONNumber.Create(0));
+    Payload:=TJSONObject.ParseJSONValue(Link.GetValue<string>('evidence_payload','')) as TJSONObject;
+    try
+      FreeAndNil(FDetails); FDetails:=TJSONArray.Create; Row:=TJSONObject.Create; FDetails.AddElement(Row);
+      Row.AddPair('range',Range); Row.AddPair('detail_kind',Kind); Row.AddPair('title',Link.GetValue<string>('label'));
+      Row.AddPair('text',Link.GetValue<string>('link_role')+' | '+Link.GetValue<string>('label')+sLineBreak+
+        'Target record '+Link.GetValue<string>('target_id')+' | static evidence; not a runtime observation.');
+      Row.AddPair('resolution',Link.GetValue<string>('resolution','inferred')); Row.AddPair('object_key',Key);
+      Row.AddPair('generation_id',Link.GetValue<string>('source_generation'));
+      if Payload<>nil then begin Row.AddPair('rule',Payload.GetValue<string>('rule','captured_evidence')); Row.AddPair('source_hash',Payload.GetValue<string>('source_hash','unavailable')); end
+      else Row.AddPair('rule','captured_evidence');
+      DetailsList.Items.Clear; DetailsList.Items.Add(Row.GetValue<string>('title')); DetailsList.ItemIndex:=0; DetailsClick(nil); WorkspaceTabs.ActiveTab:=DetailsTab;
+    finally Payload.Free; end;
+    Exit;
+  end;
+  StatusLabel.Text:='Save and reload this section to resolve its link evidence, or locate the target in its captured generation.';
+end;
+procedure TDPHMainForm.KnowledgeLinksClick(Sender: TObject);
+var Request: TDPHWorkspaceRequest; Row: TJSONObject; V: TJSONValue; Role: string;
+begin
+  if Sender=RefreshLinkTargetsButton then begin
+    if FBusy or (FView=nil) then Exit;
+    Request:=Default(TDPHWorkspaceRequest); Request.Command:='link_candidates'; Request.Database:=FDatabase; Request.Entry:=FEntry;
+    Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); Request.Kind:=LinkKindCombo.Items[LinkKindCombo.ItemIndex]; Request.Body:=LinkFilterEdit.Text;
+    FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Finding link targets in the captured generation...'; Exit;
+  end;
+  if Sender=RemoveKnowledgeLinkButton then begin
+    if KnowledgeLinksList.ItemIndex<0 then Exit; FEditableLinks.Remove(KnowledgeLinksList.ItemIndex).Free;
+  end else if Sender=AddKnowledgeLinkButton then begin
+    if (FLinkTargets=nil) or (LinkTargetsList.ItemIndex<0) then Exit;
+    Row:=FLinkTargets.Items[LinkTargetsList.ItemIndex] as TJSONObject; Role:=LinkRoleCombo.Items[LinkRoleCombo.ItemIndex];
+    for V in FEditableLinks do if (V.GetValue<string>('target_kind')=Row.GetValue<string>('target_kind')) and
+      (V.GetValue<Int64>('target_id')=Row.GetValue<Int64>('target_id')) and (V.GetValue<string>('link_role')=Role) then begin StatusLabel.Text:='That link is already in this section.'; Exit; end;
+    if FEditableLinks.Count>=64 then begin StatusLabel.Text:='A section supports up to 64 explicit links.'; Exit; end;
+    Row:=Row.Clone as TJSONObject; Row.AddPair('link_role',Role); FEditableLinks.AddElement(Row);
+  end else Exit;
+  KnowledgeEdited(nil); RefreshKnowledgeLinks; StatusLabel.Text:='Link edit is unsaved. Return to Knowledge and click Save.';
+end;
 procedure TDPHMainForm.RefreshKnowledgeClick(Sender: TObject);
 begin Submit('knowledge'); end;
 procedure TDPHMainForm.ReviewKnowledgeClick(Sender: TObject);

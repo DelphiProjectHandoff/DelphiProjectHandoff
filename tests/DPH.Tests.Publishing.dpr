@@ -23,7 +23,7 @@ begin Result:=ATargetLocale+': '+AText; end;
 var Root,Work,Fixture,Path,Key,Text,CacheKey: string; IDValue: TGUID; Checks: Integer;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Store: TDPHKnowledgeStore; Config,Generation: Int64; View: TDPHWorkspaceView; Model,Task,Again: TDPHDocumentModel;
-    Knowledge,Rows: TJSONArray; J: TJSONObject; V: TJSONValue; Failed: Boolean;
+    Knowledge,Rows,RichLinks: TJSONArray; J: TJSONObject; V: TJSONValue; Failed: Boolean;
     Cache: TDPHTranslationCache; Provider: IDPHTranslationProvider; Segments: TArray<TDPHTranslationSegment>;
     Archive: TZipFile; Bytes: TBytes;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -33,6 +33,10 @@ begin
   try
     Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(IDValue); Work:=TPath.Combine(Root,'bin\wp6-tests-'+GUIDToString(IDValue)); Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
     Check(TDPHBrowserPolicy.Allowed('about:blank',Work),'Preview permits its blank startup page');
+    Check(TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,StringOfChar('a',64)+'.html'),Work,False,True),
+      'App preview permits content-hashed page in its owned preview directory');
+    Check(not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'other.html'),Work,False,True),
+      'Hashed preview policy rejects arbitrary local page names');
     Check(TDPHBrowserPolicy.Allowed('file:///'+Work.Replace('\','/')+'/index.html#overview',Work),'Preview permits only its local index and internal anchors');
     Check(not TDPHBrowserPolicy.Allowed('https://example.com',Work),'Preview rejects external navigation');
     Check(not TDPHBrowserPolicy.Allowed('file:///'+Fixture.Replace('\','/')+'/index.html',Work),'Preview rejects unrelated local files');
@@ -55,12 +59,24 @@ begin
       finally Scan.Free; end;
       try
         Rows:=View.Search('Click','routine',''); try Check(Rows.Count>0,'Captured fixture has its click routine'); Key:=(Rows.Items[0] as TJSONObject).GetValue<string>('key'); finally Rows.Free; end;
-        Store.SaveKnowledge(0,0,Generation,'Untrusted author text','<script>alert(1)</script> file://C:/private password=DO_NOT_EXPORT','Test Author','user_help',Key);
+        RichLinks:=TJSONArray.Create;
+        try
+          Rows:=Store.LinkCandidates(Generation,'entity','Main.TMain.Click');
+          try J:=Rows.Items[0].Clone as TJSONObject; J.AddPair('link_role','explains'); RichLinks.AddElement(J); finally Rows.Free; end;
+          Rows:=Store.LinkCandidates(Generation,'relationship','Main.TMain.Click');
+          try J:=nil; for V in Rows do if (V.GetValue<string>('canonical_key')=Key) and V.GetValue<string>('label').Contains('Worker.PublicWork') then begin J:=V.Clone as TJSONObject; Break; end;
+            Check(J<>nil,'Publication fixture has a relationship to the excluded worker unit');
+            J.AddPair('link_role','cites'); RichLinks.AddElement(J); finally Rows.Free; end;
+          Store.SaveKnowledge(0,0,Generation,'Untrusted author text','<script>alert(1)</script> file://C:/private password=DO_NOT_EXPORT','Test Author','user_help',Key,'user','user',RichLinks.ToJSON);
+        finally RichLinks.Free; end;
         Knowledge:=Store.KnowledgeJSON;
         try Model:=TDPHDocumentModel.Create(View,Knowledge,[],['worker.pas'],False,False);
           try
             Check(Pos('DO_NOT_EXPORT',Model.Document.ToJSON)=0,'Credential assignment is redacted throughout canonical model');
             Check(Model.Document.GetValue<TJSONArray>('exclusions').Count=1,'Explicit source exclusion is recorded');
+            Check((Model.Document.GetValue<TJSONArray>('knowledge').Items[0].GetValue<TJSONArray>('rich_links').Count=1) and
+              (Model.Document.GetValue<TJSONArray>('knowledge').Items[0].GetValue<Integer>('omitted_rich_links')=1),
+              'Publication removes rich relationship links whose target unit is excluded');
             Check((Model.Document.GetValue<TJSONArray>('sections').Count=9) and
               (Model.Document.GetValue<TJSONArray>('sections').Items[0].GetValue<string>('section_version').Length=64),
               'Generated document sections have stable IDs and deterministic content versions');
@@ -80,6 +96,8 @@ begin
             Text:=TFile.ReadAllText(TPath.Combine(Work,'full\index.html'),TEncoding.UTF8);
             Check(Pos('<script>alert(1)</script>',Text)=0,'Authored markup is encoded rather than executed');
             Check(Pos('&lt;script&gt;',Text)>0,'Escaped author text remains inspectable');
+            Check(Text.Contains('Open linked target') and Text.Contains('knowledge_revision_'),
+              'Offline guide contains target navigation and exact revision anchors');
             Check(Pos('connect-src ''none''',Text)>0,'Offline HTML blocks external connections');
             Check(Pos('class="notranslate"',Text)>0,'Code identifiers are protected from translation');
             Check(TFile.Exists(TPath.Combine(Work,'full\assets\translation-selector.js')),'Local bilingual language selector helper is included');

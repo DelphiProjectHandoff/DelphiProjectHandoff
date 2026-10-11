@@ -212,6 +212,22 @@ filters guide sections and attributed content. This audience filter is not a
 privacy boundary: use file exclusions for source restrictions. Export writes a
 new folder. Authored source generations remain distinct from publication identity.
 
+Multiple documentation links
+First select or create a section in Knowledge. Choose Knowledge links in the
+top-right page selector. Choose entity, relationship, evidence, screenshot or
+section in the first list. Enter an optional name filter and click Find targets.
+Select a target in the left list, choose explains, cites, depends_on or illustrates,
+then click Add link. Repeat for additional targets. The right list contains the
+section's unsaved links. Select one and click Remove link to remove it.
+Return to Knowledge and click Save. Reload the saved section, return to Knowledge
+links, select a link and click Open saved target. Entity links open Explain;
+relationship/evidence links open Details; screenshot links open the imported PNG;
+section links show the exact pinned revision text. Older links cannot silently
+gain approval against a newer generation. Review targets, save current links and
+then use Verify review. Source navigation is disabled for historical evidence.
+Offline exports include scoped links and revision anchors. Omitted target links
+are explicitly counted when their source or audience is excluded.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

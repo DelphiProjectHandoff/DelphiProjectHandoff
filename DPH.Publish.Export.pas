@@ -66,7 +66,7 @@ begin
   finally Archive.Free; end;
 end;
 class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string);
-var Directory,IndexText,Path,Relative,Anchor: string; V,W: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
+var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValue: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
     ByFrom: TObjectDictionary<string,TList<TJSONObject>>; Neighbors: TList<TJSONObject>;
     Explanations: TDPHExplanationModel;
     Images: TJSONArray; ImageValue: TJSONValue; ImageRow: TJSONObject; ImagePath: string;
@@ -108,14 +108,36 @@ begin
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<a href="#'+R.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</a>'); end;
     Page.Append('</nav><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
     for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
-      Page.Append('<figure><img width="640" src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' | Contributor: '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+' | user supplied, unverified | generation '+R.GetValue('generation_id').Value+'</figcaption></figure>');
+      Page.Append('<figure id="screenshot_'+R.GetValue<string>('artifact_hash','')+'"><img width="640" src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' | Contributor: '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+' | user supplied, unverified | generation '+R.GetValue('generation_id').Value+'</figcaption></figure>');
     end;
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<section id="'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2>');
       for W in R.GetValue<TJSONArray>('paragraphs') do Page.Append('<p>'+TDPHDocumentModel.HTML(W.Value)+'</p>');
       for W in R.GetValue<TJSONArray>('knowledge_ids') do Page.Append('<p><a href="#knowledge_'+W.Value+'">Attributed knowledge '+W.Value+'</a></p>');
       Page.Append('</section>');
     end;
-    for V in AModel.Document.GetValue<TJSONArray>('knowledge') do begin R:=V as TJSONObject; Page.Append('<section id="knowledge_'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Attributed '+TDPHDocumentModel.HTML(R.GetValue<string>('state'))+' content by '+TDPHDocumentModel.HTML(R.GetValue<string>('owner'))+' | reviewed '+TDPHDocumentModel.HTML(R.GetValue<string>('reviewed_at'))+'</p><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</p></section>'); end;
+    for V in AModel.Document.GetValue<TJSONArray>('knowledge') do begin R:=V as TJSONObject;
+      Page.Append('<section id="knowledge_'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Attributed '+TDPHDocumentModel.HTML(R.GetValue<string>('state'))+' content by '+TDPHDocumentModel.HTML(R.GetValue<string>('owner'))+' | reviewed '+TDPHDocumentModel.HTML(R.GetValue<string>('reviewed_at'))+'</p><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</p>');
+      for RevisionValue in R.GetValue<TJSONArray>('history') do begin
+        Page.Append('<details id="knowledge_revision_'+RevisionValue.GetValue<string>('revision')+'"><summary>Revision '+RevisionValue.GetValue<string>('revision')+
+          ' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('verification_state'))+' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('editor'))+'</summary><p>'+
+          TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('body'))+'</p></details>');
+      end;
+      if R.GetValue('rich_links')<>nil then for LinkValue in R.GetValue<TJSONArray>('rich_links') do begin
+        Anchor:='';
+        if LinkValue.GetValue<string>('target_kind')='entity' then Anchor:='#s_'+THashSHA2.GetHashString(LinkValue.GetValue<string>('canonical_key'));
+        if LinkValue.GetValue<string>('target_kind')='section' then Anchor:='#knowledge_revision_'+LinkValue.GetValue<string>('target_id');
+        if LinkValue.GetValue<string>('target_kind')='screenshot' then Anchor:='#screenshot_'+LinkValue.GetValue<string>('screenshot_hash');
+        Page.Append('<details><summary>'+TDPHDocumentModel.HTML(LinkValue.GetValue<string>('link_role')+' | '+LinkValue.GetValue<string>('label'))+'</summary>');
+        if Anchor<>'' then Page.Append('<p><a href="'+Anchor+'">Open linked target</a></p>');
+        Page.Append('<p>Captured generation '+TDPHDocumentModel.HTML(LinkValue.GetValue<string>('source_generation'))+' | '+
+          TDPHDocumentModel.HTML(LinkValue.GetValue<string>('resolution','inferred'))+'</p>');
+        if MatchText(LinkValue.GetValue<string>('target_kind'),['relationship','evidence']) then
+          Page.Append('<p>Source range: '+TDPHDocumentModel.HTML(LinkValue.GetValue<string>('source_range'))+'</p><pre>'+TDPHDocumentModel.HTML(LinkValue.GetValue<string>('evidence_payload'))+'</pre>');
+        Page.Append('</details>');
+      end;
+      if R.GetValue<Integer>('omitted_rich_links',0)>0 then Page.Append('<p>Some links were omitted because their targets are outside this export scope.</p>');
+      Page.Append('</section>');
+    end;
     IndexText:='';
     for V in AModel.Document.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; Anchor:='s_'+THashSHA2.GetHashString(R.GetValue<string>('key'));
       Path:='objects/'+THashSHA2.GetHashString(R.GetValue<string>('key'))+'.html';

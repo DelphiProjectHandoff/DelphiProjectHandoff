@@ -42,9 +42,10 @@ end;
 constructor TDPHDocumentModel.Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
   const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray; ALocalDisplay: Boolean; const AAudience: string);
 var AllowedFiles,Selected,AllKeys,FlowIDs: TDictionary<string,Boolean>; Queue: TQueue<string>;
-    V,W: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
+    V,W,LinkFileValue: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
     Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID,SectionAudience: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
-    Startup,Nodes,Comments,AuthoredSections: TJSONArray; Node,FileRow: TJSONObject; Explanations: TDPHExplanationModel; CommentCount: Integer;
+    Startup,Nodes,Comments,AuthoredSections: TJSONArray; Node,FileRow,LinkedRow,LinkRange: TJSONObject; Explanations: TDPHExplanationModel; CommentCount,LinkIndex,Omitted: Integer;
+    LinkRecords: TList<TJSONObject>; LinkValue,TargetRecord,TargetRevision: TJSONValue; TargetFound: Boolean;
   function CaptureValue(AValue: TJSONValue): TJSONValue;
   begin
     if ALocalDisplay then Result:=AValue.Clone as TJSONValue else Result:=Scrub(AValue);
@@ -137,7 +138,18 @@ begin
       if IncludeRow then begin J:=TJSONObject.Create; J.AddPair('path',Path); J.AddPair('sha256',R.GetValue<string>('sha256')); J.AddPair('bytes',TJSONNumber.Create(R.GetValue<Int64>('bytes'))); J.AddPair('availability',R.GetValue<string>('availability')); Files.AddElement(J); end;
     end;
     if AKnowledge<>nil then for V in AKnowledge do begin R:=V as TJSONObject; Links:=R.GetValue<TJSONArray>('links'); IncludeRow:=Links.Count=0;
-      if Links.Count>0 then begin IncludeRow:=True; for W in Links do if not Selected.ContainsKey((W as TJSONObject).GetValue<string>('canonical_key','')) then IncludeRow:=False; end;
+      if Links.Count>0 then begin IncludeRow:=True; for W in Links do begin
+        Key:=W.GetValue<string>('canonical_key','');
+        if Key<>'' then begin if not Selected.ContainsKey(Key) then IncludeRow:=False; end
+        else begin
+          Path:=W.GetValue<string>('source_path',''); Exclude:=True;
+          for LinkFileValue in Files do if LinkFileValue.GetValue<string>('path')=Path then begin Exclude:=False; Break; end;
+          if Exclude then IncludeRow:=False;
+        end;
+        Path:=W.GetValue<string>('source_path','');
+        if Path<>'' then begin Exclude:=True; for LinkFileValue in Files do if LinkFileValue.GetValue<string>('path')=Path then begin Exclude:=False; Break; end;
+          if Exclude then IncludeRow:=False; end;
+      end; end;
       if (AAudience<>'all') and not MatchText(R.GetValue<string>('audience','engineer'),['all',AAudience]) then IncludeRow:=False;
       if IncludeRow then begin J:=CaptureValue(R) as TJSONObject; J.AddPair('publication_generation',TJSONNumber.Create(Generation)); Knowledge.AddElement(J); end;
     end;
@@ -152,6 +164,35 @@ begin
       Key:=R.GetValue<string>('entity_key',''); if (Key<>'') and not Selected.ContainsKey(Key) then Continue;
       J:=CaptureValue(R) as TJSONObject; J.RemovePair('managed_path').Free; Links.AddElement(J);
     end;
+    LinkRecords:=TList<TJSONObject>.Create;
+    try
+      for V in Knowledge do begin LinkRecords.Add(V as TJSONObject); for W in V.GetValue<TJSONArray>('history') do LinkRecords.Add(W as TJSONObject); end;
+      for LinkedRow in LinkRecords do begin
+        if LinkedRow.TryGetValue<TJSONArray>('backlinks',AuthoredSections) then
+          for LinkIndex:=AuthoredSections.Count-1 downto 0 do begin TargetFound:=False;
+            for TargetRecord in Knowledge do if TargetRecord.GetValue<Int64>('id')=AuthoredSections.Items[LinkIndex].GetValue<Int64>('knowledge_id') then begin TargetFound:=True; Break; end;
+            if not TargetFound then AuthoredSections.Remove(LinkIndex).Free;
+          end;
+        if not LinkedRow.TryGetValue<TJSONArray>('rich_links',AuthoredSections) then Continue; Omitted:=0;
+        for LinkIndex:=AuthoredSections.Count-1 downto 0 do begin
+          LinkValue:=AuthoredSections.Items[LinkIndex]; Kind:=LinkValue.GetValue<string>('target_kind'); TargetFound:=False;
+          if MatchText(Kind,['entity','relationship']) then TargetFound:=Selected.ContainsKey(LinkValue.GetValue<string>('canonical_key',''));
+          if (Kind='relationship') and (LinkValue.GetValue<string>('to_key','')<>'') and not Selected.ContainsKey(LinkValue.GetValue<string>('to_key')) then TargetFound:=False;
+          if Kind='evidence' then begin
+            LinkRange:=TJSONObject.ParseJSONValue(LinkValue.GetValue<string>('source_range','{}')) as TJSONObject;
+            try if LinkRange<>nil then for W in Files do if W.GetValue<string>('path')=LinkRange.GetValue<string>('source','') then begin TargetFound:=True; Break; end; finally LinkRange.Free; end;
+          end;
+          if Kind='screenshot' then for W in FDocument.GetValue<TJSONArray>('screenshots') do
+            if W.GetValue<string>('artifact_hash','')=LinkValue.GetValue<string>('screenshot_hash','unavailable') then begin TargetFound:=True; Break; end;
+          if Kind='section' then for TargetRecord in Knowledge do begin
+            for TargetRevision in TargetRecord.GetValue<TJSONArray>('history') do if TargetRevision.GetValue<Int64>('revision')=LinkValue.GetValue<Int64>('target_id') then begin TargetFound:=True; Break; end;
+            if TargetFound then Break;
+          end;
+          if not TargetFound then begin AuthoredSections.Remove(LinkIndex).Free; Inc(Omitted); end;
+        end;
+        LinkedRow.AddPair('omitted_rich_links',TJSONNumber.Create(Omitted));
+      end;
+    finally LinkRecords.Free; end;
     Links:=TJSONArray.Create; FDocument.AddPair('diagnostics',Links);
     for V in S.GetValue<TJSONArray>('diagnostics') do begin R:=V as TJSONObject;
       Path:=R.GetValue<string>('range.source',''); IncludeRow:=Path='';

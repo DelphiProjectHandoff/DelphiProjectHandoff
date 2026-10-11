@@ -68,10 +68,11 @@ type
     procedure CommitFacts;
     procedure RollbackFacts;
     function SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''): Int64;
+      const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind: string = ''; const AAudience: string = ''; const ALinksJSON: string = ''): Int64;
     procedure ReviewKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
       const AReviewer,AState: string);
     function KnowledgeJSON: TJSONArray;
+    function LinkCandidates(AGeneration: Int64; const AKind: string; const AQuery: string = ''): TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
     function GenerationIsStale(AGenerationID: Int64): Boolean;
     procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
@@ -98,7 +99,19 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions;
 
 const
-  CurrentSchemaVersion = 5;
+  CurrentSchemaVersion = 6;
+  RichLinkProjectionSQL = 'SELECT l.target_kind,l.target_id,l.source_generation,l.link_role,l.label,'+
+    'coalesce(e.canonical_key,a.canonical_key,'''') AS canonical_key,coalesce(b.canonical_key,'''') AS to_key,coalesce(ev.source_range_json,''{}'') AS source_range,'+
+    'coalesce(ev.payload_ref,'''') AS evidence_payload,coalesce(rel.resolution_status,CASE WHEN ev.verification_state=''verified'' THEN ''confirmed_static'' ELSE ev.verification_state END,''inferred'') AS resolution,'+
+    'coalesce(rel.relation_kind,ev.evidence_kind,l.target_kind) AS kind,coalesce(kr.knowledge_id,0) AS knowledge_id,'+
+    'coalesce(art.content_hash,'''') AS screenshot_hash '+
+    'FROM knowledge_revision_links l LEFT JOIN entities e ON l.target_kind=''entity'' AND e.entity_id=l.target_id '+
+    'LEFT JOIN relationships rel ON l.target_kind=''relationship'' AND rel.relationship_id=l.target_id '+
+    'LEFT JOIN entities a ON a.entity_id=rel.from_entity_id '+
+    'LEFT JOIN entities b ON b.entity_id=rel.to_entity_id '+
+    'LEFT JOIN evidence ev ON ev.evidence_id=CASE WHEN l.target_kind=''evidence'' THEN l.target_id ELSE rel.evidence_id END '+
+    'LEFT JOIN knowledge_revisions kr ON l.target_kind=''section'' AND kr.knowledge_revision_id=l.target_id '+
+    'LEFT JOIN artifacts art ON l.target_kind=''screenshot'' AND art.artifact_id=l.target_id WHERE l.revision_id=:revision ORDER BY l.ordinal';
 
 constructor TDPHKnowledgeStore.Create(const ADatabasePath, ASourceRoot,
   AMigrationDirectory: string; AUseWAL: Boolean);
@@ -307,7 +320,8 @@ begin
     else if Version = 2 then MigrationPath := MigrationPath + 'constraints.sql'
     else if Version = 3 then MigrationPath := MigrationPath + 'lifecycle.sql'
     else if Version = 4 then MigrationPath := MigrationPath + 'search.sql'
-    else MigrationPath := MigrationPath + 'document_sections.sql';
+    else if Version = 5 then MigrationPath := MigrationPath + 'document_sections.sql'
+    else MigrationPath := MigrationPath + 'revision_links.sql';
     Checksum := THashSHA2.GetHashStringFromFile(MigrationPath);
     if Version <= AppliedVersion then
     begin
@@ -755,8 +769,9 @@ begin
 end;
 
 function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
-  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience: string): Int64;
-var Revision,Entity: Int64; Prior,DocumentKind,Audience: string;
+  const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON: string): Int64;
+var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
+  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow: TJSONObject; Ordinal: Integer;
 begin
   RequireWriter;
   if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
@@ -793,10 +808,47 @@ begin
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('INSERT INTO document_section_versions(revision_id,knowledge_id,section_id,document_kind,audience,source_generation) '+
       'VALUES(:revision,:id,:section,:document,:audience,:generation)',[Revision,Result,'knowledge-'+IntToStr(Result),DocumentKind,Audience,AGenerationID]);
+    if ALinksJSON='' then FConnection.ExecSQL('INSERT INTO knowledge_revision_links SELECT :revision,ordinal,target_kind,target_id,source_generation,link_role,label '+
+      'FROM knowledge_revision_links WHERE revision_id=:prior',[Revision,AExpectedRevision])
+    else begin
+      if Length(ALinksJSON)>65536 then raise EDPHStorage.Create('Links exceed 64 KiB');
+      ParsedLinks:=TJSONObject.ParseJSONValue(ALinksJSON);
+      if not (ParsedLinks is TJSONArray) then begin ParsedLinks.Free; raise EDPHStorage.Create('Links must be a JSON array'); end;
+      LinkRows:=ParsedLinks as TJSONArray;
+      try
+        if LinkRows.Count>64 then raise EDPHStorage.Create('Maximum 64 links per section');
+        FConnection.ExecSQL('DELETE FROM knowledge_links WHERE knowledge_id=:id AND link_role=''rich''',[Result]);
+        Ordinal:=0;
+        for Value in LinkRows do begin
+          if not (Value is TJSONObject) then raise EDPHStorage.Create('Invalid link row'); LinkRow:=Value as TJSONObject;
+          TargetKind:=LinkRow.GetValue<string>('target_kind'); TargetID:=LinkRow.GetValue<Int64>('target_id'); Role:=LinkRow.GetValue<string>('link_role');
+          if not MatchText(Role,['explains','cites','depends_on','illustrates']) then raise EDPHStorage.Create('Unknown link role');
+          if TargetKind='entity' then SQL:='SELECT e.display_name FROM entities e JOIN entity_versions v ON v.entity_id=e.entity_id WHERE e.entity_id=:id AND v.generation_id=:generation'
+          else if TargetKind='relationship' then SQL:='SELECT relation_kind FROM relationships WHERE relationship_id=:id AND generation_id=:generation'
+          else if TargetKind='evidence' then SQL:='SELECT evidence_kind FROM evidence WHERE evidence_id=:id AND generation_id=:generation'
+          else if TargetKind='screenshot' then SQL:='SELECT ''Imported PNG #''||artifact_id FROM artifacts WHERE artifact_id=:id AND generation_id=:generation AND kind=''user_screenshot'''
+          else if TargetKind='section' then SQL:='SELECT k.title FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_id=k.knowledge_id '+
+            'WHERE r.knowledge_revision_id=:id AND k.project_id=1 AND :generation>0'
+          else raise EDPHStorage.Create('Unknown link target kind');
+          LabelText:=VarToStr(Scalar(SQL,[TargetID,AGenerationID]));
+          if LabelText='' then raise EDPHStorage.Create('Link target is unavailable in the selected generation');
+          FConnection.ExecSQL('INSERT INTO knowledge_revision_links VALUES(:revision,:ordinal,:kind,:id,:generation,:role,:label)',
+            [Revision,Ordinal,TargetKind,TargetID,AGenerationID,Role,LabelText]); Inc(Ordinal);
+          if MatchText(TargetKind,['entity','relationship','evidence']) then begin
+            SQL:='entity_id'; if TargetKind='relationship' then SQL:='relationship_id' else if TargetKind='evidence' then SQL:='evidence_id';
+            FConnection.ExecSQL('INSERT INTO knowledge_links(project_id,knowledge_id,'+SQL+',link_role) VALUES(1,:id,:target,''rich'')',[Result,TargetID]);
+          end;
+        end;
+      finally LinkRows.Free; end;
+    end;
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:id',[Revision,Result]);
     FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) SELECT 1,:id,''Human content changed'',''pending'',:generation '+
       'WHERE NOT EXISTS(SELECT 1 FROM review_tasks WHERE knowledge_id=:id2 AND state=''pending'')',[Result,AGenerationID,Result]);
     FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=1 WHERE project_id=1');
+    FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) '+
+      'SELECT DISTINCT 1,k.knowledge_id,''Referenced section revision changed'',''pending'',:generation FROM knowledge_revision_links l '+
+      'JOIN knowledge_records k ON k.current_revision_id=l.revision_id WHERE l.target_kind=''section'' AND l.target_id=:prior '+
+      'AND NOT EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'')',[AGenerationID,AExpectedRevision]);
     FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
     FConnection.ExecSQL('UPDATE translations SET translation_state=''needs_review'' WHERE knowledge_revision_id IN (SELECT knowledge_revision_id FROM knowledge_revisions WHERE knowledge_id=:id)',[Result]);
     FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,before_hash,after_hash) '+
@@ -820,6 +872,9 @@ begin
   if (AState='verified') and (Scalar('SELECT count(*) FROM knowledge_links l WHERE l.knowledge_id=:id AND l.entity_id IS NOT NULL '+
     'AND l.link_role<>''historical_annotation'' AND NOT EXISTS(SELECT 1 FROM entity_versions v WHERE v.entity_id=l.entity_id AND v.generation_id=:generation)',[AKnowledgeID,AGenerationID])<>0) then
     raise EDPHStorage.Create('Linked entity is missing or renamed; continuity requires human investigation');
+  if (AState='verified') and (Scalar('SELECT count(*) FROM knowledge_revision_links l WHERE l.revision_id=:revision AND '+
+    '(l.source_generation<>:generation OR (l.target_kind=''section'' AND NOT EXISTS(SELECT 1 FROM knowledge_records k WHERE k.current_revision_id=l.target_id)))',
+    [AExpectedRevision,AGenerationID])<>0) then raise EDPHStorage.Create('Rich links refer to historical generations or section revisions. Review and save current targets first.');
   FConnection.StartTransaction;
   try
     if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision',[AKnowledgeID,AExpectedRevision])<>1 then
@@ -829,6 +884,8 @@ begin
       'VALUES(:id,:body,:editor,:stamp,:state,:reviewer,:reviewed)',[AKnowledgeID,Body,AReviewer,UTCNow,AState,AReviewer,UTCNow]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=:state WHERE knowledge_id=:id',[Revision,AState,AKnowledgeID]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revision_links SELECT :revision,ordinal,target_kind,target_id,source_generation,link_role,label '+
+      'FROM knowledge_revision_links WHERE revision_id=:prior',[Revision,AExpectedRevision]);
     FConnection.ExecSQL('INSERT INTO document_section_versions(revision_id,knowledge_id,section_id,document_kind,audience,source_generation) '+
       'SELECT :revision,knowledge_id,section_id,document_kind,audience,:generation FROM document_section_versions WHERE revision_id=:prior',
       [Revision,AGenerationID,AExpectedRevision]);
@@ -837,6 +894,10 @@ begin
       if AState='verified' then FConnection.ExecSQL('UPDATE knowledge_links SET last_verified_generation_id=:generation WHERE knowledge_id=:id',[AGenerationID,AKnowledgeID]);
     end else FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) SELECT 1,:id,''Human review requested'',''pending'',:generation '+
       'WHERE NOT EXISTS(SELECT 1 FROM review_tasks WHERE knowledge_id=:id2 AND state=''pending'')',[AKnowledgeID,AGenerationID,AKnowledgeID]);
+    FConnection.ExecSQL('INSERT INTO review_tasks(project_id,knowledge_id,reason,state,opened_generation_id) '+
+      'SELECT DISTINCT 1,k.knowledge_id,''Referenced section revision changed'',''pending'',:generation FROM knowledge_revision_links l '+
+      'JOIN knowledge_records k ON k.current_revision_id=l.revision_id WHERE l.target_kind=''section'' AND l.target_id=:prior '+
+      'AND NOT EXISTS(SELECT 1 FROM review_tasks t WHERE t.knowledge_id=k.knowledge_id AND t.state=''pending'')',[AGenerationID,AExpectedRevision]);
     FConnection.ExecSQL('UPDATE project_state SET knowledge_review_needed=EXISTS(SELECT 1 FROM review_tasks WHERE state=''pending'') WHERE project_id=1');
     FConnection.ExecSQL('UPDATE artifacts SET build_state=''stale'' WHERE kind<>''workspace_view''');
     FConnection.ExecSQL('INSERT INTO audit_events(project_id,entity_type,entity_id,action,actor,recorded_at,after_hash) VALUES(1,''knowledge'',:id,:action,:actor,:stamp,:hash)',
@@ -845,8 +906,37 @@ begin
   except FConnection.Rollback; raise; end;
 end;
 
+function TDPHKnowledgeStore.LinkCandidates(AGeneration: Int64; const AKind,AQuery: string): TJSONArray;
+var Query: TFDQuery; Row: TJSONObject; SQL,Search: string; I: Integer;
+begin
+  RequireWriter;
+  if Scalar('SELECT count(*) FROM analysis_generations WHERE project_id=1 AND generation_id=:generation AND status IN (''current'',''partial'',''superseded'')',[AGeneration])<>1 then
+    raise EDPHStorage.Create('Link candidates require a captured generation');
+  Search:='%'+AQuery+'%';
+  if AKind='entity' then SQL:='SELECT e.entity_id AS target_id,e.display_name||'' [''||e.entity_kind||'']'' AS label,e.canonical_key FROM entities e '+
+    'JOIN entity_versions v ON v.entity_id=e.entity_id WHERE v.generation_id=:generation AND e.display_name LIKE :query ORDER BY e.display_name LIMIT 200'
+  else if AKind='relationship' then SQL:='SELECT r.relationship_id AS target_id,a.display_name||'' -> ''||r.relation_kind||'' -> ''||coalesce(b.display_name,''unresolved'') AS label,a.canonical_key '+
+    'FROM relationships r JOIN entities a ON a.entity_id=r.from_entity_id LEFT JOIN entities b ON b.entity_id=r.to_entity_id '+
+    'WHERE r.generation_id=:generation AND (a.display_name||r.relation_kind||coalesce(b.display_name,'''')) LIKE :query ORDER BY r.relationship_id LIMIT 200'
+  else if AKind='evidence' then SQL:='SELECT ev.evidence_id AS target_id,ev.evidence_kind||'' | ''||f.canonical_relpath||'':''||coalesce(json_extract(ev.source_range_json,''$.line''),0) AS label,'''' AS canonical_key '+
+    'FROM evidence ev JOIN file_revisions fr ON fr.file_revision_id=ev.file_revision_id JOIN source_files f ON f.file_id=fr.file_id '+
+    'WHERE ev.generation_id=:generation AND (ev.evidence_kind||f.canonical_relpath) LIKE :query ORDER BY ev.evidence_id LIMIT 200'
+  else if AKind='screenshot' then SQL:='SELECT artifact_id AS target_id,''Imported PNG #''||artifact_id AS label,'''' AS canonical_key FROM artifacts '+
+    'WHERE generation_id=:generation AND kind=''user_screenshot'' AND (''Imported PNG #''||artifact_id) LIKE :query ORDER BY artifact_id LIMIT 200'
+  else if AKind='section' then SQL:='SELECT current_revision_id AS target_id,title||'' [revision ''||current_revision_id||'']'' AS label,'''' AS canonical_key FROM knowledge_records '+
+    'WHERE project_id=1 AND current_revision_id IS NOT NULL AND :generation>0 AND title LIKE :query ORDER BY title LIMIT 200'
+  else raise EDPHStorage.Create('Unknown link candidate kind');
+  Result:=TJSONArray.Create; Query:=NewQuery(SQL,[AGeneration,Search]);
+  try
+    try while not Query.Eof do begin Row:=TJSONObject.Create; Result.AddElement(Row);
+      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Row.AddPair('target_kind',AKind); Row.AddPair('source_generation',TJSONNumber.Create(AGeneration)); Query.Next;
+    end;
+    except Result.Free; raise; end;
+  finally Query.Free; end;
+end;
 function TDPHKnowledgeStore.KnowledgeJSON: TJSONArray;
-var Query,Detail: TFDQuery; Row,Item: TJSONObject; Links,History: TJSONArray; I: Integer;
+var Query,Detail,LinkDetail: TFDQuery; Row,Item,LinkItem: TJSONObject; Links,History: TJSONArray; I: Integer;
 begin
   RequireWriter; Result:=TJSONArray.Create;
   Query:=NewQuery('SELECT k.knowledge_id AS id,k.current_revision_id AS revision,k.kind,k.title,k.state,k.owner,r.body_md AS body,r.editor,r.created_at,r.verification_state AS revision_state,'+
@@ -860,15 +950,33 @@ begin
     while not Query.Eof do begin
       Row:=TJSONObject.Create; Result.AddElement(Row);
       for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      Links:=TJSONArray.Create; Row.AddPair('rich_links',Links);
+      Detail:=NewQuery(RichLinkProjectionSQL,[Query.FieldByName('revision').AsLargeInt]);
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      Links:=TJSONArray.Create; Row.AddPair('backlinks',Links);
+      Detail:=NewQuery('SELECT k.knowledge_id,k.title,l.link_role FROM knowledge_revision_links l JOIN knowledge_records k ON k.current_revision_id=l.revision_id '+
+        'WHERE l.target_kind=''section'' AND l.target_id=:revision ORDER BY k.knowledge_id',[Query.FieldByName('revision').AsLargeInt]);
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
       Links:=TJSONArray.Create; Row.AddPair('links',Links);
-      Detail:=NewQuery('SELECT e.canonical_key,e.entity_kind,coalesce(l.last_verified_generation_id,0) AS verified_generation '+
-        'FROM knowledge_links l LEFT JOIN entities e ON e.entity_id=l.entity_id WHERE l.knowledge_id=:id AND l.link_role<>''historical_annotation'' ORDER BY l.link_id',[Query.FieldByName('id').AsLargeInt]);
+      Detail:=NewQuery('SELECT coalesce(e.canonical_key,re.canonical_key,'''') AS canonical_key,coalesce(e.entity_kind,re.entity_kind,'''') AS entity_kind,'+
+        'coalesce(sf.canonical_relpath,'''') AS source_path,coalesce(l.last_verified_generation_id,0) AS verified_generation '+
+        'FROM knowledge_links l LEFT JOIN relationships rel ON rel.relationship_id=l.relationship_id '+
+        'LEFT JOIN entities re ON re.entity_id=rel.from_entity_id LEFT JOIN entities e ON e.entity_id=l.entity_id '+
+        'LEFT JOIN evidence ev ON ev.evidence_id=coalesce(l.evidence_id,rel.evidence_id) '+
+        'LEFT JOIN file_revisions fr ON fr.file_revision_id=ev.file_revision_id LEFT JOIN source_files sf ON sf.file_id=fr.file_id '+
+        'WHERE l.knowledge_id=:id AND l.link_role<>''historical_annotation'' ORDER BY l.link_id',[Query.FieldByName('id').AsLargeInt]);
       try while not Detail.Eof do begin Item:=TJSONObject.Create; Links.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
       History:=TJSONArray.Create; Row.AddPair('history',History);
       Detail:=NewQuery('SELECT r.knowledge_revision_id AS revision,r.body_md AS body,r.editor,r.created_at,r.verification_state,coalesce(r.verified_by,'''') AS reviewer,coalesce(r.verified_at,'''') AS reviewed_at,'+
         'coalesce(s.document_kind,''engineering'') AS document_kind,coalesce(s.audience,''engineer'') AS audience,coalesce(s.source_generation,0) AS source_generation '+
         'FROM knowledge_revisions r LEFT JOIN document_section_versions s ON s.revision_id=r.knowledge_revision_id WHERE r.knowledge_id=:id ORDER BY r.knowledge_revision_id',[Query.FieldByName('id').AsLargeInt]);
-      try while not Detail.Eof do begin Item:=TJSONObject.Create; History.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString); Detail.Next; end; finally Detail.Free; end;
+      try while not Detail.Eof do begin Item:=TJSONObject.Create; History.AddElement(Item); for I:=0 to Detail.FieldCount-1 do Item.AddPair(Detail.Fields[I].FieldName,Detail.Fields[I].AsString);
+        Links:=TJSONArray.Create; Item.AddPair('rich_links',Links);
+        LinkDetail:=NewQuery(RichLinkProjectionSQL,[Detail.FieldByName('revision').AsLargeInt]);
+        try while not LinkDetail.Eof do begin LinkItem:=TJSONObject.Create; Links.AddElement(LinkItem);
+          for I:=0 to LinkDetail.FieldCount-1 do LinkItem.AddPair(LinkDetail.Fields[I].FieldName,LinkDetail.Fields[I].AsString); LinkDetail.Next;
+        end; finally LinkDetail.Free; end;
+        Detail.Next; end; finally Detail.Free; end;
       Query.Next;
     end;
   except Query.Free; Result.Free; raise; end;
@@ -933,6 +1041,12 @@ begin
   Result := VarToStr(Scalar('PRAGMA integrity_check',[]));
   Query := NewQuery('PRAGMA foreign_key_check',[]);
   try if not Query.Eof then Result := 'foreign key violation'; finally Query.Free; end;
+  if Scalar('SELECT count(*) FROM knowledge_revision_links l WHERE l.source_generation IS NULL OR '+
+    '(l.target_kind=''entity'' AND NOT EXISTS(SELECT 1 FROM entities e WHERE e.entity_id=l.target_id)) OR '+
+    '(l.target_kind=''relationship'' AND NOT EXISTS(SELECT 1 FROM relationships r WHERE r.relationship_id=l.target_id AND r.generation_id=l.source_generation)) OR '+
+    '(l.target_kind=''evidence'' AND NOT EXISTS(SELECT 1 FROM evidence e WHERE e.evidence_id=l.target_id AND e.generation_id=l.source_generation)) OR '+
+    '(l.target_kind=''screenshot'' AND NOT EXISTS(SELECT 1 FROM artifacts a WHERE a.artifact_id=l.target_id AND a.generation_id=l.source_generation AND a.kind=''user_screenshot'')) OR '+
+    '(l.target_kind=''section'' AND NOT EXISTS(SELECT 1 FROM knowledge_revisions r WHERE r.knowledge_revision_id=l.target_id))',[])<>0 then Result:='invalid rich-link target';
 end;
 
 procedure TDPHKnowledgeStore.BeginFacts(AGenerationID: Int64);
@@ -1061,11 +1175,11 @@ function TDPHKnowledgeStore.ScreenshotsJSON: TJSONArray;
 var Query: TFDQuery; Hash,Path,Image,ImageHash: string; Row: TJSONObject; C: Char;
 begin
   RequireWriter; Result:=TJSONArray.Create;
-  Query:=NewQuery('SELECT content_hash FROM artifacts WHERE kind=''user_screenshot'' ORDER BY artifact_id DESC LIMIT 200',[]);
+  Query:=NewQuery('SELECT artifact_id,content_hash FROM artifacts WHERE kind=''user_screenshot'' ORDER BY artifact_id DESC LIMIT 200',[]);
   try
   try
     while not Query.Eof do begin
-      Hash:=Query.Fields[0].AsString;
+      Hash:=Query.FieldByName('content_hash').AsString;
       if Length(Hash)<>64 then raise EDPHStorage.Create('Screenshot metadata hash is invalid');
       for C in Hash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Screenshot metadata hash is invalid');
       Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
@@ -1078,6 +1192,7 @@ begin
         for C in ImageHash do if not CharInSet(C,['0'..'9','a'..'f']) then raise EDPHStorage.Create('Screenshot image hash is invalid');
         Path:=TPath.Combine(FDatabasePath+'.views',Image); CheckOutsideSource(Path);
         if not TFile.Exists(Path) or (TFile.GetSize(Path)>20*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>ImageHash) then raise EDPHStorage.Create('Screenshot image is missing or damaged');
+        Row.AddPair('artifact_hash',Hash); Row.AddPair('artifact_id',TJSONNumber.Create(Query.FieldByName('artifact_id').AsLargeInt));
         Row.AddPair('managed_path',Path); Result.AddElement(Row); Row:=nil;
       finally Row.Free; end;
       Query.Next;
@@ -1258,6 +1373,8 @@ begin
     FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state) VALUES(:note,:body,:reviewer,:stamp,''needs_review'')',[AKnowledge,Body,AReviewer,UTCNow]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);
     FConnection.ExecSQL('UPDATE knowledge_records SET current_revision_id=:revision,state=''needs_review'' WHERE knowledge_id=:note',[Revision,AKnowledge]);
+    FConnection.ExecSQL('INSERT INTO knowledge_revision_links SELECT :revision,ordinal,target_kind,target_id,source_generation,link_role,label '+
+      'FROM knowledge_revision_links WHERE revision_id=:prior',[Revision,AExpectedRevision]);
     FConnection.ExecSQL('INSERT INTO document_section_versions(revision_id,knowledge_id,section_id,document_kind,audience,source_generation) '+
       'SELECT :revision,knowledge_id,section_id,document_kind,audience,:generation FROM document_section_versions WHERE revision_id=:prior',
       [Revision,AGeneration,AExpectedRevision]);

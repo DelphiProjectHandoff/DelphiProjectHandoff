@@ -9,6 +9,7 @@ type
     KnowledgeID,ExpectedRevision,GenerationID: Int64;
     Title,Body,Editor,Kind,EntityKey,ReviewState: string;
     DocumentKind,Audience: string;
+    LinksJSON: string;
     OldEntityKey: string;
     SearchKind: string;
     SearchOffset: Integer;
@@ -28,6 +29,7 @@ type
     RestoredDatabase: string;
     SearchResults: TJSONArray;
     SearchGeneration: Int64;
+    LinkCandidates: TJSONArray;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -53,7 +55,7 @@ uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.D
   DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; inherited; end;
+begin Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -113,7 +115,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -203,10 +205,19 @@ begin
             finally Images.Free; Knowledge.Free; View.Free; end;
             Respond(nil,'Offline HTML, editable guides and technical bundle exported. Review coverage and stale status before use.',False,False,Request.Entry='',False,nil,Request.ExportDirectory); Continue;
           end;
+          if Request.Command='link_candidates' then begin
+            LifecycleResponse:=TDPHWorkspaceResponse.Create;
+            try LifecycleResponse.LinkCandidates:=Store.LinkCandidates(Request.GenerationID,Request.Kind,Request.Body);
+              LifecycleResponse.SearchGeneration:=Request.GenerationID; LifecycleResponse.Detached:=Request.Entry='';
+              LifecycleResponse.MessageText:='First 200 matching link targets. Narrow the filter to find others.';
+              if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+            finally LifecycleResponse.Free; end;
+            Continue;
+          end;
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin
             if Request.Command='save_knowledge' then Store.SaveKnowledge(Request.KnowledgeID,Request.ExpectedRevision,Request.GenerationID,
-              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience);
+              Request.Title,Request.Body,Request.Editor,Request.Kind,Request.EntityKey,Request.DocumentKind,Request.Audience,Request.LinksJSON);
             if Request.Command='review_knowledge' then
             begin
               if Request.Entry='' then raise EReadError.Create('Attach source before reviewing; cached evidence alone cannot establish current source');

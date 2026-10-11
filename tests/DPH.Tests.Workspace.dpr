@@ -13,10 +13,10 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagno
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',
   DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas';
-var Root,Work,Fixture,Path,Key,ComponentKey,Kind: string; ID: TGUID; Checks: Integer;
+var Root,Work,Fixture,Path,Key,ComponentKey,Kind,FilterText: string; ID: TGUID; Checks: Integer;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
-    View: TDPHWorkspaceView; Rows: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
-    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
+    View: TDPHWorkspaceView; Rows,RichLinks: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
+    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation,TargetNote,LinkNote,TargetRevision,LinkRevision: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
     Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
     Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -204,6 +204,52 @@ begin
             Form.ScreenshotInspectClick(nil);
             Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and Form.InspectorMemo.Text.StartsWith(View.Symbol(ComponentKey).GetValue<string>('name')),
               'Screenshot linked object opens canonical explanation');
+            with TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations')) do
+            try
+              TargetNote:=SaveKnowledge(0,0,Generation,'Target section fixture','Exact target revision fixture text','Fixture author','note','');
+              RichLinks:=TJSONArray.Create;
+              try
+                for Kind in ['entity','relationship','evidence','screenshot','section'] do begin
+                  FilterText:=''; if Kind='entity' then FilterText:='Main.TMain.Click' else if Kind='section' then FilterText:='Target section fixture';
+                  Rows:=LinkCandidates(Generation,Kind,FilterText);
+                  try Check(Rows.Count>0,'Link picker offers '+Kind+' candidates'); Row:=Rows.Items[0].Clone as TJSONObject;
+                    Row.AddPair('link_role','cites'); RichLinks.AddElement(Row);
+                  finally Rows.Free; end;
+                end;
+                LinkNote:=SaveKnowledge(0,0,Generation,'Multi-target section fixture','Fixture evidence only','Fixture author','note','','engineering','engineer',RichLinks.ToJSON);
+              finally RichLinks.Free; end;
+              Rows:=KnowledgeJSON;
+              try TargetRevision:=Rows.Items[0].GetValue<Int64>('revision'); LinkRevision:=Rows.Items[1].GetValue<Int64>('revision');
+                Check(Rows.Items[0].GetValue<TJSONArray>('backlinks').Count=1,'Exact document revision exposes current referring section backlink');
+              finally Rows.Free; end;
+              ReviewKnowledge(LinkNote,LinkRevision,Generation,'Fixture reviewer','verified');
+              Form.LoadKnowledge(KnowledgeJSON);
+            finally Free; end;
+            Form.KnowledgeList.ItemIndex:=Form.KnowledgeList.Count-1; Form.KnowledgeClick(nil);
+            Check(Form.KnowledgeLinksList.Count=5,'IDE-editable link list loads every saved typed target');
+            Form.KnowledgeLinksList.ItemIndex:=0; Form.OpenKnowledgeLinkClick(nil);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and Form.InspectorMemo.Text.StartsWith('Main.TMain.Click'),
+              'Saved entity link opens canonical source-backed explanation');
+            Form.KnowledgeLinksList.ItemIndex:=1; Form.OpenKnowledgeLinkClick(nil);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and Form.DetailsMemo.Text.StartsWith('relationship:'),
+              'Saved relationship link opens typed evidence details');
+            Form.KnowledgeLinksList.ItemIndex:=2; Form.OpenKnowledgeLinkClick(nil);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and Form.DetailsMemo.Text.StartsWith('evidence:'),
+              'Saved evidence link opens source range and derivation context');
+            Form.KnowledgeLinksList.ItemIndex:=3; Form.OpenKnowledgeLinkClick(nil);
+            Check(Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab,'Saved screenshot link opens its managed image');
+            Form.KnowledgeLinksList.ItemIndex:=4; Form.OpenKnowledgeLinkClick(nil);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and Form.DetailsMemo.Text.Contains('Exact target revision fixture text'),
+              'Saved section link opens exact pinned revision text');
+            with TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations')) do
+            try
+              SaveKnowledge(TargetNote,TargetRevision,Generation,'Target section fixture','Changed target revision fixture text','Fixture author','note','');
+              Rows:=KnowledgeJSON;
+              try Check((Rows.Items[1].GetValue<string>('pending')='1') and (Rows.Items[1].GetValue<string>('revision_state')='verified'),
+                'Referenced section edit reopens separate review without rewriting prior verification');
+              finally Rows.Free; end;
+            finally Free; end;
+            Form.ScreenshotInspectClick(nil);
             Form.BookmarkClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
             Form.LoadView(View.Document.Clone as TJSONObject);
             Check((Form.WorkspaceTabs.ActiveTab=Form.GraphTab) and

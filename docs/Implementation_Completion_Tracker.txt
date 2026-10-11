@@ -162,8 +162,16 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     audience filters. Three focused knowledge checks (37 total), four publishing
     checks (64 total), and storage migration checks pass. Generated sections remain
     explicitly unreviewed; publication never advances authored source provenance.
-5.2-5.6 Pending: rich links, review tasks, focused questions, educational
-    explanations and runtime observation import.
+5.2 Expanded: design-time multiple-link editor for entities, relationships,
+    evidence, imported PNGs and exact document revisions, with explicit roles.
+    Revision snapshots, current reverse section links, target validation and
+    review invalidation are persisted in schema six. Native target navigation
+    and offline anchors/evidence details are implemented; out-of-scope targets
+    and backlinks are omitted. Knowledge suite 44, workspace 102, publishing 69.
+    Content-hashed native previews are explicitly allowed only in their owned
+    directory; arbitrary pages and external navigation remain blocked.
+5.3-5.6 Pending: review tasks, focused questions, educational explanations and
+    runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,
     handoff contract, bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
