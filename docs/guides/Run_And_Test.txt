@@ -167,3 +167,17 @@ Build and run automated checks
 The full DPH User Guide is docs\guides\DPH_User_Guide.docx and its companion PDF
 is docs\pdf\DPH_User_Guide.pdf. The Engineering Guide is in the same folders.
 D: development backups remain suspended. Git and both GitHub remotes remain active.
+
+SELECTED PROJECT CATALOG
+1. Open a captured project or explicitly selected project group.
+2. Choose Projects in the upper-right page selector.
+3. Click Selected project inside Projects.
+4. Select a project/group file or output declaration in the list.
+5. Read its settings, referenced inputs, capture ID, source hash and source lines
+   in the memo below. Missing referenced projects remain visibly marked missing.
+6. A .dproj settings row and its .dpr declaration can describe the same app.
+   Do not count these evidence rows as distinct applications. Output kinds are
+   source declarations, not verification that an executable was built or a
+   service installed. Parent conditions can apply to captured child settings.
+7. Click Known databases to return to the remembered database list and its
+   Project profile button. No unrelated applications are automatically scanned.

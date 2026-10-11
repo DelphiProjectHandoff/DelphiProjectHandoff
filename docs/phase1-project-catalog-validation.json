@@ -1,0 +1,5 @@
+﻿{
+  "checks_passed": 14,
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{92727337-7DA7-47A0-A77F-A14DCEC11B8D}",
+  "qualification": "Controlled selected-group fixture; declaration kinds only. Service installation and actual build outputs are not verified. Native image is an FMX PaintTo render."
+}

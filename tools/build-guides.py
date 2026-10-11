@@ -346,7 +346,8 @@ ENGINEERING.extend([
 
 USER.extend([
 ('Record the selected application profile', [
-'Open a saved project, choose Projects in the upper-right page selector and click Project profile. Enter the named contributor, purpose and scope, and attribution or evidence context. Fill the known company, department, business unit, criticality, ownership, support, environment, dependency, lifecycle, maturity, vendor, licensing and architecture fields. Unknown fields remain explicitly not supplied.',
+'Choose Projects, then Selected project, to inspect captured project and group files and output declarations. Select a row to read settings, references, capture generation, source hash and source lines. Missing referenced projects remain visible. Project settings and their main-source declaration can describe the same application; this is an evidence list rather than an application count. Output kinds do not verify built binaries or installed services. Known databases returns to the remembered database list.',
+'Open a saved project, choose Projects in the upper-right page selector, click Known databases and then Project profile. Enter the named contributor, purpose and scope, and attribution or evidence context. Fill the known company, department, business unit, criticality, ownership, support, environment, dependency, lifecycle, maturity, vendor, licensing and architecture fields. Unknown fields remain explicitly not supplied.',
 'Click Apply to Knowledge draft. Inspect the generated body and click Save on Knowledge to persist it. Apply alone does not save. Reopen Project profile to edit its structured fields; the generated body is read-only. Saving never independently verifies the statements. Exact fields survive new revisions, named review, database reopen and canonical publication.'
 ]),
 ('Investigate source quality candidates', [
@@ -365,6 +366,7 @@ USER.extend([
 ])])
 ENGINEERING.extend([
 ('Structured project profile contract', [
+'TDPHWorkspaceView.ProjectMembers projects captured syntax files into a selected-scope catalog without filesystem discovery. DPH.UI.Main.fmx defines separate Known databases and Selected project subpages, with a native list and evidence memo. Program, library and package declarations retain source references; project properties and references retain captured values and child conditions. Parent conditions may apply even when a child has none recorded. tests\\DPH.Tests.ProjectCatalog.dpr checks a selected group, missing referenced project, output kinds, settings, native selection and input immutability.',
 'Migration 009 adds an object-valued structured_json field to append-only knowledge revisions. TDPHProjectProfile validates 15 known text fields, required purpose and attribution, per-field bounds and a 64 KiB record bound. SaveKnowledge enforces stable project scope, title, kind and generated body, prevents ordinary-record conversion, duplicate profiles and loss of typed data, and preserves structured fields during named review and continuity revisions. Publication decodes typed metadata before recursive redaction, including revision history.',
 'DPH.UI.ProjectProfile.fmx defines every editor control at design time. Apply returns an attributed draft to the existing Knowledge save pipeline. It does not bypass unsaved-edit guards or automatically approve information. tests\\DPH.Tests.Phase1.dpr verifies persistence, review, stale editors, history, field bounds and native form behavior; publishing regressions check canonical, HTML and DOCX inclusion.'
 ]),
@@ -511,5 +513,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 5, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 6, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

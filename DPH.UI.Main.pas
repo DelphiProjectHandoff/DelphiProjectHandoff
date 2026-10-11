@@ -100,6 +100,11 @@ type
     ProjectsTab: TTabItem;
     ProjectsToolbar: TLayout;
     ProjectsList: TListBox;
+    ProjectMembersList: TListBox;
+    ProjectMembersPurpose: TLabel;
+    ProjectMemberMemo: TMemo;
+    ProjectCatalogTabs: TTabControl;
+    KnownProjectsTab,ProjectMembersTab: TTabItem;
     ProjectsPurpose: TLabel;
     OpenKnownProjectButton,ForgetProjectButton,RefreshProjectsButton: TButton;
     ProjectProfileButton: TButton;
@@ -184,6 +189,7 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure ComparisonClick(Sender: TObject);
+    procedure ProjectMemberSelectionClick(Sender: TObject);
     procedure ComparisonSelectionClick(Sender: TObject);
     procedure QualityClick(Sender: TObject);
     procedure QualitySelectionClick(Sender: TObject);
@@ -308,6 +314,7 @@ type
     FQualityOffset: Integer;
     FComparison: TJSONObject;
     FComparisonOffset: Integer;
+    FProjectMembers: TJSONArray;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
@@ -381,7 +388,7 @@ begin
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free;
-  FComparison.Free; FQualityRows.Free;
+  FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -412,6 +419,30 @@ begin
       ProjectsList.Items.Add(LabelText); FCatalogPaths.Add(Path);
     end;
   finally Rows.Free; end;
+end;
+procedure TDPHMainForm.ProjectMemberSelectionClick(Sender: TObject);
+var Member,Node: TJSONObject; Value: TJSONValue;
+begin
+  if (FProjectMembers=nil) or (ProjectMembersList.ItemIndex<0) or
+    (ProjectMembersList.ItemIndex>=FProjectMembers.Count) then Exit;
+  Member:=FProjectMembers.Items[ProjectMembersList.ItemIndex] as TJSONObject;
+  ProjectMemberMemo.Lines.BeginUpdate;
+  try
+    ProjectMemberMemo.Lines.Clear;
+    ProjectMemberMemo.Lines.Add(Member.GetValue<string>('name')+' | '+Member.GetValue<string>('kind'));
+    ProjectMemberMemo.Lines.Add('Captured path: '+Member.GetValue<string>('path'));
+    ProjectMemberMemo.Lines.Add('Generation: '+Member.GetValue('generation_id').Value+' | '+Member.GetValue<string>('availability'));
+    ProjectMemberMemo.Lines.Add('SHA256: '+Member.GetValue<string>('source_hash'));
+    ProjectMemberMemo.Lines.Add(Member.GetValue<string>('qualification'));
+    if Member.TryGetValue<TJSONObject>('declaration',Node) then
+      ProjectMemberMemo.Lines.Add('Declaration: '+Node.GetValue<string>('source')+':'+IntToStr(Node.GetValue<Integer>('line')));
+    for Value in Member.GetValue<TJSONArray>('settings_and_references') do begin
+      Node:=Value as TJSONObject;
+      ProjectMemberMemo.Lines.Add(Node.GetValue<string>('name')+' = '+Node.GetValue<string>('value'));
+      ProjectMemberMemo.Lines.Add('  Evidence: '+Node.GetValue<string>('source')+':'+IntToStr(Node.GetValue<Integer>('line'))+
+        ' | recorded child condition: '+Node.GetValue<string>('condition'));
+    end;
+  finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
 var Index: Integer;
@@ -641,6 +672,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FreeAndNil(FProjectMembers); ProjectMembersList.Items.Clear; ProjectMemberMemo.Text:='Open a captured project to inspect its project and output declarations.';
   FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
   ComparisonStatus.Text:='No comparison loaded.'; ComparisonNextButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
@@ -760,6 +792,10 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
+  for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
+  ProjectMemberMemo.Text:='Select a captured project or output declaration above to read its settings and evidence.';
+  if ProjectMembersList.Count>0 then begin ProjectMembersList.ItemIndex:=0; ProjectMemberSelectionClick(nil); end;
   InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
   if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; end
   else begin

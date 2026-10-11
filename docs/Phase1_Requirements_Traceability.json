@@ -27,33 +27,57 @@
       "id": "01.02",
       "domain": "DPH-01",
       "requirement": "Application and project catalogs",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Model.pas",
+        "DPH.UI.Main.fmx",
+        "DPH.UI.Main.pas",
+        "tests/DPH.Tests.ProjectCatalog.dpr",
+        "docs/phase1-project-catalog-validation.json"
+      ],
+      "limitation": "Captured selected-project/group catalog, native evidence inspection, declared program/library/package output kinds, project settings/references and visible missing members. Settings and main-source declarations are separate evidence rows, not application counts. DBs remain per selected project/group under SC-01; unrelated applications are not merged. Service installation and built binaries are not verified. Per-member curated profiles and complete MSBuild evaluation remain outstanding."
     },
     {
       "id": "01.03",
       "domain": "DPH-01",
       "requirement": "Multiple applications within one knowledge repository",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Model.pas",
+        "DPH.UI.Main.fmx",
+        "DPH.UI.Main.pas",
+        "tests/DPH.Tests.ProjectCatalog.dpr",
+        "docs/phase1-project-catalog-validation.json"
+      ],
+      "limitation": "Captured selected-project/group catalog, native evidence inspection, declared program/library/package output kinds, project settings/references and visible missing members. Settings and main-source declarations are separate evidence rows, not application counts. DBs remain per selected project/group under SC-01; unrelated applications are not merged. Service installation and built binaries are not verified. Per-member curated profiles and complete MSBuild evaluation remain outstanding."
     },
     {
       "id": "01.04",
       "domain": "DPH-01",
       "requirement": "Delphi project and project-group discovery",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Model.pas",
+        "DPH.UI.Main.fmx",
+        "DPH.UI.Main.pas",
+        "tests/DPH.Tests.ProjectCatalog.dpr",
+        "docs/phase1-project-catalog-validation.json"
+      ],
+      "limitation": "Captured selected-project/group catalog, native evidence inspection, declared program/library/package output kinds, project settings/references and visible missing members. Settings and main-source declarations are separate evidence rows, not application counts. DBs remain per selected project/group under SC-01; unrelated applications are not merged. Service installation and built binaries are not verified. Per-member curated profiles and complete MSBuild evaluation remain outstanding."
     },
     {
       "id": "01.05",
       "domain": "DPH-01",
       "requirement": "Executables, libraries, packages, and services",
-      "implementation": "unassessed",
-      "evidence": [],
-      "limitation": "Requires individual source, native UI and validation reconciliation; prior WP acceptance does not establish this feature."
+      "implementation": "partial",
+      "evidence": [
+        "DPH.Workspace.Model.pas",
+        "DPH.UI.Main.fmx",
+        "DPH.UI.Main.pas",
+        "tests/DPH.Tests.ProjectCatalog.dpr",
+        "docs/phase1-project-catalog-validation.json"
+      ],
+      "limitation": "Captured selected-project/group catalog, native evidence inspection, declared program/library/package output kinds, project settings/references and visible missing members. Settings and main-source declarations are separate evidence rows, not application counts. DBs remain per selected project/group under SC-01; unrelated applications are not merged. Service installation and built binaries are not verified. Per-member curated profiles and complete MSBuild evaluation remain outstanding."
     },
     {
       "id": "01.06",

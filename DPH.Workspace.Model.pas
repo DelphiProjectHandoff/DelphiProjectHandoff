@@ -24,6 +24,7 @@ type
     function FlagsText: string;
     function Coverage: TJSONObject;
     function Questions(AKnowledge: TJSONArray = nil): TJSONArray;
+    function ProjectMembers: TJSONArray;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
     class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
@@ -94,6 +95,44 @@ destructor TDPHWorkspaceView.Destroy;
 begin FSymbols.Free; FDocument.Free; inherited; end;
 function TDPHWorkspaceView.Symbol(const AKey: string): TJSONObject;
 begin if not FSymbols.TryGetValue(AKey,Result) then Result:=nil; end;
+function TDPHWorkspaceView.ProjectMembers: TJSONArray;
+var Files,Nodes,Properties: TJSONArray; FileValue,NodeValue: TJSONValue;
+    FileRow,Node,Member: TJSONObject; Path,Extension,Kind,Name: string;
+begin
+  Result:=TJSONArray.Create;
+  try
+    Files:=FDocument.GetValue<TJSONArray>('syntax.files');
+    for FileValue in Files do begin
+      FileRow:=FileValue as TJSONObject; Path:=FileRow.GetValue<string>('path');
+      Extension:=LowerCase(ExtractFileExt(Path));
+      if not MatchText(Extension,['.dproj','.groupproj','.dpr','.dpk']) then Continue;
+      if Extension='.groupproj' then Kind:='project group'
+      else if Extension='.dproj' then Kind:='project settings'
+      else Kind:='unresolved output kind';
+      Name:=TPath.GetFileNameWithoutExtension(Path);
+      Member:=TJSONObject.Create; Result.AddElement(Member);
+      Member.AddPair('path',Path); Member.AddPair('source_hash',FileRow.GetValue<string>('sha256'));
+      Member.AddPair('availability',FileRow.GetValue<string>('availability'));
+      Member.AddPair('generation_id',TJSONNumber.Create(FDocument.GetValue<Int64>('generation_id')));
+      Properties:=TJSONArray.Create; Member.AddPair('settings_and_references',Properties);
+      if FileRow.TryGetValue<TJSONArray>('ir.nodes',Nodes) then
+        for NodeValue in Nodes do begin
+          Node:=NodeValue as TJSONObject;
+          if MatchText(Node.GetValue<string>('kind'),['program','library','package']) then begin
+            Name:=Node.GetValue<string>('name');
+            if Node.GetValue<string>('kind')='program' then Kind:='executable declaration'
+            else if Node.GetValue<string>('kind')='library' then Kind:='library declaration'
+            else Kind:='package declaration';
+            Member.AddPair('declaration',Node.Clone as TJSONValue);
+          end;
+          if MatchText(Node.GetValue<string>('kind'),['project_property','project_reference']) then
+            Properties.AddElement(Node.Clone as TJSONValue);
+        end;
+      Member.AddPair('name',Name); Member.AddPair('kind',Kind);
+      Member.AddPair('qualification','Captured selected-project inputs only. Project settings and their main-source declarations are separate evidence rows, not separate applications. Output kind describes a declaration, not a built binary or verified service installation. Settings belong to the captured configuration; parent conditions may apply even when a child has no recorded condition. Read diagnostics for missing inputs and unsupported project conditions.');
+    end;
+  except Result.Free; raise; end;
+end;
 function TDPHWorkspaceView.Search(const AQuery,AKind,AScope: string; AOffset,ALimit: Integer): TJSONArray;
 var V: TJSONValue; S: TJSONObject; Count: Integer; Name,Kind: string;
 begin

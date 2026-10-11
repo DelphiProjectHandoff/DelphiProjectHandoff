@@ -555,6 +555,11 @@ end
 end
 object ProjectsTab: TTabItem
 Text = 'Projects'
+object ProjectCatalogTabs: TTabControl
+Align = Client
+TabPosition = Top
+object KnownProjectsTab: TTabItem
+Text = 'Known databases'
 object ProjectsPurpose: TLabel
 Align = Top
 Height = 70
@@ -602,6 +607,31 @@ end
 object ProjectsList: TListBox
 Align = Client
 OnDblClick = OpenKnownProjectClick
+end
+end
+object ProjectMembersTab: TTabItem
+Text = 'Selected project'
+object ProjectMembersPurpose: TLabel
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Select a captured project or output declaration to read its settings and source evidence below. Settings and main-source rows can describe the same application. Built outputs and services are unverified.'
+end
+object ProjectMembersList: TListBox
+Align = Top
+Height = 128
+OnChange = ProjectMemberSelectionClick
+end
+object ProjectMemberMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+TextSettings.Font.Size = 16
+Text = 'Open a captured project to inspect its project and output declarations.'
+end
+end
 end
 end
 object BackupDialog: TSaveDialog

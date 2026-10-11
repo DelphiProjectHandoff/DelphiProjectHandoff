@@ -28,7 +28,7 @@ DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is s
 DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
 DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
 DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
-12917 lines, 1.24 seconds, 9889000 bytes code, 344520 bytes data.
+12992 lines, 1.30 seconds, 9895624 bytes code, 344520 bytes data.
 PASS 1: Source quality reports captured routine metrics
 PASS 2: Routine metric retains the actual source fingerprint
 PASS 3: Structural decision score counts the captured if and while without claiming exact cyclomatic complexity
@@ -57,7 +57,7 @@ tests\DPH.Tests.Comparison.dpr(91) Hint: H2443 Inline function 'TJSONArray.GetVa
 tests\DPH.Tests.Comparison.dpr(106) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
 tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'After' never used
 tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'Before' never used
-12939 lines, 1.22 seconds, 9888372 bytes code, 344724 bytes data.
+13014 lines, 1.25 seconds, 9894996 bytes code, 344724 bytes data.
 PASS 1: Changed file is identified by captured fingerprints
 PASS 2: Removed symbol is retained as Before evidence
 PASS 3: Added symbol is retained as After evidence
@@ -76,3 +76,25 @@ PASS 15: Comparison leaves the project database consistent
 PASS 16: Background worker compares both verified retained database captures
 PASS 17: Missing historical cache is explained without inventing source history
 PASS revision comparison: 17 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+12976 lines, 1.30 seconds, 9893612 bytes code, 344524 bytes data.
+PASS 1: Selected group catalog contains group, settings, three output declarations and missing member
+PASS 2: Group identity is preserved
+PASS 3: Program declaration is classified as executable evidence
+PASS 4: Library declaration is classified from captured syntax
+PASS 5: Package declaration is classified from captured syntax
+PASS 6: Missing group member remains visible without fabricated settings
+PASS 7: Settings retain captured values and source lines
+PASS 8: Catalog rows identify their capture and available source hashes
+PASS 9: Output declaration retains its exact source reference
+PASS 10: Declaration classification does not claim a verified build or service installation
+PASS 11: Native Projects page displays the captured catalog including missing inputs
+PASS 12: Native catalog selection explains settings and their evidence
+PASS 13: Evidence remains readable at the minimum supported restored window size
+PASS 14: Catalog projection and native inspection leave selected source inputs unchanged
+PASS project catalog: 14 checks

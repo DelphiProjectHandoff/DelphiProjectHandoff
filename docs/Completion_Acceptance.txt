@@ -59,7 +59,7 @@ numbered requirements and separately identifies unnumbered presentation rules.
 Reconciliation and implementation are IN PROGRESS. Earlier WP acceptance,
 manuals and 0.3.0 packages do not establish completion of this larger inventory.
 New structured project-profile, source-quality and retained-revision comparison
-checks are recorded in the phase1-* evidence files. Guide version 5 has 19 user
+checks are recorded in the phase1-* evidence files. Guide version 6 has 19 user
 pages and 14 engineering pages; phase1-guide-validation.json records current
 source, artifact and visually inspected page hashes. Unassessed and partial requirements are not passes.
 
