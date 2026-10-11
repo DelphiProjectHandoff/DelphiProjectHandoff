@@ -84,6 +84,12 @@ begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
         Respond(nil,'Working in background...',True,False,False,False);
+        if (Request.Entry<>'') and MatchText(Request.Command,['incremental','full','relocate']) then
+        begin
+          Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
+          try if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
+          finally Inventory.Free; end;
+        end;
         if MatchText(Request.Command,['open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
@@ -144,6 +150,8 @@ begin
             Text:=Store.LoadWorkspaceView;
             if Text='' then raise EReadError.Create('No cached workspace is available; attach the source project to analyze it');
             Document:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
+            if TDPHWorkspaceView.IsHandoffProject(Document) then
+            begin Document.Free; raise EReadError.Create(DPHSelfSelectionMessage); end;
             Status:=Store.Status;
             MessageText:='Cached project - detached: source has not been attached';
             if Status.AnalysisStale then MessageText:=MessageText+' | analysis stale';

@@ -1,0 +1,25 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6302 lines, 0.95 seconds, 9281232 bytes code, 344360 bytes data.
+PASS 1: Renamed and relocated project is recognized by GUID
+PASS 2: Renamed DPR is recognized by its program declaration
+PASS 3: Unrelated project with the same filename is allowed
+PASS 4: A project group containing DPH is recognized
+PASS 5: Actual DPH project is recognized
+PASS 6: Historical cache identifies self from captured GUID
+PASS 7: Save database dialog defaults to the app Databases folder
+PASS 8: Open cache dialog defaults to the same folder
+PASS 9: Default Databases folder exists
+PASS 10: Unrelated project attaches successfully despite matching filename
+PASS 11: Rejected self-project keeps the current workspace
+PASS 12: Rejected self-project keeps the selected object details
+PASS 13: Rejected self-project does not create a database
+PASS 14: DPR rejection also preserves the workspace
+PASS 15: Rejected self-cache keeps the current workspace
+PASS 16: Rejected self-cache keeps the selected object details
+PASS 17: An ordinary cache remains usable after rejected selections
+PASS 18: Identity checks leave selected source unchanged
+PASS Selection: 18 checks
+PASS 1: Startup does not load a self-analysis cache
+PASS 2: Rejected startup selection shows Getting started

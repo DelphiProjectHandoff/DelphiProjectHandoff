@@ -103,6 +103,7 @@ type
     FGraph,FScreen: TJSONObject;
     FExplorerKeys,FRelationKeys,FHistory,FBookmarks: TList<string>;
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
+    FPendingEntry,FPendingDatabase: string;
     FPage: Integer;
     FBusy,FDetached,FClosing,FBinding: Boolean;
     FScreenScale: Single;
@@ -127,6 +128,7 @@ type
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
   public
+    procedure OpenSelection(const AEntry,ADatabase: string);
     procedure LoadView(ADocument: TJSONObject);
     procedure LoadKnowledge(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
@@ -137,25 +139,30 @@ uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
-var I: Integer; Pref: TJSONObject; PrefPath: string;
+var I: Integer; Pref: TJSONObject; PrefPath,DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FBaseDirectory:=ExtractFilePath(ParamStr(0));
   for I:=0 to 5 do begin if TDirectory.Exists(TPath.Combine(FBaseDirectory,'migrations')) then Break; FBaseDirectory:=ExtractFileDir(ExcludeTrailingPathDelimiter(FBaseDirectory)); end;
+  DatabaseDirectory:=TPath.Combine(FBaseDirectory,DatabaseDialog.InitialDir);
+  try
+    TDirectory.CreateDirectory(DatabaseDirectory);
+    DatabaseDialog.InitialDir:=DatabaseDirectory; OpenCacheDialog.InitialDir:=DatabaseDirectory;
+  except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   for I:=0 to 10 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then begin FDatabase:=ParamStr(1); Submit('open'); end;
+  if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
     PrefPath:=TPath.Combine(TPath.GetHomePath,'AppData\Local\DPH\workspace.json');
     if TFile.Exists(PrefPath) then
     try Pref:=TJSONObject.ParseJSONValue(TFile.ReadAllText(PrefPath,TEncoding.UTF8)) as TJSONObject;
-      try if Pref<>nil then begin FDatabase:=Pref.GetValue<string>('database',''); if TFile.Exists(FDatabase) then Submit('open'); end; finally Pref.Free; end;
+      try if Pref<>nil then begin PrefPath:=Pref.GetValue<string>('database',''); if TFile.Exists(PrefPath) then OpenSelection('',PrefPath); end; finally Pref.Free; end;
     except on E: Exception do StatusLabel.Text:='Workspace preferences unavailable: '+E.Message; end;
   end;
 end;
@@ -210,17 +217,36 @@ begin
   FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
+var SelectedDatabase: string;
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenProjectDialog.Execute then Exit;
+  SelectedDatabase:=FDatabase;
   if (FDatabase='') or ((FView<>nil) and not SameFileName(ExcludeTrailingPathDelimiter(FView.Document.GetValue<string>('root')),ExcludeTrailingPathDelimiter(ExtractFilePath(OpenProjectDialog.FileName)))) then
-  begin if not DatabaseDialog.Execute then Exit; FDatabase:=DatabaseDialog.FileName; end;
-  ClearWorkspace; FEntry:=OpenProjectDialog.FileName; FDetached:=False; Submit('incremental');
+  begin
+    DatabaseDialog.FileName:=TPath.GetFileNameWithoutExtension(OpenProjectDialog.FileName)+'.dphdb';
+    if not DatabaseDialog.Execute then Exit; SelectedDatabase:=DatabaseDialog.FileName;
+  end;
+  OpenSelection(OpenProjectDialog.FileName,SelectedDatabase);
 end;
 procedure TDPHMainForm.OpenCacheClick(Sender: TObject);
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
-  if FBusy or not OpenCacheDialog.Execute then Exit; ClearWorkspace; FDatabase:=OpenCacheDialog.FileName; FEntry:=''; FDetached:=True; Submit('open');
+  if FBusy or not OpenCacheDialog.Execute then Exit; OpenSelection('',OpenCacheDialog.FileName);
+end;
+procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string);
+var Request: TDPHWorkspaceRequest;
+begin
+  if FBusy then Exit;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
+  Request:=Default(TDPHWorkspaceRequest); Request.Entry:=AEntry; Request.Database:=ADatabase;
+  if AEntry='' then Request.Command:='open' else Request.Command:='incremental';
+  Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
+  Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
+  Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
+  FPendingCommand:=Request.Command; FBusy:=True; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -232,7 +258,7 @@ begin
   Request.Command:='relocate'; Request.Database:=FDatabase; Request.Entry:=OpenProjectDialog.FileName; Request.GenerationID:=Generation;
   Request.Configuration:=FView.Document.GetValue<string>('configuration'); Request.Platform:=FView.Document.GetValue<string>('platform');
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
-  ClearWorkspace; FEntry:=Request.Entry; FDetached:=True; FBusy:=True;
+  FPendingEntry:=Request.Entry; FPendingDatabase:=Request.Database; FBusy:=True;
   FWorker.Submit(Request); StatusLabel.Text:='Verifying relocated project hashes before reassessment...';
 end;
 procedure TDPHMainForm.ClearWorkspace;
@@ -255,8 +281,19 @@ begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
   while FWorker.Poll(R) do
   try
-    FBusy:=R.Busy; FDetached:=R.Detached;
-    if R.Document<>nil then begin LoadView(R.Document); R.Document:=nil; end;
+    FBusy:=R.Busy;
+    if not R.Busy and not R.Failed then FDetached:=R.Detached;
+    if R.Document<>nil then begin
+      if FPendingDatabase<>'' then begin
+        ClearWorkspace; FEntry:=FPendingEntry; FDatabase:=FPendingDatabase;
+        FPendingEntry:=''; FPendingDatabase:='';
+      end;
+      LoadView(R.Document); R.Document:=nil;
+    end;
+    if R.Failed then begin
+      FPendingEntry:=''; FPendingDatabase:='';
+      if FView=nil then HelpClick(nil);
+    end;
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;

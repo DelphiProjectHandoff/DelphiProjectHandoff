@@ -9,6 +9,7 @@ type
     FRoot: string;
     FTotalBytes: Int64;
     FDuringDiscovery: Boolean;
+    FIsHandoffProject: Boolean;
     FInitialDefines: TArray<string>;
     FConfig,FPlatform: string;
     FExternalRoots, FSearchPaths: TList<string>;
@@ -39,8 +40,13 @@ type
     function CurrentManifest: TDPHManifest;
     function Revalidate: Boolean;
     property Root: string read FRoot;
+    property IsHandoffProject: Boolean read FIsHandoffProject;
     property ConfigurationIdentity: string read GetConfigurationIdentity;
   end;
+const
+  DPHHandoffProjectGUID = '{D9484A29-FD59-48ED-8C14-4E3D966C4DCF}';
+  DPHHandoffProgramName = 'DelphiProjectHandoff';
+  DPHSelfSelectionMessage = 'Delphi Project Handoff cannot analyze its own project. Select the application you want to document.';
 implementation
 uses System.IOUtils, System.Classes, System.StrUtils, System.Variants,
   System.Generics.Defaults, Xml.XMLDoc, Xml.XMLIntf, Winapi.Windows,
@@ -198,6 +204,7 @@ var Document: IXMLDocument; IR: TDPHParseResult; XMLPosition: Integer;
   begin
     if IR.Nodes.Count>=DPHMaxNodes then raise EReadError.Create('Project IR node limit');
     N:=Default(TDPHIRNode); N.Kind:=Kind; N.Name:=Node.LocalName; N.Value:=Value; N.Parent:=Parent;
+    if SameText(N.Name,'ProjectGuid') and SameText(Trim(Value),DPHHandoffProjectGUID) then FIsHandoffProject:=True;
     Tag:='<'+Node.NodeName; Start:=PosEx(Tag,ASource.Text,XMLPosition);
     Stop:=PosEx('>',ASource.Text,Start);
     if (Start>0) and (Stop>0) then
@@ -337,6 +344,8 @@ begin
     begin
       Token:=Tokens[I]; Inc(I);
       Prior:=Previous;
+      if (Token.Active<>daInactive) and SameText(Prior,'program') and
+        (Token.Kind=tkIdentifier) and SameText(Token.Text,DPHHandoffProgramName) then FIsHandoffProject:=True;
       if not (Token.Kind in [tkSpace,tkComment,tkDirective]) and (Token.Active=daActive) then Previous:=Token.Text;
       if (Token.Active<>daInactive) and (Token.Kind=tkDirective) then
       begin

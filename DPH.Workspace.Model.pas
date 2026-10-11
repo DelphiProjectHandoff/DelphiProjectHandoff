@@ -21,10 +21,32 @@ type
     function Graph(const AKind,AKey: string; ALimit: Integer = 120): TJSONObject;
     function FlagsText: string;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): string; static;
+    class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
   end;
 implementation
-uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils;
+uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, DPH.Project.Inventory;
+
+class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;
+var Files,Nodes: TJSONArray; FileValue,NodeValue: TJSONValue; Row,IR,Node: TJSONObject;
+begin
+  Result:=False;
+  if (ADocument=nil) or not ADocument.TryGetValue<TJSONArray>('syntax.files',Files) then Exit;
+  for FileValue in Files do
+  begin
+    Row:=FileValue as TJSONObject;
+    if not Row.TryGetValue<TJSONObject>('ir',IR) or not IR.TryGetValue<TJSONArray>('nodes',Nodes) then Continue;
+    for NodeValue in Nodes do
+    begin
+      Node:=NodeValue as TJSONObject;
+      if (SameText(Node.GetValue<string>('kind',''),'project_property') and
+        SameText(Node.GetValue<string>('name',''),'ProjectGuid') and
+        SameText(Trim(Node.GetValue<string>('value','')),DPHHandoffProjectGUID)) or
+        (SameText(Node.GetValue<string>('kind',''),'program') and
+        SameText(Node.GetValue<string>('name',''),DPHHandoffProgramName)) then Exit(True);
+    end;
+  end;
+end;
 
 class function TDPHWorkspaceView.SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>): string;
 begin Result:=THashSHA2.GetHashString(AConfig+#0+APlatform+#0+String.Join(#0,ADefines)+#1+String.Join(#0,AExternalRoots)); end;

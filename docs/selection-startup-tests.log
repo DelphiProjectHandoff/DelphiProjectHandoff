@@ -1,0 +1,2 @@
+PASS 1: Startup does not load a self-analysis cache
+PASS 2: Rejected startup selection shows Getting started

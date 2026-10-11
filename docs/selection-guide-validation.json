@@ -1,0 +1,24 @@
+{
+  "sources_verified": 26,
+  "guides": [
+    {
+      "guide": "DPH_Engineering_Guide",
+      "pages": 10,
+      "docx_sha256": "6a3b8d6b3c4dfe664bfb3c7382f390bc2aa1ae66a2b71666df7931837c25f146",
+      "pdf_sha256": "e1a88646eeaba99d93456e4966c3945f31ba2ecec018f1cd69bc16492d364226",
+      "editable_toc": true
+    },
+    {
+      "guide": "DPH_User_Guide",
+      "pages": 12,
+      "docx_sha256": "4cf3a13b37738500c566a38702f00e16a77759891e89f48c0b5443f7f52d8ae7",
+      "pdf_sha256": "cfaeadfcf59c91d1da7457f64499868ee991ffcadbcd822141dc6cbb7d01c0a7",
+      "editable_toc": true
+    }
+  ],
+  "visual_review": "All 22 rendered pages reviewed; changed directions and backup paragraphs additionally checked at page size",
+  "selection_checks": 20,
+  "workspace_checks": 41,
+  "learning_checks": 53,
+  "backup_policy": "D: suspended; local Git and both GitHub remotes enabled"
+}

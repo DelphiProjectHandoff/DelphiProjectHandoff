@@ -1,0 +1,55 @@
+DPH 0.2.2 selection and database defaults - 11 October 2026
+
+Selection policy
+DPH will not attach its own source project, relocate to it, or open a cache of
+its own analysis. Identification uses the captured ProjectGuid or Pascal program
+declaration, including renamed/relocated copies retaining those identifiers.
+A matching filename alone is not grounds for rejection. A project group that
+references DPH is also treated as containing its own project.
+This is an application selection policy, not protection against deliberate
+rewriting of both identity markers or tampering with unsigned cached evidence.
+
+The exact rejection message is:
+Delphi Project Handoff cannot analyze its own project. Select the application
+you want to document.
+
+Attach project, Open cache, command-line startup and remembered-cache startup
+use the same guarded selection path. The previous workspace, object selection
+and database identity are retained until the new capture is accepted. Failed
+selection does not replace them. With no current workspace, a rejected startup
+cache leaves Getting started visible. Existing databases are not deleted.
+
+Databases folder
+Source checkout: C:\New Delphi Projects\Delphi Project Handoff\Databases
+Extracted binary distribution: Databases beside DelphiProjectHandoff.exe.
+The folder is created if missing. Both database dialogs start there, and
+Attach project proposes a database name based on the selected project name.
+The relative default folder is editable as DatabaseDialog.InitialDir in the
+FMX Object Inspector. Startup resolves it against the application deployment
+root; OpenCacheDialog follows that same resolved location.
+Existing databases have not been moved. The selected source tree remains
+prohibited as a database location. A database and its adjacent .dphdb.views
+folder belong together. Project data is ignored by Git and is not packaged.
+
+Directions
+1. Start the updated DelphiProjectHandoff.exe.
+2. Click Attach project along the top. Select the application you want to
+   document. In Save knowledge database, use the proposed name under Databases,
+   or browse to another location outside that application's source folder.
+3. To open an existing database, click Open cache along the top. The picker
+   starts in Databases. Browse to the existing file if it is elsewhere.
+4. If the self-selection rejection appears on the bottom status line, select
+   a different application's project/cache. Your current workspace stays loaded.
+
+Validation
+selection-tests.log: GUID/program identity, relocated/renamed fixtures, unrelated
+same-name project, actual DPH identity, historical cache identity, database
+defaults, successful ordinary attach/cache, rejection without workspace loss,
+no database creation for rejected self-project, selected source unchanged.
+selection-startup-tests.log: actual command-line FormCreate path rejects a
+self-analysis cache and leaves Getting started visible.
+selection-workspace-tests.log: existing 41-check workspace regression.
+Original input application source is never compiled or run by these checks.
+
+D: backups remain suspended. Local Git and both GitHub remotes remain enabled.
+The original-plan gaps in Rework_Requirements_Audit.txt remain outstanding.

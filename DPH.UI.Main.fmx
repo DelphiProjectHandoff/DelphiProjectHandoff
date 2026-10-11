@@ -283,7 +283,7 @@ Lines.Strings = (
 ''
 '1. Choose Debug / Win32 and enter required compiler defines.'
 '2. Choose Attach project; select a .dproj, .dpr or .groupproj.'
-'3. Save its .dphdb knowledge database outside the source folder.'
+'3. Save its .dphdb database in the proposed Databases folder, or choose another location outside the selected source folder.'
 '4. Read the status line along the bottom of the window. PARTIAL means incomplete evidence.'
 '5. Click Learn the project, then Coverage and troubleshooting in its topic list to read the gaps.'
 '6. In that same topic list, click How the program starts.'
@@ -293,6 +293,8 @@ Lines.Strings = (
 '10. Click Publish to export a bundle after reviewing exclusions and privacy.'
 ''
 'Open cache shows saved historical evidence without executing the program.'
+'Open cache starts in Databases; browse to an existing database if it is elsewhere. Existing databases have not been moved.'
+'DPH rejects its own project and caches of itself. A rejected selection keeps your current workspace.'
 'Form designs are approximate reconstructions. Screenshots imports actual PNG images you supply.'
 'DPH never compiles or executes the selected application during analysis.'
 ''
@@ -688,10 +690,12 @@ Filter = 'Delphi projects|*.dproj;*.dpr;*.groupproj'
 end
 object OpenCacheDialog: TOpenDialog
 Filter = 'DPH knowledge database|*.dphdb'
+InitialDir = 'Databases'
 end
 object DatabaseDialog: TSaveDialog
 DefaultExt = 'dphdb'
 Filter = 'DPH knowledge database|*.dphdb'
+InitialDir = 'Databases'
 Title = 'Save knowledge database outside the analyzed source folder'
 end
 object ExportDialog: TSaveDialog
