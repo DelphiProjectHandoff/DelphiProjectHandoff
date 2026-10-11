@@ -1,3 +1,5 @@
 migrations/*.sql text eol=lf
 docs/*-validation.json text eol=lf
 tests/fixtures/** text eol=lf
+dependencies/DelphiAppTranslation/*.pas -text
+dependencies/DelphiAppTranslation/LICENSE -text

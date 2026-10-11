@@ -17,6 +17,7 @@ type
     CodePage: Integer;
     ExportDirectory: string;
     Seeds,Exclusions: TArray<string>;
+    IncludeAgentInstructions: Boolean;
   end;
   TDPHWorkspaceResponse = class
   public
@@ -246,7 +247,7 @@ begin
               Knowledge:=Store.KnowledgeJSON; Images:=Store.ScreenshotsJSON;
               if Request.Audience='' then Request.Audience:='all';
               Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.GenerationIsStale(Request.GenerationID),Images,False,Request.Audience);
-              try TDPHPublisher.Export(Model,Store,Request.ExportDirectory);
+              try TDPHPublisher.Export(Model,Store,Request.ExportDirectory,Request.IncludeAgentInstructions);
                 Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),'{"scope":"'+Model.Document.GetValue<string>('scope')+'"}',Model.Document.GetValue<Boolean>('stale'));
               finally Model.Free; end;
             finally Images.Free; Knowledge.Free; View.Free; end;

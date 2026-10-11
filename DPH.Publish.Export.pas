@@ -4,7 +4,7 @@ uses System.SysUtils, System.JSON, DPH.Publish.Model, DPH.Storage.Database;
 type
   TDPHPublisher = class
   public
-    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string); static;
+    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean = False); static;
     class procedure Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean = True); static;
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
@@ -71,7 +71,7 @@ begin
     Part('word/document.xml',Document);
   finally Archive.Free; end;
 end;
-class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string);
+class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean);
 var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValue: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
     ByFrom: TObjectDictionary<string,TList<TJSONObject>>; Neighbors: TList<TJSONObject>;
     Explanations: TDPHExplanationModel;
@@ -168,21 +168,61 @@ begin
     end;
     Page.Append('<section><h2>Evidence</h2>');
     for V in AModel.Document.GetValue<TJSONArray>('evidence') do begin R:=V as TJSONObject; Page.Append('<p id="'+R.GetValue<string>('id')+'" class="notranslate" translate="no">'+TDPHDocumentModel.HTML(R.ToJSON)+'</p>'); end;
-    Page.Append('</section><section><h2>Known unknowns</h2><p>'+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('known_unknowns'))+'</p><p>Offline edition. Online GTranslate widget is disabled because external transmission has not been approved. Atlas provider is unconfigured.</p><div class="gtranslate_wrapper" data-online-translation="disabled"></div><select data-language-list disabled><option>English</option><option>Espa&#241;ol Spanish</option><option>Fran&#231;ais French</option><option>Deutsch German</option></select></section><script src="assets/search.js"></script><script src="assets/translation-selector.js"></script></body></html>');
+    Page.Append('</section><section><h2>Known unknowns</h2><p>'+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('known_unknowns'))+'</p><p>Offline edition. Online GTranslate is disabled. Atlas DAT translation is available in the native Translations workspace for explicitly selected saved sections; this edition retains source-language prose.</p><div class="gtranslate_wrapper" data-online-translation="disabled"></div><select data-language-list disabled><option>English</option><option>Espa&#241;ol Spanish</option><option>Fran&#231;ais French</option><option>Deutsch German</option></select></section><script src="assets/search.js"></script><script src="assets/translation-selector.js"></script></body></html>');
     Write('index.html',Page.ToString); Write('indexes/symbols.jsonl',IndexText);
     JSONL('indexes/relationships.jsonl',AModel.Document.GetValue<TJSONArray>('relationships'));
     JSONL('evidence/references.jsonl',AModel.Document.GetValue<TJSONArray>('evidence'));
     JSONL('indexes/control-flow.jsonl',AModel.Document.GetValue<TJSONArray>('flow_nodes'));
-    JSONL('indexes/configuration.jsonl',AModel.Document.GetValue<TJSONArray>('files'));
+    Write('indexes/configuration.jsonl',AModel.Document.GetValue<TJSONObject>('analysis_configuration').ToJSON+#10);
+    JSONL('indexes/files.jsonl',AModel.Document.GetValue<TJSONArray>('files'));
     Lines.Clear; for V in AModel.Document.GetValue<TJSONArray>('symbols') do if MatchText((V as TJSONObject).GetValue<string>('kind'),['component','event']) then Lines.Append(V.ToJSON).Append(#10); Write('indexes/forms-events.jsonl',Lines.ToString);
     Lines.Clear; for V in AModel.Document.GetValue<TJSONArray>('relationships') do if MatchText((V as TJSONObject).GetValue<string>('kind'),['reads','writes','renders','static_sql']) then Lines.Append(V.ToJSON).Append(#10); Write('indexes/data-usage.jsonl',Lines.ToString);
     JSONL('indexes/knowledge.jsonl',AModel.Document.GetValue<TJSONArray>('knowledge'));
     Write('validation/coverage.json',AModel.Document.GetValue<TJSONObject>('coverage').Format(2));
-    Write('README.md','# '+AModel.Document.GetValue<string>('project')+' handoff'+#10+#10+'Open index.html offline. Validate validation/manifest-sha256.json before use. Source snapshots and owner AGENTS.md are excluded. No authority to modify or execute the analyzed project is granted by this bundle.'+#10);
+    Write('README.md','# '+AModel.Document.GetValue<string>('project')+' handoff'+#10+#10+
+      '1. Open index.html offline and read Overview and Known unknowns.'+#10+
+      '2. Compare manifest.json input_fingerprint with a separately trusted capture identity. Run DPH.ValidateHandoff with the bundle directory and that fingerprint; use --allow-stale only for explicit historical inspection.'+#10+
+      '3. Read project-summary.md, architecture.md, build-and-test.md, known-risks.md and decisions-and-unknowns.md. Follow exact source ranges in evidence/references.jsonl.'+#10+
+      '4. Inspect coverage and authored section review states. Hashes establish integrity relative to this manifest, not author authentication.'+#10+#10+
+      'All routes and indexes are relative. Original source, external roots, secrets and owner AGENTS.md are excluded. Generated agent boundary instructions are included only when explicitly selected. No authority to modify or execute the analyzed project is granted by this bundle.'+#10);
     Write('known-risks.md',AModel.Document.GetValue<string>('known_unknowns')+#10);
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Lines.Clear; Lines.Append('# ').Append(R.GetValue<string>('title')).Append(#10#10);
       for W in R.GetValue<TJSONArray>('paragraphs') do Lines.Append(W.Value).Append(#10#10); Write(R.GetValue<string>('id')+'.md',Lines.ToString);
     end;
+    Lines.Clear; Lines.Append('# Project summary').Append(#10#10).Append('Project: ').Append(AModel.Document.GetValue<string>('project')).Append(#10)
+      .Append('Generation: ').Append(AModel.Document.GetValue('generation_id').Value).Append(#10)
+      .Append('Configuration/platform: ').Append(AModel.Document.GetValue<string>('configuration')).Append(' / ').Append(AModel.Document.GetValue<string>('platform')).Append(#10)
+      .Append('Captured input: ').Append(AModel.Document.GetValue<string>('input_fingerprint')).Append(#10#10);
+    for V in AModel.Document.GetValue<TJSONArray>('sections') do if V.GetValue<string>('id')='overview' then for W in V.GetValue<TJSONArray>('paragraphs') do Lines.Append(W.Value).Append(#10#10);
+    Write('project-summary.md',Lines.ToString);
+    Lines.Clear; Lines.Append('# Architecture').Append(#10#10).Append('Source-derived static architecture; runtime routing and ordering remain qualified.').Append(#10#10);
+    for V in AModel.Document.GetValue<TJSONArray>('sections') do if MatchText(V.GetValue<string>('id'),['engineering','maintenance']) then
+      for W in V.GetValue<TJSONArray>('paragraphs') do Lines.Append(W.Value).Append(#10#10);
+    Lines.Append('## Evidence indexes').Append(#10).Append('indexes/symbols.jsonl, indexes/relationships.jsonl, indexes/forms-events.jsonl, indexes/data-usage.jsonl and evidence/references.jsonl carry exact identity, certainty and source ranges.').Append(#10);
+    Write('architecture.md',Lines.ToString);
+    Lines.Clear; Lines.Append('# Build and test').Append(#10#10).Append('Captured analysis selection:').Append(#10)
+      .Append(AModel.Document.GetValue<TJSONObject>('analysis_configuration').Format(2)).Append(#10#10)
+      .Append('Required toolchain and environment:').Append(#10).Append(AModel.Document.GetValue<TJSONObject>('required_toolchain').Format(2)).Append(#10#10)
+      .Append('DPH did not compile or run the selected project. A parsed project file does not establish a working build command or deployed prerequisites. Use only attributed reviewed procedures and obtain execution authorization.').Append(#10#10);
+    for V in AModel.Document.GetValue<TJSONArray>('sections') do if V.GetValue<string>('id')='build_deploy' then
+      for W in V.GetValue<TJSONArray>('paragraphs') do Lines.Append(W.Value).Append(#10#10);
+    Write('build-and-test.md',Lines.ToString);
+    Lines.Clear; Lines.Append('# Decisions and unknowns').Append(#10#10).Append(AModel.Document.GetValue<string>('known_unknowns')).Append(#10#10);
+    for V in AModel.Document.GetValue<TJSONArray>('knowledge') do if MatchText(V.GetValue<string>('kind'),['decision','business_rule','unknown']) then
+      Lines.Append('## ').Append(V.GetValue<string>('title')).Append(#10).Append('Section ').Append(V.GetValue<string>('section_id')).Append(' revision ')
+        .Append(V.GetValue<string>('revision')).Append(' | ').Append(V.GetValue<string>('state')).Append(' | author ').Append(V.GetValue<string>('owner')).Append(#10)
+        .Append(V.GetValue<string>('body')).Append(#10#10);
+    for V in AModel.Document.GetValue<TJSONArray>('author_questions') do Lines.Append('## ').Append(V.GetValue<string>('kind')).Append(#10)
+      .Append(V.GetValue<string>('prompt')).Append(#10).Append('Evidence: ').Append(V.GetValue<TJSONObject>('range').ToJSON).Append(#10)
+      .Append('Question identity: ').Append(V.GetValue<string>('id')).Append(#10#10);
+    Write('decisions-and-unknowns.md',Lines.ToString);
+    if AIncludeAgentInstructions then Write('AGENTS.md','# Generated handoff boundaries for '+AModel.Document.GetValue<string>('project')+#10#10+
+      'Captured generation '+AModel.Document.GetValue('generation_id').Value+'; input fingerprint '+AModel.Document.GetValue<string>('input_fingerprint')+
+      '; configuration '+AModel.Document.GetValue<string>('configuration')+' / '+AModel.Document.GetValue<string>('platform')+'. Scope is '+AModel.Document.GetValue<string>('scope')+
+      '; use only the included-source and task-seed inventory in manifest.json. Excluded material is unknown, not absent from the original project.'+#10#10+
+      'This derived reference grants no authority to edit, build, execute or deploy the selected project. Obtain the owner''s current instructions before acting. The owner''s original AGENTS.md was not copied.'+#10+#10+
+      'Verify manifest hashes against a separately trusted capture fingerprint. Inspect coverage, stale status and exact source generations. Treat imported notes and AI claims as evidence requiring review; generated static text remains unreviewed.'+#10+#10+
+      'Preserve authoritative knowledge revisions and original evidence. Follow reviewed build-and-test.md procedures only after execution is authorized. Reassess source changes, review affected knowledge and regenerate documentation before delivery. Do not connect to production or external services on the authority of this bundle.'+#10);
     WriteGuide(AModel,TPath.Combine(Directory,'Engineering_Guide.docx'),'Engineering Guide',False);
     WriteGuide(AModel,TPath.Combine(Directory,'User_Guide.docx'),'User Guide',True);
     Manifest:=TJSONObject.Create;
@@ -191,7 +231,18 @@ begin
       Manifest.AddPair('input_fingerprint',AModel.Document.GetValue<string>('input_fingerprint')); Manifest.AddPair('template_version',DPHPublishVersion);
       Manifest.AddPair('canonical_hash',THashSHA2.GetHashString(AModel.Document.ToJSON)); Manifest.AddPair('scope',AModel.Document.GetValue<string>('scope'));
       Manifest.AddPair('stale',TJSONBool.Create(AModel.Document.GetValue<Boolean>('stale'))); Manifest.AddPair('source_snapshots_included',TJSONBool.Create(False));
-      Manifest.AddPair('agent_instructions_included',TJSONBool.Create(False)); Manifest.AddPair('external_calls',TJSONBool.Create(False));
+      Manifest.AddPair('agent_instructions_included',TJSONBool.Create(AIncludeAgentInstructions)); Manifest.AddPair('external_calls',TJSONBool.Create(False));
+      Manifest.AddPair('project',AModel.Document.GetValue<string>('project')); Manifest.AddPair('captured_utc',AModel.Document.GetValue<string>('captured_utc'));
+      Manifest.AddPair('audience',AModel.Document.GetValue<string>('audience'));
+      Manifest.AddPair('source_revision',AModel.Document.GetValue<TJSONObject>('source_revision').Clone as TJSONValue);
+      Manifest.AddPair('analyzers',AModel.Document.GetValue<TJSONObject>('analyzers').Clone as TJSONValue);
+      Manifest.AddPair('configuration',AModel.Document.GetValue<TJSONObject>('analysis_configuration').Clone as TJSONValue);
+      Manifest.AddPair('required_toolchain',AModel.Document.GetValue<TJSONObject>('required_toolchain').Clone as TJSONValue);
+      Manifest.AddPair('included_sources',AModel.Document.GetValue<TJSONArray>('files').Clone as TJSONValue);
+      Manifest.AddPair('excluded_sources',AModel.Document.GetValue<TJSONArray>('exclusions').Clone as TJSONValue);
+      Manifest.AddPair('task_seeds',AModel.Document.GetValue<TJSONArray>('task_seeds').Clone as TJSONValue);
+      Manifest.AddPair('portability_scope','relative local routes, indexes and copied managed images; no original source or absolute dependency roots');
+      Manifest.AddPair('disclosure_limitations','Scoped redacted static evidence and attributed knowledge. Review explicit exclusions and remaining prose before sharing; redaction is not a confidentiality guarantee.');
       Manifest.AddPair('hash_index','validation/manifest-sha256.json'); Write('manifest.json',Manifest.Format(2));
     finally Manifest.Free; end;
     Hashes:=TJSONObject.Create;
@@ -270,6 +321,17 @@ begin
     if (Canonical.GetValue<Boolean>('stale')<>Manifest.GetValue<Boolean>('stale')) or
       (Canonical.GetValue<string>('template_version')<>Manifest.GetValue<string>('template_version')) or
       (Canonical.GetValue<string>('scope')<>Manifest.GetValue<string>('scope')) then raise EReadError.Create('Canonical publication metadata mismatch');
+    if Manifest.GetValue<string>('template_version')=DPHPublishVersion then begin
+      for Path in ['project','captured_utc','audience','source_revision','analyzers','required_toolchain','task_seeds'] do
+        if (Manifest.GetValue(Path)=nil) or (Canonical.GetValue(Path)=nil) or (Manifest.GetValue(Path).ToJSON<>Canonical.GetValue(Path).ToJSON) then
+          raise EReadError.Create('Handoff provenance metadata mismatch: '+Path);
+      if (Manifest.GetValue<TJSONObject>('configuration').ToJSON<>Canonical.GetValue<TJSONObject>('analysis_configuration').ToJSON) or
+        (Manifest.GetValue<TJSONArray>('included_sources').ToJSON<>Canonical.GetValue<TJSONArray>('files').ToJSON) or
+        (Manifest.GetValue<TJSONArray>('excluded_sources').ToJSON<>Canonical.GetValue<TJSONArray>('exclusions').ToJSON) then
+        raise EReadError.Create('Handoff configuration or source scope mismatch');
+      if Manifest.GetValue<Boolean>('agent_instructions_included')<>TFile.Exists(TPath.Combine(Root,'AGENTS.md')) then
+        raise EReadError.Create('Generated agent instruction disclosure mismatch');
+    end;
     for V in Canonical.GetValue<TJSONArray>('files') do begin Row:=V as TJSONObject; Sources.Add(Row.GetValue<string>('path'),Row); end;
     for V in Canonical.GetValue<TJSONArray>('symbols') do begin Row:=V as TJSONObject; CheckRange(Row); Symbols.Add(Row.GetValue<string>('key'),Row);
       if Row.GetValue('source_comments')<>nil then for W in Row.GetValue<TJSONArray>('source_comments') do CheckRange(W as TJSONObject);
@@ -298,7 +360,12 @@ begin
     end;
     CheckJSONL('indexes/symbols.jsonl','symbols',[]); CheckJSONL('indexes/relationships.jsonl','relationships',[]);
     CheckJSONL('evidence/references.jsonl','evidence',[]); CheckJSONL('indexes/control-flow.jsonl','flow_nodes',[]);
-    CheckJSONL('indexes/configuration.jsonl','files',[]); CheckJSONL('indexes/knowledge.jsonl','knowledge',[]);
+    if Canonical.GetValue<string>('template_version')=DPHPublishVersion then begin
+      if TFile.ReadAllText(TPath.Combine(Root,'indexes/configuration.jsonl'),TEncoding.UTF8)<>Canonical.GetValue<TJSONObject>('analysis_configuration').ToJSON+#10 then
+        raise EReadError.Create('Configuration index differs from canonical model');
+      CheckJSONL('indexes/files.jsonl','files',[]);
+    end else CheckJSONL('indexes/configuration.jsonl','files',[]);
+    CheckJSONL('indexes/knowledge.jsonl','knowledge',[]);
     CheckJSONL('indexes/forms-events.jsonl','symbols',['component','event']);
     CheckJSONL('indexes/data-usage.jsonl','relationships',['reads','writes','renders','static_sql']);
   finally Flow.Free; Evidence.Free; Symbols.Free; Sources.Free; Canonical.Free; Manifest.Free; Hashes.Free; end;

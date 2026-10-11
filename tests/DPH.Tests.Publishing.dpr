@@ -96,6 +96,15 @@ begin
             TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint'));
             Check(True,'Full handoff passes filename and SHA256 validation');
             Check(not TFile.Exists(TPath.Combine(Work,'full\AGENTS.md')),'Owner guardrails and generated agent instructions are excluded by default');
+            for Path in ['project-summary.md','architecture.md','build-and-test.md','known-risks.md','decisions-and-unknowns.md'] do
+              Check(TFile.Exists(TPath.Combine(Work,'full\'+Path)),'Handoff includes planned narrative '+Path);
+            J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'full\manifest.json'),TEncoding.UTF8)) as TJSONObject;
+            try Check((J.GetValue<string>('project')='Semantic.dproj') and (J.GetValue<string>('analyzers.syntax')<>'') and
+              (J.GetValue<TJSONArray>('included_sources').Count=Model.Document.GetValue<TJSONArray>('files').Count) and
+              (J.GetValue<string>('required_toolchain.selected_project_build')='not_run'),
+              'Manifest carries project, analyzer, source scope and honest required-toolchain status'); finally J.Free; end;
+            Check(TFile.ReadAllText(TPath.Combine(Work,'full\indexes\configuration.jsonl'),TEncoding.UTF8).Contains('additional_defines'),
+              'Configuration index describes the captured selection rather than duplicating the file inventory');
             Text:=TFile.ReadAllText(TPath.Combine(Work,'full\index.html'),TEncoding.UTF8);
             Check(Pos('<script>alert(1)</script>',Text)=0,'Authored markup is encoded rather than executed');
             Check(Pos('&lt;script&gt;',Text)>0,'Escaped author text remains inspectable');
@@ -113,6 +122,10 @@ begin
             Task:=TDPHDocumentModel.Create(View,Knowledge,[Key],[],False,False);
             try Check(Task.Document.GetValue<string>('scope')='task','Task bundle records its technical scope'); Check(Task.Document.GetValue<TJSONArray>('symbols').Count<View.Document.GetValue<TJSONArray>('semantics.symbols').Count,'Task bundle selects incident context rather than a blind full-export truncation');
               TDPHPublisher.Export(Task,Store,TPath.Combine(Work,'task')); finally Task.Free; end;
+            TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'agent-opt-in'),True);
+            TDPHPublisher.Validate(TPath.Combine(Work,'agent-opt-in'),Model.Document.GetValue<string>('input_fingerprint'));
+            Check(TFile.ReadAllText(TPath.Combine(Work,'agent-opt-in\AGENTS.md'),TEncoding.UTF8).Contains('grants no authority'),
+              'Explicit agent-instruction opt-in produces bounded generated instructions and a valid disclosed manifest');
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),StringOfChar('0',64)); except Failed:=True; end; Check(Failed,'Changed input fingerprint rejects a stale bundle');
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Fixture,'forbidden')); except Failed:=True; end; Check(Failed,'Publishing cannot write into the analyzed source');
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full')); except Failed:=True; end; Check(Failed,'Publishing cannot overwrite an existing folder');

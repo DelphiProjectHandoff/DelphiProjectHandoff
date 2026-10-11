@@ -56,9 +56,10 @@ type
     PendingKnowledgeCheck: TCheckBox;
     KnowledgeWarning: TLabel;
     PublishTab: TTabItem;
-    PublishToolbar: TLayout;
+    PublishToolbar: THorzScrollBox;
     PublishScopeCombo: TComboBox;
     PublishAudienceCombo: TComboBox;
+    PublishAgentInstructions: TCheckBox;
     PublishExclusionsEdit: TEdit;
     PublishButton,PreviewButton: TButton;
     PublishMemo: TMemo;
@@ -537,6 +538,7 @@ begin
     R.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); R.ExportDirectory:=FExportDirectory;
     R.Exclusions:=PublishExclusionsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
     R.Audience:='all'; if PublishAudienceCombo.ItemIndex>=0 then R.Audience:=PublishAudienceCombo.Items[PublishAudienceCombo.ItemIndex];
+    R.IncludeAgentInstructions:=PublishAgentInstructions.IsChecked;
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';

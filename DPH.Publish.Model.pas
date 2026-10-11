@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-3';
+const DPHPublishVersion = 'DPH-LEARNING-4';
 type
   TDPHDocumentModel = class
   private
@@ -64,6 +64,23 @@ begin
     FDocument.AddPair('configuration',AView.Document.GetValue<string>('configuration')); FDocument.AddPair('platform',AView.Document.GetValue<string>('platform'));
     FDocument.AddPair('input_fingerprint',AView.Document.GetValue<string>('semantics.input_fingerprint'));
     FDocument.AddPair('context_fingerprint',AView.Document.GetValue<string>('semantics.context_fingerprint'));
+    J:=TJSONObject.Create; FDocument.AddPair('analyzers',J);
+    J.AddPair('syntax',AView.Document.GetValue<string>('syntax.analyzer'));
+    J.AddPair('semantics',AView.Document.GetValue<string>('semantics.analyzer'));
+    J:=TJSONObject.Create; FDocument.AddPair('analysis_configuration',J);
+    J.AddPair('configuration',AView.Document.GetValue<string>('configuration')); J.AddPair('platform',AView.Document.GetValue<string>('platform'));
+    J.AddPair('identity',AView.Document.GetValue<string>('configuration_identity','unknown'));
+    J.AddPair('code_page',TJSONNumber.Create(AView.Document.GetValue<Integer>('code_page',0)));
+    J.AddPair('additional_defines',CaptureValue(AView.Document.GetValue<TJSONArray>('defines')));
+    J.AddPair('excluded_external_root_count',TJSONNumber.Create(AView.Document.GetValue<TJSONArray>('external_roots').Count));
+    J:=TJSONObject.Create; FDocument.AddPair('required_toolchain',J);
+    J.AddPair('language','Delphi'); J.AddPair('exact_release','unknown; consult attributed build_deploy sections');
+    J.AddPair('selected_project_build','not_run'); J.AddPair('environment_prerequisites','unknown unless supplied as reviewed knowledge');
+    J.AddPair('reviewed_procedures',TJSONArray.Create);
+    J:=TJSONObject.Create; FDocument.AddPair('source_revision',J);
+    J.AddPair('captured_input_fingerprint',AView.Document.GetValue<string>('semantics.input_fingerprint'));
+    J.AddPair('vcs_commit','unrecorded'); J.AddPair('identity_basis','captured file hashes and configuration; no VCS revision inferred');
+    Links:=TJSONArray.Create; FDocument.AddPair('task_seeds',Links); for Key in ASeeds do Links.Add(Key);
     FDocument.AddPair('analysis_complete',TJSONBool.Create(AView.Document.GetValue<Boolean>('analysis_complete')));
     FDocument.AddPair('detached',TJSONBool.Create(ADetached)); FDocument.AddPair('stale',TJSONBool.Create(AStale));
     FDocument.AddPair('verification_state','source_derived_static_unreviewed'); FDocument.AddPair('runtime_observed',TJSONBool.Create(False));
@@ -223,6 +240,11 @@ begin
       Path:=R.GetValue<string>('range.source',''); IncludeRow:=Path='';
       for W in Files do if (W as TJSONObject).GetValue<string>('path')=Path then IncludeRow:=True;
       if IncludeRow then Links.AddElement(CaptureValue(R));
+    end;
+    Links:=FDocument.GetValue<TJSONObject>('required_toolchain').GetValue<TJSONArray>('reviewed_procedures');
+    for V in Knowledge do if (V.GetValue<string>('document_kind')='build_deploy') and (V.GetValue<string>('state')='verified') and (V.GetValue<string>('pending')='0') then begin
+      J:=TJSONObject.Create; Links.AddElement(J); J.AddPair('section_id',V.GetValue<string>('section_id')); J.AddPair('revision',V.GetValue<string>('revision'));
+      J.AddPair('source_generation',V.GetValue<string>('source_generation')); J.AddPair('reviewer',V.GetValue<string>('reviewer')); J.AddPair('last_reviewed',V.GetValue<string>('reviewed_at'));
     end;
     Startup:=TJSONArray.Create; FDocument.AddPair('startup',Startup);
     for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin FileRow:=V as TJSONObject;

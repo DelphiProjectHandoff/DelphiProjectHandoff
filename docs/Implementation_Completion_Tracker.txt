@@ -237,8 +237,18 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     code is explicitly protected; unusual unmarked identifiers require review.
     Full guide language catalogs and localized bundle publication remain part of
     subsequent publishing integration; no full-language coverage claim is made.
-6.5-6.7 Pending:
-    handoff contract, bundle-validation UI and offline source navigation.
+6.5 Expanded: planned project-summary, architecture, build-and-test, known-risks
+    and decisions-and-unknowns narratives share scoped canonical evidence and
+    attributed knowledge. Manifest now records project, audience, capture time,
+    source fingerprint/VCS-unknown status, analyzer versions, actual configuration,
+    source inclusion/exclusion, task seeds, required-toolchain unknowns, reviewed
+    build-section references, portability and disclosure limits. Configuration
+    JSONL now describes configuration; file inventory has its own index. Generated
+    AGENTS boundaries require an explicit unchecked design-time export option;
+    owner AGENTS is never copied. Provenance/index consistency is validated.
+    Eight new publishing checks pass (94 total); app/form build passes. Exact target
+    toolchain, prerequisites and procedures remain unknown without reviewed input.
+6.6-6.7 Pending: bundle-validation UI and offline source navigation.
 7.1-7.5 Pending: independent flow review, reviewed user procedures, first-time
     programmer exercise, agreed performance budgets and reconciled acceptance.
 

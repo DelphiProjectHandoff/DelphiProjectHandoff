@@ -338,6 +338,20 @@ The localized text should read Exécuter la conversion and remain needs_review.
 This sample has only three unreviewed phrases. It is not a complete DPH language
 catalog or a translation of the analyzed project's manuals. The separate
 terminology.fr.sample.json demonstrates an exact prose dictionary.
+
+Expanded handoff contents
+Publish retains full-project or selected-object-and-context scope, audience and
+explicit file exclusions. The toolbar scrolls horizontally on narrow windows.
+Include generated agent boundaries is unchecked by default. Checking it exports
+DPH-generated read-only boundaries for that exact project/generation/scope; it
+does not copy the owner's AGENTS.md or grant permission to modify or execute it.
+The bundle now includes project-summary.md, architecture.md, build-and-test.md,
+known-risks.md and decisions-and-unknowns.md. Open these after index.html.
+manifest.json records scoped source hashes, analyzer versions, configuration,
+audience, task seeds, capture time, toolchain unknowns and disclosure limitations.
+indexes/configuration.jsonl holds actual analysis selection; indexes/files.jsonl
+holds source inventory. A VCS commit and exact target compiler are explicitly
+unrecorded unless separately supplied; the capture fingerprint is not a Git SHA.
 Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
 checks without native browser tests. Full build-learning.cmd additionally tests
 worker recovery and native WebView rendering (49 checks pass). Do not interpret
