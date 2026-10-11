@@ -4,7 +4,7 @@ uses System.SysUtils, System.JSON, DPH.Publish.Model, DPH.Storage.Database;
 type
   TDPHPublisher = class
   public
-    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean = False; AIncludeSourceNavigation: Boolean = False); static;
+    class procedure Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions: Boolean = False; AIncludeSourceNavigation: Boolean = False; const ALocale: string = ''); static;
     class procedure Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean = True); static;
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
@@ -71,7 +71,7 @@ begin
     Part('word/document.xml',Document);
   finally Archive.Free; end;
 end;
-class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions,AIncludeSourceNavigation: Boolean);
+class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnowledgeStore; const ADirectory: string; AIncludeAgentInstructions,AIncludeSourceNavigation: Boolean; const ALocale: string);
 var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValue: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
     ByFrom: TObjectDictionary<string,TList<TJSONObject>>; Neighbors: TList<TJSONObject>;
     Explanations: TDPHExplanationModel;
@@ -79,6 +79,8 @@ var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValu
     SourcePages: TObjectDictionary<string,TJSONObject>; Navigation,SourceRecord: TJSONObject; SourceRows: TJSONArray;
     Source: TDPHSource; Diagnostics: TDPHDiagnostics; SourceLines: TArray<string>; SourceLine,ObjectPage,SourcePath: string; LineNumber,RenderedSources,OmittedSources: Integer;
     IncludedLines: TJSONArray; LineStarts: TArray<Integer>; LineMask: TArray<Boolean>; CharacterIndex,LineIndex,RenderedLines: Integer; SourceSymbol: TJSONValue; TaskSource,SkippingLines,LineAvailable: Boolean;
+    LocalizedRows,CachedTranslations: TJSONArray; Localization,LocalizedRow: TJSONObject; TranslationValue,SegmentValue: TJSONValue;
+    LocalizedBody,LocalizedSource,LocalePage: string; TranslatedCount,FallbackCount: Integer; LocalizedModel: TDPHDocumentModel; LocaleCharacter: Char;
   procedure Write(const Name,Text: string);
   var Target: string;
   begin Target:=TPath.Combine(Directory,Name.Replace('/',PathDelim)); TDirectory.CreateDirectory(ExtractFilePath(Target)); TFile.WriteAllBytes(Target,TEncoding.UTF8.GetBytes(Text)); end;
@@ -87,12 +89,57 @@ var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValu
   begin Lines.Clear; for Value in Rows do Lines.Append(Value.ToJSON).Append(#10); Write(Name,Lines.ToString); end;
 begin
   if AModel.LocalDisplay then raise EArgumentException.Create('Local display projection cannot be exported; create a redacted publication model');
+  if Length(ALocale)>35 then raise EArgumentException.Create('Publication locale is limited to 35 characters');
+  for LocaleCharacter in ALocale do if not CharInSet(LocaleCharacter,['a'..'z','A'..'Z','0'..'9','-']) then raise EArgumentException.Create('Use a language tag such as fr or fr-CA');
   Directory:=TPath.GetFullPath(ADirectory); AStore.CheckOutsideSource(Directory);
   if TDirectory.Exists(Directory) or TFile.Exists(Directory) then raise EArgumentException.Create('Export destination must be new; existing files will not be overwritten');
   TDirectory.CreateDirectory(Directory); Lines:=TStringBuilder.Create; Page:=TStringBuilder.Create;
   ByFrom:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]); Explanations:=TDPHExplanationModel.Create(AModel.Document);
   SourcePages:=TObjectDictionary<string,TJSONObject>.Create([doOwnsValues]); Navigation:=TJSONObject.Create;
+  Localization:=TJSONObject.Create;
   try
+    LocalizedRows:=TJSONArray.Create; Localization.AddPair('sections',LocalizedRows); TranslatedCount:=0; FallbackCount:=0; LocalePage:='';
+    Localization.AddPair('requested_locale',ALocale); Localization.AddPair('scope','authored bodies only; titles, generated guidance and technical indexes remain source language');
+    if ALocale<>'' then begin
+      for V in AModel.Document.GetValue<TJSONArray>('knowledge') do begin
+        R:=V as TJSONObject; LocalizedRow:=TJSONObject.Create; LocalizedRows.AddElement(LocalizedRow);
+        for SourcePath in ['id','section_id','revision','source_generation','title'] do LocalizedRow.AddPair(SourcePath,R.GetValue<string>(SourcePath));
+        LocalizedRow.AddPair('author',R.GetValue<string>('owner')); LocalizedRow.AddPair('source_body',R.GetValue<string>('body'));
+        LocalizedRow.AddPair('body',R.GetValue<string>('body')); LocalizedRow.AddPair('state','source_fallback_needs_translation');
+        LocalizedRow.AddPair('actual_locale','source'); LocalizedRow.AddPair('reviewer','unassigned'); LocalizedRow.AddPair('reviewed_at','never');
+        if (R.GetValue<string>('state')='verified') and (R.GetValue<string>('pending')='0') and not R.GetValue<string>('body').Contains('[REDACTED') then begin
+          CachedTranslations:=AStore.TranslationEntries(R.GetValue<Int64>('revision'));
+          try for TranslationValue in CachedTranslations do begin
+            if not SameText(TranslationValue.GetValue<string>('locale'),ALocale) or (TranslationValue.GetValue<string>('state')<>'verified') or
+              (TranslationValue.GetValue<Integer>('source_fallback_count')<>0) then Continue;
+            LocalizedSource:=''; LocalizedBody:='';
+            for SegmentValue in TranslationValue.GetValue<TJSONArray>('segments') do begin LocalizedSource:=LocalizedSource+SegmentValue.GetValue<string>('source_text'); LocalizedBody:=LocalizedBody+SegmentValue.GetValue<string>('text'); end;
+            if LocalizedSource<>R.GetValue<string>('body') then Continue;
+            LocalizedRow.RemovePair('body').Free; LocalizedRow.AddPair('body',TDPHDocumentModel.Redact(LocalizedBody));
+            LocalizedRow.RemovePair('state').Free; LocalizedRow.AddPair('state','verified_translation');
+            LocalizedRow.RemovePair('actual_locale').Free; LocalizedRow.AddPair('actual_locale',TranslationValue.GetValue<string>('resolved_locale',ALocale));
+            LocalizedRow.RemovePair('reviewer').Free; LocalizedRow.AddPair('reviewer',TranslationValue.GetValue<string>('reviewer'));
+            LocalizedRow.RemovePair('reviewed_at').Free; LocalizedRow.AddPair('reviewed_at',TranslationValue.GetValue<string>('reviewed_at','unknown'));
+            LocalizedRow.AddPair('cache_key',TranslationValue.GetValue<string>('cache_key')); LocalizedRow.AddPair('provider',TranslationValue.GetValue<string>('provider'));
+            LocalizedRow.AddPair('provider_version',TranslationValue.GetValue<string>('provider_version')); Break;
+          end; finally CachedTranslations.Free; end;
+        end;
+        if LocalizedRow.GetValue<string>('state')='verified_translation' then Inc(TranslatedCount) else Inc(FallbackCount);
+      end;
+      LocalePage:='objects/'+THashSHA2.GetHashString('locale'+#0+ALocale+#0+LocalizedRows.ToJSON)+'.html';
+      Lines.Clear; Lines.Append('<!doctype html><html lang="').Append(ALocale).Append('"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''self''; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><link rel="stylesheet" href="../assets/style.css"><title>Localized authored sections</title></head><body><a href="../index.html">Back to source-language handoff</a><h1>Localized authored sections: ')
+        .Append(ALocale).Append('</h1><p>').Append(TranslatedCount).Append(' reviewed translations; ').Append(FallbackCount).Append(' source-language fallbacks. Titles, generated guidance and technical indexes remain source language. Translation review approves wording, not underlying facts.</p>');
+      for V in LocalizedRows do Lines.Append('<section><h2>').Append(TDPHDocumentModel.HTML(V.GetValue<string>('title'))).Append('</h2><p>Section ')
+        .Append(TDPHDocumentModel.HTML(V.GetValue<string>('section_id'))).Append(' revision ').Append(V.GetValue<string>('revision')).Append(' | ')
+        .Append(V.GetValue<string>('state')).Append(' | actual locale ').Append(TDPHDocumentModel.HTML(V.GetValue<string>('actual_locale')))
+        .Append(' | reviewer ').Append(TDPHDocumentModel.HTML(V.GetValue<string>('reviewer'))).Append('</p><pre>')
+        .Append(TDPHDocumentModel.HTML(V.GetValue<string>('body'))).Append('</pre></section>');
+      Lines.Append('</body></html>'); Write(LocalePage,Lines.ToString);
+      LocalizedModel:=TDPHDocumentModel.CreateLocalizedSections(AModel,ALocale,LocalizedRows);
+      try WriteGuide(LocalizedModel,TPath.Combine(Directory,'Localized_Sections.docx'),'Localized authored sections - '+ALocale,False); finally LocalizedModel.Free; end;
+    end;
+    Localization.AddPair('translated_sections',TJSONNumber.Create(TranslatedCount)); Localization.AddPair('source_fallback_sections',TJSONNumber.Create(FallbackCount));
+    Localization.AddPair('html',LocalePage); Write('localization.json',Localization.Format(2));
     SourceRows:=TJSONArray.Create; Navigation.AddPair('files',SourceRows); RenderedSources:=0; OmittedSources:=0;
     Navigation.AddPair('included',TJSONBool.Create(AIncludeSourceNavigation)); Navigation.AddPair('raw_source_snapshots',TJSONBool.Create(False));
     Navigation.AddPair('disclosure','Optional redacted line-preserving browsing views. Original bytes are not included; inspect prose before sharing.');
@@ -185,6 +232,7 @@ begin
       IfThen(AModel.Document.GetValue<Boolean>('analysis_complete'),'Captured analysis complete','PARTIAL analysis')+' | '+IfThen(AModel.Document.GetValue<Boolean>('detached'),'Detached source','Connected capture')+' | '+IfThen(AModel.Document.GetValue<Boolean>('stale'),'STALE evidence','Captured fingerprint')+'</p><p>Static evidence; runtime behavior unobserved. Human verification is recorded separately.</p></header><nav>');
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<a href="#'+R.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</a>'); end;
     Page.Append('</nav><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
+    if LocalePage<>'' then Page.Append('<p><a href="'+LocalePage+'">Localized authored sections ('+ALocale+')</a>: '+TranslatedCount.ToString+' reviewed; '+FallbackCount.ToString+' source-language fallbacks. Generated guidance remains source language.</p>');
     Page.Append('<section><h2>Source navigation</h2><p>'+IfThen(AIncludeSourceNavigation,'Explicitly included redacted browsing views: ','Excluded by default. ')+
       RenderedSources.ToString+' rendered files; '+OmittedSources.ToString+' omitted files. Original source bytes are not included.</p>');
     if AIncludeSourceNavigation then begin Page.Append('<details><summary>Browse captured source files and omissions</summary><ul>');
@@ -321,6 +369,8 @@ begin
       Manifest.AddPair('stale',TJSONBool.Create(AModel.Document.GetValue<Boolean>('stale'))); Manifest.AddPair('source_snapshots_included',TJSONBool.Create(False));
       Manifest.AddPair('agent_instructions_included',TJSONBool.Create(AIncludeAgentInstructions)); Manifest.AddPair('external_calls',TJSONBool.Create(False));
       Manifest.AddPair('source_navigation_included',TJSONBool.Create(AIncludeSourceNavigation));
+      Manifest.AddPair('localized_prose_locale',ALocale); Manifest.AddPair('localized_prose_scope',Localization.GetValue<string>('scope'));
+      Manifest.AddPair('localized_authored_sections',TJSONNumber.Create(TranslatedCount)); Manifest.AddPair('source_language_fallback_sections',TJSONNumber.Create(FallbackCount));
       Manifest.AddPair('project',AModel.Document.GetValue<string>('project')); Manifest.AddPair('captured_utc',AModel.Document.GetValue<string>('captured_utc'));
       Manifest.AddPair('audience',AModel.Document.GetValue<string>('audience'));
       Manifest.AddPair('source_revision',AModel.Document.GetValue<TJSONObject>('source_revision').Clone as TJSONValue);
@@ -340,7 +390,7 @@ begin
       Write('validation/manifest-sha256.json',Hashes.Format(2));
     finally Hashes.Free; end;
     Validate(Directory,AModel.Document.GetValue<string>('input_fingerprint'),False);
-  finally Navigation.Free; SourcePages.Free; Explanations.Free; ByFrom.Free; Page.Free; Lines.Free; end;
+  finally Localization.Free; Navigation.Free; SourcePages.Free; Explanations.Free; ByFrom.Free; Page.Free; Lines.Free; end;
 end;
 class procedure TDPHPublisher.Validate(const ADirectory,AExpectedFingerprint: string; ARejectStale: Boolean);
 var Hashes,Manifest,Canonical,Row,Referenced: TJSONObject; Pair: TJSONPair; Path,Root: string; Files: TArray<string>; V,W: TJSONValue; Generation: Int64;
@@ -452,6 +502,45 @@ begin
           Inc(RenderedSources);
         end;
         if (RenderedSources<>BrowseInfo.GetValue<Integer>('rendered_files')) or (OmittedSources<>BrowseInfo.GetValue<Integer>('omitted_files')) then raise EReadError.Create('Source browsing coverage count mismatch');
+      finally BrowsedFiles.Free; BrowseInfo.Free; end;
+    end;
+    if Manifest.GetValue('localized_prose_locale')<>nil then begin
+      BrowseInfo:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Root,'localization.json'),TEncoding.UTF8)) as TJSONObject;
+      BrowsedFiles:=TDictionary<string,Boolean>.Create;
+      try
+        if (BrowseInfo=nil) or (BrowseInfo.GetValue<string>('requested_locale')<>Manifest.GetValue<string>('localized_prose_locale')) or
+          (BrowseInfo.GetValue<string>('scope')<>Manifest.GetValue<string>('localized_prose_scope')) then raise EReadError.Create('Localization disclosure mismatch');
+        RenderedSources:=0; OmittedSources:=0;
+        if BrowseInfo.GetValue<string>('requested_locale')='' then begin
+          if (BrowseInfo.GetValue<TJSONArray>('sections').Count<>0) or (BrowseInfo.GetValue<string>('html')<>'') or TFile.Exists(TPath.Combine(Root,'Localized_Sections.docx')) then
+            raise EReadError.Create('Unexpected localized publication without a requested locale');
+        end else begin
+          if BrowseInfo.GetValue<TJSONArray>('sections').Count<>Canonical.GetValue<TJSONArray>('knowledge').Count then raise EReadError.Create('Localized section scope differs from canonical knowledge');
+          Path:=BrowseInfo.GetValue<string>('html');
+          if not StartsText('objects/',Path) or (Length(Path)<>77) or (Hashes.GetValue(Path)=nil) or not TFile.Exists(TPath.Combine(Root,'Localized_Sections.docx')) then
+            raise EReadError.Create('Missing localized HTML or editable supplement');
+        end;
+        for V in BrowseInfo.GetValue<TJSONArray>('sections') do begin
+          if BrowsedFiles.ContainsKey(V.GetValue<string>('id')) then raise EReadError.Create('Duplicate localized section');
+          BrowsedFiles.Add(V.GetValue<string>('id'),True); BrowseSource:=nil;
+          for W in Canonical.GetValue<TJSONArray>('knowledge') do if W.GetValue<string>('id')=V.GetValue<string>('id') then BrowseSource:=W as TJSONObject;
+          if (BrowseSource=nil) or (BrowseSource.GetValue<string>('revision')<>V.GetValue<string>('revision')) or
+            (BrowseSource.GetValue<string>('section_id')<>V.GetValue<string>('section_id')) or (BrowseSource.GetValue<string>('body')<>V.GetValue<string>('source_body')) then
+            raise EReadError.Create('Localized prose refers to a different source revision');
+          if V.GetValue<string>('state')='verified_translation' then begin
+            if (BrowseSource.GetValue<string>('state')<>'verified') or (BrowseSource.GetValue<string>('pending')<>'0') or
+              (V.GetValue<string>('reviewer').Trim='') or (V.GetValue<string>('reviewer')='unassigned') or (V.GetValue<string>('cache_key').Length<>64) then
+              raise EReadError.Create('Localized review metadata is incomplete or source review is pending');
+            Inc(RenderedSources);
+          end else begin
+            if (V.GetValue<string>('state')<>'source_fallback_needs_translation') or (V.GetValue<string>('body')<>V.GetValue<string>('source_body')) then
+              raise EReadError.Create('Unreviewed localization must preserve source prose and its fallback state');
+            Inc(OmittedSources);
+          end;
+        end;
+        if (RenderedSources<>BrowseInfo.GetValue<Integer>('translated_sections')) or (RenderedSources<>Manifest.GetValue<Integer>('localized_authored_sections')) or
+          (OmittedSources<>BrowseInfo.GetValue<Integer>('source_fallback_sections')) or (OmittedSources<>Manifest.GetValue<Integer>('source_language_fallback_sections')) then
+          raise EReadError.Create('Localized publication coverage mismatch');
       finally BrowsedFiles.Free; BrowseInfo.Free; end;
     end;
     for V in Canonical.GetValue<TJSONArray>('symbols') do begin Row:=V as TJSONObject; CheckRange(Row); Symbols.Add(Row.GetValue<string>('key'),Row);

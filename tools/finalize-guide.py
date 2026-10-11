@@ -21,6 +21,7 @@ pages = [[re.sub(r'\s+', ' ', line).strip().casefold()
 inside = False
 separated = False
 entries = []
+body_start = None
 for paragraph in root.iter(W+'p'):
     instructions = ''.join(n.text or '' for n in paragraph.iter(W+'instrText'))
     if 'TOC ' in instructions:
@@ -43,7 +44,13 @@ for paragraph in root.iter(W+'p'):
     lookup = re.sub(r'\s+', ' ', heading).casefold()
     # TOC rows contain a leader and page number. Match a whole body-heading line
     # so a continued contents page cannot masquerade as the chapter itself.
-    page = next((i+1 for i, lines in enumerate(pages) if i >= 2 and lookup in lines), None)
+    # The first entry appears on contents page two, even when later entries
+    # continue onto more pages. Locate its body heading first, then constrain
+    # all other lookups to the body so a continued initial TOC cannot match.
+    if body_start is None:
+        body_start = next((i for i, lines in enumerate(pages) if i >= 2 and lookup in lines), None)
+    page = next((i+1 for i, lines in enumerate(pages)
+                 if body_start is not None and i >= body_start and lookup in lines), None)
     if page is None:
         raise RuntimeError(f'TOC heading absent from body PDF: {heading}')
     # Keep the authored spacing when replacing the field result. Dropping pPr

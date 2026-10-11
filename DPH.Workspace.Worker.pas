@@ -19,6 +19,7 @@ type
     Seeds,Exclusions: TArray<string>;
     IncludeAgentInstructions: Boolean;
     IncludeSourceNavigation: Boolean;
+    PublicationLocale: string;
     AllowStaleBundle: Boolean;
   end;
   TDPHWorkspaceResponse = class
@@ -262,7 +263,7 @@ begin
               Knowledge:=Store.KnowledgeJSON; Images:=Store.ScreenshotsJSON;
               if Request.Audience='' then Request.Audience:='all';
               Model:=TDPHDocumentModel.Create(View,Knowledge,Request.Seeds,Request.Exclusions,Request.Entry='',Store.GenerationIsStale(Request.GenerationID),Images,False,Request.Audience);
-              try TDPHPublisher.Export(Model,Store,Request.ExportDirectory,Request.IncludeAgentInstructions,Request.IncludeSourceNavigation);
+              try TDPHPublisher.Export(Model,Store,Request.ExportDirectory,Request.IncludeAgentInstructions,Request.IncludeSourceNavigation,Request.PublicationLocale);
                 Store.RecordExport(Request.GenerationID,Request.ExportDirectory,THashSHA2.GetHashString(Model.Document.ToJSON),'{"scope":"'+Model.Document.GetValue<string>('scope')+'"}',Model.Document.GetValue<Boolean>('stale'));
               finally Model.Free; end;
             finally Images.Free; Knowledge.Free; View.Free; end;

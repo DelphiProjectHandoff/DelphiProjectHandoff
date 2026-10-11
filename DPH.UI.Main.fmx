@@ -1581,7 +1581,23 @@ object PublishTab: TTabItem
 Text = 'Publish'
 object PublishToolbar: THorzScrollBox
 Align = Top
-Height = 152
+Height = 190
+object PublishLocaleLabel: TLabel
+Position.X = 4
+Position.Y = 152
+Width = 240
+Height = 28
+Text = 'Optional authored-body translation locale'
+end
+object PublishLocaleEdit: TEdit
+Position.X = 250
+Position.Y = 152
+Width = 320
+Height = 28
+TextPrompt = 'Blank = source language; e.g. fr or fr-CA'
+Hint = 'Uses exact saved reviewed translations. Missing or unreviewed sections retain source text. Generated guidance and titles remain source language.'
+ShowHint = True
+end
 object PublishSourceNavigation: TCheckBox
 Position.X = 4
 Position.Y = 112

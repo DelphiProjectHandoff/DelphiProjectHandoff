@@ -235,8 +235,13 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     rendered and visually inspected; publishing 86, workspace 118, storage 46,
     knowledge 59, selection 18, startup 2 and FMX binding checks pass. Inline/fenced
     code is explicitly protected; unusual unmarked identifiers require review.
-    Full guide language catalogs and localized bundle publication remain part of
-    subsequent publishing integration; no full-language coverage claim is made.
+    Localized publication now includes reviewed exact-revision authored bodies
+    in HTML and editable DOCX, with optional companion PDF. Source fallbacks are
+    explicit for missing, unreviewed, stale or redacted content. Titles, generated
+    guidance and technical indexes retain source language; full language catalogs
+    are still unavailable and no complete-manual translation claim is made.
+    Four further publication checks pass (109 total); app/form and 127 workspace
+    checks pass. All three rendered localized fixture pages were inspected.
 6.5 Expanded: planned project-summary, architecture, build-and-test, known-risks
     and decisions-and-unknowns narratives share scoped canonical evidence and
     attributed knowledge. Manifest now records project, audience, capture time,

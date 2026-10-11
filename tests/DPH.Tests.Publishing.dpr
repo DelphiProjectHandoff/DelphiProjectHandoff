@@ -186,6 +186,26 @@ begin
             J:=Cache.Translate(TranslationRevision,'en','fr',Segments,Provider);
             try CacheKey:=J.GetValue<string>('cache_key'); Check(J.GetValue<TJSONArray>('segments').Items[0].GetValue<string>('text')='Exécuter la conversion','Pinned DAT reader resolves exact source prose from a real pack'); finally J.Free; end;
             Cache.Review(CacheKey,'French reviewer');
+            Rows:=Store.KnowledgeJSON;
+            try Again:=TDPHDocumentModel.Create(View,Rows,[],['worker.pas'],False,False);
+              try
+                TDPHPublisher.Export(Again,Store,TPath.Combine(Work,'localized-review'),False,False,'fr');
+                TDPHPublisher.Validate(TPath.Combine(Work,'localized-review'),Again.Document.GetValue<string>('input_fingerprint'));
+                J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'localized-review\localization.json'),TEncoding.UTF8)) as TJSONObject;
+                try
+                  Check((J.GetValue<Integer>('translated_sections')=1) and (J.GetValue<Integer>('source_fallback_sections')>0),
+                    'Localized publication uses the reviewed current translation and reports untranslated source fallbacks');
+                  Text:=TFile.ReadAllText(TPath.Combine(Work,'localized-review\'+J.GetValue<string>('html')),TEncoding.UTF8);
+                  Check(Text.Contains('Exécuter la conversion') and Text.Contains('source-language fallbacks') and not Text.Contains('DO_NOT_EXPORT'),
+                    'Localized HTML contains actual reviewed prose, explicit fallback scope and redacted source content');
+                finally J.Free; end;
+                Archive:=TZipFile.Create;
+                try Archive.Open(TPath.Combine(Work,'localized-review\Localized_Sections.docx'),zmRead); Archive.Read('word/document.xml',Bytes);
+                  Text:=TEncoding.UTF8.GetString(Bytes); Check(Text.Contains('Exécuter la conversion') and Text.Contains(' TOC '),
+                    'Editable localized supplement shares the same translated body and retains its TOC field');
+                finally Archive.Free; end;
+              finally Again.Free; end;
+            finally Rows.Free; end;
           finally Cache.Free; end;
           Store.Free; Store:=nil;
           Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'publish.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
@@ -203,6 +223,13 @@ begin
             try Check(J.GetValue<string>('state')='needs_review','Editing source invalidates the saved translation review state'); finally J.Free; end;
             Failed:=False; try Store.ReviewTranslation(CacheKey,'French reviewer'); except Failed:=True; end;
             Check(Failed,'Historical translation cannot be approved as the current authored revision');
+            Rows:=Store.KnowledgeJSON;
+            try Again:=TDPHDocumentModel.Create(View,Rows,[],['worker.pas'],False,False);
+              try TDPHPublisher.Export(Again,Store,TPath.Combine(Work,'localized-after-edit'),False,False,'fr');
+                J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'localized-after-edit\localization.json'),TEncoding.UTF8)) as TJSONObject;
+                try Check(J.GetValue<Integer>('translated_sections')=0,'Source edit prevents obsolete reviewed translation from leaking into a new localized export'); finally J.Free; end;
+              finally Again.Free; end;
+            finally Rows.Free; end;
           finally Cache.Free; end;
           Cache:=TDPHTranslationCache.Create;
           try

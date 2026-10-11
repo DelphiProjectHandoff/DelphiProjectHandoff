@@ -1,0 +1,12 @@
+{
+  "validated_date": "2026-10-11",
+  "publisher_version": "DPH-LEARNING-6",
+  "publishing_checks_passed": 109,
+  "workspace_checks_passed": 127,
+  "app_and_design_time_form_build": "pass",
+  "localized_fixture_pages_visually_inspected": 3,
+  "editable_toc": "four entries populated against rendered three-page PDF",
+  "scope": "reviewed exact-revision authored section bodies only",
+  "fallbacks": "missing, unreviewed, stale and redacted entries retain labeled source prose",
+  "limits": "Titles, generated guidance and technical indexes retain source language; no full language catalog or human acceptance is claimed"
+}

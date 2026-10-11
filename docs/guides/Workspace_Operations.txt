@@ -400,3 +400,25 @@ For discovery/resource checks run tools\build-wp2.cmd no-report. For semantic
 checks run tools\build-wp3.cmd to compile, then run
 bin\Win32\Debug\DPH.Tests.Semantics.exe with this project's full folder path as
 its single argument. build-wp3.cmd alone compiles the tests; it does not run them.
+
+Publish reviewed localized section text
+1. Save the source section, review it against the current attached source and
+   resolve its pending review tasks. In Translations, select that saved revision,
+   enter its source and requested target locales, and select a DAT language pack.
+2. Compare source and localized prose. Provide the named translation reviewer and
+   approve only a complete, correct result. Missing pack phrases remain source
+   fallbacks and cannot receive translation approval. Revising source text,
+   terminology or the source context invalidates the prior approval.
+3. In Publish, scroll the toolbar if necessary to find Localized prose locale.
+   Leave it blank for the normal source-language export, or enter the exact
+   requested locale used for the reviewed cache, for example fr or fr-CA.
+4. Export to a new folder. Open index.html and its localized authored-sections
+   link. Inspect the translated and fallback counts. Localized_Sections.docx is
+   the editable companion; tools\export-pdf.ps1 also converts it when present.
+5. Each section reports its exact revision, source generation, actual locale,
+   state, translation reviewer and review date. Missing or unreviewed entries
+   retain visibly labeled source prose. Sections redacted for export retain
+   source fallback rather than exposing a cached original body.
+6. This option localizes authored section bodies only. Titles, generated guidance
+   and technical indexes remain in their source language. Translation approval
+   approves wording; it does not verify the underlying business explanation.

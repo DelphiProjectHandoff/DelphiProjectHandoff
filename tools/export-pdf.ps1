@@ -29,8 +29,9 @@ foreach ($property in $expected.PSObject.Properties) {
 }
 $profileRoot = Join-Path ([IO.Path]::GetTempPath()) ('DPH-PDF-' + [Guid]::NewGuid().ToString('N'))
 $profileURI = ([Uri]$profileRoot).AbsoluteUri
-foreach ($guideName in @('Engineering_Guide','User_Guide')) {
+foreach ($guideName in @('Engineering_Guide','User_Guide','Localized_Sections')) {
     $guidePath = Join-Path $bundleRoot ($guideName + '.docx')
+    if ($guideName -eq 'Localized_Sections' -and -not (Test-Path -LiteralPath $guidePath)) { continue }
     $pdfPath = Join-Path $bundleRoot ($guideName + '.pdf')
     & $officePath "-env:UserInstallation=$profileURI" --headless --convert-to pdf --outdir $bundleRoot $guidePath
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $pdfPath)) { throw "PDF conversion failed: $guideName" }

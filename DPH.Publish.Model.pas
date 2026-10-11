@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-5';
+const DPHPublishVersion = 'DPH-LEARNING-6';
 type
   TDPHDocumentModel = class
   private
@@ -10,6 +10,7 @@ type
   public
     constructor Create(AView: TDPHWorkspaceView; AKnowledge: TJSONArray;
       const ASeeds,AExclusions: TArray<string>; ADetached,AStale: Boolean; AImages: TJSONArray = nil; ALocalDisplay: Boolean = False; const AAudience: string = 'all');
+    constructor CreateLocalizedSections(ABase: TDPHDocumentModel; const ALocale: string; ARows: TJSONArray);
     destructor Destroy; override;
     class function Redact(const AText: string): string; static;
     class function Scrub(AValue: TJSONValue): TJSONValue; static;
@@ -314,6 +315,28 @@ begin
       end;
     finally Explanations.Free; end;
   finally Queue.Free; FlowIDs.Free; AllKeys.Free; Selected.Free; AllowedFiles.Free; end;
+end;
+constructor TDPHDocumentModel.CreateLocalizedSections(ABase: TDPHDocumentModel; const ALocale: string; ARows: TJSONArray);
+var Sections,Paragraphs: TJSONArray; V: TJSONValue; Section: TJSONObject;
+begin
+  inherited Create; FLocalDisplay:=True; FDocument:=ABase.Document.Clone as TJSONObject;
+  FDocument.AddPair('localized_locale',ALocale);
+  FDocument.RemovePair('sections').Free; Sections:=TJSONArray.Create; FDocument.AddPair('sections',Sections);
+  FDocument.RemovePair('knowledge').Free; FDocument.AddPair('knowledge',TJSONArray.Create);
+  FDocument.RemovePair('symbols').Free; FDocument.AddPair('symbols',TJSONArray.Create);
+  FDocument.RemovePair('known_unknowns').Free;
+  FDocument.AddPair('known_unknowns','Localized authored bodies only. Titles, generated guidance and technical indexes remain in their source language. Missing or unreviewed translations retain source prose and explicit fallback states. Translation review approves wording, not the underlying business facts.');
+  for V in ARows do begin
+    Section:=TJSONObject.Create; Sections.AddElement(Section); Section.AddPair('id',V.GetValue<string>('section_id'));
+    Section.AddPair('title','Localized section '+V.GetValue<string>('section_id')); Section.AddPair('section_id',V.GetValue<string>('section_id'));
+    Section.AddPair('section_version',V.GetValue<string>('revision')); Section.AddPair('source_generation',V.GetValue<string>('source_generation'));
+    Section.AddPair('verification_state',V.GetValue<string>('state')); Section.AddPair('last_reviewed',V.GetValue<string>('reviewed_at','never'));
+    Section.AddPair('knowledge_ids',TJSONArray.Create);
+    Paragraphs:=TJSONArray.Create; Section.AddPair('paragraphs',Paragraphs);
+    Paragraphs.Add('Original title: '+V.GetValue<string>('title')+' | requested locale '+ALocale+' | actual locale '+V.GetValue<string>('actual_locale')+
+      ' | source author '+V.GetValue<string>('author')+' | translation reviewer '+V.GetValue<string>('reviewer','unassigned'));
+    Paragraphs.Add(V.GetValue<string>('body'));
+  end;
 end;
 destructor TDPHDocumentModel.Destroy;
 begin FDocument.Free; inherited; end;
