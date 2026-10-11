@@ -170,6 +170,22 @@ member and click Explain selected object to open its canonical explanation.
 Counts describe the captured projection; a truncation warning means additional
 objects were omitted. Arrow labels and certainty describe static evidence.
 
+Form-design viewing
+Choose Form designs in the top-right page selector. Thumbnail shows the captured
+form gallery. Select a form and choose Fit, Native or Custom zoom. Drag the zoom
+slider for 25-400 percent. Scroll to reach enlarged components. Click Full screen
+for a focused borderless form view. Click Exit full screen, or press Escape, to
+restore the surrounding panels. These are approximate source reconstructions.
+
+Runtime screenshot evidence
+Choose Screenshots. Enter the contributor name and capture date/environment in
+the two fields, then click Import an existing PNG screenshot and select a file.
+The selected Explorer object supplies the optional object link. Click an image
+in the left thumbnail list. Choose Fit or Native pixels, or drag the zoom slider.
+The bottom evidence pane shows attribution, generation, dimensions and hash.
+Click Explain linked object to inspect its captured source context. Imported
+images do not prove runtime origin or correctness without human review.
+
 Validation for this checkpoint
 Run tools\validate-completion-wp1.cmd in an elevated command prompt from the
 project folder with RAD Studio installed. Run tools\build-wp1.cmd for storage

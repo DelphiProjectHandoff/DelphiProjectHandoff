@@ -9,7 +9,8 @@ type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
     CommandScroll: THorzScrollBox;
-    HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout,ScreenToolbar: TLayout;
+    HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
+    ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
@@ -18,6 +19,8 @@ type
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
     ConfigurationCombo,PlatformCombo,KindCombo,GraphCombo,ScreenModeCombo,FormCombo: TComboBox;
     GraphGroupingCombo: TComboBox;
+    ScreenZoom: TTrackBar;
+    ScreenZoomLabel: TLabel;
     ExplorerList,RelationsList: TListBox;
     DetailsList: TListBox;
     DetailsMemo: TMemo;
@@ -61,6 +64,10 @@ type
     ImportScreenshotButton: TButton;
     ScreenshotList: TListBox;
     ScreenshotImage: TImage;
+    ScreenshotScroll: TScrollBox;
+    ScreenshotModeCombo: TComboBox;
+    ScreenshotZoom: TTrackBar;
+    ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotDialog: TOpenDialog;
     HelpButton: TButton;
@@ -113,6 +120,8 @@ type
     procedure HelpClick(Sender: TObject);
     procedure ImportScreenshotClick(Sender: TObject);
     procedure ScreenshotClick(Sender: TObject);
+    procedure ScreenshotViewChange(Sender: TObject);
+    procedure ScreenshotInspectClick(Sender: TObject);
     procedure LearningClick(Sender: TObject);
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
@@ -142,6 +151,8 @@ type
     procedure ScreenPaintPaint(Sender: TObject; Canvas: TCanvas);
     procedure ScreenMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Single);
     procedure FullscreenClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+    procedure FormResize(Sender: TObject);
     procedure KnowledgeClick(Sender: TObject);
     procedure NewKnowledgeClick(Sender: TObject);
     procedure SaveKnowledgeClick(Sender: TObject);
@@ -165,6 +176,9 @@ type
     FPage: Integer;
     FBusy,FDetached,FClosing,FBinding: Boolean;
     FScreenScale: Single;
+    FScreenFullscreen: Boolean;
+    FSavedBorder: TFmxFormBorderStyle;
+    FSavedWindowState: TWindowState;
     FKnowledge: TJSONArray;
     FKnowledgeRows: TList<TJSONObject>;
     FKnowledgeID,FKnowledgeRevision: Int64;
@@ -184,13 +198,14 @@ type
     FSearchQuery: string;
     FSearchKind: string;
     FWholeGraph: Boolean;
-    procedure LoadScreenshots(ARows: TJSONArray);
     procedure RefreshLearning;
     procedure ShowExplanation;
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
     procedure RefreshGraphics;
+    procedure UpdateScreenBounds;
+    procedure UpdateScreenshotBounds;
     procedure GraphGroupDetails(const AGroup: string);
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
@@ -198,6 +213,7 @@ type
     procedure OpenSelection(const AEntry,ADatabase: string);
     procedure LoadView(ADocument: TJSONObject);
     procedure LoadKnowledge(ARows: TJSONArray);
+    procedure LoadScreenshots(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
 var DPHMainForm: TDPHMainForm;
@@ -675,12 +691,22 @@ begin
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
-var V: TJSONValue; R: TJSONObject;
+var V: TJSONValue; R: TJSONObject; Index: Integer; Thumbnail: TBitmap; Path: string;
 begin
   FImages.Free; FImages:=ARows; ScreenshotList.Items.Clear;
-  for V in ARows do begin R:=V as TJSONObject; ScreenshotList.Items.Add(R.GetValue<string>('caption')+' | generation '+R.GetValue('generation_id').Value); end;
+  for V in ARows do begin R:=V as TJSONObject;
+    Index:=ScreenshotList.Items.Add(R.GetValue<string>('caption')+' | generation '+R.GetValue('generation_id').Value);
+    Path:=R.GetValue<string>('managed_path'); Thumbnail:=TBitmap.Create;
+    try
+      try
+        if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Image changed');
+        Thumbnail.LoadFromFile(Path); Thumbnail.Resize(128,96);
+        ScreenshotList.ListItems[Index].ItemData.Bitmap.Assign(Thumbnail);
+      except on E: Exception do ScreenshotList.ListItems[Index].Text:='[Unavailable] '+ScreenshotList.ListItems[Index].Text; end;
+    finally Thumbnail.Free; end;
+  end;
   ScreenshotEvidence.Text:='Imported images are contributor evidence, separate from the design-time reconstruction. Capture time and runtime origin require review.';
-  ScreenshotImage.Bitmap.Clear(TAlphaColors.Null);
+  ScreenshotImage.Bitmap.SetSize(0,0);
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
 var R: TJSONObject; Path: string;
@@ -689,11 +715,39 @@ begin
   R:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject; Path:=R.GetValue<string>('managed_path');
   try
     if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Screenshot changed after validation');
-    ScreenshotImage.Bitmap.LoadFromFile(Path);
+    ScreenshotImage.Bitmap.LoadFromFile(Path); UpdateScreenshotBounds;
     ScreenshotEvidence.Text:=R.GetValue<string>('caption')+sLineBreak+'Contributor: '+R.GetValue<string>('author')+sLineBreak+
       'Imported: '+R.GetValue<string>('imported_utc')+' | generation '+R.GetValue('generation_id').Value+sLineBreak+
-      R.GetValue<string>('provenance')+sLineBreak+'Status: '+R.GetValue<string>('verification_state')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
+      R.GetValue<string>('provenance')+sLineBreak+'Status: '+R.GetValue<string>('verification_state')+sLineBreak+
+      Format('Image: %d x %d pixels',[ScreenshotImage.Bitmap.Width,ScreenshotImage.Bitmap.Height])+sLineBreak+
+      'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.UpdateScreenshotBounds;
+var Scale: Single;
+begin
+  if ScreenshotImage.Bitmap.IsEmpty then Exit;
+  Scale:=1;
+  case ScreenshotModeCombo.ItemIndex of
+    0: Scale:=Min(Max(1,ScreenshotScroll.Width-24)/ScreenshotImage.Bitmap.Width,
+      Max(1,ScreenshotScroll.Height-24)/ScreenshotImage.Bitmap.Height);
+    2: Scale:=ScreenshotZoom.Value/100;
+  end;
+  ScreenshotImage.Width:=Max(1,ScreenshotImage.Bitmap.Width*Scale);
+  ScreenshotImage.Height:=Max(1,ScreenshotImage.Bitmap.Height*Scale);
+end;
+procedure TDPHMainForm.ScreenshotViewChange(Sender: TObject);
+begin
+  if Sender=ScreenshotZoom then begin FBinding:=True; try ScreenshotModeCombo.ItemIndex:=2; finally FBinding:=False; end; end;
+  if not FBinding then UpdateScreenshotBounds;
+end;
+procedure TDPHMainForm.ScreenshotInspectClick(Sender: TObject);
+var Row: TJSONObject; Key: string;
+begin
+  if (FImages=nil) or (FView=nil) or (ScreenshotList.ItemIndex<0) then Exit;
+  Row:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject; Key:=Row.GetValue<string>('entity_key','');
+  if (Key<>'') and (FView.Symbol(Key)<>nil) then begin SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab; end
+  else StatusLabel.Text:='This screenshot has no matching object in the current captured generation. Its image evidence remains available.';
 end;
 procedure TDPHMainForm.RefreshExplorer;
 var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,LabelText,Prefix: string; Depth: Integer;
@@ -837,7 +891,13 @@ begin
   BreadcrumbLabel.Text:='Bookmarks for this captured generation';
 end;
 procedure TDPHMainForm.ViewChange(Sender: TObject);
-begin if Sender=GraphCombo then FWholeGraph:=False; if not FBinding then RefreshGraphics; end;
+begin
+  if FBinding then Exit;
+  if Sender=GraphCombo then FWholeGraph:=False;
+  if Sender=ScreenZoom then begin FBinding:=True; try ScreenModeCombo.ItemIndex:=3; finally FBinding:=False; end; end;
+  if (Sender=ScreenModeCombo) and (ScreenModeCombo.ItemIndex=4) and not FScreenFullscreen then FullscreenClick(nil);
+  RefreshGraphics;
+end;
 procedure TDPHMainForm.WholeProgramGraphClick(Sender: TObject);
 begin
   if FView=nil then Exit;
@@ -881,7 +941,7 @@ begin
   end;
   if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
   else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);
-  GraphPaint.Repaint; ScreenPaint.Repaint;
+  UpdateScreenBounds; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.GraphGroupDetails(const AGroup: string);
 var V,W,E: TJSONValue; GroupRow,Symbol,Row,Edge: TJSONObject; Key: string; EvidenceRows: TList<TJSONObject>;
@@ -959,16 +1019,9 @@ begin
   end;
 end;
 procedure TDPHMainForm.ScreenPaintPaint(Sender: TObject; Canvas: TCanvas);
-var Rows: TJSONArray; V: TJSONValue; R: TJSONObject; Bounds: TRectF; W,H: Single;
+var Rows: TJSONArray; V: TJSONValue; R: TJSONObject; Bounds: TRectF;
 begin
-  if FScreen=nil then Exit; Rows:=FScreen.GetValue<TJSONArray>('components'); W:=800; H:=600;
-  if Rows.Count>0 then begin R:=Rows.Items[0] as TJSONObject; W:=R.GetValue<Double>('width'); H:=R.GetValue<Double>('height'); end;
-  FScreenScale:=1; case ScreenModeCombo.ItemIndex of
-    0: FScreenScale:=Min(0.35,Min(ScreenScroll.Width/W,ScreenScroll.Height/H));
-    1,4: FScreenScale:=Min(ScreenScroll.Width/W,ScreenScroll.Height/H);
-    3: FScreenScale:=2;
-  end;
-  FScreenScale:=Max(0.01,FScreenScale);
+  if FScreen=nil then Exit; Rows:=FScreen.GetValue<TJSONArray>('components');
   for V in Rows do begin R:=V as TJSONObject;
     Bounds:=TRectF.Create(R.GetValue<Double>('x')*FScreenScale,R.GetValue<Double>('y')*FScreenScale,(R.GetValue<Double>('x')+R.GetValue<Double>('width'))*FScreenScale,(R.GetValue<Double>('y')+R.GetValue<Double>('height'))*FScreenScale);
     Canvas.Fill.Assign(ScreenNodeStyle.Fill); Canvas.FillRect(Bounds,0,0,AllCorners,1); Canvas.Stroke.Assign(ScreenNodeStyle.Stroke); Canvas.DrawRect(Bounds,0,0,AllCorners,1);
@@ -985,7 +1038,45 @@ begin
   end;
 end;
 procedure TDPHMainForm.FullscreenClick(Sender: TObject);
-begin if WindowState=TWindowState.wsMaximized then WindowState:=TWindowState.wsNormal else WindowState:=TWindowState.wsMaximized; end;
+begin
+  if not FScreenFullscreen then begin
+    FSavedBorder:=BorderStyle; FSavedWindowState:=WindowState; FScreenFullscreen:=True;
+    WorkspaceTabs.ActiveTab:=ScreenTab; BorderStyle:=TFmxFormBorderStyle.None;
+    WindowState:=TWindowState.wsMaximized; FullscreenButton.Text:='Exit full screen';
+  end else begin
+    FScreenFullscreen:=False; BorderStyle:=FSavedBorder; WindowState:=FSavedWindowState;
+    FullscreenButton.Text:='Full screen';
+    if ScreenModeCombo.ItemIndex=4 then begin FBinding:=True; try ScreenModeCombo.ItemIndex:=1; finally FBinding:=False; end; end;
+  end;
+  HeaderLayout.Visible:=not FScreenFullscreen; CommandScroll.Visible:=not FScreenFullscreen;
+  ExplorerLayout.Visible:=not FScreenFullscreen; ExplorerSplitter.Visible:=not FScreenFullscreen;
+  InspectorLayout.Visible:=not FScreenFullscreen; InspectorSplitter.Visible:=not FScreenFullscreen;
+  UpdateScreenBounds;
+end;
+procedure TDPHMainForm.FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+begin if (Key=vkEscape) and FScreenFullscreen then begin FullscreenClick(nil); Key:=0; end; end;
+procedure TDPHMainForm.FormResize(Sender: TObject);
+begin UpdateScreenBounds; if ScreenshotImage<>nil then UpdateScreenshotBounds; end;
+procedure TDPHMainForm.UpdateScreenBounds;
+var V: TJSONValue; R: TJSONObject; W,H: Single;
+begin
+  if FScreen=nil then Exit;
+  W:=1; H:=1;
+  for V in FScreen.GetValue<TJSONArray>('components') do begin R:=V as TJSONObject;
+    W:=Max(W,R.GetValue<Double>('x')+R.GetValue<Double>('width'));
+    H:=Max(H,R.GetValue<Double>('y')+R.GetValue<Double>('height'));
+  end;
+  FScreenScale:=1;
+  case ScreenModeCombo.ItemIndex of
+    0: FScreenScale:=0.25;
+    1,4: FScreenScale:=Min(Max(1,ScreenScroll.Width-24)/W,Max(1,ScreenScroll.Height-24)/H);
+    3: FScreenScale:=ScreenZoom.Value/100;
+  end;
+  FScreenScale:=EnsureRange(FScreenScale,0.001,4.0);
+  ScreenZoomLabel.Text:=Format('Zoom %.0f%%',[FScreenScale*100]);
+  ScreenPaint.Width:=Max(1,W*FScreenScale); ScreenPaint.Height:=Max(1,H*FScreenScale);
+  ScreenPaint.Repaint;
+end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
 begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);

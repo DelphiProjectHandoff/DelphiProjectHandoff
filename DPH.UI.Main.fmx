@@ -9,6 +9,8 @@ Constraints.MinHeight = 600
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnCloseQuery = FormCloseQuery
+  OnKeyDown = FormKeyDown
+  OnResize = FormResize
   FormFactor.Devices = [Desktop]
 object HeaderLayout: TLayout
 Align = Top
@@ -740,7 +742,7 @@ end
 end
 object ScreenTab: TTabItem
 Text = 'Form designs'
-object ScreenToolbar: TLayout
+object ScreenToolbar: THorzScrollBox
 Align = Top
 Height = 78
 object FormCombo: TComboBox
@@ -762,7 +764,7 @@ Items.Strings = (
 'Thumbnail'
 'Fit'
 'Native'
-'Zoom 200%'
+'Custom zoom'
 'Full screen'
 )
 ItemIndex = 0
@@ -782,6 +784,24 @@ Position.Y = 36
 Width = 650
 Height = 40
 WordWrap = True
+end
+object ScreenZoomLabel: TLabel
+Position.X = 590
+Position.Y = 4
+Width = 100
+Height = 28
+Text = 'Zoom 100%'
+end
+object ScreenZoom: TTrackBar
+Position.X = 690
+Position.Y = 4
+Width = 160
+Height = 28
+Min = 25
+Max = 400
+Value = 100
+Frequency = 25
+OnChange = ViewChange
 end
 end
 object ScreenScroll: TScrollBox
@@ -821,6 +841,36 @@ Height = 30
 Text = 'Import an existing PNG screenshot'
 OnClick = ImportScreenshotClick
 end
+object ScreenshotModeCombo: TComboBox
+Position.X = 255
+Position.Y = 82
+Width = 150
+Height = 30
+Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
+ItemIndex = 0
+OnChange = ScreenshotViewChange
+end
+object ScreenshotZoom: TTrackBar
+Position.X = 415
+Position.Y = 82
+Width = 140
+Height = 30
+Min = 25
+Max = 400
+Value = 100
+Frequency = 25
+Hint = 'Screenshot zoom: 25 to 400 percent'
+ShowHint = True
+OnChange = ScreenshotViewChange
+end
+object ScreenshotInspectButton: TButton
+Position.X = 565
+Position.Y = 82
+Width = 180
+Height = 30
+Text = 'Explain linked object'
+OnClick = ScreenshotInspectClick
+end
 end
 object ScreenshotEvidence: TMemo
 Align = Bottom
@@ -830,11 +880,16 @@ end
 object ScreenshotList: TListBox
 Align = Left
 Width = 200
+ItemHeight = 100
 OnChange = ScreenshotClick
 end
-object ScreenshotImage: TImage
+object ScreenshotScroll: TScrollBox
 Align = Client
-WrapMode = Fit
+object ScreenshotImage: TImage
+Width = 1
+Height = 1
+WrapMode = Stretch
+end
 end
 end
 object RelationsTab: TTabItem

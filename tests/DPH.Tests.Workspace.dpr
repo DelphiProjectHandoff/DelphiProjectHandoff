@@ -16,7 +16,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Diagno
 var Root,Work,Fixture,Path,Key,ComponentKey,Kind: string; ID: TGUID; Checks: Integer;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
     View: TDPHWorkspaceView; Rows: TJSONArray; J,Screen,BaseGraph,GroupedGraph,Row: TJSONObject; V: TJSONValue;
-    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation: Int64;
+    Form: TDPHMainForm; Bitmap: TBitmap; Watch: TStopwatch; Generation: Int64; EscapeKey: Word; EscapeChar: Char; SavedScreenWidth: Single;
     Facts: TDPHDocumentModel; Explanation: TDPHExplanationModel; HTML: string;
     Before,After,RootKey: string; Failed,CachedShownBeforeVerification,FoundChild: Boolean; RootCount,ExpandedCount,Members,Relationships: Integer;
 procedure Check(OK: Boolean; const MessageText: string);
@@ -154,10 +154,41 @@ begin
               Bitmap.SaveToFile(TPath.Combine(Work,'details-native.png'));
             finally Bitmap.Free; end;
             Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
-            for Kind in ['Thumbnail','Fit','Native','Zoom 200%','Full screen'] do begin
+            for Kind in ['Thumbnail','Fit','Native','Custom zoom','Full screen'] do begin
               Form.ScreenModeCombo.ItemIndex:=Form.ScreenModeCombo.Items.IndexOf(Kind); Form.ViewChange(nil); Application.ProcessMessages;
               Bitmap:=Form.ScreenPaint.MakeScreenshot; try Check((Bitmap.Width>0) and (Bitmap.Height>0),'Render screen mode '+Kind); finally Bitmap.Free; end;
             end;
+            Check(not Form.HeaderLayout.Visible and not Form.ExplorerLayout.Visible and
+              not Form.InspectorLayout.Visible and (Form.BorderStyle=TFmxFormBorderStyle.None),
+              'Dedicated full screen hides surrounding workspace while retaining screen toolbar');
+            EscapeKey:=vkEscape; EscapeChar:=#0; Form.FormKeyDown(nil,EscapeKey,EscapeChar,[]);
+            Check(Form.HeaderLayout.Visible and Form.ExplorerLayout.Visible and Form.InspectorLayout.Visible and
+              (EscapeKey=0),'Escape restores workspace from focused full screen');
+            Form.ScreenModeCombo.ItemIndex:=2; Form.ViewChange(nil); SavedScreenWidth:=Form.ScreenPaint.Width;
+            Form.ScreenZoom.Value:=300; Form.ViewChange(Form.ScreenZoom);
+            Check((Form.ScreenModeCombo.ItemIndex=3) and (Abs(Form.ScreenPaint.Width-SavedScreenWidth*3)<1),
+              'Custom zoom updates scrollable extent to three times native width');
+            Form.ScreenModeCombo.ItemIndex:=1; Form.ViewChange(nil);
+            Check((Form.ScreenPaint.Width<=Form.ScreenScroll.Width) and (Form.ScreenPaint.Height<=Form.ScreenScroll.Height),
+              'Fit computes bounds from all captured components within screen viewport');
+            Bitmap:=TBitmap.Create(320,160);
+            try Bitmap.Clear(TAlphaColors.Blue); Bitmap.SaveToFile(TPath.Combine(Work,'runtime-evidence.png')); finally Bitmap.Free; end;
+            with TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations')) do
+            try ImportScreenshot(Generation,TPath.Combine(Work,'runtime-evidence.png'),'Fixture contributor','Synthetic test image, not target runtime',ComponentKey);
+              Form.LoadScreenshots(ScreenshotsJSON);
+            finally Free; end;
+            Check((Form.ScreenshotList.Count=1) and not Form.ScreenshotList.ListItems[0].ItemData.Bitmap.IsEmpty,
+              'Imported screenshot gallery provides bounded image thumbnail');
+            Form.ScreenshotList.ItemIndex:=0; Form.ScreenshotClick(nil);
+            Form.ScreenshotModeCombo.ItemIndex:=1; Form.ScreenshotViewChange(nil);
+            Check((Form.ScreenshotImage.Width=320) and (Form.ScreenshotImage.Height=160),
+              'Native screenshot mode uses actual pixel dimensions');
+            Form.ScreenshotZoom.Value:=200; Form.ScreenshotViewChange(Form.ScreenshotZoom);
+            Check((Form.ScreenshotImage.Width=640) and (Form.ScreenshotImage.Height=320),
+              'Screenshot zoom updates scrollable image bounds');
+            Form.ScreenshotInspectClick(nil);
+            Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and Form.InspectorMemo.Text.StartsWith(View.Symbol(ComponentKey).GetValue<string>('name')),
+              'Screenshot linked object opens canonical explanation');
             Form.Hide;
           finally Form.Free; end;
           CachedShownBeforeVerification:=False;
