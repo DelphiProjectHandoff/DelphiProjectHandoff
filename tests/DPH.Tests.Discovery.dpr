@@ -127,6 +127,8 @@ begin
   try Check(Parsed.Complete and (NodeCount(Parsed,'record_variant','')=2) and (NodeCount(Parsed,'record_variant_branch','')=4) and (NodeCount(Parsed,'routine_procedure','Later')=1),'PAS10','Nested variant records retain alternatives and following routines'); finally Parsed.Free; D.Free; end;
   Parsed:=ParseText('unit Test; interface implementation procedure Run; begin inherited; Value:=Factory<TPair<string,Integer>>.Create(1); if A < B then Value:=2; end; end.',D);
   try Check(Parsed.Complete,'PAS11','Nested generic call suffixes coexist with comparisons and parameterless inherited calls'); finally Parsed.Free; D.Free; end;
+  Parsed:=ParseText('unit Test; interface implementation begin end.',D);
+  try Check(Parsed.Complete,'PAS12','Legacy unit initialization block consumes its single module terminator'); finally Parsed.Free; D.Free; end;
 end;
 
 procedure ResourceTests;

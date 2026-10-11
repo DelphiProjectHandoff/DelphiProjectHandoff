@@ -14,7 +14,8 @@ uses System.SysUtils, System.IOUtils, System.JSON, Winapi.ActiveX,
   DPH.Parse.Forms in '..\DPH.Parse.Forms.pas',
   DPH.Storage.Types in '..\DPH.Storage.Types.pas',
   DPH.Storage.Database in '..\DPH.Storage.Database.pas',
-  DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
+  DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas',
+  DPH.Workspace.Model in '..\DPH.Workspace.Model.pas';
 var Root,Work,Fixture: string; Checks: Integer; Rows: TJSONArray;
 
 procedure Check(OK: Boolean; const ID,MessageText: string);
@@ -39,6 +40,42 @@ end;
 function JSON(G: TDPHSemanticGraph): string;
 var J: TJSONObject;
 begin J:=G.AsJSON; try Result:=J.ToJSON; finally J.Free; end; end;
+
+procedure StartupTests;
+var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
+    ProgramRoot,Entry,Init,Final,DepInit,Unused,WorkIndex: Integer; View: TDPHWorkspaceView; Projection: TJSONObject; V: TJSONValue; Found,HasFlow: Boolean; N: TDPHFlowNode;
+begin
+  TFile.WriteAllText(TPath.Combine(Fixture,'Startup.dpr'),'program StartupFixture; uses StartUnit in ''StartUnit.pas''; begin StartUnit.Work; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'Startup.dproj'),'<Project><ItemGroup><DelphiCompile Include="Startup.dpr"/><DCCReference Include="UnusedInit.pas"/></ItemGroup></Project>',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'StartUnit.pas'),'unit StartUnit; interface uses DepUnit; procedure Work; implementation procedure Work; begin DepUnit.Work; end; initialization Work; finalization Work; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'DepUnit.pas'),'unit DepUnit; interface procedure Work; implementation procedure Work; begin end; initialization Work; finalization Work; end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Fixture,'UnusedInit.pas'),'unit UnusedInit; interface implementation initialization begin end; end.',TEncoding.UTF8);
+  A:=TDPHAnalyzer.Create; Analyzer:=TDPHSemanticAnalyzer.Create;
+  try
+    Scan:=A.Scan(TPath.Combine(Fixture,'Startup.dproj'),'Debug','Win32',[],[]);
+    try G:=Analyzer.Analyze(Scan);
+      try
+        ProgramRoot:=Find(G,'StartupFixture','*'); Entry:=Find(G,'StartupFixture.$entry','*');
+        Init:=Find(G,'StartUnit.$initialization','*'); Final:=Find(G,'StartUnit.$finalization','*');
+        DepInit:=Find(G,'DepUnit.$initialization','*'); Unused:=Find(G,'UnusedInit.$initialization','*'); WorkIndex:=Find(G,'StartUnit.Work','*');
+        Check(G.Complete and (Entry>=0) and (Init>=0) and (Final>=0),'START01','Program entry and separate unit initialization/finalization have complete bounded routine semantics');
+        Check(Relation(G,ProgramRoot,Entry,'enters','confirmed_static') and Relation(G,Entry,WorkIndex,'calls','confirmed_static'),'START02','Program declaration reaches its executable body and startup call');
+        Check(Relation(G,ProgramRoot,Init,'initializes','inferred') and Relation(G,ProgramRoot,DepInit,'initializes','inferred'),'START03','Reachable direct and transitive unit initialization are included');
+        Check((Unused>=0) and not Relation(G,ProgramRoot,Unused,'initializes','inferred'),'START04','An unused project-manager file does not become an executed initialization dependency');
+        Check(Relation(G,Entry,Final,'finalizes','inferred') and Relation(G,Init,WorkIndex,'calls','confirmed_static'),'START05','Finalization phase and initialization body calls retain separate evidence');
+        HasFlow:=False; for N in G.FlowNodes do if N.Routine=Init then HasFlow:=True;
+        Check(HasFlow,'START06','Unit initialization has a navigable control-flow graph');
+        View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,G,1,TPath.Combine(Fixture,'Startup.dproj'),'Debug','Win32',[],[]));
+        try Projection:=View.Graph('Execution','');
+          try
+            Found:=False; for V in Projection.GetValue<TJSONArray>('nodes') do if V.GetValue<string>('label')='StartupFixture' then Found:=True;
+            Check(Found and not Projection.GetValue<Boolean>('runtime_trace'),'START07','Unselected Execution graph starts at the program and keeps static provenance');
+          finally Projection.Free; end;
+        finally View.Free; end;
+      finally G.Free; end;
+    finally Scan.Free; end;
+  finally Analyzer.Free; A.Free; end;
+end;
 
 procedure ResolutionTests;
 var A: TDPHAnalyzer; Analyzer: TDPHSemanticAnalyzer; Scan: TDPHScan; G: TDPHSemanticGraph;
@@ -296,8 +333,8 @@ begin
     try
       EmptyGraph:=S.Analyze(EmptyScan);
       try
-        Found:=False; for I:=0 to EmptyGraph.Diagnostics.Count-1 do if EmptyGraph.Diagnostics[I].Code='MODULE_CODE_PARTIAL' then Found:=True;
-        Check(Found and not EmptyGraph.Complete,'UNCERTAIN03','Executable module entry outside routine coverage is explicitly partial');
+        Found:=False; for I:=0 to EmptyGraph.Diagnostics.Count-1 do if EmptyGraph.Diagnostics[I].Code='CALL_TARGET_UNRESOLVED' then Found:=True;
+        Check(Found and not EmptyGraph.Complete and (Find(EmptyGraph,'Entry.$entry','*')>=0),'UNCERTAIN03','Module entry is analyzed while its unresolved call remains explicitly partial');
       finally EmptyGraph.Free; end;
     finally EmptyScan.Free; end;
   finally S.Free; A.Free; end;
@@ -365,7 +402,7 @@ begin
       Fixture:=TPath.Combine(Work,'fixture'); TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
       begin Destination:=TPath.Combine(Fixture,ExtractFileName(Path)); TFile.Copy(Path,Destination); end;
-      FixtureTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
+      FixtureTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
         TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);

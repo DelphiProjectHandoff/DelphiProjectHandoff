@@ -55,6 +55,14 @@ for Western Windows text. Click Full reassessment after changing it. Unicode
 BOMs take precedence; decoding must round-trip the exact source bytes. DPH does
 not guess a legacy encoding. Unsupported encodings leave diagnostic evidence.
 
+Startup and shutdown
+Choose Graphs in the top-right page selector, then click Whole program. It starts from the
+program/library/package declaration and includes its entry body and reachable
+unit initialization/finalization sections. In Explorer search for $entry,
+$initialization or $finalization to inspect one phase. Select it and choose
+Procedure CFG to see its statements. These are static source projections;
+qualified phase links do not prove runtime ordering or successful completion.
+
 Resources and external definitions
 Object references now include declared property read/write accessors. An indexed
 property's result type is separate from its index parameters. Alias and inherited

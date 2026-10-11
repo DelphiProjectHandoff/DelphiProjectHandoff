@@ -427,7 +427,7 @@ begin
 end;
 
 function TDPHPascalParser.Parse(const ATokens: TDPHTokens; ADiagnostics: TDPHDiagnostics): TDPHParseResult;
-var Filtered: TList<TDPHToken>; T: TDPHToken; Root,Start,Before: Integer; Name: string;
+var Filtered: TList<TDPHToken>; T: TDPHToken; Root,Start,Before,Section: Integer; Name: string; ModuleBlock: Boolean;
     RootNode: TDPHIRNode; D: TDPHDiagnostic; DiagnosticStart, DiagnosticIndex: Integer;
 begin
   FResult:=TDPHParseResult.Create; FDiagnostics:=ADiagnostics; FPosition:=0; FDepth:=0; FScope:='';
@@ -457,14 +457,21 @@ begin
       RootNode:=FResult.Nodes[Root]; RootNode.Name:=Name; FResult.Nodes[Root]:=RootNode;
     end;
     Declarations(Root,False);
-    if IsToken('begin') then Block(Root)
-    else if Take('initialization') then
+    ModuleBlock:=False;
+    if IsToken('begin') then begin Block(Root); ModuleBlock:=True; end
+    else if IsToken('initialization') then begin
+      Section:=AddNode('initialization','$initialization',Root,FPosition); Inc(FPosition);
       while (FTokens[FPosition].Kind<>tkEOF) and not MatchText(Current,['finalization','end']) do
-      begin Before:=FPosition; Statement(Root); Take(';'); if FPosition=Before then Inc(FPosition); end;
-    if Take('finalization') then
+      begin Before:=FPosition; Statement(Section); Take(';'); if FPosition=Before then Inc(FPosition); end;
+      Finish(Section);
+    end;
+    if IsToken('finalization') then begin
+      Section:=AddNode('finalization','$finalization',Root,FPosition); Inc(FPosition);
       while (FTokens[FPosition].Kind<>tkEOF) and not IsToken('end') do
-      begin Before:=FPosition; Statement(Root); Take(';'); if FPosition=Before then Inc(FPosition); end;
-    if (Root>=0) and MatchText(FResult.Nodes[Root].Kind,['unit','package']) then Expect('end');
+      begin Before:=FPosition; Statement(Section); Take(';'); if FPosition=Before then Inc(FPosition); end;
+      Finish(Section);
+    end;
+    if not ModuleBlock and (Root>=0) and MatchText(FResult.Nodes[Root].Kind,['unit','package']) then Expect('end');
     Expect('.'); if FTokens[FPosition].Kind<>tkEOF then Opaque(Root,'Trailing tokens',['']);
     if Root>=0 then Finish(Root);
     FResult.RecognizedTokens:=FResult.SignificantTokens-FResult.OpaqueTokens;

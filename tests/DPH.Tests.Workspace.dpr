@@ -70,6 +70,9 @@ begin
             Form.SearchEdit.Text:='Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Explorer selection populates source-backed inspector');
             Check(Pos('detached',Form.SourceMemo.Text)>0,'Detached source view does not follow cached filesystem paths');
+            Form.WholeProgramGraphClick(nil);
+            Check((Form.GraphCombo.ItemIndex=0) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Whole program command opens startup execution projection');
+            Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Whole program projection preserves the inspected object context');
             Form.BookmarkClick(nil); Form.BookmarksClick(nil); Check(Form.ExplorerList.Items.Count=1,'Canonical selection can be bookmarked');
             for Kind in ['Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact'] do begin Form.GraphCombo.ItemIndex:=Form.GraphCombo.Items.IndexOf(Kind); Form.ViewChange(nil); end;
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;

@@ -63,12 +63,21 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     compiler-exact overload conversions and advanced RTTI remain qualified gaps.
     Six focused resolution checks pass; full semantic suite now 73. Cached open
     also compares semantic analyzer version before claiming unchanged analysis.
-3.3-3.9 Pending: startup graphs,
+3.3 Implemented: separate source-backed entry, initialization and finalization
+    routine identities, calls and CFGs; program/module root, transitive uses
+    reachability and qualified phase edges. Unused project-manager units do not
+    acquire startup reachability. Execution with no selection starts at module
+    roots. Phase reachability is not a claimed runtime total order. Seven
+    focused startup checks pass; semantic suite 80, discovery 88.
+3.4-3.9 Pending:
     additional control flow, async, data/SQL, relationship vocabulary, dynamic
     controls/property changes and fuller output lineage.
-4.1-4.10 Pending: hierarchy, detailed drill-down, execution/form/data graphs,
-    graph collapse, screen modes, screenshot viewing, coverage dashboard,
-    navigation continuity.
+4.3 Implemented with 3.3: IDE-editable Whole program graph command, module-root
+    execution projection and preservation of inspected object context. Workspace
+    suite now 47 checks. Selecting a graph object returns to focused navigation.
+4.1-4.2,4.4-4.10 Pending: hierarchy, detailed drill-down, form/data graphs, graph
+    collapse, screen modes, screenshot viewing, coverage dashboard and navigation
+    continuity.
 5.1-5.6 Pending: structured documentation, rich links, review tasks, focused
     questions, educational explanations and runtime observation import.
 6.1-6.7 Pending: complete manuals, review metadata, translation workflow/cache,

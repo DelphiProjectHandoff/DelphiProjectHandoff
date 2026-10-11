@@ -58,7 +58,7 @@ begin
         if C.Kind='expression' then begin if ExpressionText<>'' then ExpressionText:=ExpressionText+'; '; ExpressionText:=ExpressionText+C.Value; end
         else if (C.Kind='block') or C.Kind.StartsWith('statement_') or (C.Kind='opaque') then Items.Add(I);
       end;
-      if N.Kind='block' then Exit(Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue));
+      if MatchText(N.Kind,['block','initialization','finalization']) then Exit(Sequence(Items.ToArray,ANext,AReturn,AException,ABreak,AContinue));
       Kind:=N.Kind; if Kind.StartsWith('statement_') then Delete(Kind,1,10);
       Result:=Node(Kind,ExpressionText,N.Location);
       if Kind='if' then

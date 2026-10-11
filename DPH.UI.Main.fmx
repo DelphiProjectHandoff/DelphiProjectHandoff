@@ -664,6 +664,14 @@ Items.Strings = (
 ItemIndex = 0
 OnChange = ViewChange
 end
+object WholeProgramGraphButton: TButton
+Position.X = 264
+Position.Y = 4
+Width = 150
+Height = 28
+Text = 'Whole program'
+OnClick = WholeProgramGraphClick
+end
 object GraphLegend: TLabel
 Text = 'Static graph | blue: confirmed | orange dash: uncertain | click for evidence | bounded to 120 nodes'
 Position.Y = 35

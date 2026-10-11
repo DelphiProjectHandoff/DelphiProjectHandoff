@@ -43,6 +43,7 @@ type
     procedure Collect(const AFile: string; IR: TDPHParseResult);
     procedure Variables(const AFile: string; IR: TDPHParseResult);
     procedure PropertyAccessors(const AFile: string; IR: TDPHParseResult);
+    procedure ModulePhases;
     procedure Dependencies(const AFile: string; IR: TDPHParseResult);
     procedure BindForms(const AFile: string; IR: TDPHParseResult);
     procedure RoutineFacts(ARoutine: Integer; IR: TDPHParseResult; const Tokens: TDPHTokens);
@@ -450,12 +451,19 @@ begin
   try
     for I:=0 to IR.Nodes.Count-1 do
     begin
-      N:=IR.Nodes[I]; if not MatchText(N.Kind,['unit','program','library','package','type']) and not N.Kind.StartsWith('routine_') and not N.Kind.StartsWith('anonymous_') then Continue;
+      N:=IR.Nodes[I]; if not MatchText(N.Kind,['unit','program','library','package','type']) and not N.Kind.StartsWith('routine_') and not N.Kind.StartsWith('anonymous_') and
+        not ((N.Parent=0) and MatchText(N.Kind,['block','initialization','finalization'])) then Continue;
       S:=TDPHSymbol.Create; S.Location:=N.Location; S.NodeIndex:=I; S.Condition:=N.Condition;
       S.Exported:=N.FirstToken<ImplementationAt;
       S.UnitName:=UnitName; S.SourceHash:=FGraph.SourceHashes[N.Location.Source]; S.Variant:=Variant;
       OwnerIndex:=ParentSymbol(AFile,IR,N.Parent); S.Owner:=OwnerIndex; S.Name:=N.Name;
-      if I=0 then begin S.Kind:='unit'; S.QualifiedName:=UnitName; end
+      if I=0 then begin S.Kind:='unit'; S.TypeName:=N.Kind; S.QualifiedName:=UnitName; end
+      else if (N.Parent=0) and MatchText(N.Kind,['block','initialization','finalization']) then begin
+        S.Kind:='routine'; S.Name:='$'+N.Kind;
+        if N.Kind='block' then begin S.Name:='$entry'; if IR.Nodes[0].Kind='unit' then S.Name:='$initialization'; end;
+        S.QualifiedName:=UnitName+'.'+S.Name; S.Signature:='():'; S.Exported:=False;
+        S.HasBody:=True; S.BodyNode:=I; S.Dispatch:='direct';
+      end
       else if N.Kind='type' then
       begin
         S.Kind:='type'; S.QualifiedName:=UnitName+'.'+N.Name;
@@ -583,6 +591,37 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TDPHSemanticAnalyzer.ModulePhases;
+var Root,Module,Entry,Phase,Index: Integer; RootSymbol,ModuleSymbol: TDPHSymbol;
+    Queue: TQueue<Integer>; Seen: TDictionary<Integer,Boolean>; Items: TList<Integer>; Imports: TList<string>; Name: string;
+begin
+  Queue:=TQueue<Integer>.Create; Seen:=TDictionary<Integer,Boolean>.Create;
+  try
+    for Root:=0 to FGraph.Symbols.Count-1 do begin
+      RootSymbol:=FGraph.Symbols[Root];
+      if (RootSymbol.Kind<>'unit') or not MatchText(RootSymbol.TypeName,['program','library','package']) then Continue;
+      Entry:=-1;
+      if FNames.TryGetValue(LowerCase(RootSymbol.QualifiedName+'.$entry'),Items) and (Items.Count=1) then begin
+        Entry:=Items[0]; FGraph.AddRelation(Root,Entry,'enters','confirmed_static','declared_module_entry','Program/library body',FGraph.Symbols[Entry].Location,'');
+      end;
+      Seen.Clear; Queue.Clear; Queue.Enqueue(Root);
+      while Queue.Count>0 do begin
+        Module:=Queue.Dequeue; if Seen.ContainsKey(Module) then Continue; Seen.Add(Module,True); ModuleSymbol:=FGraph.Symbols[Module];
+        if FNames.TryGetValue(LowerCase(ModuleSymbol.QualifiedName+'.$initialization'),Items) and (Items.Count=1) then begin
+          Phase:=Items[0]; FGraph.AddRelation(Root,Phase,'initializes','inferred','reachable_unit_initialization_not_total_runtime_order',ModuleSymbol.QualifiedName,FGraph.Symbols[Phase].Location,'');
+        end;
+        if FNames.TryGetValue(LowerCase(ModuleSymbol.QualifiedName+'.$finalization'),Items) and (Items.Count=1) then begin
+          Phase:=Items[0]; Index:=Root; if Entry>=0 then Index:=Entry;
+          FGraph.AddRelation(Index,Phase,'finalizes','inferred','reachable_unit_finalization_not_runtime_completion',ModuleSymbol.QualifiedName,FGraph.Symbols[Phase].Location,'');
+        end;
+        if FImports.TryGetValue(LowerCase(ModuleSymbol.UnitName),Imports) then
+          for Name in Imports do if FNames.TryGetValue(LowerCase(Name),Items) then
+            for Index in Items do if FGraph.Symbols[Index].Kind='unit' then Queue.Enqueue(Index);
+      end;
+    end;
+  finally Seen.Free; Queue.Free; end;
 end;
 
 procedure TDPHSemanticAnalyzer.Dependencies(const AFile: string; IR: TDPHParseResult);
@@ -813,6 +852,7 @@ begin
         if S.HasBody and AScan.Results.TryGetValue(S.Location.Source,IR) then CachedRoutineFacts(I,IR,FTokens[S.Location.Source],BindingIdentity);
       end;
       for Item in AScan.Inventory.Manifest do if MatchText(Item.Kind,['.fmx','.dfm']) and AScan.Results.TryGetValue(Item.RelativePath,IR) then BindForms(Item.RelativePath,IR);
+      ModulePhases;
       for Reference in AScan.Inventory.DefinitionReferences do begin
         Consumer:=-1; Resource:=-1;
         for I:=0 to FGraph.Symbols.Count-1 do begin S:=FGraph.Symbols[I];

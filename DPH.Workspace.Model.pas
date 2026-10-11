@@ -168,7 +168,11 @@ begin
     else
     begin
       AddSymbolNode(AKey);
-      if AKey='' then for V in S.GetValue<TJSONArray>('symbols') do
+      if (AKey='') and (AKind='Execution') then
+        for V in S.GetValue<TJSONArray>('symbols') do begin N:=V as TJSONObject;
+          if (N.GetValue<string>('kind')='unit') and MatchText(N.GetValue<string>('type'),['program','library','package']) then AddSymbolNode(N.GetValue<string>('key'));
+        end;
+      if (AKey='') and (Nodes.Count=0) then for V in S.GetValue<TJSONArray>('symbols') do
       begin N:=V as TJSONObject; if N.GetValue<Boolean>('has_body') then begin AddSymbolNode(N.GetValue<string>('key')); Break; end; end;
       while Queue.Count>0 do
       begin
@@ -179,7 +183,7 @@ begin
           if (AKind='Change impact') then begin if ToKey<>Key then Continue; end
           else if (AKind='Caller / callee') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
           else if FromKey<>Key then Continue;
-          if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','binds']) then Continue;
+          if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','binds','enters','initializes','finalizes']) then Continue;
           if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules']) then Continue;
           if (AKind='Data flow') and not MatchText(Kind,['reads','writes','uses_type','renders','assigns_callback']) then Continue;
           AddSymbolNode(FromKey); AddSymbolNode(ToKey);
