@@ -296,8 +296,8 @@ migration/durability checks. A nonzero exit or FAIL indicates a failed check.
 These automated checks do not substitute for first-time-user acceptance.
 Run tools\build-learning.cmd --no-ui for deterministic explanation/publication
 checks without native browser tests. Full build-learning.cmd additionally tests
-worker recovery and native WebView rendering; that integration currently has an
-unresolved access violation. Do not interpret --no-ui as a UI acceptance pass.
+worker recovery and native WebView rendering (49 checks pass). Do not interpret
+--no-ui as a UI acceptance pass. Neither run establishes human comprehension.
 For discovery/resource checks run tools\build-wp2.cmd no-report. For semantic
 checks run tools\build-wp3.cmd to compile, then run
 bin\Win32\Debug\DPH.Tests.Semantics.exe with this project's full folder path as

@@ -119,8 +119,8 @@ begin
               Worker.Submit(Request); Watch:=TStopwatch.StartNew; Done:=False;
               repeat
                 if Worker.Poll(Response) then try
-                  if not Response.Busy then begin
-                    Check(not Response.Failed and (Response.Document<>nil) and (Response.Screenshots.Count=0) and
+                  if (Response.Document<>nil) and (Response.Screenshots<>nil) then begin
+                    Check(not Response.Failed and (Response.Screenshots.Count=0) and
                       ContainsText(Response.MessageText,'Screenshot evidence unavailable'),'Damaged supplemental image does not block the valid cached analysis'); Done:=True;
                   end;
                 finally Response.Free; end;

@@ -282,7 +282,8 @@ begin
                 Request.Defines:=[]; Request.ExternalRoots:=[];
                 for JSONValue in Document.GetValue<TJSONArray>('defines') do Request.Defines:=Request.Defines+[JSONValue.Value];
                 for JSONValue in Document.GetValue<TJSONArray>('external_roots') do Request.ExternalRoots:=Request.ExternalRoots+[JSONValue.Value];
-                MessageText:='Cached project loaded; verifying attached source in background';
+                MessageText:=MessageText.Replace('Cached project - detached: source has not been attached',
+                  'Cached project loaded; verifying attached source in background');
               end;
               Respond(Document,MessageText,SourceEntry<>'',False,SourceEntry='',False,Knowledge,'',Images,SourceEntry);
               Document:=nil; Knowledge:=nil; Images:=nil;

@@ -191,9 +191,12 @@ D: backups remain suspended. Git and both GitHub remotes remain enabled.
     Lessons disclose limits (60 source points/eight paths per point). Execution
     reachability includes startup phases and typed async lifecycle connections.
     App/form build, 43 non-UI learning checks and 71 publishing checks pass.
-    Native learning integration failed after image checks with an access violation;
-    no native browser rendering or human comprehension pass is claimed. Inspection
-    disproved a proposed thread-constructor race; that change was fully reverted.
+    Full native learning integration now passes 49 checks; actual WebView2 captures
+    inspected. The initial failure was a test dereference of a missing image array
+    on a later background-verification response. The cached-evidence response is
+    now checked directly, and attachment preserves supplemental-image warnings.
+    Human comprehension acceptance remains outstanding. A proposed thread-race
+    diagnosis was disproved; that change was fully reverted.
 5.6 Expanded: design-time Runtime observations page imports explicitly selected
     saved UTF-8 .txt/.log/.json extracts up to 256 KiB, with required named
     contributor and run/environment context. Pins generation, linked source hash
