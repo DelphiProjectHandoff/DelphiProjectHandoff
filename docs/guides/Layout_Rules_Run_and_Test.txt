@@ -1,0 +1,62 @@
+DPH layout rules run and test directions
+11 October 2026
+
+RUN AND EXPLORE
+1. Run C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe.
+2. Open the intended project database, or attach its source project and wait
+   for analysis to finish. Select a capture that includes DFM or FMX forms.
+   An empty page can mean that form evidence was not captured. Check coverage.
+3. In the upper-right page selector choose Layout rules.
+4. Select a component in the list below the command bar. Read the detail box
+   below the list. It identifies the class, form, serialized parent, source
+   location, generation and fingerprint, then explains captured layout rules.
+5. Scroll inside the detail box to read every explanation. Drag the divider
+   below the component list to change the space given to the list and details.
+6. Use the filter to find a component, captured property or explanation.
+   Next page advances through 250 rows. First page returns to the first page.
+7. Scroll the command bar horizontally to reach Parent width change, Parent
+   height change and Apply example if they are outside the visible area.
+   Enter 120 and 80, then click Apply example. These values illustrate what
+   basic anchor rules would do when the parent grows by those amounts.
+8. Enter -120 and -80 and click Apply example to illustrate shrinking.
+   Each field accepts an integer from -10000 to 10000. Invalid text or numbers
+   preserve the previous valid example and display an explanation in status.
+   Apply refreshes search results and returns to the first page.
+9. Numeric examples require explicit Align=None, recognized explicit anchors,
+   an ordinary serialized child and a captured parent. Opposing anchors change
+   size, trailing anchors move, and leading anchors preserve the offset.
+   Missing or unknown rules, inherited objects, roots and active alignment
+   receive qualified explanations instead of unsupported numeric predictions.
+10. Read the spacing, constraints, autosize, word-wrap, DPI and resize-handler
+    sections. Their absence means unknown, not a default value. A minimum
+    greater than a nonzero maximum is a candidate to investigate.
+11. Click Component source to open attached unchanged text at the captured
+    location. Detached databases require attaching the matching source first.
+    Changed files and binary form source are refused with a reason.
+
+INTERPRETATION AND MANUAL TEST
+These are captured declarations and educational changes, not absolute final
+geometry, runtime observations or a complete VCL/FMX layout engine. Siblings,
+inherited defaults, constraints, fonts, DPI, spacing and custom code can alter
+the result. Screens remains an approximate reconstruction, not a screenshot.
+In RAD Studio open a known form and compare Align, Anchors, geometry, margins,
+padding, constraints and resize events in the Object Inspector with this page.
+Use a child with explicit Align=None and left/right anchors for a width example;
+use a right/bottom anchored child for movement and a Client-aligned child for
+remaining-space explanations. Run the actual target separately. Resize it
+narrower and wider, then repeat at a different Windows display scale. Compare
+observed behavior with the qualified explanation. Custom code must be reviewed.
+
+DEVELOPER VALIDATION
+1. Open Command Prompt with Run as administrator.
+2. Type: cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Run tools\build-layout-rules.cmd. Expect 56 passing focused checks.
+4. Run tools\build-keyboard.cmd. Expect 55 passing regression checks.
+5. Run tools\build-dynamic-controls.cmd. Expect 51 passing regression checks.
+6. Run tools\build-wp0.cmd. Expect a successful Win32 Debug application build
+   and PASS WP0-TEST for native FMX resource instantiation and binding.
+The scripts use RAD Studio 37.0. Fixtures reuse the ignored fixed directory
+bin/layout-validation and do not create user projects. Evidence is saved under
+docs/phase1-layout-validation.json and .log. Normal and compact PNGs are native
+DPH PaintTo renders, not screenshots of the selected target application.
+All new controls are serialized in DPH.UI.Main.fmx and editable in the IDE.

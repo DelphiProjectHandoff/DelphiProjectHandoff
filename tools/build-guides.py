@@ -445,13 +445,30 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('After the glossary, keyboard and command inventory implementations, 342 requirement records remain incomplete', 'After the glossary, keyboard, command inventory and dynamic control implementations, 341 requirement records remain incomplete').replace('DPH-WP3-11', 'DPH-WP3-12') for p in paragraphs])
 
+USER.append(('Inspect responsive layouts anchors and alignments', [
+'Open the intended project and choose Layout rules in the upper-right page selector. Select a component to read its captured Align, Anchors, geometry, margins, padding, constraints, scaling and resize events with source locations. Parent means the serialized containing object. Missing and inherited rules remain unknown. These explanations help you investigate resizing without executing the target application.',
+'Enter a parent width change and height change, then click Apply example. Positive values illustrate growth; negative values illustrate shrinking. Each field accepts a whole number from -10000 to 10000. Invalid input preserves the previous valid example. At narrow widths, scroll the command bar horizontally to reach these fields and Apply example. Applying refreshes the filter and returns to the first page.',
+'Numeric anchor examples require an ordinary serialized child, a captured parent, explicit Align=None and recognized explicit anchors. Opposite edges illustrate a size change; trailing edges illustrate movement; leading edges illustrate a fixed offset. No anchor on an axis leaves its framework anchor origin unknown. Active alignment, inherited objects and missing or unknown rules receive explanations without unsupported numeric predictions.',
+'Filter by component, property or explanation. Next page advances through 250 rows; First page resets. Drag the divider below the list to resize it and scroll the detail box for all explanations. Component source opens attached unchanged text at its captured location. Detached, changed and binary source locations are refused explicitly.',
+'The example reports basic changes, not absolute final geometry. Constraints, autosizing, sibling alignment, inherited defaults, spacing, fonts, DPI and custom code can alter the actual result. Run the target separately and resize it at narrow and wide widths and different display scales. Compare with its Object Inspector settings. The Screens reconstruction remains approximate. Full directions are in docs/guides/Layout_Rules_Run_and_Test.txt; developers run tools\\build-layout-rules.cmd elevated.'
+]))
+ENGINEERING.append(('Layout rule explanations and validation', [
+'DPH.Workspace.Keyboard retains captured layout properties from reusable form IR. DPH.Workspace.LayoutRules indexes serialized parents and their properties, preserving source ranges and fingerprints. Describe explains VCL and FMX alignment modes, exact anchor tokens, geometry, spacing, constraints, autosizing, wrapping, DPI and resize handlers. Missing values and inheritance are qualified rather than filled with assumed defaults. Contradictory captured minimum and maximum constraints produce a review candidate.',
+'Educational numeric examples require explicit recognized anchors and Align=None on an ordinary child with a captured parent. Opposing edges change size by the parent delta; trailing edges change position; leading edges preserve position. Unanchored axes, active or unknown alignment, inherited and root objects suppress unsupported calculations. These are basic rule examples and never an evaluation of the VCL or FMX layout engine or final runtime geometry.',
+'DPH.UI.Main.fmx serializes every new page control for IDE editing. The page provides full-text filtering, 250-row pagination, validated positive or negative deltas, source verification, a horizontal command bar and a resizable scrollable detail area. Replacing a capture clears stale rows. No target classes are instantiated and no database migration or analyzer-version change is needed.',
+'Run tools\\build-layout-rules.cmd elevated for 56 focused checks using real text DFM, binary DFM and FMX parsing and native form controls. Tests cover growth and shrinking, active alignment, inherited and missing rules, unknown anchors, constraints, parent properties, navigation guards, pagination, invalid and overflowing input and normal and compact layouts. Fixtures reuse bin/layout-validation. The shared keyboard suite passes 55 checks and dynamic controls passes 51. The actual application and FMX baseline pass. Native PaintTo renders show DPH controls rather than target screenshots.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('After the glossary, keyboard, command inventory and dynamic control implementations, 341 requirement records remain incomplete', 'After the glossary, keyboard, command inventory, dynamic control and layout rule implementations, 340 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -576,5 +593,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 10, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 11, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

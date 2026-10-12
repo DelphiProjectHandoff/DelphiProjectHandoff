@@ -1,0 +1,53 @@
+DPH responsive layout rules completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.16 Responsive layouts, anchors, and alignments
+
+The native Layout rules page explains captured VCL/FMX alignment, anchors,
+geometry, serialized parent properties, margins, padding, constraints,
+autosizing, word wrapping, DPI and resize events with source evidence.
+Positive and negative parent size changes provide qualified basic anchor
+examples when explicit Align=None and known anchors occur on an ordinary
+child with a captured parent. Unsupported, inherited, root, missing and
+actively aligned cases suppress unsupported numeric predictions.
+Contradictory captured minimum/maximum constraints are review candidates.
+The page includes filtering, 250-row pagination, a resizable detail area,
+scrollable toolbar, validated integer inputs and guarded source navigation.
+Controls are serialized in FMX and editable through the IDE/Object Inspector.
+No target classes are instantiated. No schema or analyzer-version change.
+
+VALIDATION
+56 focused checks pass using real text DFM, binary DFM and FMX parsing.
+Cases include growing/shrinking, parent context, alignment, inherited/missing
+rules, unknown values, constraints, source guards, pagination, native bindings,
+invalid/overflow input, compact layout and replacement-capture cleanup.
+55 keyboard and 51 dynamic-control regression checks pass.
+Win32 Debug application build and native FMX resource baseline pass elevated.
+User catalog and selected fixture source remain unchanged.
+Normal/compact PaintTo PNGs show DPH controls, not target screenshots.
+All 21 User Guide and 17 Engineering Guide pages were visually reviewed.
+Editable TOCs contain 40 and 32 entries, with companion PDFs.
+Explicit directions: docs/guides/Layout_Rules_Run_and_Test.txt.
+
+BACKUP
+Pre-change H: backup verified with SHA-256: 3542 files / 865165095 bytes.
+H:\DPH Backups\ResponsiveLayout_PreChange_20261011_214207
+No post-change USB backup. Git and both GitHub remotes remain enabled.
+
+CURRENT STATUS
+All 533 requirement identities, text and order are preserved.
+Only 04.16 is promoted by this batch. Counts: 176 implemented, 17 manual
+capture, 238 partial, 102 missing, zero unassessed. 340 remain incomplete.
+Original plans and historical reconciliation evidence remain unchanged.
+
+LIMITS
+These are captured declarations and educational changes, not final geometry
+or evaluated VCL/FMX engine output. Inherited defaults, sibling allocation,
+custom code, constraints, spacing, fonts, styles and DPI can change actual
+results. Run and resize the target separately to establish runtime behavior.
+Form designs remains an approximate reconstruction, not screenshot evidence.
+
+NEXT BOUNDED REQUIREMENT
+04.17 Third-party UI components: add component-to-package/vendor/version/
+support records and distinguish unresolved third-party dependencies.

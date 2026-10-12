@@ -43,6 +43,7 @@ Items.Strings = (
 'Keyboard and focus'
 'Menus and commands'
 'Dynamic controls'
+'Layout rules'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1324,6 +1325,123 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object LayoutTab: TTabItem
+Text = 'Layout rules'
+object LayoutPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Captured layout rules with alignment, anchors and spacing explanations. Resize examples are educational; target runtime geometry is unobserved.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object LayoutToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object LayoutFilterEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find component, alignment, anchors or rule'
+OnChange = LayoutFilterChange
+end
+object LayoutFirstButton: TButton
+Position.X = 266
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = LayoutFilterChange
+end
+object LayoutNextButton: TButton
+Position.X = 364
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = LayoutFilterChange
+end
+object LayoutSourceButton: TButton
+Position.X = 462
+Position.Y = 4
+Width = 150
+Height = 30
+Enabled = False
+Text = 'Component source'
+OnClick = LayoutSourceClick
+end
+object LayoutWidthLabel: TLabel
+Position.X = 620
+Position.Y = 4
+Width = 135
+Height = 30
+Text = 'Parent width change'
+end
+object LayoutWidthEdit: TEdit
+Position.X = 760
+Position.Y = 4
+Width = 80
+Height = 30
+Text = '120'
+end
+object LayoutHeightLabel: TLabel
+Position.X = 848
+Position.Y = 4
+Width = 135
+Height = 30
+Text = 'Parent height change'
+end
+object LayoutHeightEdit: TEdit
+Position.X = 988
+Position.Y = 4
+Width = 80
+Height = 30
+Text = '80'
+end
+object LayoutApplyButton: TButton
+Position.X = 1076
+Position.Y = 4
+Width = 145
+Height = 30
+Text = 'Apply example'
+OnClick = LayoutApplyClick
+end
+end
+object LayoutStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object LayoutList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnChange = LayoutSelectionClick
+end
+object LayoutSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object LayoutMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object DynamicTab: TTabItem

@@ -1,0 +1,116 @@
+{
+  "result": "PASS",
+  "baseline_commit": "c6b8edd",
+  "completed_requirement_ids": [
+    "04.16"
+  ],
+  "counts": {
+    "implemented_manual_capture": 17,
+    "partial": 238,
+    "implemented": 176,
+    "missing": 102
+  },
+  "incomplete": 340,
+  "unassessed": 0,
+  "requirements_preserved": 533,
+  "focused_checks": 56,
+  "keyboard_regression_checks": 55,
+  "dynamic_regression_checks": 51,
+  "application_and_fmx_baseline": "PASS",
+  "pre_change_backup": "H:\\DPH Backups\\ResponsiveLayout_PreChange_20261011_214207",
+  "backup_files": 3542,
+  "backup_bytes": 865165095,
+  "guide_sources_verified": 44,
+  "guides": [
+    {
+      "name": "DPH_User_Guide",
+      "pages": 21,
+      "toc_entries": 40,
+      "all_pages_visually_reviewed": true
+    },
+    {
+      "name": "DPH_Engineering_Guide",
+      "pages": 17,
+      "toc_entries": 32,
+      "all_pages_visually_reviewed": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "DPH.Workspace.LayoutRules.pas",
+      "sha256": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49"
+    },
+    {
+      "path": "DPH.Workspace.Keyboard.pas",
+      "sha256": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923"
+    },
+    {
+      "path": "DPH.UI.Main.pas",
+      "sha256": "f947529798b4d22eff8cea2df02aa865e0ebcdff6ff6fb2b09811700ab0a8b90"
+    },
+    {
+      "path": "DPH.UI.Main.fmx",
+      "sha256": "c91f72eb5c52378b73abe777e9af9656a1d168a965e7214737aa58d8f0111e49"
+    },
+    {
+      "path": "tests/DPH.Tests.LayoutRules.dpr",
+      "sha256": "c16aadd71687baa3ae017da91a64f3615317718fea8bf0ac80fdf52b5c8e4489"
+    },
+    {
+      "path": "tools/build-layout-rules.cmd",
+      "sha256": "13115d6b0c5a64875b6553f7f3b8765c59f5ae49b03cbc2ff916ca7503328c0a"
+    },
+    {
+      "path": "docs/phase1-layout-validation.json",
+      "sha256": "bde90c6c06402dd2c5e4d9ece5592323ad7fbf40c72a392bb9384918065b0c7e"
+    },
+    {
+      "path": "docs/phase1-layout-validation.log",
+      "sha256": "41f7d542229d9d137273220ac9af4f54ca6e71093833386deb45e07a2f18260d"
+    },
+    {
+      "path": "docs/guides/Layout_Rules_Run_and_Test.txt",
+      "sha256": "f26525bda30ab256566bd73a38499caa35df60fe173cdbd3868c601980b614ac"
+    },
+    {
+      "path": "DelphiProjectHandoff.dproj",
+      "sha256": "42e5ab20a8b11f9764da478d0ea5147c616e75d1a03dd705d7af39c36f917d84"
+    },
+    {
+      "path": "docs/Phase1_Layout_Rules_Completion.txt",
+      "sha256": "ac6783aae2af21b08f9af7d6793a4ce3bb317540211ea95083b5af70991a27b6"
+    },
+    {
+      "path": "docs/Phase1_Requirements_Traceability.json",
+      "sha256": "3948046b0821ab491e48ec778331f3a83c46acb463cbb67772e005281ae00d32"
+    },
+    {
+      "path": "docs/Phase1_Implementation_Backlog.csv",
+      "sha256": "a8e313842bbab80d3695204ace789ab889923bf65abf59055d3798863e43c3b9"
+    },
+    {
+      "path": "docs/guides/DPH_User_Guide.docx",
+      "sha256": "e344fed67a89e430bd589672b772cd487fcadc61f43d0a3204bfbb1bbdc134cb"
+    },
+    {
+      "path": "docs/guides/DPH_Engineering_Guide.docx",
+      "sha256": "18c0a1ef1db034711755ffee3ba0729ae29c0618d45ed65dd93611f4f99a8829"
+    },
+    {
+      "path": "docs/pdf/DPH_User_Guide.pdf",
+      "sha256": "22c79fe7df833d24a5775b0dec6e01b67dab61a5e109b9a74603be5a7beff441"
+    },
+    {
+      "path": "docs/pdf/DPH_Engineering_Guide.pdf",
+      "sha256": "5eb1bef609390ce3e93265caaa123a83b6c200c0cd5f309df1fffb94ffb016bf"
+    },
+    {
+      "path": "docs/phase1-layout-workspace.png",
+      "sha256": "55e388a4ecf94ccb3b65739d4f7eb6898b935449aaa4083c7e142ef229e5d218"
+    },
+    {
+      "path": "docs/phase1-layout-compact.png",
+      "sha256": "5378845fb465b0c0f63af5ddfd99199f2e4c5c55cf65a173b1c32245751a72ae"
+    }
+  ]
+}

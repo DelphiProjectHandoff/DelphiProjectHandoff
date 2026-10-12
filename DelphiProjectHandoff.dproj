@@ -28,6 +28,7 @@
       <DCCReference Include="DPH.Workspace.Keyboard.pas" />
       <DCCReference Include="DPH.Workspace.Commands.pas" />
       <DCCReference Include="DPH.Workspace.DynamicControls.pas" />
+      <DCCReference Include="DPH.Workspace.LayoutRules.pas" />
     <DCCReference Include="DPH.UI.Glossary.pas"><Form>DPHGlossaryForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.Storage.Types.pas" />
     <DCCReference Include="DPH.Storage.Database.pas" />

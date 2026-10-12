@@ -71,6 +71,14 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    LayoutTab:TTabItem;
+    LayoutPurpose,LayoutStatus,LayoutWidthLabel,LayoutHeightLabel:TLabel;
+    LayoutToolbar:THorzScrollBox;
+    LayoutFilterEdit,LayoutWidthEdit,LayoutHeightEdit:TEdit;
+    LayoutFirstButton,LayoutNextButton,LayoutSourceButton,LayoutApplyButton:TButton;
+    LayoutList:TListBox;
+    LayoutSplitter:TSplitter;
+    LayoutMemo:TMemo;
     DynamicTab:TTabItem;
     DynamicPurpose,DynamicStatus:TLabel;
     DynamicToolbar:THorzScrollBox;
@@ -223,6 +231,10 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure LayoutFilterChange(Sender:TObject);
+    procedure LayoutSelectionClick(Sender:TObject);
+    procedure LayoutApplyClick(Sender:TObject);
+    procedure LayoutSourceClick(Sender:TObject);
     procedure DynamicFilterChange(Sender:TObject);
     procedure DynamicSelectionClick(Sender:TObject);
     procedure DynamicReferenceChange(Sender:TObject);
@@ -369,6 +381,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FLayout:TJSONObject;
+    FLayoutRows:TList<TJSONObject>;
+    FLayoutOffset,FLayoutWidthDelta,FLayoutHeightDelta:Integer;
     FDynamic:TJSONObject;
     FDynamicRows:TList<TJSONObject>;
     FDynamicOffset:Integer;
@@ -403,7 +418,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -418,6 +433,8 @@ begin
   FKeyboardRows:=TList<TJSONObject>.Create;
   FCommandRows:=TList<TJSONObject>.Create;
   FDynamicRows:=TList<TJSONObject>.Create;
+  FLayoutRows:=TList<TJSONObject>.Create;
+  TryStrToInt(LayoutWidthEdit.Text,FLayoutWidthDelta);TryStrToInt(LayoutHeightEdit.Text,FLayoutHeightDelta);
   FCatalogPaths:=TList<string>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
@@ -456,6 +473,7 @@ begin
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
+  FLayoutRows.Free; FLayout.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -739,6 +757,8 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+ FLayoutRows.Clear;FreeAndNil(FLayout);LayoutList.Items.Clear;LayoutMemo.Text:='Open a project to inspect layout declarations.';LayoutStatus.Text:='No capture loaded.';
+ LayoutNextButton.Enabled:=False;LayoutSourceButton.Enabled:=False;
   FDynamicRows.Clear; FreeAndNil(FDynamic); DynamicList.Items.Clear; DynamicReferenceCombo.Items.Clear;
   DynamicMemo.Text:='Open a project to inspect creation sites.'; DynamicStatus.Text:='No capture loaded.';
   DynamicNextButton.Enabled:=False; DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False;
@@ -871,6 +891,7 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
+  FLayoutRows.Clear;FreeAndNil(FLayout);FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);
   FDynamicRows.Clear; FreeAndNil(FDynamic); FDynamic:=TDPHDynamicControls.Inspect(FView); DynamicFilterChange(nil);
   FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
   for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
@@ -967,6 +988,44 @@ begin
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
 end;
+procedure TDPHMainForm.LayoutFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
+begin
+ if Sender=LayoutNextButton then Inc(FLayoutOffset,250) else FLayoutOffset:=0;
+ LayoutList.Items.Clear;FLayoutRows.Clear;LayoutNextButton.Enabled:=False;LayoutSourceButton.Enabled:=False;
+ LayoutMemo.Text:='Select a component to read its layout declarations.';if FLayout=nil then Exit;
+ Query:=LayoutFilterEdit.Text.Trim;Count:=0;
+ for V in FLayout.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (Query<>'') and not ContainsText(TDPHLayoutRules.Describe(Row,FLayoutWidthDelta,FLayoutHeightDelta),Query) then Continue;
+  if (Count>=FLayoutOffset) and (FLayoutRows.Count<250) then begin FLayoutRows.Add(Row);LayoutList.Items.Add(Row.GetValue<string>('form')+' / '+Row.GetValue<string>('parent')+' / '+Row.GetValue<string>('name')+' : '+Row.GetValue<string>('class'));end;Inc(Count);
+ end;
+ LayoutNextButton.Enabled:=Count>FLayoutOffset+FLayoutRows.Count;
+ LayoutStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FLayoutRows.Count)+' from offset '+IntToStr(FLayoutOffset)+'. Examples do not evaluate the target layout engine.';
+ if LayoutList.Count>0 then begin LayoutList.ItemIndex:=0;LayoutSelectionClick(nil);end else LayoutMemo.Text:='No matching component. Clear the filter or inspect Coverage for uncaptured forms.';
+end;
+procedure TDPHMainForm.LayoutSelectionClick(Sender:TObject);
+begin
+ LayoutSourceButton.Enabled:=False;
+ if (LayoutList.ItemIndex<0) or (LayoutList.ItemIndex>=FLayoutRows.Count) then Exit;
+ LayoutMemo.Text:=TDPHLayoutRules.Describe(FLayoutRows[LayoutList.ItemIndex],FLayoutWidthDelta,FLayoutHeightDelta)+sLineBreak+sLineBreak+FLayout.GetValue<string>('qualification');LayoutSourceButton.Enabled:=True;
+end;
+procedure TDPHMainForm.LayoutApplyClick(Sender:TObject);
+var W,H:Integer;
+begin
+ if not TryStrToInt(LayoutWidthEdit.Text.Trim,W) or not TryStrToInt(LayoutHeightEdit.Text.Trim,H) or (Abs(Int64(W))>10000) or (Abs(Int64(H))>10000) then begin LayoutStatus.Text:='Enter whole width and height changes from -10000 to 10000. The previous example remains active.';Exit;end;
+ FLayoutWidthDelta:=W;FLayoutHeightDelta:=H;LayoutFilterChange(nil);
+ LayoutStatus.Text:='Educational parent change applied: width '+IntToStr(W)+', height '+IntToStr(H)+' units. Target source and form geometry are unchanged.';
+end;
+procedure TDPHMainForm.LayoutSourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (LayoutList.ItemIndex<0) or (LayoutList.ItemIndex>=FLayoutRows.Count) then Exit;
+ Row:=FLayoutRows[LayoutList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ if FDetached then begin LayoutMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do LayoutMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+
 procedure TDPHMainForm.DynamicFilterChange(Sender:TObject);
 var V:TJSONValue; Row:TJSONObject; Count:Integer; Query:string;
 begin
