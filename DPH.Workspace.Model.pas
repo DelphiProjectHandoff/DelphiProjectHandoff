@@ -3,6 +3,7 @@ unit DPH.Workspace.Model;
 interface
 uses System.SysUtils, System.JSON, System.Generics.Collections,
   DPH.Project.Analysis, DPH.Analysis.Model;
+const DPHBusinessProcessKeys:array[0..7] of string = ('name','owner','department','trigger','inputs','outputs','steps','unknowns');
 type
   TDPHWorkspaceView = class
   private
@@ -29,6 +30,11 @@ type
     class procedure ValidateDataRetentionRecord(ARecord:TJSONObject);static;
     class function IsDataRetentionPolicy(ARow:TJSONObject):Boolean;static;
     class function DescribeDataRetentionPolicy(ARow:TJSONObject):string;static;
+    class function NewBusinessProcess:TJSONObject;static;
+    class procedure ValidateBusinessProcess(ARecord:TJSONObject);static;
+    class function BusinessProcessBody(ARecord:TJSONObject):string;static;
+    class function IsBusinessProcess(ARow:TJSONObject):Boolean;static;
+    class function DescribeBusinessProcess(ARow:TJSONObject):string;static;
     class function NewTargetRecoveryPlan:string;static;
     class procedure ValidateTargetRecoveryRecord(ARecord:TJSONObject);static;
     class function IsTargetRecoveryPlan(ARow:TJSONObject):Boolean;static;
@@ -101,6 +107,56 @@ begin
  if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
  Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
   'Open policy to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
+end;
+
+class function TDPHWorkspaceView.NewBusinessProcess:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','business_process').AddPair('process_id',TGUID.NewGuid.ToString);
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);
+ for Key in DPHBusinessProcessKeys do Fields.AddPair(Key,'Unknown');
+end;
+class procedure TDPHWorkspaceView.ValidateBusinessProcess(ARecord:TJSONObject);
+var Fields:TJSONObject;Pair:TJSONPair;Key:string;ID:TGUID;
+begin
+ if (ARecord=nil) or (ARecord.Count<>3) or (ARecord.GetValue<string>('record_type','')<>'business_process') then raise EArgumentException.Create('Expected a structured business process');
+ if not (ARecord.GetValue('process_id') is TJSONString) or (Length(ARecord.GetValue<string>('process_id',''))<>38) then raise EArgumentException.Create('Invalid process identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('process_id'));except raise EArgumentException.Create('Invalid process identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('process_id') then raise EArgumentException.Create('Process identity must use its canonical GUID representation');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>Length(DPHBusinessProcessKeys)) then raise EArgumentException.Create('Process requires its eight structured fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Process fields must be text');
+ for Key in DPHBusinessProcessKeys do begin
+  if Fields.GetValue<string>(Key,'').Trim='' then raise EArgumentException.Create('Complete '+Key+' or explicitly enter Unknown');
+  if Length(Fields.GetValue<string>(Key))>4096 then raise EArgumentException.Create('Process field exceeds 4096 characters: '+Key);
+ end;
+ if SameText(Fields.GetValue<string>('name').Trim,'Unknown') or (Length(Fields.GetValue<string>('name'))>200) then raise EArgumentException.Create('Enter a descriptive process name of at most 200 characters');
+end;
+class function TDPHWorkspaceView.BusinessProcessBody(ARecord:TJSONObject):string;
+const Labels:array[0..7] of string = ('Process name','Accountable business owner','Department and participating roles','Trigger and prerequisites','Inputs and their origin','Outputs and their recipients','Ordered steps and handoffs','Unknowns and responsible maintainer');
+var I:Integer;Fields:TJSONObject;
+begin
+ ValidateBusinessProcess(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');
+ Result:='BUSINESS PROCESS'+sLineBreak;
+ for I:=0 to High(DPHBusinessProcessKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHBusinessProcessKeys[I])+sLineBreak;
+ Result:=Result+sLineBreak+'Attributed business description; Unknown remains unresolved. Source links identify captured code, not observed execution. Saving and named review do not prove operational outcomes.';
+end;
+class function TDPHWorkspaceView.IsBusinessProcess(ARow:TJSONObject):Boolean;
+var V:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ V:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try if V is TJSONObject then Result:=(ARow.GetValue<string>('kind','')='business_rule') and (V.GetValue<string>('record_type','')='business_process');finally V.Free;end;
+end;
+class function TDPHWorkspaceView.DescribeBusinessProcess(ARow:TJSONObject):string;
+var History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved process selected. New process opens structured fields. Empty results do not prove the application has no business processes.';
+ if not IsBusinessProcess(ARow) then Exit;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+sLineBreak+
+ 'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+
+ 'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+
+ 'Explicit implementation/evidence links: '+IntToStr(ARow.GetValue<TJSONArray>('rich_links').Count)+sLineBreak+ARow.GetValue<string>('body');
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then Result:=Result+sLineBreak+'Current revision author: '+Value.GetValue<string>('editor','unknown');
 end;
 
 class function TDPHWorkspaceView.NewTargetRecoveryPlan:string;

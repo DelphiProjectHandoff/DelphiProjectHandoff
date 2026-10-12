@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target backup and restoration 05.20 implemented as attributed manual capture; 317 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business process inventory 06.01 implemented as attributed manual capture; 316 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2560,15 +2560,29 @@
       "id": "06.01",
       "domain": "DPH-06",
       "requirement": "Business-process inventory",
-      "implementation": "missing",
+      "implementation": "implemented_manual_capture",
       "evidence": [
+        "DPH.Workspace.Model.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "tests/DPH.Tests.BusinessProcess.dpr",
+        "tools/build-business-process.cmd",
+        "docs/phase1-business-process-validation.json",
+        "docs/phase1-business-process-validation.log",
+        "docs/guides/Business_Process_Run_and_Test.txt"
       ],
-      "limitation": "Add named selected-project business processes with inputs, outputs, owners and source links.",
+      "limitation": "Structured attributed business-process inventory with eight separately editable native fields: name, accountable owner, department/roles, trigger/prerequisites, inputs/origins, outputs/recipients, ordered steps/handoffs and unknowns/responsible maintainer. Stable canonical GUIDs, exact source/procedure links, named review and immutable history preserve provenance. Contributor and business owner remain distinct. DPH does not execute business steps or prove outcomes. Unknown remains unresolved. Names are stable after saving; 200-character name, 4096-character fields, 64 links, 200 link candidates and 250-row pages are bounded explicitly. Departmental workflows and process diagrams are separate unfinished requirements.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native structured business-process register and field editor persist accountable owners, triggers, inputs, outputs, roles, steps and explicit unknowns with stable typed identities, exact source/procedure links, named review, immutable history, filters and paging. Canonical publication retains the typed record.",
+        "remaining_work": "",
+        "purpose": "Business-process inventory",
+        "evidence_group": "knowledge",
+        "verification": "84 focused plus 264 regression checks pass; application/FMX pass. Real database reopening preserves fields/history/links. All 73 guide pages covered by visual review: 62 pixel-identical previously reviewed pages and 11 changed pages inspected. 58 source hashes and 120 TOC destinations verified. Garbled documentation text corrected and final French sample visually verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "There is no structured business-process inventory; generic notes alone do not fulfill it.",
@@ -2576,6 +2590,12 @@
         "purpose": "Business-process inventory",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Business process inventory",
+        "validation": "docs/phase1-business-process-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12891,23 +12911,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Target backup and restoration",
+    "completed_batch": "Business process inventory",
     "completed_requirement_ids": [
-      "05.20"
+      "06.01"
     ],
     "counts": {
-      "implemented_manual_capture": 21,
+      "implemented_manual_capture": 22,
       "partial": 226,
       "implemented": 195,
-      "missing": 91
+      "missing": 90
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 317,
-    "completion_record": "docs/Phase1_Target_Recovery_Completion.txt",
+    "incomplete_requirement_records": 316,
+    "completion_record": "docs/Phase1_Business_Process_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "06.01",
-      "title": "Business-process inventory",
-      "scope": "Add named selected-project business processes with inputs, outputs, owners and source links."
+      "requirement": "06.02",
+      "title": "Departmental workflows",
+      "scope": "Add attributed workflow steps, roles, handoffs and exception paths."
     }
   }
 }

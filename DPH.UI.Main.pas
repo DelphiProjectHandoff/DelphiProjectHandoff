@@ -188,6 +188,45 @@ type
     TargetRecoveryFirst,TargetRecoveryNext,TargetRecoveryNew,TargetRecoveryOpen,TargetRecoveryLinks:TButton;
     TargetRecoveryList:TListBox;
     TargetRecoveryMemo:TMemo;
+    BusinessProcessTab:TTabItem;
+    BusinessProcessPurpose,BusinessProcessStatus,BusinessProcessEvidenceLabel:TLabel;
+    BusinessProcessToolbar:THorzScrollBox;
+    BusinessProcessFilter:TEdit;
+    BusinessProcessState:TComboBox;
+    BusinessProcessFirst,BusinessProcessNext,BusinessProcessNew,BusinessProcessOpen,BusinessProcessLinks:TButton;
+    BusinessProcessList:TListBox;
+    BusinessProcessMemo:TMemo;
+    BusinessProcessEdit:TButton;
+    BusinessProcessEditorTab:TTabItem;
+    BusinessProcessEditorPurpose,BusinessProcessAuthorLabel:TLabel;
+    BusinessProcessEditorToolbar:THorzScrollBox;
+    BusinessProcessAuthor:TEdit;
+    BusinessProcessApply,BusinessProcessCancel:TButton;
+    BusinessProcessEditorScroll:TVertScrollBox;
+    Process_name_Row:TLayout;
+    Process_name_Label:TLabel;
+    Process_name:TMemo;
+    Process_owner_Row:TLayout;
+    Process_owner_Label:TLabel;
+    Process_owner:TMemo;
+    Process_department_Row:TLayout;
+    Process_department_Label:TLabel;
+    Process_department:TMemo;
+    Process_trigger_Row:TLayout;
+    Process_trigger_Label:TLabel;
+    Process_trigger:TMemo;
+    Process_inputs_Row:TLayout;
+    Process_inputs_Label:TLabel;
+    Process_inputs:TMemo;
+    Process_outputs_Row:TLayout;
+    Process_outputs_Label:TLabel;
+    Process_outputs:TMemo;
+    Process_steps_Row:TLayout;
+    Process_steps_Label:TLabel;
+    Process_steps:TMemo;
+    Process_unknowns_Row:TLayout;
+    Process_unknowns_Label:TLabel;
+    Process_unknowns:TMemo;
     DataQualityTab:TTabItem;
     DataQualityPurpose,DataQualityStatus,DataQualityEvidenceLabel:TLabel;
     DataQualityToolbar:THorzScrollBox;
@@ -426,6 +465,13 @@ type
     procedure TargetRecoveryNewClick(Sender:TObject);
     procedure TargetRecoveryOpenClick(Sender:TObject);
 
+    procedure BusinessProcessFilterChange(Sender:TObject);
+    procedure BusinessProcessSelectionChange(Sender:TObject);
+    procedure BusinessProcessNewClick(Sender:TObject);
+    procedure BusinessProcessOpenClick(Sender:TObject);
+
+    procedure BusinessProcessEditClick(Sender:TObject);
+    procedure BusinessProcessApplyClick(Sender:TObject);
     procedure DataQualityFilterChange(Sender:TObject);
     procedure DataQualitySelectionChange(Sender:TObject);
     procedure DataQualityNewClick(Sender:TObject);
@@ -548,6 +594,8 @@ type
     FFileFormats:TJSONObject;
     FDataQualityRows:TList<TJSONObject>;
     FDataQualityOffset:Integer;
+    FBusinessProcessRows:TList<TJSONObject>;
+    FBusinessProcessOffset:Integer;
     FTargetRecoveryRows:TList<TJSONObject>;
     FTargetRecoveryOffset:Integer;
     FDataRetentionRows:TList<TJSONObject>;
@@ -637,7 +685,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -664,7 +712,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil);
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -688,7 +736,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FDataQualityRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
+  FDataQualityRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -1020,7 +1068,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -2416,6 +2464,97 @@ begin
  end;
 end;
 
+procedure TDPHMainForm.BusinessProcessFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FBusinessProcessRows=nil then Exit;
+ if Sender=BusinessProcessNext then Inc(FBusinessProcessOffset,250) else FBusinessProcessOffset:=0;
+ FBusinessProcessRows.Clear;BusinessProcessList.Items.Clear;BusinessProcessNext.Enabled:=False;BusinessProcessNew.Enabled:=FView<>nil;
+ BusinessProcessSelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin BusinessProcessStatus.Text:='Open a captured project, then New process to record its business process.';Exit;end;
+ Query:=BusinessProcessFilter.Text.Trim;StateFilter:='';if BusinessProcessState.ItemIndex>0 then StateFilter:=BusinessProcessState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsBusinessProcess(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeBusinessProcess(Row),Query) then Continue;
+  if (Count>=FBusinessProcessOffset) and (FBusinessProcessRows.Count<250) then begin
+   FBusinessProcessRows.Add(Row);BusinessProcessList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ BusinessProcessNext.Enabled:=Count>FBusinessProcessOffset+FBusinessProcessRows.Count;
+ BusinessProcessStatus.Text:=IntToStr(Count)+' saved processes match; '+IntToStr(FBusinessProcessRows.Count)+' shown from '+IntToStr(FBusinessProcessOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if BusinessProcessList.Count>0 then BusinessProcessList.ItemIndex:=0;
+ BusinessProcessSelectionChange(nil);
+end;
+procedure TDPHMainForm.BusinessProcessSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FBusinessProcessRows<>nil) and (BusinessProcessList.ItemIndex>=0) and (BusinessProcessList.ItemIndex<FBusinessProcessRows.Count) then Row:=FBusinessProcessRows[BusinessProcessList.ItemIndex];
+ BusinessProcessEdit.Enabled:=Row<>nil;BusinessProcessOpen.Enabled:=Row<>nil;BusinessProcessLinks.Enabled:=Row<>nil;
+ BusinessProcessMemo.Text:=TDPHWorkspaceView.DescribeBusinessProcess(Row);
+end;
+procedure TDPHMainForm.BusinessProcessNewClick(Sender:TObject);
+begin BusinessProcessEditClick(BusinessProcessNew);end;
+procedure TDPHMainForm.BusinessProcessOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another process.';Exit;end;
+ if (BusinessProcessList.ItemIndex<0) or (BusinessProcessList.ItemIndex>=FBusinessProcessRows.Count) then Exit;
+ Row:=FBusinessProcessRows[BusinessProcessList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=BusinessProcessLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
+procedure TDPHMainForm.BusinessProcessEditClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before editing a process.';Exit;end;
+ if Sender=BusinessProcessNew then begin NewKnowledgeClick(nil);RecordValue:=TDPHWorkspaceView.NewBusinessProcess;end
+ else begin
+  if BusinessProcessList.ItemIndex<0 then Exit;
+  BusinessProcessOpenClick(nil);
+  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+  if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_process') then begin RecordValue.Free;Exit;end;
+ end;
+ try
+  FKnowledgeStructuredJSON:=RecordValue.ToJSON;Fields:=RecordValue.GetValue<TJSONObject>('fields');
+  for Key in DPHBusinessProcessKeys do (FindComponent('Process_'+Key) as TMemo).Text:=Fields.GetValue<string>(Key,'Unknown');
+  Process_name.ReadOnly:=FKnowledgeID<>0;BusinessProcessAuthor.Text:=KnowledgeAuthorEdit.Text;
+ finally RecordValue.Free;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=BusinessProcessEditorTab;
+ StatusLabel.Text:='Complete the process fields, enter a named contributor and Apply to Knowledge draft. Then Save, add source links and review.';
+end;
+procedure TDPHMainForm.BusinessProcessApplyClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) or not FKnowledgeEdited then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+ try
+  try
+   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_process') then raise EArgumentException.Create('Start or edit a process first');
+   Fields:=RecordValue.GetValue<TJSONObject>('fields');
+   for Key in DPHBusinessProcessKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Process_'+Key) as TMemo).Text.Trim);end;
+   TDPHWorkspaceView.ValidateBusinessProcess(RecordValue);
+   if BusinessProcessAuthor.Text.Trim='' then raise EArgumentException.Create('Enter a named contributor');
+   FBinding:=True;
+   try
+    KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=BusinessProcessAuthor.Text.Trim;
+    KnowledgeBodyMemo.Text:=TDPHWorkspaceView.BusinessProcessBody(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+    KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
+   finally FBinding:=False;end;
+   WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Process draft prepared. Click Save to persist. Add exact source links on Knowledge links, Save again and review separately.';
+  except on E:Exception do StatusLabel.Text:=E.Message;end;
+ finally RecordValue.Free;end;
+end;
+
 procedure TDPHMainForm.DataQualityFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
 begin
@@ -3098,7 +3237,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

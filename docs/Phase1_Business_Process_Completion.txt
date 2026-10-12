@@ -1,0 +1,24 @@
+DPH REQUIREMENT 06.01 COMPLETION: BUSINESS-PROCESS INVENTORY
+Last changed: 12 October 2026
+
+Native structured field editor and process register support named owners, inputs,
+outputs, triggers, roles, ordered steps and explicit unknowns. Exact source and
+procedure links persist with typed identities, review and immutable history.
+Controls remain IDE-editable; no helper unit, migration or target execution.
+
+Validation PASS: 84 focused + 264 regression = 348 checks.
+Actual application and FMX baseline PASS. Normal/compact native renders reviewed.
+All 73 guide pages covered: 62 pixel-identical previously reviewed pages and 11
+changed pages inspected. 58 source hashes and 120 TOC destinations verified.
+Editable DOCX and PDF guides updated; garbled French and arrow text repaired.
+Directions: docs/guides/Business_Process_Run_and_Test.txt
+
+Structured attributed business-process inventory with eight separately editable native fields: name, accountable owner, department/roles, trigger/prerequisites, inputs/origins, outputs/recipients, ordered steps/handoffs and unknowns/responsible maintainer. Stable canonical GUIDs, exact source/procedure links, named review and immutable history preserve provenance. Contributor and business owner remain distinct. DPH does not execute business steps or prove outcomes. Unknown remains unresolved. Names are stable after saving; 200-character name, 4096-character fields, 64 links, 200 link candidates and 250-row pages are bounded explicitly. Departmental workflows and process diagrams are separate unfinished requirements.
+
+Pre-change backup: H:\DPH Backups\BusinessProcesses_PreChange_20261012_192606
+8957 files, 3106936085 bytes; every SHA256 verified. No post-change backup.
+
+Only 06.01 promoted; all 533 original IDs and texts preserved.
+195 implemented; 22 implemented_manual_capture; 226 partial; 90 missing.
+316 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.02 Departmental workflows.

@@ -54,6 +54,8 @@ Items.Strings = (
 'Import/export formats'
 'Target data retention'
 'Target backup and restore'
+'Business processes'
+'Process fields'
 'Target data quality'
 'Knowledge links'
 'Review tasks'
@@ -1804,6 +1806,279 @@ Margins.Bottom = 12
 ReadOnly = True
 WordWrap = True
 ShowScrollBars = True
+end
+end
+object BusinessProcessTab: TTabItem
+Text = 'Business processes'
+object BusinessProcessPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Inventory business processes with owners, inputs, outputs and ordered steps. New process and Edit fields open structured editors. Apply, Save, link source evidence and review separately.'
+end
+object BusinessProcessToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object BusinessProcessState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = BusinessProcessFilterChange
+end
+object BusinessProcessFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find process, owner, input or output'
+OnChange = BusinessProcessFilterChange
+end
+object BusinessProcessFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = BusinessProcessFilterChange
+end
+object BusinessProcessNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = BusinessProcessFilterChange
+end
+object BusinessProcessNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New process'
+OnClick = BusinessProcessNewClick
+end
+object BusinessProcessOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open record'
+OnClick = BusinessProcessOpenClick
+end
+object BusinessProcessLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = BusinessProcessOpenClick
+end
+object BusinessProcessEdit:TButton
+Position.X = 983
+Width = 110
+Height = 28
+Text = 'Edit fields'
+OnClick = BusinessProcessEditClick
+end
+end
+object BusinessProcessStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object BusinessProcessList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = BusinessProcessSelectionChange
+end
+object BusinessProcessEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved business process and review evidence'
+end
+object BusinessProcessMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object BusinessProcessEditorTab:TTabItem
+Text = 'Process fields'
+object BusinessProcessEditorPurpose:TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Describe one selected-application business process. Name is stable after saving. Enter Unknown where evidence is unavailable. Apply prepares a Knowledge draft; Save persists it. Cancel discards the current draft.'
+end
+object BusinessProcessEditorToolbar:THorzScrollBox
+Align = Top
+Height = 80
+ShowScrollBars = True
+object BusinessProcessAuthorLabel:TLabel
+Position.X = 12
+Width = 200
+Height = 24
+Text = 'Named contributor'
+end
+object BusinessProcessAuthor:TEdit
+Position.X = 12
+Position.Y = 28
+Width = 200
+Height = 28
+end
+object BusinessProcessApply:TButton
+Position.X = 220
+Position.Y = 28
+Width = 180
+Height = 28
+Text = 'Apply to Knowledge draft'
+OnClick = BusinessProcessApplyClick
+end
+object BusinessProcessCancel:TButton
+Position.X = 220
+Width = 150
+Height = 24
+Text = 'Cancel / discard draft'
+OnClick = DiscardKnowledgeClick
+end
+end
+object BusinessProcessEditorScroll:TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+object Process_name_Row:TLayout
+Align = Top
+Height = 112
+object Process_name_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Process name'
+end
+object Process_name:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_owner_Row:TLayout
+Align = Top
+Height = 112
+object Process_owner_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Accountable business owner'
+end
+object Process_owner:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_department_Row:TLayout
+Align = Top
+Height = 112
+object Process_department_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Department and participating roles'
+end
+object Process_department:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_trigger_Row:TLayout
+Align = Top
+Height = 112
+object Process_trigger_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Trigger and prerequisites'
+end
+object Process_trigger:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_inputs_Row:TLayout
+Align = Top
+Height = 112
+object Process_inputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Inputs and their origin'
+end
+object Process_inputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_outputs_Row:TLayout
+Align = Top
+Height = 112
+object Process_outputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Outputs and their recipients'
+end
+object Process_outputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_steps_Row:TLayout
+Align = Top
+Height = 112
+object Process_steps_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Ordered steps and handoffs'
+end
+object Process_steps:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object Process_unknowns_Row:TLayout
+Align = Top
+Height = 112
+object Process_unknowns_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Unknowns and responsible maintainer'
+end
+object Process_unknowns:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+end
+end
 end
 end
 object DataQualityTab: TTabItem

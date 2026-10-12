@@ -1,0 +1,92 @@
+{
+  "result": "PASS",
+  "requirement": "06.01",
+  "status": "implemented_manual_capture",
+  "checks": 84,
+  "regression_checks": 264,
+  "requirements_preserved": 533,
+  "only_promoted_record": "06.01",
+  "counts": {
+    "implemented_manual_capture": 22,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 90
+  },
+  "incomplete_requirement_records": 316,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 38,
+        "toc_entries": 64,
+        "new_chapter_pages": [
+          3,
+          35
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 35,
+        "toc_entries": 56,
+        "new_chapter_pages": [
+          3,
+          32
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "73 pages covered: 62 pixel-identical previously reviewed pages and 11 changed pages inspected, including corrected French text. No clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\BusinessProcesses_PreChange_20261012_192606",
+    "files": 8957,
+    "bytes": 3106936085,
+    "sha256_verified": true
+  },
+  "qualification": "Structured attributed business-process inventory with eight separately editable native fields: name, accountable owner, department/roles, trigger/prerequisites, inputs/origins, outputs/recipients, ordered steps/handoffs and unknowns/responsible maintainer. Stable canonical GUIDs, exact source/procedure links, named review and immutable history preserve provenance. Contributor and business owner remain distinct. DPH does not execute business steps or prove outcomes. Unknown remains unresolved. Names are stable after saving; 200-character name, 4096-character fields, 64 links, 200 link candidates and 250-row pages are bounded explicitly. Departmental workflows and process diagrams are separate unfinished requirements.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "aa78ea686c664031df03303dd957e727aa6c190eaf8ad20dfef52a58ae3444e7",
+    "DPH.Storage.Database.pas": "e03b27e76dadb7417da560531a6fb3eaeb466b9586328d2be22f2c05021a73a6",
+    "DPH.UI.Main.pas": "a430b042adc3b78834508660ca9d36d4ac2202b6dc66145a09d23f2cc418cc23",
+    "DPH.UI.Main.fmx": "ea04093fba24d7ca925c5a4ca0778c056cf3a4998df9b43614289664e5be26e7",
+    "tests/DPH.Tests.BusinessProcess.dpr": "3223832ac2f47ca1cf4b8f23c79e3cf145de43cd453cfb3e75e37792e6c58603",
+    "tools/build-business-process.cmd": "93a4f66939e43cf2536a2a5babe368c706dde9aee551c5fd2dec33b0aab245cf",
+    "docs/phase1-business-process-validation.json": "ae919159a6ba88c6aad6ec16c64577fcab2d529e5f059cf48aaa015fba6ffb73",
+    "docs/phase1-business-process-validation.log": "7ee07f54eb0f4a314de716c8340a13f7c5833cc8261e9e5fac142561a5924195",
+    "docs/guides/Business_Process_Run_and_Test.txt": "f409f8a988bc54722f83fb19e8f8d0666fb309c96e9986282044c480e19a5c35",
+    "tools/build-guides.py": "f9bb1ef2bbaa7de6834a790187d646d27b2a0cdbcb34b506deb6205c3a51f1f0",
+    "README.md": "83407c3d77f2574dc684a388b449ffb5f91f7c0ba5cc81f04eaf56047521c80e",
+    "help/index.html": "7dbc23b000238f2d2904b29158c3573fb20745e926b6b76d661acc0c2221b181",
+    "docs/guide-source-validation.json": "42aa243e8f14df4020793e818b72c275d1f62b54162ab03eefd1279e0bb55a24",
+    "docs/guides/DPH_User_Guide.docx": "eb2004cbae5e8539217ef77da7bf98537d3aac723eef0f92627bfc21c459a9f4",
+    "docs/guides/DPH_Engineering_Guide.docx": "3efddc509699965876fa64f236a71db02442378a17a5eba4781aea620bb6dc6d",
+    "docs/pdf/DPH_User_Guide.pdf": "2133a4e65e1ea3ad050cde42fd4c7c4aa150403ae41de3fbbb8b94ef91078dcb",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "eca097d83ad55a0435bce3908c49accff0f78d27f22c4c924f48da12ceb0078c",
+    "docs/Phase1_Business_Process_Completion.txt": "c167ba325f9ab5b29a1a9f21256d5e759fe9fc38a78adf873af488ad29d96345",
+    "docs/Phase1_Requirements_Traceability.json": "b699432bb82692a419b89504c815649f0c2ef55fd3565721addb9b5de9fe13b2",
+    "docs/Phase1_Implementation_Backlog.csv": "2c10be77baad677ab300513c8db14ff75f7c84ca7a432d1883d3da2e988ab44a",
+    "docs/Implementation_Completion_Tracker.txt": "bb71fe381cba9e7b09a915b4eb1f605466bd505482f897071593c0ecd6a2f82f",
+    "docs/phase1-business-process-build.log": "57db28f21e4ea132cf100eb078801a33b4146ad392899a6f2ac36808f569718d",
+    "docs/phase1-business-process-compact.png": "4ab301193fe9670f6c7c5c1d06a31906c102e64468943586561d9120fc4e2655",
+    "docs/phase1-business-process-editor-bottom.png": "9d95e1d0704e7891208eff06f91ea5b2eacfb041c83ef9aa30c99ea4d08752c5",
+    "docs/phase1-business-process-editor-compact.png": "1290918c9ba38aa233899ccfc5ee1fa96a2f93e0fb515d91e82483bfa85a84c4",
+    "docs/phase1-business-process-editor.png": "c9d431c56c079340e553b563a5590d05358a056d3a53ec7ad59736663c480629",
+    "docs/phase1-business-process-encoding-repair.json": "9edcf7c818ba9a5042af3bbbd2ca2c5c716a217fa9e70fea91d3ed8154dba93a",
+    "docs/phase1-business-process-guide-review.json": "875d0a8767147f20aa3cb322e3e9aad21c134e5405bedb0628510abc5663edf0",
+    "docs/phase1-business-process-knowledge-regression-validation.json": "99da86ee03300d0716ef98fa15bf0602d1aec2265d6009b48c691247b365e579",
+    "docs/phase1-business-process-knowledge-regression.log": "e4653a849a06f1620e88734b8ce6d280c3dac7c5fb926e3b2c70dc00d3159452",
+    "docs/phase1-business-process-publishing-regression-canonical-fixture.json": "8425a4e22cf112e49b0a01fdbf5539b3ad1d1c4aa2e004dd79b2cf6517811b61",
+    "docs/phase1-business-process-publishing-regression-validation.json": "f5cbc579af7e4afbb8c2096f47aaa734faf654613d7ec84139f6f651e9c157eb",
+    "docs/phase1-business-process-publishing-regression.log": "a1715794e15873c169a8ef44a27d92ad18b96942d30286be0a3f11971564535a",
+    "docs/phase1-business-process-quality-regression-compact.png": "e7f32fb91c862e0fe214be1cf83f33e131f766451fa4258dc41c71e1bbcc2983",
+    "docs/phase1-business-process-quality-regression-validation.json": "87cf521f17afab91853a6ef1b7ea4056e762a105e30184cbcb6336472bb5b763",
+    "docs/phase1-business-process-quality-regression-workspace.png": "fc4941dd8ffb0889362e97fd53b4543535279e46f1eefd5c0f9736d67c261bf6",
+    "docs/phase1-business-process-quality-regression.log": "caaf9d60a291a979e9ba192c02ec514af834796b079dba4b0076fa1955237961",
+    "docs/phase1-business-process-workspace.png": "4ab301193fe9670f6c7c5c1d06a31906c102e64468943586561d9120fc4e2655"
+  }
+}

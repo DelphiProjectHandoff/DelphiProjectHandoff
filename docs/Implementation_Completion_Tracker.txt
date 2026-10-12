@@ -123,7 +123,10 @@ See Phase1_Data_Quality_Completion.txt.
 Target backup and restoration completed as attributed manual capture (05.20).
 68 focused and 264 regression checks passed; actual app/FMX passed.
 See Phase1_Target_Recovery_Completion.txt.
-Current live backlog: 317 incomplete requirement records; 0 unassessed.
+Business process inventory completed as attributed manual capture (06.01).
+84 focused and 264 regression checks passed; actual app/FMX passed.
+See Phase1_Business_Process_Completion.txt.
+Current live backlog: 316 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.
