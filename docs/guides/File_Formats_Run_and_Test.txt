@@ -1,0 +1,66 @@
+DPH IMPORT AND EXPORT FILE FORMATS RUN AND TEST
+Last changed: 12 October 2026
+
+RUN AND INSPECT
+1. Open File Explorer and go to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Attach project and select the target .dproj, .dpr or .groupproj.
+   Save its proposed database when prompted. To inspect a saved capture,
+   click Open cache and choose its .dphdb.
+4. In the upper-right page selector choose Import/export formats.
+5. In the page's kind selector choose All, import, export or captured resource.
+   Enter a format, routine or encoding in the adjacent search box.
+6. Select a row. Read Format evidence and saved contract below the list.
+   First page and Next page navigate results over 250 rows. Scroll the command
+   bar horizontally to reveal all buttons in a narrow window.
+7. Click Explain routine to select its enclosing routine. Click Open source
+   to read unchanged attached evidence. Changed or detached source refuses
+   navigation with an explanation. Resource rows may have no routine.
+
+RECORD A CONTRACT
+1. Select the format row and click Record/open contract.
+2. If a saved contract exists, Knowledge opens it. Otherwise a new draft opens.
+   Clear any unsaved Knowledge draft before opening a different contract.
+3. Fill in format/version, direction/purpose, encoding/BOM, schema and required
+   fields, delimiters/escaping, producer and consumer mappings, validation,
+   compatibility, verification evidence and remaining unknowns/maintainer.
+   Explicit Unknown is acceptable when evidence is unavailable.
+4. Enter the named author in Knowledge and click Save. Opening or preparing
+   the draft alone does not save anything. Review separately against evidence.
+5. Return to Import/export formats and select the row to see its saved contract.
+   Changed source has a new identity; previous records stay in Knowledge.
+
+INTERPRETATION
+API spelling is a candidate, including on custom receivers. Explicit encoding
+arguments are source evidence. Binary APIs do not establish text encoding.
+Captured source decoding is not a transfer encoding contract. JSON/XML/INI
+member structure is bounded observed shape, not a required/optional schema.
+Scalar values and literal paths are omitted. Dynamic paths, defaults, opaque
+resources, missing parser evidence and unsupported formats remain unknown.
+DPH does not execute the selected app, a file transfer, SQL, driver or server.
+
+BUILD AND TEST
+1. Open Start, type Command Prompt and choose Run as administrator.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-file-formats.cmd
+   The checks must report PASS with no FAIL and return exit code zero.
+4. Build the actual application and verify serialized FMX bindings:
+   tools\build-wp0.cmd
+5. Shared checks:
+   tools\build-schema-history.cmd
+   tools\build-data-lineage.cmd
+   tools\build-wp5.cmd
+   tools\build-wp6.cmd
+6. For controlled practice after the focused check, attach:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\file-formats-validation\source\Formats.dpr
+   Save a separate practice database. Inspect Main.Transfer, settings.json,
+   settings.xml and settings.ini. Filter export and WriteAllText for the CSV
+   filename candidate. Record a contract and leave unverified fields Unknown.
+
+EVIDENCE
+Focused results: docs/phase1-file-formats-validation.json and companion log.
+Native renders show actual DPH controls with controlled fixtures, not target
+application screenshots. Guides: docs/guides; companion PDFs: docs/pdf.

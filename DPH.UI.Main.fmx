@@ -51,6 +51,7 @@ Items.Strings = (
 'Database connections'
 'Database schema'
 'Database ER diagram'
+'Import/export formats'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1599,6 +1600,111 @@ Margins.Right = 12
 Text = 'Database evidence (scroll for details)'
 end
 object DatabaseInventoryMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+end
+end
+object FileFormatsTab: TTabItem
+Text = 'Import/export formats'
+object FileFormatsPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Inspect captured import/export API candidates and resource structure. Select a row, then Record/open contract to document its encoding, schema, producer, consumer and verification steps. Scalar values are omitted; no transfer runs.'
+end
+object FileFormatsToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object FileFormatsKind: TComboBox
+Position.X = 8
+Width = 160
+Height = 28
+Items.Strings = (
+'All'
+'import'
+'export'
+'captured resource')
+ItemIndex = 0
+OnChange = FileFormatsFilterChange
+end
+object FileFormatsFilter: TEdit
+Position.X = 176
+Width = 230
+Height = 28
+TextPrompt = 'Find format, encoding or routine'
+OnChange = FileFormatsFilterChange
+end
+object FileFormatsFirst: TButton
+Position.X = 414
+Width = 90
+Height = 28
+Text = 'First page'
+OnClick = FileFormatsFilterChange
+end
+object FileFormatsNext: TButton
+Position.X = 512
+Width = 90
+Height = 28
+Text = 'Next page'
+OnClick = FileFormatsFilterChange
+end
+object FileFormatsSource: TButton
+Position.X = 610
+Width = 110
+Height = 28
+Text = 'Open source'
+OnClick = FileFormatsSourceClick
+end
+object FileFormatsExplain: TButton
+Position.X = 728
+Width = 140
+Height = 28
+Text = 'Explain routine'
+OnClick = FileFormatsExplainClick
+end
+object FileFormatsContract: TButton
+Position.X = 876
+Width = 170
+Height = 28
+Text = 'Record/open contract'
+OnClick = FileFormatsContractClick
+end
+end
+object FileFormatsStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object FileFormatsList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = FileFormatsSelectionChange
+end
+object FileFormatsSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object FileFormatsEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Format evidence and saved contract (scroll for details)'
+end
+object FileFormatsMemo: TMemo
 Align = Client
 ReadOnly = True
 WordWrap = True

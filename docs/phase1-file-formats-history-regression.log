@@ -1,0 +1,98 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17980 lines, 1.41 seconds, 10665380 bytes code, 348904 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: Referenced migration file candidate discovered
+PASS 3: Filename order retained as qualified candidate
+PASS 4: Explicit application version assignment retained
+PASS 5: Verification request retained without executing it
+PASS 6: Applied deployment status remains unknown
+PASS 7: Exact captured loader context linked
+PASS 8: Script links captured schema evidence
+PASS 9: Migration SHA256 matches exact source
+PASS 10: Migration belongs to exact capture generation
+PASS 11: Newcomer explanation describes migration purpose
+PASS 12: Parenthesized schema-qualified version retained
+PASS 13: Multiple assignments retained without selecting winner
+PASS 14: Comment version not promoted
+PASS 15: Foreign-key verification request retained
+PASS 16: Migration literal contents remain omitted
+PASS 17: Engine schema counter and version query are not application assignments
+PASS 18: Dynamic application version remains unknown
+PASS 19: Unsupported assignment explains unresolved evidence
+PASS 20: Malformed scripts preserve explicit history gaps
+PASS 21: Equivalent numeric prefixes produce an explicit order conflict
+PASS 22: Conflicting script retained without selecting winner
+PASS 23: Unavailable referenced SQL produces a migration gap
+PASS 24: Missing script cites loader rather than inventing SQL source
+PASS 25: Nested procedure statement cannot become top-level version evidence
+PASS 26: Top-level transaction version assignment remains captured
+PASS 27: Excess version assignments report display truncation
+PASS 28: Truncated final assignment is not silently promoted
+PASS 29: Unavailable source has only a gap rather than a readable migration candidate
+PASS 30: CREATE SCHEMA declaration captured
+PASS 31: Qualified table captured
+PASS 32: CREATE OR REPLACE VIEW distinguished from table
+PASS 33: Schema qualifier retained
+PASS 34: Qualifier references distinct from explicit schemas
+PASS 35: Duplicate declarations counted without selecting winner
+PASS 36: Duplicate deployment uncertainty explained
+PASS 37: Dots inside quoted identifiers preserved
+PASS 38: Bracket identifiers captured
+PASS 39: Backtick identifiers captured
+PASS 40: Temporary table header captured
+PASS 41: Conditional table header captured
+PASS 42: Conditional schema header captured
+PASS 43: Nested comments and quoted semicolons do not split declaration
+PASS 44: Comment and string SQL do not invent objects
+PASS 45: Nested comment SQL ignored
+PASS 46: Malformed lexical source not partially promoted
+PASS 47: Unbalanced body remains unsupported
+PASS 48: Incomplete qualified name not promoted
+PASS 49: Unsupported replace-table header refused
+PASS 50: Unsupported temporary schema refused
+PASS 51: Unsupported conditional view refused
+PASS 52: Unsupported view column-list header not guessed
+PASS 53: Existing SQL reference retained without inventing a definition
+PASS 54: Inferred reference has no invented definition
+PASS 55: Inferred reference never promoted to declaration
+PASS 56: String literal omitted from projected definitions
+PASS 57: Quoted semicolon content omitted
+PASS 58: Malformed lexical resources explain gaps
+PASS 59: Oversize resource explicitly reported
+PASS 60: Migration and unsupported statements retained as gaps
+PASS 61: Definition retains captured SHA256
+PASS 62: Definition retains generation
+PASS 63: Statement start line retained
+PASS 64: Details qualify definition validation
+PASS 65: Unchanged attached source opens
+PASS 66: Detached source navigation refused
+PASS 67: Outside-project navigation refused
+PASS 68: Historical generation navigation refused
+PASS 69: Changed source navigation refused
+PASS 70: Inspector leaves captured workspace unchanged
+PASS 71: Persisted reopening yields identical schema evidence
+PASS 72: Native list bounds first page to 250 rows
+PASS 73: Next page enabled for remaining declarations
+PASS 74: Native next page exposes remainder
+PASS 75: Kind, state and name filters combine
+PASS 76: Native memo explains selected definition
+PASS 77: Native details expose source hash
+PASS 78: Native navigation explains detached attachment
+PASS 79: Empty result teaches missing-evidence interpretation
+PASS 80: Native migration filter selects exact script
+PASS 81: Native migration details lead with version evidence
+PASS 82: Native migration search includes target version evidence
+PASS 83: Native migration can follow schema evidence
+PASS 84: Native relationship opens captured schema
+PASS 85: Compact memo has readable area
+PASS 86: Long schema details scroll
+PASS 87: Compact commands can scroll horizontally
+PASS 88: Capture replacement rebuilds projection under current filters
+PASS 89: Owner catalog unchanged
+PASS 90: Target source restored unchanged after navigation refusal test
+Database schema validation passed: 90 checks.

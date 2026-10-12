@@ -172,6 +172,14 @@ type
     DatabaseERMemo:TMemo;
     DatabaseERTableStyle,DatabaseERGapStyle,DatabaseERHeaderStyle:TRectangle;
     DatabaseERTextStyle,DatabaseERTitleStyle:TLabel;
+    FileFormatsTab:TTabItem;
+    FileFormatsPurpose,FileFormatsStatus,FileFormatsEvidenceLabel:TLabel;
+    FileFormatsToolbar:THorzScrollBox;
+    FileFormatsKind:TComboBox;
+    FileFormatsFilter:TEdit;
+    FileFormatsFirst,FileFormatsNext,FileFormatsSource,FileFormatsExplain,FileFormatsContract:TButton;
+    FileFormatsList:TListBox;
+    FileFormatsMemo:TMemo;
     DatabaseSchemaTab:TTabItem;
     DatabaseSchemaPurpose,DatabaseSchemaStatus:TLabel;
     DatabaseSchemaToolbar:THorzScrollBox;
@@ -377,6 +385,11 @@ type
     procedure DatabaseERMouseDown(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
     procedure DatabaseDictionaryEditClick(Sender:TObject);
     procedure DatabaseDictionaryKnowledgeClick(Sender:TObject);
+    procedure FileFormatsFilterChange(Sender:TObject);
+    procedure FileFormatsSelectionChange(Sender:TObject);
+    procedure FileFormatsSourceClick(Sender:TObject);
+    procedure FileFormatsExplainClick(Sender:TObject);
+    procedure FileFormatsContractClick(Sender:TObject);
     procedure DatabaseSchemaFilterChange(Sender:TObject);
     procedure DatabaseSchemaSelectionChange(Sender:TObject);
     procedure DatabaseSchemaSourceClick(Sender:TObject);
@@ -491,6 +504,9 @@ type
     FDatabaseEROffset:Integer;
     FDatabaseERFocusID,FDatabaseEREvidenceID:string;
     FDatabaseERScale:Single;
+    FFileFormats:TJSONObject;
+    FFileFormatRows:TList<TJSONObject>;
+    FFileFormatOffset:Integer;
     FDatabaseSchema:TJSONObject;
     FDatabaseSchemaRows:TList<TJSONObject>;
     FDatabaseSchemaOffset:Integer;
@@ -574,6 +590,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -623,6 +640,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
+  FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -912,6 +930,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
@@ -1055,7 +1074,8 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
-  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);
+  FFileFormatRows.Clear;FreeAndNil(FFileFormats);FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
@@ -2177,6 +2197,71 @@ begin
  end;
  DatabaseERMemo.Lines.Add('Evidence target is no longer in this captured schema. Rebuild the diagram.');
 end;
+
+procedure TDPHMainForm.FileFormatsFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;
+begin
+ if FFileFormatRows=nil then Exit;
+ if Sender=FileFormatsNext then Inc(FFileFormatOffset,250) else FFileFormatOffset:=0;
+ FFileFormatRows.Clear;FileFormatsList.Items.Clear;FileFormatsNext.Enabled:=False;FileFormatsSelectionChange(nil);
+ if FFileFormats=nil then begin FileFormatsStatus.Text:='Open a captured project to inspect format evidence.';Exit;end;
+ Count:=0;
+ for V in FFileFormats.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (FileFormatsKind.ItemIndex>0) and (Row.GetValue<string>('direction')<>FileFormatsKind.Selected.Text) then Continue;
+  if (FileFormatsFilter.Text.Trim<>'') and not ContainsText(TDPHWorkspaceView.DescribeFileFormat(Row),FileFormatsFilter.Text.Trim) then Continue;
+  if (Count>=FFileFormatOffset) and (FFileFormatRows.Count<250) then begin FFileFormatRows.Add(Row);FileFormatsList.Items.Add(Row.GetValue<string>('direction')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('format'));end;Inc(Count);
+ end;
+ FileFormatsNext.Enabled:=Count>FFileFormatOffset+FFileFormatRows.Count;
+ FileFormatsStatus.Text:=Format('%d matches; %d shown from %d. Captured candidates; runtime transfer unobserved. %s',[Count,FFileFormatRows.Count,FFileFormatOffset,FFileFormats.GetValue<string>('limit','')]);
+ if FileFormatsList.Count>0 then FileFormatsList.ItemIndex:=0;FileFormatsSelectionChange(nil);
+end;
+procedure TDPHMainForm.FileFormatsSelectionChange(Sender:TObject);
+var Row:TJSONObject;V:TJSONValue;Title:string;
+begin
+ FileFormatsSource.Enabled:=False;FileFormatsExplain.Enabled:=False;FileFormatsContract.Enabled:=False;
+ FileFormatsMemo.Text:='Select a captured file or API candidate. Empty results do not prove there are no import/export formats; unsupported, dynamic and uncaptured transfers remain unknown.';
+ if (FFileFormatRows=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
+ Row:=FFileFormatRows[FileFormatsList.ItemIndex];FileFormatsMemo.Text:=TDPHWorkspaceView.DescribeFileFormat(Row)+sLineBreak+FFileFormats.GetValue<string>('qualification');
+ FileFormatsSource.Enabled:=True;FileFormatsExplain.Enabled:=Row.GetValue<string>('target_key')<>'';FileFormatsContract.Enabled:=True;
+ Title:=TDPHWorkspaceView.FileFormatContractTitle(Row);
+ if FKnowledge<>nil then for V in FKnowledge do if V.GetValue<string>('title')=Title then FileFormatsMemo.Lines.Add(sLineBreak+'SAVED CONTRACT ['+V.GetValue<string>('state')+'] | '+V.GetValue<string>('owner')+sLineBreak+V.GetValue<string>('body'));
+end;
+procedure TDPHMainForm.FileFormatsSourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
+ Row:=FFileFormatRows[FileFormatsList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ if FDetached then begin FileFormatsMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do FileFormatsMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+procedure TDPHMainForm.FileFormatsExplainClick(Sender:TObject);
+var Key:string;
+begin
+ if (FView=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
+ Key:=FFileFormatRows[FileFormatsList.ItemIndex].GetValue<string>('target_key');if Key='' then Exit;
+ SelectSymbol(Key);WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.FileFormatsContractClick(Sender:TObject);
+var Row:TJSONObject;Title:string;I:Integer;
+begin
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before recording a format contract.';Exit;end;
+ if (FView=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
+ Row:=FFileFormatRows[FileFormatsList.ItemIndex];Title:=TDPHWorkspaceView.FileFormatContractTitle(Row);
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('title')=Title then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;Exit;end;
+ NewKnowledgeClick(nil);FBinding:=True;
+ try FKnowledgeLink:=Row.GetValue<string>('target_key');KnowledgeTitleEdit.Text:=Title;KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('engineering_rule');
+  KnowledgeBodyMemo.Text:='FILE FORMAT CONTRACT - replace Unknown with reviewed facts; do not enter credentials or real customer data.'+sLineBreak+
+   'Format name and version: Unknown'+sLineBreak+'Direction and business purpose: '+Row.GetValue<string>('direction')+sLineBreak+
+   'Encoding and BOM policy: Unknown'+sLineBreak+'Schema / required and optional fields / types: Unknown'+sLineBreak+
+   'Delimiter, quoting, escaping and line endings: Unknown'+sLineBreak+'Producer routine and input mapping: '+Row.GetValue<string>('producer')+sLineBreak+
+   'Consumer routine and destination mapping: '+Row.GetValue<string>('consumer')+sLineBreak+'Validation, malformed input and partial failure: Unknown'+sLineBreak+
+   'Compatibility and version migration: Unknown'+sLineBreak+'Verification procedure and evidence: Unknown'+sLineBreak+'Remaining unknowns and responsible maintainer: Unknown'+sLineBreak+sLineBreak+TDPHWorkspaceView.DescribeFileFormat(Row);
+ finally FBinding:=False;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Complete the format contract, enter the named author, and click Save. Review separately against evidence.';
+end;
+
 procedure TDPHMainForm.DatabaseSchemaFilterChange(Sender:TObject);
 var V:TJSONValue;Row,SavedDictionary:TJSONObject;Count:Integer;Parameters:TJSONArray;ParameterText:string;
 begin
@@ -2764,7 +2849,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Migration and schema-version history 05.16 implemented as qualified captured evidence; 321 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Import/export file formats 05.17 implemented as qualified captured evidence and attributed contracts; 320 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2391,13 +2391,28 @@
       "id": "05.17",
       "domain": "DPH-05",
       "requirement": "Import/export file formats",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.Symbols.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.Model.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.FileFormats.dpr",
+        "tools/build-file-formats.cmd",
+        "docs/phase1-file-formats-validation.json",
+        "docs/phase1-file-formats-validation.log",
+        "docs/guides/File_Formats_Run_and_Test.txt"
       ],
-      "limitation": "Add explicit import/export format contracts, encodings, schema and producing/consuming routines.",
+      "limitation": "Captured resource structure and file API/encoding candidates only. Observed structure is not a formal schema. Transfer encoding differs from source decoding. Dynamic paths, defaults, custom receivers, runtime binding and opaque or missing resources remain unknown. Scalar values and full transfer paths are omitted. Explicit expression, structure and row bounds apply. Named-author contracts capture human knowledge with review status and immutable history; drafting a contract does not verify its contents. Target applications and transfers are never executed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Captured JSON/XML/INI resource shapes and import/export API candidates expose encoding evidence, producing/consuming routines, guarded source navigation, filters and paging. Native contract drafting/opening uses attributed engineering knowledge with format/version, schema, encoding, validation, compatibility and verification fields.",
+        "remaining_work": "",
+        "purpose": "Import/export file formats",
+        "evidence_group": "output",
+        "verification": "57 focused and 437 shared regression checks pass; actual application and FMX baseline pass. Persisted capture, value/path redaction, encoding/routine evidence, bounds, native filters/navigation and attributed contract workflows verified. All 67 final guide pages visually reviewed; 58 source hashes and 112 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Output writer and referenced resource candidates retain filenames and some structure.",
@@ -2405,6 +2420,12 @@
         "purpose": "Import/export file formats",
         "evidence_group": "output",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Import/export file formats",
+        "validation": "docs/phase1-file-formats-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12806,23 +12827,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Migration and schema-version history",
+    "completed_batch": "Import/export file formats",
     "completed_requirement_ids": [
-      "05.16"
+      "05.17"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 227,
-      "implemented": 194,
+      "partial": 226,
+      "implemented": 195,
       "missing": 94
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 321,
-    "completion_record": "docs/Phase1_Schema_History_Completion.txt",
+    "incomplete_requirement_records": 320,
+    "completion_record": "docs/Phase1_File_Formats_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.17",
-      "title": "Import/export file formats",
-      "scope": "Add explicit import/export format contracts, encodings, schema and producing/consuming routines."
+      "requirement": "05.18",
+      "title": "Data retention and archival requirements",
+      "scope": "Add attributed target-data retention/archive rules and links to implementing jobs or procedures."
     }
   }
 }

@@ -25,12 +25,15 @@ type
     function Coverage: TJSONObject;
     function Questions(AKnowledge: TJSONArray = nil): TJSONArray;
     function ProjectMembers: TJSONArray;
+    function FileFormats: TJSONObject;
+    class function DescribeFileFormat(ARow:TJSONObject):string; static;
+    class function FileFormatContractTitle(ARow:TJSONObject):string; static;
     class function SelectionHash(const AConfig,APlatform: string; const ADefines,AExternalRoots: TArray<string>; ACodePage: Integer = 0): string; static;
     class function IsHandoffProject(ADocument: TJSONObject): Boolean; static;
     property Document: TJSONObject read FDocument;
   end;
 implementation
-uses System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory, DPH.Analysis.Quality;
+uses System.RegularExpressions, System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory, DPH.Analysis.Quality;
 
 class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;
 var Files,Nodes: TJSONArray; FileValue,NodeValue: TJSONValue; Row,IR,Node: TJSONObject;
@@ -95,6 +98,97 @@ destructor TDPHWorkspaceView.Destroy;
 begin FSymbols.Free; FDocument.Free; inherited; end;
 function TDPHWorkspaceView.Symbol(const AKey: string): TJSONObject;
 begin if not FSymbols.TryGetValue(AKey,Result) then Result:=nil; end;
+
+function TDPHWorkspaceView.FileFormats:TJSONObject;
+var Rows,Files,Nodes,Shape:TJSONArray; F,N,V,W:TJSONValue; FileRow,Node,Row,Range,Owner:TJSONObject;
+    Path,Kind,Text,API,Direction,Extension,Encoding,Key,Member,ValueType:string;
+    Tokens:TMatchCollection; Seen:TDictionary<string,Boolean>; I,J,K,Depth,Parent,ShapeCount,BestSize:Integer;
+  procedure Add(const AName,ADirection,AFormat,AEncoding:string; ANode:TJSONObject; ASite:Integer=0);
+  var W:TJSONValue;
+  begin
+   if Rows.Count>=10000 then begin if Result.GetValue('limit')=nil then Result.AddPair('limit','File-format inventory truncated at 10000 candidates.');Exit;end;
+   Range:=TJSONObject.Create.AddPair('source',Path).AddPair('line',TJSONNumber.Create(ANode.GetValue<Integer>('line',1))).AddPair('column',TJSONNumber.Create(ANode.GetValue<Integer>('column',1))).AddPair('start',TJSONNumber.Create(ANode.GetValue<Integer>('start',0))).AddPair('end',TJSONNumber.Create(ANode.GetValue<Integer>('end',0)));
+   Row:=TJSONObject.Create;Rows.AddElement(Row);
+   Key:=Path+'|'+Range.GetValue('start').Value+'|'+AName+'|'+ADirection+'|'+IntToStr(ASite);
+   Row.AddPair('id',Key).AddPair('name',AName).AddPair('direction',ADirection).AddPair('format',AFormat).AddPair('encoding',AEncoding).AddPair('source',Path).AddPair('source_hash',FileRow.GetValue<string>('sha256','')).AddPair('generation_id',FDocument.GetValue('generation_id').Clone as TJSONValue).AddPair('range',Range).AddPair('schema',TJSONArray.Create).AddPair('producer','unknown').AddPair('consumer','unknown').AddPair('target_key','');
+   Owner:=nil;BestSize:=MaxInt;
+   for W in FDocument.GetValue<TJSONArray>('semantics.symbols') do
+    if MatchText(W.GetValue<string>('kind'),['routine','anonymous']) and (W.GetValue<string>('range.source')=Path) and (W.GetValue<Integer>('range.start')<=ANode.GetValue<Integer>('start',0)) and (W.GetValue<Integer>('range.end')>=ANode.GetValue<Integer>('end',0)) and (W.GetValue<Integer>('range.end')-W.GetValue<Integer>('range.start')<BestSize) then begin Owner:=W as TJSONObject;BestSize:=W.GetValue<Integer>('range.end')-W.GetValue<Integer>('range.start');end;
+   if Owner<>nil then begin
+    Row.RemovePair('target_key').Free;Row.AddPair('target_key',Owner.GetValue<string>('key'));
+    if ADirection='export' then Member:='producer' else Member:='consumer';
+    Row.RemovePair(Member).Free;Row.AddPair(Member,Owner.GetValue<string>('name')+' (enclosing captured routine; API binding/execution unverified)');
+   end;
+  end;
+begin
+ Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
+ Result.AddPair('qualification','Source format candidates and captured resource shape only. API spellings, extensions and enclosing routines do not prove runtime dispatch, an accepted schema, actual encoding or successful import/export. Scalar values and literal paths are omitted. Captured resource decoding is distinct from a file-transfer encoding contract. Dynamic paths, defaults, opaque resources, parser gaps and missing structure remain unknown. Record a named contract and review it against evidence. No target code or file-transfer API executes.');
+ Seen:=TDictionary<string,Boolean>.Create;
+ try
+  Files:=FDocument.GetValue<TJSONArray>('syntax.files');
+  for F in Files do begin
+   if Rows.Count>=10000 then begin if Result.GetValue('limit')=nil then Result.AddPair('limit','File-format inventory truncated at 10000 candidates.');Break;end;
+   FileRow:=F as TJSONObject;Path:=FileRow.GetValue<string>('path');Extension:=LowerCase(ExtractFileExt(Path));
+   if not FileRow.TryGetValue<TJSONArray>('ir.nodes',Nodes) then Continue;
+   if MatchText(Extension,['.json','.xml','.ini']) then begin
+    Node:=TJSONObject.Create;try Add(Path,'captured resource',Extension,'Captured source decoding: '+FileRow.GetValue<string>('encoding','unknown')+'; transfer encoding unknown',Node);finally Node.Free;end;
+    Shape:=Row.GetValue<TJSONArray>('schema');ShapeCount:=0;
+    for N in Nodes do if MatchText(N.GetValue<string>('kind'),['json_object','json_array','json_value','xml_element','xml_attribute','ini_section','ini_value']) then begin
+     Inc(ShapeCount);if ShapeCount>250 then Continue;Member:=N.GetValue<string>('name');
+     if (Length(Member)>128) or not TRegEx.IsMatch(Member,'^[A-Za-z0-9_./~:-]*$') then Member:='<nonidentifier member omitted>';
+     ValueType:=N.GetValue<string>('kind');Text:=N.GetValue<string>('value','');
+     if ValueType='json_value' then begin
+      if Text.StartsWith('"') then ValueType:='JSON string' else if Text='null' then ValueType:='JSON null' else if MatchText(Text,['true','false']) then ValueType:='JSON boolean' else ValueType:='JSON numeric candidate';
+     end;
+     Shape.AddElement(TJSONObject.Create.AddPair('member',Member).AddPair('shape',ValueType));
+    end;
+    Row.AddPair('shape_count',TJSONNumber.Create(ShapeCount));if ShapeCount>250 then Row.AddPair('shape_limit','Captured structure display truncated to first 250 members.');
+    Row.AddPair('structure_basis','Observed resource shape, not a required/optional schema contract. Scalar values omitted; missing/opaque structure remains unknown.');
+   end;
+   for N in Nodes do begin
+    Node:=N as TJSONObject;if Node.GetValue<string>('kind')<>'expression' then Continue;
+    Parent:=Node.GetValue<Integer>('parent',-1);if (Parent>=0) and (Parent<Nodes.Count) and (Nodes[Parent].GetValue<string>('kind')='expression') then Continue;
+    Text:=Node.GetValue<string>('value','');if (Text='') or (Length(Text)>16000) then Continue;
+    // IR expression text is bounded by the parser. Quoted literals are single tokens.
+    Tokens:=TRegEx.Matches(Text,'''(?:[^'']|'''')*''|[A-Za-z_][A-Za-z0-9_]*|[^\s]');
+    for I:=0 to Tokens.Count-2 do begin
+     API:=Tokens[I].Value;if not MatchText(API,['ReadAllText','ReadAllBytes','ReadAllLines','WriteAllText','WriteAllBytes','WriteAllLines','LoadFromFile','SaveToFile']) or (Tokens[I+1].Value<>'(') then Continue;
+     if (I=0) or (Tokens[I-1].Value<>'.') then Continue;
+     Direction:='import';if MatchText(API,['WriteAllText','WriteAllBytes','WriteAllLines','SaveToFile']) then Direction:='export';
+     Key:=Path+'|'+Node.GetValue('start').Value+'|'+IntToStr(I)+'|'+API;if Seen.ContainsKey(Key) then Continue;Seen.Add(Key,True);
+     Extension:='unknown; dynamic or unsupported path';J:=I+2;
+     if (J+1<Tokens.Count) and Tokens[J].Value.StartsWith('''') and MatchText(Tokens[J+1].Value,[',',')']) then begin
+      Extension:=LowerCase(ExtractFileExt(Tokens[J].Value.Trim([''''])));
+      if (Length(Extension)>16) or not TRegEx.IsMatch(Extension,'^\.[a-z0-9]+$') then Extension:='unknown; no supported filename extension';
+      Extension:=Extension+' (filename candidate; contents unverified)';
+     end;
+     Encoding:='unknown; default, custom receiver or unsupported encoding';Depth:=1;K:=J;
+     while (K<Tokens.Count) and (Depth>0) do begin
+      if Tokens[K].Value='(' then Inc(Depth) else if Tokens[K].Value=')' then Dec(Depth);
+      if (K+2<Tokens.Count) and SameText(Tokens[K].Value,'TEncoding') and (Tokens[K+1].Value='.') and MatchText(Tokens[K+2].Value,['UTF8','Unicode','BigEndianUnicode','ASCII','Default']) then Encoding:=Tokens[K+2].Value+' (explicit source argument candidate; runtime binding unverified)';
+      Inc(K);
+     end;
+     if MatchText(API,['ReadAllBytes','WriteAllBytes']) then Encoding:='binary byte API candidate; text encoding not established';
+     if Rows.Count>=10000 then begin if Result.GetValue('limit')=nil then Result.AddPair('limit','File-format inventory truncated at 10000 candidates.');Break;end;
+     Add(API,Direction,Extension,Encoding,Node,I);Row.AddPair('structure_basis','Transfer schema unknown; inspect the captured routine and record an explicit contract. Location is the enclosing IR expression.');
+    end;
+   end;
+  end;
+ except Seen.Free;Result.Free;raise;end;
+ Seen.Free;
+end;
+
+class function TDPHWorkspaceView.FileFormatContractTitle(ARow:TJSONObject):string;
+begin Result:='File format contract '+THashSHA2.GetHashString(ARow.GetValue<string>('id')+#0+ARow.GetValue<string>('source_hash'));end;
+class function TDPHWorkspaceView.DescribeFileFormat(ARow:TJSONObject):string;
+var V:TJSONValue;
+begin
+ Result:='FILE FORMAT EVIDENCE'+sLineBreak+ARow.GetValue<string>('name')+' | '+ARow.GetValue<string>('direction')+sLineBreak+
+  'Format: '+ARow.GetValue<string>('format')+sLineBreak+'Encoding: '+ARow.GetValue<string>('encoding')+sLineBreak+'Producer: '+ARow.GetValue<string>('producer')+sLineBreak+'Consumer: '+ARow.GetValue<string>('consumer')+sLineBreak+ARow.GetValue<string>('structure_basis','')+sLineBreak;
+ for V in ARow.GetValue<TJSONArray>('schema') do Result:=Result+V.GetValue<string>('member')+' : '+V.GetValue<string>('shape')+sLineBreak;
+ Result:=Result+ARow.GetValue<string>('shape_limit','')+sLineBreak+'Source: '+ARow.GetValue<string>('source')+' | line '+ARow.GetValue<TJSONObject>('range').GetValue('line').Value+sLineBreak+'SHA256 '+ARow.GetValue<string>('source_hash')+' | generation '+ARow.GetValue('generation_id').Value+sLineBreak;
+end;
+
 function TDPHWorkspaceView.ProjectMembers: TJSONArray;
 var Files,Nodes,Properties: TJSONArray; FileValue,NodeValue: TJSONValue;
     FileRow,Node,Member: TJSONObject; Path,Extension,Kind,Name: string;
@@ -472,3 +566,4 @@ begin
   Result:=Result+' | static evidence; runtime behavior unobserved';
 end;
 end.
+

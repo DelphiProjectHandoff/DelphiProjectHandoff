@@ -1,0 +1,91 @@
+{
+  "result": "PASS",
+  "requirement": "05.17",
+  "status": "implemented",
+  "checks": 57,
+  "regression_checks": 437,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.17",
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 94
+  },
+  "incomplete_requirement_records": 320,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 35,
+        "toc_entries": 60,
+        "new_chapter_pages": [
+          3,
+          26
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 32,
+        "toc_entries": 52,
+        "new_chapter_pages": [
+          3,
+          30
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 67 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\FileFormats_PreChange_20261012_174616",
+    "files": 6003,
+    "bytes": 2795824064,
+    "sha256_verified": true
+  },
+  "qualification": "Captured resource structure and file API/encoding candidates only. Observed structure is not a formal schema. Transfer encoding differs from source decoding. Dynamic paths, defaults, custom receivers, runtime binding and opaque or missing resources remain unknown. Scalar values and full transfer paths are omitted. Explicit expression, structure and row bounds apply. Named-author contracts capture human knowledge with review status and immutable history; drafting a contract does not verify its contents. Target applications and transfers are never executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "74cf89748b06e15b73637e74ea57f1162b7fd1b31ce48522783cb6ae9893a4d8",
+    "DPH.UI.Main.pas": "f1f248e67d51cc4b4047c684491bcf2c275fa2abc5e785139ca7e4dc25eb20e9",
+    "DPH.UI.Main.fmx": "03c3afd6487178ea008b05f78673fc0ca83f2d12fc7304efb815299c16e5beb6",
+    "tests/DPH.Tests.FileFormats.dpr": "defafa8e0dba7ab450da053d6b8f2dcbcd891820a9fc8bc47d7951a372116f8f",
+    "tools/build-file-formats.cmd": "c6113f4d4901ec0c609ea2b6f111d1143035893d903a886207ad2d627bd4ef02",
+    "docs/phase1-file-formats-validation.json": "499af5d079ec683164de495dcc16f6a1ec2a850f330e7fab65c93598c02eedb4",
+    "docs/phase1-file-formats-validation.log": "120dec6b82c5f1af090da2e1ddc0a6f6331e3506ae79c5c7a54ee2cf024dda41",
+    "docs/guides/File_Formats_Run_and_Test.txt": "d2a5f3c1713a90b437772192c69d29b3ef1eed0aef6289662190fc4d4aff7c4b",
+    "tools/build-guides.py": "02e9f544095cef8426fb4cac8ed1f9e8999338f6286c8ba4939fd2a6e5da2de3",
+    "README.md": "3522450af3829c8e8a6c04f31a2e19e5d4a8d39b08848f368e47a68c0b7a53f8",
+    "help/index.html": "7cd01ad8ef65b09ab3fe9db7336b96c80ecda191389b19cd0df9f5d437ac9333",
+    "docs/guide-source-validation.json": "53106a9569ce126525392ca588a87729d3302904d90053c40272d59f1b10a6ad",
+    "docs/guides/DPH_User_Guide.docx": "717daa9f3ec1c497b522bb66e9ddc8b8270667a1e117d9fcd42e584d659a1d47",
+    "docs/guides/DPH_Engineering_Guide.docx": "05308c2e418e48cf39637a1c77068b6099c5fb96195ba5e85046a63a74c9bf0a",
+    "docs/pdf/DPH_User_Guide.pdf": "54a24047e09587890e9270e8f0b7a46c3082544bea526cbb55d75251838c54f8",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "10cb4c902d4656c828e858760717d53a62f30335f4c6ae94e132610803d78c5a",
+    "docs/Phase1_File_Formats_Completion.txt": "73c0125ca98c8597d36b4169e78ae4199a5b272756a438b4b0d8f32b589bc6d3",
+    "docs/Phase1_Requirements_Traceability.json": "b55845ccf08a5b3c85de602240caed87b17c45810c46f86538e14b41a6ef7869",
+    "docs/Phase1_Implementation_Backlog.csv": "65349c7030655781f2e6da9e46f0bec9938f71af083274b4ca47727b16a8d9f6",
+    "docs/Implementation_Completion_Tracker.txt": "953b236ca809e0e6c555a967340551c8b017d3e73ef8dbc58959c83d88434daf",
+    "docs/phase1-file-formats-build.log": "4f6f499a45dbfa671a0a1f20b8f91cff992e9b60a9c9c22709e6780131444f42",
+    "docs/phase1-file-formats-compact.png": "97752fcad2a48405992fbf51de78e4617f22ba92844fc27de7e321e53f935221",
+    "docs/phase1-file-formats-history-regression-compact.png": "f5be4a03cae96d53454c7fd5cc8392159e6b7e1ae4f3504e6d91a1990688cb5e",
+    "docs/phase1-file-formats-history-regression-validation.json": "9ea2b217bc0189962a9e729aeeb4980cc2fb77dd23f88649b7432f937a65544d",
+    "docs/phase1-file-formats-history-regression-workspace.png": "cdeebc879caff443a920d6e88b860d74142a4f05178729cc058b376e1e06ac09",
+    "docs/phase1-file-formats-history-regression.log": "53b3563f00475301e791092778c6c6d2e5112e238a16276bf7288b85cb6a2ce6",
+    "docs/phase1-file-formats-knowledge-regression-validation.json": "655f159b05abfb094cae857608725c1965beed684194b7fcdc273d5fa6ce81a8",
+    "docs/phase1-file-formats-knowledge-regression.log": "e9edad1e05f720355da330d3b6f17e15fbfd91a24dfd6970a661bd6b6d553d82",
+    "docs/phase1-file-formats-lineage-regression-compact.png": "05663944e033dad3752279ba8309d0f0d592d965fd1c5c9a6aaf8a270fa4f0e0",
+    "docs/phase1-file-formats-lineage-regression-diagram.png": "0ecc24161448e119fc4beef10b07ce54483ba310bd8310a31dec9efccd8e4105",
+    "docs/phase1-file-formats-lineage-regression-validation.json": "2a56323386a7667597aabceca83a0324135642c3904aabf9a9ea572075285daa",
+    "docs/phase1-file-formats-lineage-regression-workspace.png": "e2dc2b690f0938b0df65c9daaaeb25501eebd1aa086006a89efa5ee0c9d84523",
+    "docs/phase1-file-formats-lineage-regression.log": "715744ff45bd7fe41e5672e69f172b525f4620a5d015f9168cc65bf30829cbb7",
+    "docs/phase1-file-formats-publishing-regression-canonical-fixture.json": "a64c88f1a946451383c3756e2c19a0865bf2d6837873598fc5a7d8afc8048cc1",
+    "docs/phase1-file-formats-publishing-regression-validation.json": "6f334db486ad3257411d2bf3c088198c33cb475a7f5117195de4d98d490766b6",
+    "docs/phase1-file-formats-publishing-regression.log": "a797d9ef3270ebc54d2a173e43660dde813498aade6668748ae22bc55ee50e7e",
+    "docs/phase1-file-formats-workspace.png": "f460c1a946df8436dde12287f0b59267a982f194723188a6952268234debb2bd"
+  }
+}

@@ -1,0 +1,22 @@
+DPH REQUIREMENT 05.17 COMPLETION: IMPORT/EXPORT FILE FORMATS
+Last changed: 12 October 2026
+
+Captured resource structures, transfer API/encoding candidates and producing/
+consuming routine links now support guarded navigation and attributed format
+contracts. Controls remain IDE-editable; no helper unit or schema migration.
+
+Validation PASS: 57 focused + 437 regression = 494 checks.
+Actual application and FMX baseline PASS. Normal and compact renders reviewed.
+All 67 final guide pages visually reviewed; 58 source hashes and 112 TOC
+destinations verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/File_Formats_Run_and_Test.txt
+
+Captured resource structure and file API/encoding candidates only. Observed structure is not a formal schema. Transfer encoding differs from source decoding. Dynamic paths, defaults, custom receivers, runtime binding and opaque or missing resources remain unknown. Scalar values and full transfer paths are omitted. Explicit expression, structure and row bounds apply. Named-author contracts capture human knowledge with review status and immutable history; drafting a contract does not verify its contents. Target applications and transfers are never executed.
+
+Pre-change backup: H:\DPH Backups\FileFormats_PreChange_20261012_174616
+6003 files, 2795824064 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.17 promoted; all 533 original requirement IDs and texts preserved.
+195 implemented; 18 implemented_manual_capture; 226 partial; 94 missing.
+320 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 05.18 Data retention and archival requirements.
