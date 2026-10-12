@@ -850,6 +850,16 @@ begin
           try if PriorRecord.GetValue<string>('policy_id','')<>StructuredValue.GetValue<string>('policy_id','') then raise EDPHStorage.Create('Retention policy identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''data_retention'' AND json_extract(r.structured_json,''$.policy_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('policy_id')])<>0 then raise EDPHStorage.Create('This retention policy identity already exists; refresh and edit its current revision');
+      end else if StructuredValue.GetValue<string>('record_type','')='target_recovery' then begin
+        TDPHWorkspaceView.ValidateTargetRecoveryRecord(StructuredValue as TJSONObject);
+        if SameText(ATitle.Trim,'Recovery plan: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive recovery plan title before saving');
+        if (AKind<>'business_rule') or (DocumentKind<>'maintenance') or (Audience<>'maintainer') or (AEntityKey<>'') then raise EDPHStorage.Create('Recovery plan must preserve its project scope, business rule kind and maintenance audience');
+        if not ABody.StartsWith('TARGET BACKUP AND RESTORATION REQUIREMENTS'+sLineBreak) then raise EDPHStorage.Create('Preserve the target backup and restoration policy heading; edit the requirements below it');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('plan_id','')<>StructuredValue.GetValue<string>('plan_id','') then raise EDPHStorage.Create('Recovery plan identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''target_recovery'' AND json_extract(r.structured_json,''$.plan_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('plan_id')])<>0 then raise EDPHStorage.Create('This recovery plan identity already exists; refresh and edit its current revision');
       end else if StructuredValue.GetValue<string>('record_type','')='data_quality' then begin
         TDPHWorkspaceView.ValidateDataQualityRecord(StructuredValue as TJSONObject);
         if SameText(ATitle.Trim,'Quality check: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive data quality rule title before saving');

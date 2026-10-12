@@ -180,6 +180,14 @@ type
     DataRetentionFirst,DataRetentionNext,DataRetentionNew,DataRetentionOpen,DataRetentionLinks:TButton;
     DataRetentionList:TListBox;
     DataRetentionMemo:TMemo;
+    TargetRecoveryTab:TTabItem;
+    TargetRecoveryPurpose,TargetRecoveryStatus,TargetRecoveryEvidenceLabel:TLabel;
+    TargetRecoveryToolbar:THorzScrollBox;
+    TargetRecoveryFilter:TEdit;
+    TargetRecoveryState:TComboBox;
+    TargetRecoveryFirst,TargetRecoveryNext,TargetRecoveryNew,TargetRecoveryOpen,TargetRecoveryLinks:TButton;
+    TargetRecoveryList:TListBox;
+    TargetRecoveryMemo:TMemo;
     DataQualityTab:TTabItem;
     DataQualityPurpose,DataQualityStatus,DataQualityEvidenceLabel:TLabel;
     DataQualityToolbar:THorzScrollBox;
@@ -413,6 +421,11 @@ type
     procedure DataRetentionNewClick(Sender:TObject);
     procedure DataRetentionOpenClick(Sender:TObject);
     procedure DataQualityImportClick(Sender:TObject);
+    procedure TargetRecoveryFilterChange(Sender:TObject);
+    procedure TargetRecoverySelectionChange(Sender:TObject);
+    procedure TargetRecoveryNewClick(Sender:TObject);
+    procedure TargetRecoveryOpenClick(Sender:TObject);
+
     procedure DataQualityFilterChange(Sender:TObject);
     procedure DataQualitySelectionChange(Sender:TObject);
     procedure DataQualityNewClick(Sender:TObject);
@@ -535,6 +548,8 @@ type
     FFileFormats:TJSONObject;
     FDataQualityRows:TList<TJSONObject>;
     FDataQualityOffset:Integer;
+    FTargetRecoveryRows:TList<TJSONObject>;
+    FTargetRecoveryOffset:Integer;
     FDataRetentionRows:TList<TJSONObject>;
     FDataRetentionOffset:Integer;
     FFileFormatRows:TList<TJSONObject>;
@@ -622,7 +637,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -649,7 +664,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  DataRetentionFilterChange(nil);DataQualityFilterChange(nil);
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -673,7 +688,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FDataQualityRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
+  FDataQualityRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -1005,7 +1020,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  DataRetentionFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -2338,6 +2353,69 @@ begin
  end;
 end;
 
+procedure TDPHMainForm.TargetRecoveryFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FTargetRecoveryRows=nil then Exit;
+ if Sender=TargetRecoveryNext then Inc(FTargetRecoveryOffset,250) else FTargetRecoveryOffset:=0;
+ FTargetRecoveryRows.Clear;TargetRecoveryList.Items.Clear;TargetRecoveryNext.Enabled:=False;TargetRecoveryNew.Enabled:=FView<>nil;
+ TargetRecoverySelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin TargetRecoveryStatus.Text:='Open a captured project, then New plan to record its target-data requirements.';Exit;end;
+ Query:=TargetRecoveryFilter.Text.Trim;StateFilter:='';if TargetRecoveryState.ItemIndex>0 then StateFilter:=TargetRecoveryState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsTargetRecoveryPlan(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeTargetRecoveryPlan(Row),Query) then Continue;
+  if (Count>=FTargetRecoveryOffset) and (FTargetRecoveryRows.Count<250) then begin
+   FTargetRecoveryRows.Add(Row);TargetRecoveryList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ TargetRecoveryNext.Enabled:=Count>FTargetRecoveryOffset+FTargetRecoveryRows.Count;
+ TargetRecoveryStatus.Text:=IntToStr(Count)+' saved plans match; '+IntToStr(FTargetRecoveryRows.Count)+' shown from '+IntToStr(FTargetRecoveryOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if TargetRecoveryList.Count>0 then TargetRecoveryList.ItemIndex:=0;
+ TargetRecoverySelectionChange(nil);
+end;
+procedure TDPHMainForm.TargetRecoverySelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FTargetRecoveryRows<>nil) and (TargetRecoveryList.ItemIndex>=0) and (TargetRecoveryList.ItemIndex<FTargetRecoveryRows.Count) then Row:=FTargetRecoveryRows[TargetRecoveryList.ItemIndex];
+ TargetRecoveryOpen.Enabled:=Row<>nil;TargetRecoveryLinks.Enabled:=Row<>nil;
+ TargetRecoveryMemo.Text:=TDPHWorkspaceView.DescribeTargetRecoveryPlan(Row);
+end;
+procedure TDPHMainForm.TargetRecoveryNewClick(Sender:TObject);
+var Policy:TJSONObject;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before starting a recovery plan.';Exit;end;
+ NewKnowledgeClick(nil);FBinding:=True;
+ try
+  FKnowledgeLink:='';KnowledgeTitleEdit.Text:='Recovery plan: enter descriptive data scope';
+  Policy:=TJSONObject.Create.AddPair('record_type','target_recovery').AddPair('plan_id',TGUID.NewGuid.ToString);
+  try FKnowledgeStructuredJSON:=Policy.ToJSON;finally Policy.Free;end;
+  KnowledgeBodyMemo.Text:=TDPHWorkspaceView.NewTargetRecoveryPlan;
+  KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');
+  KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');
+  KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+  KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+ finally FBinding:=False;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=KnowledgeTab;
+ StatusLabel.Text:='Enter a descriptive title and named author. Complete the plan fields, preserve the first heading, add implementation links, then Save. Review separately.';
+end;
+procedure TDPHMainForm.TargetRecoveryOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another plan.';Exit;end;
+ if (TargetRecoveryList.ItemIndex<0) or (TargetRecoveryList.ItemIndex>=FTargetRecoveryRows.Count) then Exit;
+ Row:=FTargetRecoveryRows[TargetRecoveryList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=TargetRecoveryLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
 procedure TDPHMainForm.DataQualityFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
 begin
@@ -3020,7 +3098,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -3049,7 +3127,7 @@ begin
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
   FKnowledgeQuestionJSON:=Row.GetValue<string>('question_json','');
   FKnowledgeStructuredJSON:=Row.GetValue<string>('structured_json','{}');
-  KnowledgeBodyMemo.ReadOnly:=(FKnowledgeStructuredJSON<>'{}') and not TDPHWorkspaceView.IsDataRetentionPolicy(Row) and not TDPHWorkspaceView.IsDataQualityRule(Row);
+  KnowledgeBodyMemo.ReadOnly:=(FKnowledgeStructuredJSON<>'{}') and not TDPHWorkspaceView.IsDataRetentionPolicy(Row) and not TDPHWorkspaceView.IsDataQualityRule(Row) and not TDPHWorkspaceView.IsTargetRecoveryPlan(Row);
   KnowledgeTitleEdit.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
   KnowledgeKindCombo.Enabled:=FKnowledgeStructuredJSON='{}';
   KnowledgeDocumentCombo.Enabled:=FKnowledgeStructuredJSON='{}'; KnowledgeAudienceCombo.Enabled:=FKnowledgeStructuredJSON='{}';

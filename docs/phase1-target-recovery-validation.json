@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 68,
+    "qualification": "Attributed target backup/restore requirements and recovery-test claims with source links; target jobs and reported success remain unverified."
+}

@@ -1,0 +1,47 @@
+DPH TARGET BACKUP AND RESTORATION REQUIREMENTS
+Last changed 12 October 2026
+
+1. In File Explorer open C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+   and double-click DelphiProjectHandoff.exe.
+2. Click Attach project, select the application's .dproj/.dpr/.groupproj and
+   save the proposed .dphdb. Or click Open cache and select its existing database.
+3. Choose Target backup and restore in the upper-right page selector.
+4. Click New plan. In Knowledge enter a descriptive title and your author name.
+   Preserve the first heading. Complete each requirement prompt or explicitly
+   state Unknown and the maintainer responsible for resolving it.
+5. Record data scope; RPO (maximum acceptable data loss) and RTO (maximum recovery
+   duration) with units; backup type, consistency and schedule; destinations,
+   retention/offsite copies; permissions/encryption/key responsibility; restore
+   prerequisites/dependency order; restoration/rollback steps; operators/owner.
+6. Record recovery-test date/environment/operator/backup identity or hash,
+   measured time/recovered point, acceptance checks, failures and corrective
+   action, reviewer and evidence. Describe observations as attributed claims.
+7. Choose Knowledge links. Choose entity, type the implementing routine name,
+   click Find targets, select its [semantic_routine] result, choose depends_on
+   and click Add link. For a saved procedure or test-evidence record, choose
+   section, search its title, select the exact revision, choose cites and Add link.
+   Narrow the search when needed; at most 200 candidates are returned.
+8. Return to Knowledge and click Save. Body and links are unsaved until Save.
+   Named review is a separate action. Edits reopen review and retain history.
+9. Return to Target backup and restore. Select the plan to read the labeled memo.
+   Open plan loads the saved record; Implementation links opens its exact links.
+   Filter by state or plan text. Use First page/Next page beyond 250 plans.
+   Scroll the command bar horizontally in a narrow window; scroll the memo
+   vertically for complete evidence. Save or discard drafts before switching.
+10. Publish with maintenance or all audience to include the attributed plan
+    subject to export exclusions and redaction. Review published content.
+
+CONTROLLED TESTS AND PRACTICE
+11. Open an elevated PowerShell window and run these commands separately:
+    Set-Location -LiteralPath 'C:\New Delphi Projects\Delphi Project Handoff'
+    cmd /c tools\build-target-recovery.cmd
+    cmd /c tools\build-wp0.cmd
+    A FAIL or compiler error means the corresponding validation failed.
+12. For practice attach the controlled fixture created by the focused suite:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\target-recovery-validation\source\Recovery.dpr
+    Create a practice plan and link Main.RestoreOrders [semantic_routine].
+    This empty fixture routine does not actually restore data.
+
+DPH never executes selected target backups, restores, SQL or jobs. Requirements
+and test results are attributed human evidence. Review does not prove successful
+recovery. DPH's own portable database backup remains separate on Database tools.

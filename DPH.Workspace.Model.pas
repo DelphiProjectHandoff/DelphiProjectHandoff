@@ -29,6 +29,10 @@ type
     class procedure ValidateDataRetentionRecord(ARecord:TJSONObject);static;
     class function IsDataRetentionPolicy(ARow:TJSONObject):Boolean;static;
     class function DescribeDataRetentionPolicy(ARow:TJSONObject):string;static;
+    class function NewTargetRecoveryPlan:string;static;
+    class procedure ValidateTargetRecoveryRecord(ARecord:TJSONObject);static;
+    class function IsTargetRecoveryPlan(ARow:TJSONObject):Boolean;static;
+    class function DescribeTargetRecoveryPlan(ARow:TJSONObject):string;static;
     class function NewDataQualityRule:string;static;
     class procedure ValidateDataQualityRecord(ARecord:TJSONObject);static;
     class function IsDataQualityRule(ARow:TJSONObject):Boolean;static;
@@ -97,6 +101,63 @@ begin
  if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
  Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
   'Open policy to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
+end;
+
+class function TDPHWorkspaceView.NewTargetRecoveryPlan:string;
+begin
+ Result:='TARGET BACKUP AND RESTORATION REQUIREMENTS'+sLineBreak+
+  'Attributed requirements for the selected application. Unknown remains unresolved. Do not enter credentials or customer data.'+sLineBreak+sLineBreak+
+  'Plan name and version: Unknown'+sLineBreak+
+  'Data categories, tables/files and business scope: Unknown'+sLineBreak+
+  'Recovery point objective (RPO), units and maximum acceptable data loss: Unknown'+sLineBreak+
+  'Recovery time objective (RTO), units and restoration priority: Unknown'+sLineBreak+
+  'Backup type, frequency, consistency and implementing job/procedure: Unknown'+sLineBreak+
+  'Backup destination, format, retention and offsite copies: Unknown'+sLineBreak+
+  'Encryption, access permissions and key recovery responsibility: Unknown'+sLineBreak+
+  'Restore prerequisites, compatible versions and dependency order: Unknown'+sLineBreak+
+  'Restoration steps, implementing routines and rollback/abort criteria: Unknown'+sLineBreak+
+  'Plan owner, backup operator, restore operator and approval responsibility: Unknown'+sLineBreak+
+  'Recovery test date, environment, operator and backup identity/hash: Unknown'+sLineBreak+
+  'Observed recovery time, recovered point and acceptance checks: Unknown'+sLineBreak+
+  'Test result, failures, corrective action, reviewer and evidence: Unknown'+sLineBreak+
+  'Failure handling, monitoring and audit trail: Unknown'+sLineBreak+
+  'Remaining unknowns and responsible maintainer: Unknown'+sLineBreak+
+  sLineBreak+'Use Knowledge links to cite captured backup/restore routines and exact operating procedure or recovery-test evidence revisions. A written routine name alone is not a resolved link.'+sLineBreak+
+  'Qualification: DPH portable database backup is separate. DPH never runs a target backup, restoration, SQL statement or job. Recovery test measurements are contributor claims; named review does not establish successful recovery.';
+end;
+class function TDPHWorkspaceView.IsTargetRecoveryPlan(ARow:TJSONObject):Boolean;
+var RecordValue:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try
+  if not (RecordValue is TJSONObject) then Exit;
+  Result:=(ARow.GetValue<string>('kind','')='business_rule') and (RecordValue.GetValue<string>('record_type','')='target_recovery');
+ finally RecordValue.Free;end;
+end;
+class procedure TDPHWorkspaceView.ValidateTargetRecoveryRecord(ARecord:TJSONObject);
+var ID:TGUID;Pair:TJSONPair;
+begin
+ if (ARecord=nil) or (ARecord.GetValue<string>('record_type','')<>'target_recovery') then raise EArgumentException.Create('Expected a target backup and restoration policy');
+ if ARecord.Count<>2 then raise EArgumentException.Create('Recovery plan requires only its record type and stable plan identity');
+ for Pair in ARecord do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Recovery metadata must be text');
+ if Length(ARecord.GetValue<string>('plan_id',''))<>38 then raise EArgumentException.Create('Invalid recovery plan identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('plan_id'));except raise EArgumentException.Create('Invalid recovery plan identity');end;
+end;
+class function TDPHWorkspaceView.DescribeTargetRecoveryPlan(ARow:TJSONObject):string;
+var Links,History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved target recovery plan selected. New plan prepares an unsaved Knowledge draft. Empty results do not prove that the application has no recovery requirements.';
+ if not IsTargetRecoveryPlan(ARow) then Exit;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+
+  sLineBreak+'Review state: '+ARow.GetValue<string>('state','unknown')+' | revision '+ARow.GetValue<string>('revision','unknown')+
+  sLineBreak+'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do
+  if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then
+   Result:=Result+'Current revision author: '+Value.GetValue<string>('editor','unknown')+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
+ Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
+  'Open plan to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
 end;
 
 class function TDPHWorkspaceView.NewDataQualityRule:string;

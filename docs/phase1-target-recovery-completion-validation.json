@@ -1,0 +1,88 @@
+{
+  "result": "PASS",
+  "requirement": "05.20",
+  "status": "implemented_manual_capture",
+  "checks": 68,
+  "regression_checks": 264,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.20",
+  "counts": {
+    "implemented_manual_capture": 21,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 91
+  },
+  "incomplete_requirement_records": 317,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 37,
+        "toc_entries": 63,
+        "new_chapter_pages": [
+          3,
+          28
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 34,
+        "toc_entries": 55,
+        "new_chapter_pages": [
+          3,
+          32
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 71 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\TargetRecovery_PreChange_20261012_190759",
+    "files": 8307,
+    "bytes": 3040438885,
+    "sha256_verified": true
+  },
+  "qualification": "Attributed manual capture of selected-application backup and restoration requirements, responsibilities and recovery-test evidence. RPO, RTO, backup identities, measured times and outcomes remain contributor claims; DPH does not run backups, restore the target or authenticate a successful recovery. Stable typed GUIDs, exact source/procedure/evidence-revision links, named review and immutable history preserve provenance. Portable DPH database backup is a separate workflow. Existing 64-link, 200-candidate and 250-row paging bounds apply.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "0071616ba56c64eb56e19f04a535cd0cb70d4e5e4b87ce2a9885b91ffde3dd3c",
+    "DPH.Storage.Database.pas": "da373dcd243a8eebe8d12c50575abb45cf72144360b3679451e0a8f877480915",
+    "DPH.UI.Main.pas": "3b861f396f8335c5a2fded6e1c15886ea6df4e59bcfc7aba34430e169a77993b",
+    "DPH.UI.Main.fmx": "a3d40acc4c45734b68a66d0bc255f66a93298ba1843b8aa98eaa1bda4f2ef78e",
+    "tests/DPH.Tests.TargetRecovery.dpr": "fa34911356b9ee4ce0a39643887b5398edd0068dffa0b633d7d7cd84491b55f9",
+    "tools/build-target-recovery.cmd": "64a2be891acc62e740a0a7195187f9e5b1569306d122efe32364a216b6bf2a0c",
+    "tests/DPH.Tests.DataQuality.dpr": "c1f6560ebad87d66e54b9a6b86344508e4b405c7a06dc93beb97af16ae04f7ac",
+    "docs/phase1-target-recovery-validation.json": "dd5abdedbf9595cc97680487a04168c77ea8402da2b934e419d42988d9a0f0c2",
+    "docs/phase1-target-recovery-validation.log": "1fd85830977de89007766434e9c21bd7eafa50315eb155cabfd69785122e749a",
+    "docs/guides/Target_Recovery_Run_and_Test.txt": "a1bf035fffb676a3b34921f5027da23f298c869bb484cacb00ced117833fd70c",
+    "tools/build-guides.py": "2bee93f403be537539b65dd3202bd93cff44d9cf118ad5d2592ab18a6a2d33e5",
+    "README.md": "3f1a1352c2e2a1728cbc03df338c9afc0fb8ddc5d05aa8ae271a0d354ada553b",
+    "help/index.html": "7f1fc77a2838f4a165b63bafae730312a6d5c3616717004ea0d3166495bd3e1d",
+    "docs/guide-source-validation.json": "454f5b972b436abde5134fbbe644c2e2a1df212f852bd9190bc4c0cd899c6b68",
+    "docs/guides/DPH_User_Guide.docx": "31b49a750ccb8d00778d9baee03cf6230b890f0a2ad00f275ae0d12cf0acd0cc",
+    "docs/guides/DPH_Engineering_Guide.docx": "c67fa72d0912fee87d901a607e3fe444456a3daf4b11341c7648efe94c5b6b0b",
+    "docs/pdf/DPH_User_Guide.pdf": "4e26763302f6144af9e21eb18a72e02513f6b8116f03fc35adad4df6bbc29663",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "c48a51e2f553526ae222df2d3d7e992b8e204044f5a5ec29958adf364846281a",
+    "docs/Phase1_Target_Recovery_Completion.txt": "874eec80d399279f01356a0da5442ed8d4755a2a6fc5fcde93a51d24f9b39e80",
+    "docs/Phase1_Requirements_Traceability.json": "fa1dc62f420f27302988115b942e171a7e73679d0657f0ec23662dea5d4a56b4",
+    "docs/Phase1_Implementation_Backlog.csv": "ba7ca5150429631994b2a538e3e57085b9723f78f62a0c0aa6abb7c68f38412c",
+    "docs/Implementation_Completion_Tracker.txt": "ccf57e98e7630bfd617e8d92a471d2a4880441a5dffe4e85a95902a73816c70b",
+    "docs/phase1-target-recovery-build.log": "a08ae0f8ab1050abc334e8e9381e51c64d106fb3d718c09092269281f54131c3",
+    "docs/phase1-target-recovery-compact.png": "010998360be346c2bb0d206fc00918f0e368964cee49bb111b77797c967028a7",
+    "docs/phase1-target-recovery-knowledge-regression-validation.json": "fad9b46a3b5908160e8aa0d6e20ad0e4444d53920103d6b79f4b6e46783d928e",
+    "docs/phase1-target-recovery-knowledge-regression.log": "9dacdfbf33edd3b4ace812cd655042798ccab4eb26a3d6f36246a3313583c904",
+    "docs/phase1-target-recovery-publishing-regression-canonical-fixture.json": "b949507a2317b43802f0c297c5666d13ac0fe3edbff7deded8ad86ae2ae83fa5",
+    "docs/phase1-target-recovery-publishing-regression-validation.json": "dd006a2fcee49c13ef87a45a2819a12a5f68f6a0c8813d55c02e5ffe43d9a023",
+    "docs/phase1-target-recovery-publishing-regression.log": "bfdc1a342a0ed2a8653b8d67f224c5992abb07de45aacceaa26cbf202cdd7b7d",
+    "docs/phase1-target-recovery-quality-regression-compact.png": "e7f32fb91c862e0fe214be1cf83f33e131f766451fa4258dc41c71e1bbcc2983",
+    "docs/phase1-target-recovery-quality-regression-validation.json": "87cf521f17afab91853a6ef1b7ea4056e762a105e30184cbcb6336472bb5b763",
+    "docs/phase1-target-recovery-quality-regression-workspace.png": "fc4941dd8ffb0889362e97fd53b4543535279e46f1eefd5c0f9736d67c261bf6",
+    "docs/phase1-target-recovery-quality-regression.log": "35ad402f3dba422685d0e090f5d402cae73c4a839540a3d28fdf6e78e7c06b7c",
+    "docs/phase1-target-recovery-workspace.png": "ea3758dda5ecbb389cdf8e073f95ebc6ce9bea44282c07d9ad1e13772b406c79"
+  }
+}

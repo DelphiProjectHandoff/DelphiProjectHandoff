@@ -110,8 +110,8 @@ begin
  Denied:=False;try Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'result.txt'),'Reporter','');except Denied:=True;end;Check(Denied,'Missing report context rejected');
  TFile.WriteAllBytes(TPath.Combine(Work,'bad.txt'),TBytes.Create($C3,$28));
  Denied:=False;try Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'bad.txt'),'Reporter','Test environment');except Denied:=True;end;Check(Denied,'Invalid UTF8 check report rejected');
- TFile.WriteAllText(TPath.Combine(Work,'nul.txt'),'a'+#0+'b',TEncoding.UTF8);
- Denied:=False;try Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'nul.txt'),'Reporter','Test environment');except Denied:=True;end;Check(Denied,'NUL check report rejected');
+ TFile.WriteAllText(TPath.Combine(Work,'embedded-nul.txt'),'a'+#0+'b',TEncoding.UTF8);
+ Denied:=False;try Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'embedded-nul.txt'),'Reporter','Test environment');except Denied:=True;end;Check(Denied,'NUL check report rejected');
  TFile.WriteAllText(TPath.Combine(Work,'large.txt'),StringOfChar('x',32769),TEncoding.UTF8);
  Denied:=False;try Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'large.txt'),'Reporter','Test environment');except Denied:=True;end;Check(Denied,'Oversized report rejected');
  ProcedureID:=Store.ImportDataQualityReport(Generation,TPath.Combine(Work,'result.txt'),'Named reporter','Order identifiers, fixture environment, measured time unknown');

@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target retention 05.19 implemented as attributed manual capture; 318 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target backup and restoration 05.20 implemented as attributed manual capture; 317 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2517,15 +2517,30 @@
       "id": "05.20",
       "domain": "DPH-05",
       "requirement": "Backup and restoration requirements",
-      "implementation": "missing",
+      "implementation": "implemented_manual_capture",
       "evidence": [
+        "DPH.Workspace.Model.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "tests/DPH.Tests.TargetRecovery.dpr",
+        "tools/build-target-recovery.cmd",
+        "tests/DPH.Tests.DataQuality.dpr",
+        "docs/phase1-target-recovery-validation.json",
+        "docs/phase1-target-recovery-validation.log",
+        "docs/guides/Target_Recovery_Run_and_Test.txt"
       ],
-      "limitation": "Add target backup/restore requirements, responsibilities and attributed recovery-test evidence.",
+      "limitation": "Attributed manual capture of selected-application backup and restoration requirements, responsibilities and recovery-test evidence. RPO, RTO, backup identities, measured times and outcomes remain contributor claims; DPH does not run backups, restore the target or authenticate a successful recovery. Stable typed GUIDs, exact source/procedure/evidence-revision links, named review and immutable history preserve provenance. Portable DPH database backup is a separate workflow. Existing 64-link, 200-candidate and 250-row paging bounds apply.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native target backup and restore register supports named plans with data scope, RPO/RTO, schedules, destination/retention/security, restore prerequisites/steps, responsibilities and attributed recovery tests. Typed identities, exact links, review/history, filters and paging persist through reopening and canonical publication.",
+        "remaining_work": "",
+        "purpose": "Backup and restoration requirements",
+        "evidence_group": "knowledge",
+        "verification": "68 focused plus 264 regression checks pass; application/FMX pass. All 71 final guide pages visually reviewed; 58 source hashes and 118 TOC destinations verified. Recovery measurements and outcomes remain explicitly unverified contributor claims."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "DPH database backup does not document the selected application's backup requirements.",
@@ -2533,6 +2548,12 @@
         "purpose": "Backup and restoration requirements",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Target backup and restoration",
+        "validation": "docs/phase1-target-recovery-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12870,23 +12891,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Target data quality",
+    "completed_batch": "Target backup and restoration",
     "completed_requirement_ids": [
-      "05.19"
+      "05.20"
     ],
     "counts": {
-      "implemented_manual_capture": 20,
+      "implemented_manual_capture": 21,
       "partial": 226,
       "implemented": 195,
-      "missing": 92
+      "missing": 91
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 318,
-    "completion_record": "docs/Phase1_Data_Quality_Completion.txt",
+    "incomplete_requirement_records": 317,
+    "completion_record": "docs/Phase1_Target_Recovery_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.20",
-      "title": "Backup and restoration requirements",
-      "scope": "Add target backup/restore requirements, responsibilities and attributed recovery-test evidence."
+      "requirement": "06.01",
+      "title": "Business-process inventory",
+      "scope": "Add named selected-project business processes with inputs, outputs, owners and source links."
     }
   }
 }

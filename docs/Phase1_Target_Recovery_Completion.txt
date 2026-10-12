@@ -1,0 +1,22 @@
+DPH REQUIREMENT 05.20 COMPLETION: TARGET BACKUP AND RESTORATION
+Last changed: 12 October 2026
+
+Native attributed recovery plans support stable identities, named responsibilities,
+RPO/RTO, backup and restore procedures and recovery-test evidence.
+Controls remain IDE-editable; no helper unit or schema migration.
+
+Validation PASS: 68 focused + 264 regression = 332 checks.
+Actual application and FMX baseline PASS. Normal/compact renders reviewed.
+All 71 final guide pages visually reviewed; 58 source hashes and 118 TOC
+destinations verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/Target_Recovery_Run_and_Test.txt
+
+Attributed manual capture of selected-application backup and restoration requirements, responsibilities and recovery-test evidence. RPO, RTO, backup identities, measured times and outcomes remain contributor claims; DPH does not run backups, restore the target or authenticate a successful recovery. Stable typed GUIDs, exact source/procedure/evidence-revision links, named review and immutable history preserve provenance. Portable DPH database backup is a separate workflow. Existing 64-link, 200-candidate and 250-row paging bounds apply.
+
+Pre-change backup: H:\DPH Backups\TargetRecovery_PreChange_20261012_190759
+8307 files, 3040438885 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.20 promoted; all 533 original IDs and texts preserved.
+195 implemented; 21 implemented_manual_capture; 226 partial; 91 missing.
+317 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.01 Business-process inventory.
