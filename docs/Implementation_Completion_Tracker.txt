@@ -1,7 +1,15 @@
 DPH implementation completion tracker
 Started 11 October 2026. Owner authorized implementation of the full audited list.
 This file records actual work; it does not supersede the original specification.
-D: backups remain suspended. Git and both GitHub remotes remain enabled.
+Development backups resumed on H: (USB; allow at least 60 seconds to wake).
+Git and both GitHub remotes remain enabled.
+The complete Phase 1 reconciliation is docs/Phase1_Reconciliation_Report.txt.
+Current item-level implementation work is in Phase1_Requirements_Traceability.json
+and Phase1_Implementation_Backlog.csv; later updates do not rewrite audit history.
+Business glossary completed (06.12, 12.09): typed fields, native editor/list,
+revisions, named review, source links, search and canonical publication.
+Focused suite: 57 checks passed; details in Phase1_Glossary_Completion.txt.
+Current live backlog: 344 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

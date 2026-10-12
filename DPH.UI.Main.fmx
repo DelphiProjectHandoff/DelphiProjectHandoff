@@ -39,6 +39,7 @@ Items.Strings = (
 'Source quality'
 'Revision comparison'
 'Knowledge'
+'Business glossary'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1234,7 +1235,8 @@ Items.Strings = (
 'troubleshooting'
 'orientation'
 'decision'
-'unknown')
+'unknown'
+'glossary')
 ItemIndex = 0
 end
 object PendingKnowledgeCheck: TCheckBox
@@ -1319,6 +1321,77 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object GlossaryTab: TTabItem
+Text = 'Business glossary'
+object GlossaryPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Business terms for the selected application. New/Edit prepares a Knowledge draft; Save and review there. Open in Knowledge shows history and source links.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object GlossaryToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object NewGlossaryButton: TButton
+Position.X = 8
+Position.Y = 4
+Width = 100
+Height = 30
+Text = 'New term'
+OnClick = EditGlossaryClick
+end
+object EditGlossaryButton: TButton
+Position.X = 116
+Position.Y = 4
+Width = 100
+Height = 30
+Text = 'Edit term'
+OnClick = EditGlossaryClick
+end
+object OpenGlossaryKnowledgeButton: TButton
+Position.X = 224
+Position.Y = 4
+Width = 170
+Height = 30
+Text = 'Open in Knowledge'
+OnClick = OpenGlossaryKnowledgeClick
+end
+object GlossaryFilterEdit: TEdit
+Position.X = 402
+Position.Y = 4
+Width = 300
+Height = 30
+TextPrompt = 'Find term, alias, definition or example'
+OnChange = GlossaryFilterChange
+end
+end
+object GlossaryList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnClick = GlossaryClick
+end
+object GlossarySplitter: TSplitter
+Align = Top
+Height = 6
+end
+object GlossaryMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object KnowledgeLinksTab: TTabItem

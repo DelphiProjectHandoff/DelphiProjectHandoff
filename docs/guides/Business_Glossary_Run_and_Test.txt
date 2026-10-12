@@ -1,0 +1,88 @@
+DPH business glossary: run and test
+Last changed: 11 October 2026
+Requirements: 06.12 Business terminology and glossary; 12.09 Business terminology and definitions.
+
+RUN THE CURRENT BUILD
+1. Open File Explorer and paste this folder in its address bar:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Attach project and select the intended Delphi application (not DPH).
+   Choose its configuration/platform and save its .dphdb outside that application's
+   source folder. Or use Open cache for an existing DPH database.
+4. Wait for the bottom activity line to finish. Use the upper-right page selector
+   to choose Business glossary.
+
+CREATE AND SAVE A TERM
+1. Click New term.
+2. Enter Business term, Plain-language definition, Relevance and evidence context,
+   and Named contributor. These fields are required. Context should explain why
+   this term matters to the selected application and who/document supplied it.
+3. Enter optional aliases/abbreviations, one per line, and examples.
+4. Click Apply to Knowledge draft. This switches to Knowledge; it does not save.
+5. Click Save on Knowledge and wait for the activity line to finish.
+6. Return to Business glossary. Select the term to read its definition/state.
+
+ADD SOURCE EVIDENCE AND VERIFY
+1. Select the saved term and click Open in Knowledge.
+2. Choose Knowledge links in the page selector. Choose the target kind, enter a
+   source name in the filter and click Find targets. Select the appropriate
+   result and role, then click Add link.
+3. Return to Knowledge and click Save. Wait for the activity line to finish.
+4. Read the definition and its exact source links against the current project.
+5. Enter the named reviewer in the author/reviewer field and click Verify review.
+   Review is explicit; an analysis scan cannot approve business definitions.
+6. Return to Business glossary and confirm its state. Source changes can reopen
+   review. Historical source links must be updated to current targets before
+   a new generation can be verified.
+
+EDIT, FIND AND INSPECT HISTORY
+1. Select the term on Business glossary and click Edit term.
+2. Change the fields, click Apply to Knowledge draft, then Save on Knowledge.
+   Rename keeps its stable ID; previous names/definitions remain in history.
+3. Open in Knowledge to inspect immutable revisions and review again.
+4. Use the glossary filter to find names, aliases, definitions or examples.
+   At a narrow width, scroll the glossary toolbar horizontally to reach it.
+   Drag the divider below the list to resize it. Scroll inside long definitions.
+5. Save or Discard edit before replacing a draft. Cancel in the field editor
+   leaves the saved term unchanged.
+6. Names/aliases are compared ignoring case and repeated whitespace. Conflicts
+   are rejected within the selected database; another project is independent.
+   Retired records reserve their current names; edit that record instead.
+
+PUBLISH AND CHECK
+1. Choose Publish. Select the intended scope/audience and review exclusions.
+2. Export to a new folder outside selected source.
+3. Open index.html and find Business glossary, then follow its term link.
+4. Compare the definition/revision with User_Guide.docx, Engineering_Guide.docx,
+   canonical.json and indexes\glossary.jsonl in that exported folder.
+5. Choose Validate bundle in DPH. Use the trusted opened capture fingerprint,
+   select the exported root manifest.json and read the validation report.
+   Use historical/partial inspection explicitly when appropriate. Hash integrity
+   does not establish business accuracy, author identity or current source.
+
+REPEATABLE MANUAL CHECK (USE A TEST PROJECT)
+1. Create synthetic term 'Validation term', alias 'VT', and a clear test definition.
+2. Save. Close/reopen the same project and find it by VT.
+3. Explicitly review it. Edit its definition and Save; confirm fresh pending review
+   and preserved history. Try another term using VT and confirm rejection.
+4. Add exact source evidence, then use a separately authorized test-source change
+   and reassessment to confirm affected term review becomes pending.
+5. Publish and compare the same current definition/revision in all outputs above.
+   Do not add synthetic terms to production knowledge merely to test the software.
+
+AUTOMATED CHECKS
+1. Open Command Prompt with Run as administrator.
+2. Run:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+   tools\build-glossary.cmd
+3. Expect PASS business glossary and exit code 0. FAIL or nonzero means failure.
+   Evidence: docs\phase1-glossary-validation.json. Controlled test files use the
+   fixed ignored bin\glossary-validation folder, not the user's project catalog.
+4. Build/run the application baseline with tools\build-wp0.cmd.
+   Existing compatibility checks: tools\build-wp5.cmd and tools\build-wp6.cmd.
+
+FOR RAD STUDIO
+Open DelphiProjectHandoff.dproj. Edit main glossary controls in DPH.UI.Main.fmx
+and term fields in DPH.UI.Glossary.fmx using the Form Designer/Object Inspector.
+There is no runtime construction of these controls. Stored terms use existing
+immutable knowledge revisions; no extra schema migration is required.

@@ -26,6 +26,8 @@ Full directions and exercises: [User Guide DOCX](docs/guides/DPH_User_Guide.docx
 
 ## Build and test
 
+For the business glossary, choose **Business glossary** in the upper-right workspace selector after opening a project. **New term** opens its editable fields; **Apply to Knowledge draft** prepares a draft, and **Save** on Knowledge persists it. **Open in Knowledge** provides history, source links and named review. Full steps and repeatable checks are in [Business glossary directions](docs/guides/Business_Glossary_Run_and_Test.txt). From an elevated prompt run `cmd /c tools\build-glossary.cmd` for the focused acceptance suite.
+
 Open `DelphiProjectHandoff.dproj` in RAD Studio. Controls and properties are serialized in `DPH.UI.Main.fmx` and editable in the Object Inspector. From an elevated PowerShell prompt in this folder:
 
 ```powershell

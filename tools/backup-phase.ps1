@@ -1,15 +1,22 @@
-param([Parameter(Mandatory=$true)][ValidateSet('WP5','WP6','WP7')][string]$Phase)
+param([Parameter(Mandatory=$true)][ValidatePattern('^[A-Za-z0-9_-]{1,64}$')][string]$Phase)
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
-$backupRoot = 'D:\DPH Backups'
+$backupRoot = 'H:\DPH Backups'
+$wakeTimer = [Diagnostics.Stopwatch]::StartNew()
+do {
+    $driveReady = Test-Path -LiteralPath 'H:\' -ErrorAction SilentlyContinue
+    if (-not $driveReady) { Start-Sleep -Seconds 5 }
+} while (-not $driveReady -and $wakeTimer.Elapsed.TotalSeconds -lt 65)
+if (-not $driveReady) { throw 'H: is unavailable after allowing at least 60 seconds for the USB drive to wake' }
 $destination = Join-Path $backupRoot ($Phase + '_PreChange_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
 $destination = [IO.Path]::GetFullPath($destination)
 if (-not $destination.StartsWith($backupRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid backup destination' }
 if (Test-Path -LiteralPath $destination) { throw 'Backup destination already exists' }
 $files = @(Get-ChildItem -LiteralPath $projectRoot -File -Recurse -Force)
 $totalBytes = ($files | Measure-Object Length -Sum).Sum
-$disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='D:'"
-if ($disk.FreeSpace -lt ($totalBytes + 256MB)) { throw 'Insufficient free space on the approved backup drive D:' }
+$disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='H:'"
+if ($null -eq $disk) { throw 'Cannot read H: capacity; no backup was started' }
+if ($disk.FreeSpace -lt ($totalBytes + 256MB)) { throw 'Insufficient free space on the approved backup drive H:' }
 $rows = [Collections.Generic.List[object]]::new()
 New-Item -ItemType Directory -Path $destination | Out-Null
 foreach ($file in $files) {

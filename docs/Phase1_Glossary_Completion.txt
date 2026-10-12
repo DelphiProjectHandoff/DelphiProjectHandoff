@@ -1,0 +1,75 @@
+DPH business glossary completion
+11 October 2026
+
+COMPLETED REQUIREMENTS
+06.12 Business terminology and glossary
+12.09 Business terminology and definitions
+
+The selected project now has a dedicated Business glossary view and an
+IDE-editable term form. Terms contain aliases, a plain-language definition,
+examples, contributor attribution and relevance/evidence context. Users can
+find terms, edit/rename them, preserve immutable save/review history, add exact
+source links and explicitly verify the saved revision with a named reviewer.
+Project-local conflicts are rejected ignoring case and repeated whitespace.
+Affected source changes reopen linked-term review. Ordinary plain-text editing
+cannot silently discard or contradict structured fields.
+
+The same records feed project search, canonical.json, HTML, both editable
+publication manuals and indexes/glossary.jsonl. Confidential evidence exclusions
+remain effective. Bundle validation checks canonical/index agreement even if
+an altered index is rehashed. Existing repositories use migration 009; no new
+migration or production-source edits are needed.
+
+ACTUAL VALIDATION
+Final application build: elevated RAD Studio Win32 Debug, passed.
+Existing FMX resource baseline: passed.
+Focused glossary suite: 57 checks passed.
+Existing knowledge/link/review suite: 59 checks passed.
+Existing publication/translation suite: 114 checks passed.
+Existing profile/quality/comparison/catalog: 19 / 15 / 17 / 14 checks passed.
+Standalone current DPH.ValidateHandoff: passed on the controlled glossary
+handoff with its captured fingerprint; historical/partial inspection explicitly
+allowed. This does not establish that the fixture source is currently unchanged.
+Native form tests exercised actual serialized controls, modal editing and
+draft creation. Normal and minimum-size PaintTo renders were inspected.
+They are renders of running DPH controls, not screenshots of a target program.
+
+DOCUMENTATION
+Explicit directions: docs/guides/Business_Glossary_Run_and_Test.txt.
+Updated User and Engineering Guides: docs/guides (DOCX), docs/pdf (PDF).
+Guides retain title, changed date, editable TOC fields and source hashes.
+Local HTML help and README describe the implemented commands.
+
+BACKUP AND SCOPE
+Pre-change full backup, 4278 files / 646707077 bytes, SHA-256 verified:
+H:\DPH Backups\BusinessGlossary_PreChange_20261011_202113
+H: is the approved USB backup drive; allow at least 60 seconds to wake.
+tools/backup-phase.ps1 now uses H: with that wake allowance. No post-change
+USB backup was made. Validated work is committed/pushed to both GitHub remotes.
+Selected project files and the user's remembered project catalog were unchanged
+by native validation. Controlled source edits occurred only inside the test fixture.
+
+CURRENT IMPLEMENTATION STATUS
+533 requirement records remain preserved in their original order/text.
+172 implemented; 17 manual capture; 242 partial; 102 missing; 0 unassessed.
+344 requirement records remain incomplete. Overlapping records can share a
+single feature implementation. Only the two glossary statuses were promoted.
+Phase1_Reconciliation_Report.txt, Phase1_Reconciliation_Batches.json and the
+original reconciliation validation are historical audit evidence. The live
+ledger/current_implementation and Phase1_Implementation_Backlog.csv carry the
+post-glossary counts. This batch does not claim the whole application is done.
+
+KNOWN BOUNDS
+Business meanings must be supplied and reviewed by knowledgeable contributors.
+Named contributors/reviewers are attribution, not authenticated enterprise users.
+Retired terms retain their current names; edit an existing record rather than
+creating a conflicting replacement. Unlinked terms rely on contributor context;
+attach source evidence when source changes should trigger their review.
+No external AI service or production database connection is used by the glossary.
+
+NEXT BOUNDED IMPLEMENTATION BATCH
+04.13 Keyboard shortcuts and focus-order inspector. Complete a native view of
+captured shortcut/TabOrder/action references, duplicate/unknown diagnostics,
+source navigation, tests and explicit directions. Inherited/runtime-only focus
+behavior must remain explicitly unknown when it cannot be established from
+captured source. This next feature is not claimed implemented by this batch.

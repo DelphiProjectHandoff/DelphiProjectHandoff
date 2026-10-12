@@ -245,6 +245,11 @@ begin
     for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
       Page.Append('<figure id="screenshot_'+R.GetValue<string>('artifact_hash','')+'"><img width="640" src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' | Contributor: '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+' | user supplied, unverified | generation '+R.GetValue('generation_id').Value+'</figcaption></figure>');
     end;
+    Page.Append('<section id="business-glossary"><h2>Business glossary</h2><p>Definitions are attributed to contributors. Check each term revision, review state and source evidence before relying on it.</p>');
+    for V in AModel.Document.GetValue<TJSONArray>('knowledge') do if V.GetValue<string>('kind')='glossary' then
+      Page.Append('<p><a href="#knowledge_'+V.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(V.GetValue<string>('title'))+'</a> | '+
+        TDPHDocumentModel.HTML(V.GetValue<string>('state'))+' | revision '+V.GetValue<string>('revision')+'</p>');
+    Page.Append('</section>');
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<section id="'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2>');
       Page.Append('<p>Section '+TDPHDocumentModel.HTML(R.GetValue<string>('section_id'))+' | version <code class="notranslate" translate="no">'+
         TDPHDocumentModel.HTML(R.GetValue<string>('section_version'))+'</code> | source generation '+R.GetValue<string>('source_generation')+
@@ -254,12 +259,12 @@ begin
       Page.Append('</section>');
     end;
     for V in AModel.Document.GetValue<TJSONArray>('knowledge') do begin R:=V as TJSONObject;
-      Page.Append('<section id="knowledge_'+R.GetValue<string>('id')+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Section '+
+      Page.Append('<article id="knowledge_'+R.GetValue<string>('id')+'" data-search="'+TDPHDocumentModel.HTML(LowerCase(R.GetValue<string>('title')+' '+R.GetValue<string>('body')))+'"><h2>'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</h2><p>Section '+
         TDPHDocumentModel.HTML(R.GetValue<string>('section_id'))+' | revision '+R.GetValue<string>('revision')+' | source generation '+R.GetValue<string>('source_generation')+
         ' | '+TDPHDocumentModel.HTML(R.GetValue<string>('state'))+' | author '+TDPHDocumentModel.HTML(R.GetValue<string>('owner'))+
         ' | reviewer '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewer')='','unassigned',R.GetValue<string>('reviewer')))+
         ' | last reviewed '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewed_at')='','never',R.GetValue<string>('reviewed_at')))+
-        '</p><p>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</p>');
+        '</p><pre>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</pre>');
       for RevisionValue in R.GetValue<TJSONArray>('history') do begin
         Page.Append('<details id="knowledge_revision_'+RevisionValue.GetValue<string>('revision')+'"><summary>Revision '+RevisionValue.GetValue<string>('revision')+
           ' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('verification_state'))+' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('editor'))+'</summary><p>'+
@@ -279,7 +284,7 @@ begin
         Page.Append('</details>');
       end;
       if R.GetValue<Integer>('omitted_rich_links',0)>0 then Page.Append('<p>Some links were omitted because their targets are outside this export scope.</p>');
-      Page.Append('</section>');
+      Page.Append('</article>');
     end;
     IndexText:='';
     for V in AModel.Document.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; Anchor:='s_'+THashSHA2.GetHashString(R.GetValue<string>('key'));
@@ -314,6 +319,8 @@ begin
     Lines.Clear; for V in AModel.Document.GetValue<TJSONArray>('symbols') do if MatchText((V as TJSONObject).GetValue<string>('kind'),['component','event']) then Lines.Append(V.ToJSON).Append(#10); Write('indexes/forms-events.jsonl',Lines.ToString);
     Lines.Clear; for V in AModel.Document.GetValue<TJSONArray>('relationships') do if MatchText((V as TJSONObject).GetValue<string>('kind'),['reads','writes','renders','static_sql']) then Lines.Append(V.ToJSON).Append(#10); Write('indexes/data-usage.jsonl',Lines.ToString);
     JSONL('indexes/knowledge.jsonl',AModel.Document.GetValue<TJSONArray>('knowledge'));
+    Lines.Clear; for V in AModel.Document.GetValue<TJSONArray>('knowledge') do if V.GetValue<string>('kind')='glossary' then Lines.Append(V.ToJSON).Append(#10);
+    Write('indexes/glossary.jsonl',Lines.ToString);
     Write('validation/coverage.json',AModel.Document.GetValue<TJSONObject>('coverage').Format(2));
     Write('README.md','# '+AModel.Document.GetValue<string>('project')+' handoff'+#10+#10+
       '1. Open index.html offline and read Overview and Known unknowns.'+#10+
@@ -576,6 +583,8 @@ begin
       CheckJSONL('indexes/files.jsonl','files',[]);
     end else CheckJSONL('indexes/configuration.jsonl','files',[]);
     CheckJSONL('indexes/knowledge.jsonl','knowledge',[]);
+    if (Canonical.GetValue<string>('template_version')=DPHPublishVersion) or TFile.Exists(TPath.Combine(Root,'indexes/glossary.jsonl')) then
+      CheckJSONL('indexes/glossary.jsonl','knowledge',['glossary']);
     CheckJSONL('indexes/forms-events.jsonl','symbols',['component','event']);
     CheckJSONL('indexes/data-usage.jsonl','relationships',['reads','writes','renders','static_sql']);
   finally Flow.Free; Evidence.Free; Symbols.Free; Sources.Free; Canonical.Free; Manifest.Free; Hashes.Free; end;

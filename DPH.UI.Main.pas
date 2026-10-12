@@ -55,6 +55,14 @@ type
     NewKnowledgeButton,SaveKnowledgeButton,RefreshKnowledgeButton,VerifyKnowledgeButton,RejectKnowledgeButton,RetireKnowledgeButton,DiscardKnowledgeButton: TButton;
     PendingKnowledgeCheck: TCheckBox;
     KnowledgeWarning: TLabel;
+    GlossaryTab: TTabItem;
+    GlossaryPurpose: TLabel;
+    GlossaryToolbar: THorzScrollBox;
+    GlossaryFilterEdit: TEdit;
+    NewGlossaryButton,EditGlossaryButton,OpenGlossaryKnowledgeButton: TButton;
+    GlossaryList: TListBox;
+    GlossaryMemo: TMemo;
+    GlossarySplitter: TSplitter;
     PublishTab: TTabItem;
     PublishToolbar: THorzScrollBox;
     PublishScopeCombo: TComboBox;
@@ -258,6 +266,10 @@ type
     procedure KnowledgeClick(Sender: TObject);
     procedure NewKnowledgeClick(Sender: TObject);
     procedure SaveKnowledgeClick(Sender: TObject);
+    procedure GlossaryFilterChange(Sender: TObject);
+    procedure GlossaryClick(Sender: TObject);
+    procedure EditGlossaryClick(Sender: TObject);
+    procedure OpenGlossaryKnowledgeClick(Sender: TObject);
     procedure RefreshKnowledgeClick(Sender: TObject);
     procedure ReviewKnowledgeClick(Sender: TObject);
     procedure KnowledgeFilterChange(Sender: TObject);
@@ -310,6 +322,7 @@ type
     FTerminologyJSON: string;
     FKnowledgeQuestionJSON: string;
     FKnowledgeStructuredJSON: string;
+    FGlossaryRows: TList<TJSONObject>;
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
     FComparison: TJSONObject;
@@ -341,9 +354,9 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math, System.Hash,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -354,6 +367,7 @@ begin
   FEditableLinks:=TJSONArray.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
+  FGlossaryRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
@@ -387,7 +401,7 @@ begin
   FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
-  FKnowledge.Free; FKnowledgeRows.Free;
+  FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
   FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
@@ -672,6 +686,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FGlossaryRows.Clear; GlossaryList.Items.Clear; GlossaryMemo.Text:='Open a selected project, then add its business terms.';
   FreeAndNil(FProjectMembers); ProjectMembersList.Items.Clear; ProjectMemberMemo.Text:='Open a captured project to inspect its project and output declarations.';
   FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
   ComparisonStatus.Text:='No comparison loaded.'; ComparisonNextButton.Enabled:=False;
@@ -1678,7 +1693,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -1708,6 +1723,9 @@ begin
   FKnowledgeQuestionJSON:=Row.GetValue<string>('question_json','');
   FKnowledgeStructuredJSON:=Row.GetValue<string>('structured_json','{}');
   KnowledgeBodyMemo.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
+  KnowledgeTitleEdit.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
+  KnowledgeKindCombo.Enabled:=FKnowledgeStructuredJSON='{}';
+  KnowledgeDocumentCombo.Enabled:=FKnowledgeStructuredJSON='{}'; KnowledgeAudienceCombo.Enabled:=FKnowledgeStructuredJSON='{}';
   FEditableLinks.Free; if Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
   RefreshKnowledgeLinks;
   KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf(Row.GetValue<string>('document_kind','engineering'));
@@ -1725,6 +1743,8 @@ begin
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
     FKnowledgeQuestionJSON:='';
     FKnowledgeStructuredJSON:='{}'; KnowledgeBodyMemo.ReadOnly:=False;
+    KnowledgeTitleEdit.ReadOnly:=False; KnowledgeKindCombo.Enabled:=True; KnowledgeDocumentCombo.Enabled:=True; KnowledgeAudienceCombo.Enabled:=True;
+    if (KnowledgeKindCombo.ItemIndex>=0) and (KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]='glossary') then KnowledgeKindCombo.ItemIndex:=0;
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
     FreeAndNil(FEditableLinks); FEditableLinks:=TJSONArray.Create; RefreshKnowledgeLinks;
     KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
@@ -1732,6 +1752,83 @@ begin
 end;
 procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
 begin Submit('save_knowledge'); end;
+procedure TDPHMainForm.GlossaryFilterChange(Sender: TObject);
+var Value: TJSONValue; Row: TJSONObject; Filter: string;
+begin
+  if FGlossaryRows=nil then Exit;
+  GlossaryList.Items.Clear; FGlossaryRows.Clear;
+  GlossaryMemo.Text:='No matching saved terms. Click New term to define business language for this selected application.';
+  if FKnowledge=nil then Exit;
+  Filter:=GlossaryFilterEdit.Text.Trim;
+  for Value in FKnowledge do begin
+    Row:=Value as TJSONObject;
+    if Row.GetValue<string>('kind')<>'glossary' then Continue;
+    if (Filter<>'') and not ContainsText(Row.GetValue<string>('title')+' '+Row.GetValue<string>('body'),Filter) then Continue;
+    FGlossaryRows.Add(Row);
+  end;
+  FGlossaryRows.Sort(TComparer<TJSONObject>.Construct(function(const Left,Right: TJSONObject): Integer
+    begin Result:=CompareText(Left.GetValue<string>('title'),Right.GetValue<string>('title')); end));
+  for Row in FGlossaryRows do GlossaryList.Items.Add(Row.GetValue<string>('title')+' ['+Row.GetValue<string>('state')+']');
+  if FGlossaryRows.Count>0 then begin GlossaryList.ItemIndex:=0; GlossaryClick(nil); end;
+end;
+procedure TDPHMainForm.GlossaryClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  if (GlossaryList.ItemIndex<0) or (GlossaryList.ItemIndex>=FGlossaryRows.Count) then Exit;
+  Row:=FGlossaryRows[GlossaryList.ItemIndex];
+  GlossaryMemo.Text:=Row.GetValue<string>('body')+sLineBreak+sLineBreak+
+    'State: '+Row.GetValue<string>('state')+' | revision '+Row.GetValue<string>('revision')+' | source generation '+Row.GetValue<string>('source_generation')+
+    sLineBreak+'Contributor: '+Row.GetValue<string>('editor')+' | reviewer: '+Row.GetValue<string>('reviewer')+
+    sLineBreak+sLineBreak+'Open in Knowledge to inspect immutable history, add exact source links, or explicitly review this revision.';
+end;
+procedure TDPHMainForm.OpenGlossaryKnowledgeClick(Sender: TObject);
+var ID: string; Index: Integer;
+begin
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first'; Exit; end;
+  if (GlossaryList.ItemIndex<0) or (GlossaryList.ItemIndex>=FGlossaryRows.Count) then begin StatusLabel.Text:='Select a saved glossary term first'; Exit; end;
+  ID:=FGlossaryRows[GlossaryList.ItemIndex].GetValue<string>('id');
+  PendingKnowledgeCheck.IsChecked:=False; KnowledgeFilterChange(nil);
+  for Index:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[Index].GetValue<string>('id')=ID then begin
+    KnowledgeList.ItemIndex:=Index; KnowledgeClick(nil); WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit;
+  end;
+end;
+procedure TDPHMainForm.EditGlossaryClick(Sender: TObject);
+var Editor: TDPHGlossaryForm; Row,RecordValue,Initial: TJSONObject; Links: TJSONArray;
+begin
+  if FBusy then Exit;
+  if FView=nil then begin StatusLabel.Text:='Open the selected project before adding business terms'; Exit; end;
+  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first'; Exit; end;
+  Row:=nil; Initial:=nil;
+  if Sender=EditGlossaryButton then begin
+    if (GlossaryList.ItemIndex<0) or (GlossaryList.ItemIndex>=FGlossaryRows.Count) then begin StatusLabel.Text:='Select a saved glossary term first'; Exit; end;
+    Row:=FGlossaryRows[GlossaryList.ItemIndex].Clone as TJSONObject; Initial:=TJSONObject.ParseJSONValue(Row.GetValue<string>('structured_json')) as TJSONObject;
+  end;
+  Editor:=TDPHGlossaryForm.Create(nil);
+  try
+    Editor.LoadRecord(Initial,KnowledgeAuthorEdit.Text);
+    if Editor.ShowModal<>mrOk then Exit;
+    RecordValue:=Editor.RecordJSON;
+    try
+      FBinding:=True;
+      try
+        FKnowledgeID:=0; FKnowledgeRevision:=0;
+        if Row<>nil then begin FKnowledgeID:=StrToInt64(Row.GetValue<string>('id')); FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision')); end;
+        KnowledgeTitleEdit.Text:=RecordValue.GetValue<string>('term'); KnowledgeAuthorEdit.Text:=Editor.AuthorEdit.Text;
+        KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('glossary');
+        KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('user'); KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
+        KnowledgeBodyMemo.Text:=TDPHGlossary.Body(RecordValue); KnowledgeBodyMemo.ReadOnly:=True;
+        KnowledgeTitleEdit.ReadOnly:=True; KnowledgeKindCombo.Enabled:=False; KnowledgeDocumentCombo.Enabled:=False; KnowledgeAudienceCombo.Enabled:=False;
+        FKnowledgeStructuredJSON:=RecordValue.ToJSON; FKnowledgeQuestionJSON:=''; FKnowledgeLink:='';
+        FreeAndNil(FEditableLinks);
+        if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+        RefreshKnowledgeLinks; FKnowledgeEdited:=True;
+        KnowledgeSectionLabel.Text:='Business glossary draft: click Save, then explicitly review';
+        KnowledgeHistoryMemo.Text:='Edit term fields in Business glossary. Knowledge links stores exact source evidence. Saving preserves prior revisions and requires a fresh named review.';
+      finally FBinding:=False; end;
+      WorkspaceTabs.ActiveTab:=KnowledgeTab; StatusLabel.Text:='Glossary draft prepared. Click Save to persist; use Knowledge links for source evidence.';
+    finally RecordValue.Free; end;
+  finally Editor.Free; Initial.Free; Row.Free; end;
+end;
 procedure TDPHMainForm.ProjectProfileClick(Sender: TObject);
 var Editor: TDPHProjectProfileForm; Value: TJSONValue; Row,Profile,Initial: TJSONObject; Links: TJSONArray;
 begin
@@ -1759,6 +1856,7 @@ begin
         KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('overview');
         KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
         KnowledgeBodyMemo.Text:=TDPHProjectProfile.Body(Profile); KnowledgeBodyMemo.ReadOnly:=True;
+        KnowledgeTitleEdit.ReadOnly:=True; KnowledgeKindCombo.Enabled:=False; KnowledgeDocumentCombo.Enabled:=False; KnowledgeAudienceCombo.Enabled:=False;
         FKnowledgeStructuredJSON:=Profile.ToJSON; FKnowledgeQuestionJSON:=''; FKnowledgeLink:='';
         FreeAndNil(FEditableLinks);
         if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;

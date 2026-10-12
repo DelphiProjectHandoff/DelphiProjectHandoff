@@ -1,0 +1,160 @@
+object DPHGlossaryForm: TDPHGlossaryForm
+  Caption = 'Business glossary term'
+  ClientWidth = 820
+  ClientHeight = 760
+  Constraints.MinWidth = 620
+  Constraints.MinHeight = 480
+  Position = ScreenCenter
+  object GlossaryPurpose: TLabel
+    Align = Top
+    Height = 88
+    Margins.Left = 16
+    Margins.Right = 16
+    WordWrap = True
+    Text = 'Define a business term for the selected application. Use one alias per line. Explain its meaning and relevance; cite a contributor or document in the context. Apply prepares a Knowledge draft. Save there, add source links if appropriate, then explicitly verify with a named reviewer.'
+    StyledSettings = []
+    TextSettings.Font.Size = 15
+    TextSettings.FontColor = xFF146CB4
+  end
+  object GlossaryActions: TLayout
+    Align = Bottom
+    Height = 52
+    object CancelTermButton: TButton
+      Align = Right
+      Width = 100
+      Margins.Right = 16
+      Margins.Top = 8
+      Margins.Bottom = 8
+      Text = 'Cancel'
+      ModalResult = 2
+      TabOrder = 1
+    end
+    object ApplyTermButton: TButton
+      Align = Client
+      Margins.Left = 16
+      Margins.Right = 12
+      Margins.Top = 8
+      Margins.Bottom = 8
+      Text = 'Apply to Knowledge draft'
+      OnClick = ApplyTermClick
+      TabOrder = 0
+    end
+  end
+  object GlossaryFields: TVertScrollBox
+    Align = Client
+    ShowScrollBars = True
+    TabOrder = 0
+    object TermRow: TLayout
+      Align = Top
+      Height = 70
+      object TermLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Business term (required; up to 128 characters)'
+      end
+      object TermEdit: TEdit
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        MaxLength = 128
+        TabOrder = 0
+      end
+    end
+    object AliasesRow: TLayout
+      Align = Top
+      Position.Y = 70
+      Height = 100
+      object AliasesLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Aliases and abbreviations (optional; one per line, maximum 32)'
+      end
+      object AliasesMemo: TMemo
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        WordWrap = True
+        TabOrder = 0
+      end
+    end
+    object DefinitionRow: TLayout
+      Align = Top
+      Position.Y = 170
+      Height = 160
+      object DefinitionLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Plain-language definition (required)'
+      end
+      object DefinitionMemo: TMemo
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        WordWrap = True
+        TabOrder = 0
+      end
+    end
+    object ExamplesRow: TLayout
+      Align = Top
+      Position.Y = 330
+      Height = 110
+      object ExamplesLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Examples for a new maintainer (optional)'
+      end
+      object ExamplesMemo: TMemo
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        WordWrap = True
+        TabOrder = 0
+      end
+    end
+    object ContextRow: TLayout
+      Align = Top
+      Position.Y = 440
+      Height = 120
+      object ContextLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Relevance and evidence context (required; do not enter credentials)'
+      end
+      object ContextMemo: TMemo
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        WordWrap = True
+        TabOrder = 0
+      end
+    end
+    object AuthorRow: TLayout
+      Align = Top
+      Position.Y = 560
+      Height = 70
+      object AuthorLabel: TLabel
+        Align = Top
+        Height = 26
+        Margins.Left = 16
+        Text = 'Named contributor (required)'
+      end
+      object AuthorEdit: TEdit
+        Align = Client
+        Margins.Left = 16
+        Margins.Right = 16
+        Margins.Bottom = 12
+        TabOrder = 0
+      end
+    end
+  end
+end

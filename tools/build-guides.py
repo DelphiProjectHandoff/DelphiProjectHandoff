@@ -80,7 +80,7 @@ USER = [
 'Run DPH.ValidateHandoff.exe with the bundle directory and a separately retained trusted input fingerprint. It rejects stale exports by default. Add --allow-stale only to inspect the integrity of a historical or partial bundle; the flag does not establish current or complete source evidence.',
 'Validate artifact filenames and SHA256 values against validation/manifest-sha256.json. The manifest records generation, input fingerprint, template version, scope, stale state and canonical hash. The validator also checks symbol, relationship, control-flow and evidence references and source ranges. A changed expected fingerprint rejects a stale bundle.',
 'Hashes detect changed artifacts relative to their checksum index. They are not a digital signature proving the identity of an untrusted bundle author. Keep a trusted copy of the source fingerprint and export identity. Redaction recognizes common credential assignments, access keys, tokens and private keys; explicit exclusions and a disclosure review remain necessary for sensitive projects.',
-'Keep the dphdb database together with its managed dphdb.views folder. The database is the authority for authored knowledge; generated manuals and diagrams are derived outputs. At the owner\'s direction, D: development backups are suspended until explicitly resumed. Validated changes are still committed and pushed to both configured GitHub repositories.'
+'Keep the dphdb database together with its managed dphdb.views folder. The database is the authority for authored knowledge; generated manuals and diagrams are derived outputs. At the owner\'s direction, H: development backups are enabled. Allow at least 60 seconds for this USB drive to wake before assessing availability. Validated changes are still committed and pushed to both configured GitHub repositories.'
 ]),
 ('Troubleshoot common states', [
 'PARTIAL analysis: read diagnostics and source availability. Unavailable framework units and unsupported syntax remain visible gaps. Do not clear the label by treating unresolved facts as verified. Source changed during analysis: allow reassessment or invoke Full reassessment after the source settles.',
@@ -96,7 +96,7 @@ ENGINEERING = [
 ('Architecture and boundaries', [
 'DPH is an independent Delphi FMX application. It has no converter runtime or build dependency. The pinned VCL2FMXConverter v6.0.0 corpus is test input only, at commit e1fd10b2d3b06f2fc3f726b8eb7f234a54faf63d. No converter source was copied into the current analyzer. Preserve the original planning documents and global agents.md byte for byte.',
 'The pipeline is selected project, bounded inventory, read-only byte acquisition, lexical and conditional processing, Pascal and form IR, semantic relationships and control flow, revision-consistent SQLite capture, cached workspace projection, curated knowledge and derived publication. Contract data remains separate from FMX. Every unsupported construct or unavailable dependency must remain diagnosable rather than being promoted into false completeness.',
-'Application controls are serialized in DPH.UI.Main.fmx and DPH.UI.ProjectProfile.fmx and editable in the IDE. List contents and paint-box geometry are data projections. No scanned component class is instantiated. Avoid adding runtime-only controls, Pascal class helpers or an alternative authoritative store without explicit authorization.'
+'Application controls are serialized in DPH.UI.Main.fmx, DPH.UI.ProjectProfile.fmx and DPH.UI.Glossary.fmx and editable in the IDE. List contents and paint-box geometry are data projections. No scanned component class is instantiated. Avoid adding runtime-only controls, Pascal class helpers or an alternative authoritative store without explicit authorization.'
 ]),
 ('Rework and acceptance status', [
 'The owner rejected the earlier WP7 delivery as inadequate for learning and handoff. The statement that implementation through WP7 was complete has been withdrawn. docs/Rework_Requirements_Audit.txt compares the original plan with the implemented product and outstanding work. Historical WP reports remain historical evidence, not acceptance of the reworked experience.',
@@ -149,7 +149,7 @@ ENGINEERING = [
 'Keep lifecycle and ownership explicit: the view owns its JSON document, UI arrays own their records, responses transfer document or knowledge ownership to the main form, and the worker frees unconsumed responses during shutdown. Guard unsaved authored text before changing projects or replacing editor state.'
 ]),
 ('Curated knowledge and review', [
-'SaveKnowledge requires title, body, a named author, a supported kind and a captured generation. Existing records require their expected revision and stable title/kind. Each edit appends a needs_review revision, preserves links and opens a pending task. Knowledge bodies are bounded to 1 MiB. Authored text is never regenerated from parser output.',
+'SaveKnowledge requires title, body, a named author, a supported kind and a captured generation. Existing records require their expected revision and stable kind. Ordinary titles stay stable; structured glossary names can change while their identity and history remain intact. Each edit appends a needs_review revision, preserves links and opens a pending task. Knowledge bodies are bounded to 1 MiB. Authored text is never regenerated from parser output.',
 'ReviewKnowledge requires the expected current revision, a named reviewer and a matching captured source/configuration. The connected worker observes current source before accepting a review. A missing linked entity cannot be verified under a replacement name. Verification, rejection or retirement appends a revision and records attribution; history remains append only.',
 'Manifest and configuration changes conservatively invalidate active knowledge, derived artifacts and translations. A partial static capture may support review of an attributable statement against available evidence, but its partial coverage remains visible. Local names are not authenticated enterprise identities. Human verification and automatic static derivation remain different evidence categories.'
 ]),
@@ -170,7 +170,7 @@ ENGINEERING = [
 ('Verification and release discipline', [
 'Run the phase build/test scripts elevated with the installed toolchain. WP0 checks FMX resource ownership; WP1 checks storage, crash recovery and migrations; WP2 checks inventory, encoding, syntax and source safety; WP3 checks semantics and pinned reference traces; WP4 checks workspace/background behavior; WP5 checks immutable authored history and pending review; WP6 checks publication, exclusions, sanitization, hashes and translation protection.',
 'Use exact input hashes before and after analysis, including failures. Preserve original reference and instruction files. Keep tests that demonstrate invariants rather than tests that merely mirror implementation. New source, validation failure or unresolved risk justifies another targeted test; a passing unchanged phase does not need endless repetition.',
-'D: development backups are suspended at the owner\'s direction until explicitly resumed. Git remains enabled: review intended changes, commit validated work and push both public and private remotes without force or history rewriting. Remove a stale zero-byte index lock only after verifying no Git process runs. WP7 records measured performance, portability, security and explicit acceptance evidence. Independent first-time programmer acceptance and unknown historical business intent cannot be invented by automation.',
+'H: development backups are enabled. Allow at least 60 seconds for this USB drive to wake before assessing availability. Git remains enabled: review intended changes, commit validated work and push both public and private remotes without force or history rewriting. Remove a stale zero-byte index lock only after verifying no Git process runs. WP7 records measured performance, portability, security and explicit acceptance evidence. Independent first-time programmer acceptance and unknown historical business intent cannot be invented by automation.',
 'On the recorded Core i7-1165G7 host with eight logical processors and about 16 GB RAM, the pinned reference pipeline measured 82.6 seconds for full capture, 2.87 seconds for cached opening and 75.9 seconds for incremental reassessment. The message-pump maximum gap was 64 ms. Peak test-process working set was about 1.21 GiB, including repeated captures, JSON cloning and FMX/WebView2 tests. These are baseline measurements, not agreed hardware-independent budgets. Large syntax-cache fallback and conservative semantic recomputation explain the modest reassessment speedup. Formal acceptance retains independent complex-flow review, missing business/user content, AC-25 and performance-budget agreement as outstanding.'
 ])]
 
@@ -230,7 +230,7 @@ USER.extend([
 ('Back up and restore a complete database', [
 'Choose Database tools and run Integrity. Read the result before relying on the database. For an explicit portable backup, choose a new .dphdb destination outside the analyzed source. The command saves a consistent SQLite copy, referenced managed views, screenshots and observations, and a SHA256 backup manifest.',
 'Keep the backup database and its adjacent .views folder together. Choose Restore to new database and provide a fresh destination. DPH verifies filenames, manifest hashes, database integrity and managed artifacts, and refuses to overwrite an existing database. Open the restored copy and confirm the intended project, generation and authored history.',
-'The suspended D: development-backup instruction remains in effect. Explicit database backups requested through this workflow are separate operations. Git continues to preserve application source changes.'
+'Development backups have resumed on H:, the owner-approved USB drive. Allow at least 60 seconds for the drive to wake before assessing availability. The pre-change backup is separate from the application database backup workflow. Git and both GitHub repositories also preserve validated application changes.'
 ]),
 ('Run the application and its checks', [
 'To run the current source build, open C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\Win32\\Debug in File Explorer. Double-click DelphiProjectHandoff.exe. Keep the deployed migrations and help folders and the Win32 WebView2Loader.dll supplied by the build beside the executable. Select a different Delphi application to analyze; DPH rejects itself.',
@@ -304,6 +304,25 @@ revisions = {
     'On the recorded Core i7-1165G7 host': 'In the historical pre-rework benchmark on the recorded Core i7-1165G7 host',
     'TDPHAtlasAdapter is deliberately unconfigured because the exact Atlas product, transport, licensing and confidentiality have not been selected. External providers require explicit consent. The current adapter throws before transmission, and tests use an offline mock.': 'TDPHAtlasAdapter reads explicitly selected DAT JSON packs offline. The independent Apache-2.0 reader snapshot and license reside under dependencies\\DelphiAppTranslation; VCL2FMX is unchanged and is not a build or runtime dependency. No network provider is configured. Tests exercise actual packs, persistent cache, terminology changes, source invalidation and exact-content named review.',
 }
+USER.extend([
+('Define and review business terms', [
+'Open the intended project. In the upper-right workspace selector choose Business glossary, then click New term. Enter the business term, one alias or abbreviation per line, a plain-language definition, optional examples, relevance and evidence context, and a named contributor. Do not enter credentials. Context must explain why the term matters to this selected application and where its meaning came from.',
+'Click Apply to Knowledge draft. This prepares an unsaved draft on Knowledge. Click Save and wait for the bottom activity line to finish. Return to Business glossary and select the saved term. Its state is needs_review until a person explicitly verifies it. Applying alone never saves or verifies a term.',
+'To add exact source evidence, select the term and click Open in Knowledge. Choose Knowledge links in the upper-right selector, select the appropriate entity/evidence target and link role, then add the target. Return to Knowledge and click Save. Review the definition and its links against current source, enter a named reviewer in the author/reviewer field, then click Verify review. Source changes reopen review for affected linked terms.',
+'To change a term, return to Business glossary, select it and click Edit term. Change its fields, Apply to Knowledge draft, then Save. A rename keeps the stable knowledge identity. Edits and reviews append history and require fresh verification. Open in Knowledge displays that history. Duplicate terms and aliases are rejected ignoring case and repeated spaces. Names belonging to retired records remain reserved; edit the existing term instead of creating a conflicting replacement.',
+'The glossary filter finds term names, aliases, definitions and examples. Terms are alphabetized and review states remain visible. At a narrow window size, use the horizontal scrollbar under the glossary buttons to reach the filter. Drag the divider below the term list to change its height; scroll within the definition to read longer entries.',
+'Publish the project with an appropriate scope/audience to a new folder outside selected source. Open index.html and find Business glossary; definitions also appear in both editable manuals, canonical.json and indexes/glossary.jsonl. The same captured term revision is used throughout. Confidential source exclusions remove dependent term content. Package validation checks the glossary index against the canonical model.',
+'Repeatable check: create a synthetic term with an alias, Save, reopen the same project, find it by the alias, review it, edit its definition, Save again and confirm history and pending review. Try a duplicate alias and confirm rejection. Publish and compare the current definition and revision in HTML, both DOCX guides and the JSONL index. Use a test project, rather than inserting synthetic definitions into production knowledge.'
+])])
+ENGINEERING.extend([
+('Business glossary implementation and checks', [
+'DPH.Knowledge.Glossary validates a business_glossary structured record with term, aliases, definition, examples and relevance/evidence context. Names normalize case and repeated whitespace. Terms/aliases are bounded to 128 characters, 32 aliases per term, definitions/examples to 16384 characters, context to 4096 characters and the record to 64 KiB. Unknown fields, duplicate fields and non-text aliases are rejected.',
+'The existing migration 009 structured_json column stores the exact term fields on each immutable knowledge revision; no new migration is needed. SaveKnowledge enforces glossary kind, user document and all-reader audience, generated body agreement, project-local name uniqueness, type preservation and optimistic revision checks. Glossary titles can change while the knowledge ID and prior structured revisions remain intact. Retired records continue reserving their current names.',
+'DPH.UI.Glossary.fmx defines every term editor control for the IDE/Object Inspector. DPH.UI.Main.fmx defines the glossary list, filter, detail memo and commands. Apply prepares a draft in the existing Knowledge pipeline. The modal editor retains a cloned saved revision so a background refresh cannot invalidate its input pointer. Current source links, explicit review, search and stale-source tracking use existing repository contracts.',
+'DPH-LEARNING-8 publication emits a dedicated HTML glossary index and indexes/glossary.jsonl from the canonical knowledge records. Both user and engineering DOCX use those same records. Validate compares the glossary JSONL with the canonical glossary subset; recomputing the artifact hash cannot conceal divergent content. Older publication versions remain readable under their prior contract.',
+'From an elevated Command Prompt run cd /d "C:\\New Delphi Projects\\Delphi Project Handoff", then tools\\build-glossary.cmd. The suite uses the fixed ignored bin\\glossary-validation directory and controlled fixtures. It checks field validation, normalized conflicts, persistence, rename, immutable revisions, stale edits/reviews, isolation, source-linked invalidation, search, publication agreement/exclusions/tampering and IDE-designed native form workflows at normal/minimum sizes. Native images are FMX PaintTo renders of actual instantiated controls; they are not screenshots of the analyzed target application.',
+'Build the application with tools\\build-wp0.cmd. Run tools\\build-wp5.cmd for the existing knowledge/link/review regressions and tools\\build-wp6.cmd for publishing/translation regressions. A FAIL or nonzero exit means the corresponding check failed. See docs\\phase1-glossary-validation.json and the glossary completion note for actual current run evidence.'
+])])
 for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         for old, new in revisions.items():
@@ -361,8 +380,8 @@ USER.extend([
 'File changed compares captured fingerprints and availability. Captured structure changed compares declarations, routine flow nodes and edges, and outgoing relationships including recorded event bindings. Source file changed only means the containing file changed while this symbol retained the same captured structure. Historical source bytes are not reconstructed. Partial parsing may miss changes, and removed or added identities require named continuity review before treating them as a move or rename.'
 ]),
 ('Understand implementation status', [
-'The supplied Phase 1 inventory contains 533 numbered requirements plus presentation rules. Implementation and item-by-item reconciliation are in progress. The traceability file docs\\Phase1_Requirements_Traceability.json distinguishes implemented manual capture, partial behavior and unassessed items with evidence and limitations. Earlier WP acceptance and 0.3.0 packages do not establish completion of that larger inventory.',
-'Exact launch and test commands are maintained in docs\\guides\\Run_And_Test.txt. The new tools\\build-phase1.cmd suite checks structured profiles, source-quality findings and captured revision comparison. A PASS applies only to the stated behavior and inputs; it does not make unassessed requirements complete.'
+'The supplied Phase 1 inventory contains 533 numbered requirements plus presentation rules. All 510 formerly unassessed requirements were reconciled in 21 audit batches. No unassessed items remain. The traceability ledger and implementation backlog distinguish implemented features, attributed manual capture, partial behavior and missing features. After the glossary implementation, 344 requirement records remain incomplete; overlapping records can share an implementation task. Earlier WP acceptance and 0.3.0 packages do not establish completion of the larger inventory.',
+'Exact launch and test commands are maintained in docs\\guides\\Run_And_Test.txt and Business_Glossary_Run_and_Test.txt. The tools\\build-phase1.cmd suite checks structured profiles, source-quality findings, captured revision comparison and project catalogs; tools\\build-glossary.cmd checks the glossary. A PASS applies only to the stated behavior and inputs and does not complete unrelated requirements.'
 ])])
 ENGINEERING.extend([
 ('Structured project profile contract', [
@@ -383,7 +402,7 @@ for chapters in (USER, ENGINEERING):
 
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
-    'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile',
+    'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
@@ -454,7 +473,6 @@ def build(filename, title, audience, sections):
         for paragraph in paragraphs:
             doc.add_paragraph(paragraph)
         if filename == 'DPH_User_Guide.docx' and heading == 'Learn the selected project':
-            doc.add_page_break()
             doc.add_heading('The displayed learning pages', 2)
             doc.add_paragraph('These images are direct WebView2 captures from the running DPH test application, not proposed interface mockups. They show the visible portion of scrollable pages.')
             for image_name, caption in [
@@ -472,7 +490,7 @@ def build(filename, title, audience, sections):
     evidence = []
     for source in sorted(ROOT.glob('DPH.*.pas')):
         evidence.append({'path': source.name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
-    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
+    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DPH.UI.Glossary.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
         source = ROOT / name
         evidence.append({'path': name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
     for item in evidence:
@@ -513,5 +531,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 6, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 7, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

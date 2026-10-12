@@ -104,7 +104,7 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary;
 
 const
   CurrentSchemaVersion = 9;
@@ -783,12 +783,13 @@ function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenera
   const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON,AStructuredJSON: string): Int64;
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
   LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;
-  StructuredValue: TJSONValue;
+  StructuredValue,PriorRecord: TJSONValue; GlossaryQuery: TFDQuery; ExistingGlossary: TJSONObject;
+  TermNames,ExistingNames: TArray<string>; GlossaryName,ExistingName: string;
 begin
   RequireWriter;
   if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
   if Length(ABody)>1024*1024 then raise EDPHStorage.Create('Knowledge text exceeds 1 MiB');
-  if not MatchText(AKind,['note','business_rule','engineering_rule','user_help','maintenance','build_deploy','troubleshooting','orientation','decision','unknown']) then raise EDPHStorage.Create('Unknown knowledge kind');
+  if not MatchText(AKind,['note','business_rule','engineering_rule','user_help','maintenance','build_deploy','troubleshooting','orientation','decision','unknown','glossary']) then raise EDPHStorage.Create('Unknown knowledge kind');
   DocumentKind:=ADocumentKind; Audience:=AAudience;
   if DocumentKind='' then begin DocumentKind:='engineering'; if AKind='user_help' then DocumentKind:='user'
     else if MatchText(AKind,['maintenance','build_deploy','troubleshooting','orientation']) then DocumentKind:=AKind; end;
@@ -802,6 +803,33 @@ begin
     PriorStructured:='';
     if AKnowledgeID<>0 then PriorStructured:=VarToStr(Scalar('SELECT structured_json FROM knowledge_revisions WHERE knowledge_revision_id=:revision AND knowledge_id=:id',[AExpectedRevision,AKnowledgeID]));
     if (StructuredValue as TJSONObject).Count>0 then begin
+      if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+        PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+        try if PriorRecord.GetValue<string>('record_type','')<>StructuredValue.GetValue<string>('record_type','') then
+          raise EDPHStorage.Create('A structured record cannot change its record type');
+        finally PriorRecord.Free; end;
+      end;
+      if (AKnowledgeID<>0) and (PriorStructured='{}') then raise EDPHStorage.Create('An ordinary knowledge record cannot become a structured record');
+      if StructuredValue.GetValue<string>('record_type','')='business_glossary' then begin
+        TDPHGlossary.Validate(StructuredValue as TJSONObject);
+        if (AKind<>'glossary') or (ATitle<>StructuredValue.GetValue<string>('term').Trim) or (DocumentKind<>'user') or (Audience<>'all') then
+          raise EDPHStorage.Create('Glossary term identity, user document and all-reader audience must be preserved');
+        if ABody<>TDPHGlossary.Body(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit glossary fields with Business glossary > Edit term');
+        TermNames:=TDPHGlossary.Names(StructuredValue as TJSONObject);
+        GlossaryQuery:=NewQuery('SELECT r.structured_json FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id '+
+          'WHERE k.project_id=1 AND k.kind=''glossary'' AND k.knowledge_id<>:id',[AKnowledgeID]);
+        try
+          while not GlossaryQuery.Eof do begin
+            ExistingGlossary:=TJSONObject.ParseJSONValue(GlossaryQuery.Fields[0].AsString) as TJSONObject;
+            try
+              ExistingNames:=TDPHGlossary.Names(ExistingGlossary);
+              for GlossaryName in TermNames do for ExistingName in ExistingNames do
+                if GlossaryName=ExistingName then raise EDPHStorage.Create('Term or alias already belongs to another glossary record: '+GlossaryName+'. Edit that record instead; retired names remain reserved.');
+            finally ExistingGlossary.Free; end;
+            GlossaryQuery.Next;
+          end;
+        finally GlossaryQuery.Free; end;
+      end else begin
       TDPHProjectProfile.Validate(StructuredValue as TJSONObject);
       if (ATitle<>'Project profile') or (AKind<>'orientation') or (DocumentKind<>'overview') or (Audience<>'all') or (AEntityKey<>'') then
         raise EDPHStorage.Create('Project profile identity, audience and project scope must be preserved');
@@ -809,7 +837,10 @@ begin
       if (AKnowledgeID=0) and (Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND json_extract(r.structured_json,''$.record_type'')=''project_profile''',[])<>0) then
         raise EDPHStorage.Create('A profile already exists; refresh and edit its current revision');
       if (AKnowledgeID<>0) and (PriorStructured='{}') then raise EDPHStorage.Create('An ordinary knowledge record cannot be reassigned as the project profile');
+      end;
     end else if (PriorStructured<>'') and (PriorStructured<>'{}') then raise EDPHStorage.Create('Structured record fields cannot be discarded; use its editor');
+    if (AKind='glossary') and (StructuredValue.GetValue<string>('record_type','')<>'business_glossary') then
+      raise EDPHStorage.Create('Glossary terms require validated structured fields');
   finally StructuredValue.Free; end;
   if not MatchText(DocumentKind,['overview','engineering','user','maintenance','build_deploy','troubleshooting','orientation','handoff','help']) then raise EDPHStorage.Create('Unknown document kind');
   if not MatchText(Audience,['all','engineer','user','maintainer','builder','agent']) then raise EDPHStorage.Create('Unknown documentation audience');
@@ -829,9 +860,10 @@ begin
       Result:=Scalar('SELECT last_insert_rowid()',[]);
       if Entity<>0 then FConnection.ExecSQL('INSERT INTO knowledge_links(project_id,knowledge_id,entity_id,link_role) VALUES(1,:id,:entity,''annotates'')',[Result,Entity]);
     end else begin
-      if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision AND title=:title AND kind=:kind',
+      if Scalar('SELECT count(*) FROM knowledge_records WHERE project_id=1 AND knowledge_id=:id AND current_revision_id=:revision AND (title=:title OR kind=''glossary'') AND kind=:kind',
         [Result,AExpectedRevision,ATitle,AKind])<>1 then raise EDPHStorage.Create('Knowledge changed since loading, or its stable title/kind was changed; reload first');
       Prior:=VarToStr(Scalar('SELECT body_md FROM knowledge_revisions WHERE knowledge_revision_id=:id',[AExpectedRevision]));
+      if AKind='glossary' then FConnection.ExecSQL('UPDATE knowledge_records SET title=:title WHERE knowledge_id=:id',[ATitle,Result]);
     end;
     FConnection.ExecSQL('INSERT INTO knowledge_revisions(knowledge_id,body_md,editor,created_at,verification_state,structured_json) VALUES(:id,:body,:author,:stamp,''needs_review'',:structured)',[Result,ABody,AEditor,UTCNow,StructuredText]);
     Revision:=Scalar('SELECT last_insert_rowid()',[]);

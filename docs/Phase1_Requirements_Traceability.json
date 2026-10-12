@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. No unassessed numbered requirements remain. Implemented means the stated feature exists within recorded bounds, not independent acceptance of the complete product.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business glossary requirements 06.12 and 12.09 implemented; 344 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2230,15 +2230,31 @@
       "id": "06.12",
       "domain": "DPH-06",
       "requirement": "Business terminology and glossary",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.Knowledge.Glossary.pas",
+        "DPH.UI.Glossary.pas",
+        "DPH.UI.Glossary.fmx",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "DPH.Storage.Database.pas",
+        "DPH.Publish.Model.pas",
+        "DPH.Publish.Export.pas",
+        "tests/DPH.Tests.Glossary.dpr",
+        "docs/phase1-glossary-validation.json",
+        "docs/phase1-glossary-validation.log"
       ],
-      "limitation": "Add scoped business terms, aliases, definitions, authors and linked code/screens.",
+      "limitation": "Business definitions are contributor-supplied and require named review. Current names of retired terms remain reserved. Source-linked terms are invalidated by affected evidence; unlinked terms have only their contributor context. Native validation uses actual FMX form instances and PaintTo renders, not target-runtime screenshots.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 4,
+        "finding": "Dedicated project-scoped business glossary with typed term/aliases/definition/examples/context, contributor attribution, immutable save/review history, rename with stable identity, normalized duplicate prevention, source links, stale-source review, native list/filter/editor, project search and shared canonical HTML/DOCX/JSONL publication.",
+        "remaining_work": "",
+        "purpose": "Business terminology and glossary",
+        "evidence_group": "knowledge",
+        "verification": "Final glossary suite: 57 checks passed, including native modal editing, persistence, review, source changes, search and publication. Compatibility: knowledge 59, publishing 114, profile 19, quality 15, comparison 17, catalog 14; application baseline passed."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 4,
         "finding": "No glossary object or term-definition catalog exists.",
@@ -2246,6 +2262,12 @@
         "purpose": "Business terminology and glossary",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Business glossary",
+        "validation": "docs/phase1-glossary-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -4307,15 +4329,31 @@
       "id": "12.09",
       "domain": "DPH-12",
       "requirement": "Business terminology and definitions",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.Knowledge.Glossary.pas",
+        "DPH.UI.Glossary.pas",
+        "DPH.UI.Glossary.fmx",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "DPH.Storage.Database.pas",
+        "DPH.Publish.Model.pas",
+        "DPH.Publish.Export.pas",
+        "tests/DPH.Tests.Glossary.dpr",
+        "docs/phase1-glossary-validation.json",
+        "docs/phase1-glossary-validation.log"
       ],
-      "limitation": "Add scoped business terms, aliases, definitions, evidence and reviewed publication/search.",
+      "limitation": "Business definitions are contributor-supplied and require named review. Current names of retired terms remain reserved. Source-linked terms are invalidated by affected evidence; unlinked terms have only their contributor context. Native validation uses actual FMX form instances and PaintTo renders, not target-runtime screenshots.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 8,
+        "finding": "Dedicated project-scoped business glossary with typed term/aliases/definition/examples/context, contributor attribution, immutable save/review history, rename with stable identity, normalized duplicate prevention, source links, stale-source review, native list/filter/editor, project search and shared canonical HTML/DOCX/JSONL publication.",
+        "remaining_work": "",
+        "purpose": "Business terminology and definitions",
+        "evidence_group": "knowledge",
+        "verification": "Final glossary suite: 57 checks passed, including native modal editing, persistence, review, source changes, search and publication. Compatibility: knowledge 59, publishing 114, profile 19, quality 15, comparison 17, catalog 14; application baseline passed."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 8,
         "finding": "The learning glossary explains Delphi concepts; there is no selected-project business glossary.",
@@ -4323,6 +4361,12 @@
         "purpose": "Business terminology and definitions",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Business glossary",
+        "validation": "docs/phase1-glossary-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12269,7 +12313,32 @@
         "Run/test directions and guides describe the actual shipped controls; update the two requirement records with evidence, commit and push both remotes."
       ],
       "dependencies": "Uses existing knowledge versioning, source links, named review, search and publication foundations. No external AI service, production database connection or additional planning file is needed. Real business definitions are entered by contributors; regression fixtures verify the software without requiring those definitions.",
-      "boundary": "Do not fold interviews, general business-process modeling, natural-language AI answering or report/schema analysis into this implementation batch."
+      "boundary": "Do not fold interviews, general business-process modeling, natural-language AI answering or report/schema analysis into this implementation batch.",
+      "status": "completed",
+      "completion_evidence": "docs/Phase1_Glossary_Completion.txt"
+    },
+    "counts_describe": "Historical counts at the completed reconciliation baseline. Current implementation counts are recorded in current_implementation; the audit report and batch register remain historical evidence."
+  },
+  "current_implementation": {
+    "date": "2026-10-11",
+    "completed_batch": "Business glossary",
+    "completed_requirement_ids": [
+      "06.12",
+      "12.09"
+    ],
+    "counts": {
+      "implemented_manual_capture": 17,
+      "partial": 242,
+      "implemented": 172,
+      "missing": 102
+    },
+    "unassessed": 0,
+    "incomplete_requirement_records": 344,
+    "completion_record": "docs/Phase1_Glossary_Completion.txt",
+    "next_bounded_batch": {
+      "requirement": "04.13",
+      "title": "Keyboard shortcuts and focus-order inspector",
+      "scope": "Inspect captured shortcuts, action references and TabOrder in an IDE-designed view with duplicate/unknown diagnostics, source navigation, tests and directions. Preserve explicit inherited/runtime unknowns rather than claiming runtime focus order."
     }
   }
 }

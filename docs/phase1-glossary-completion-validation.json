@@ -1,0 +1,143 @@
+{
+  "result": "PASS",
+  "checked_at_utc": "2026-10-12T00:54:48.916422+00:00",
+  "baseline_commit": "5ec1d6e",
+  "completed_requirements": [
+    "06.12",
+    "12.09"
+  ],
+  "numbered_requirements_preserved": 533,
+  "unassessed": 0,
+  "implementation_counts": {
+    "implemented_manual_capture": 17,
+    "partial": 242,
+    "implemented": 172,
+    "missing": 102
+  },
+  "backlog_records": 344,
+  "test_checks_passed": {
+    "docs/phase1-glossary-validation.json": 57,
+    "docs/wp5-validation.json": 59,
+    "docs/wp6-validation.json": 114,
+    "docs/phase1-profile-validation.json": 19,
+    "docs/phase1-quality-validation.json": 15,
+    "docs/phase1-comparison-validation.json": 17,
+    "docs/phase1-project-catalog-validation.json": 14
+  },
+  "application_build_and_fmx_baseline": "PASS",
+  "standalone_bundle_validator": "PASS on controlled glossary fixture; --allow-stale explicitly selected",
+  "guide_source_hashes_verified": 40,
+  "guides": {
+    "DPH_User_Guide": {
+      "pages": 19,
+      "docx_sha256": "22ce4be4078940d63c194b55724cd7067ce2b9b625a89571ea2d8cbb881387fb",
+      "pdf_sha256": "409ca71acd1c74547801814e207c7bc4d649773594bf4076da9c471549bfae88",
+      "editable_toc_preserved": true,
+      "all_final_pages_visually_inspected": true,
+      "png_sha256": {
+        "page-1.png": "e1c2b138b33305926fa3d07dbc22a63159d7488f5d4792697d8b0c4167b84e3a",
+        "page-10.png": "47fdb08ccb76291b031d4227b79d2aeb4c2cb2fe7fef9deb609460c15e4bc727",
+        "page-11.png": "f8ce91923ba1957b5e52314c45ed2a3e30e16d26a36aef143313d4e952d06abf",
+        "page-12.png": "f1bca382f9312b6c332a79b7aae36ee714398ec87360ff0df4fa259c7f8bf2d6",
+        "page-13.png": "7fcb494b917df4e82a0120a7451023dce9298908a73dd0aa0aea7e1f2eac5cfb",
+        "page-14.png": "f439e3491a35952ef13988be80ffaae63d08aa29c75ddee92db67304e97e307d",
+        "page-15.png": "abfa2712e0e1a9f3e0a57c86ca345b167d2d7da01a4372f6a3771b1af80848b5",
+        "page-16.png": "e7419be244282d2921881640f196f115313b1e729197b9b99906a23812bf2deb",
+        "page-17.png": "41e8953ba4f3cdf0a76ec569560335caa059a54ee3b56424976fd7eacd6b14e2",
+        "page-18.png": "1699345872a81f8f1a590e5b4f473cd54219404d7de25a52293c4e5700abf2b3",
+        "page-19.png": "51aaf09bd4cd6b367faebd82ad9e733d170949e857d3f7984ec29333219e8616",
+        "page-2.png": "0bd60ba0be6d57023302e682e4eb8cec17809dff54d3f9dc2cd12232c6fd2ace",
+        "page-3.png": "0a039630558917b6c186410f43e4a30b63f8be38eae85878480bf177a11440cb",
+        "page-4.png": "58be511d11e5ae935f521a0c0cc5c2c302806398ec0c96b22acdce06f6190189",
+        "page-5.png": "846b9effb61bf4ed505346da62884fed0cbc2f162331d1288f586f6aed287b55",
+        "page-6.png": "5a65412b4222003a4eaf4c003ea5df2c58916c09c0572d11c7a1b52f9be0a429",
+        "page-7.png": "e517fdf7a0383b3093fad76f6466b9257ecf96bd65628746ff962d3333e0dbf0",
+        "page-8.png": "865a6957a0dbdc2f41236ca05f3c8a10f0c04be6a17c0eb9403c366a3873c947",
+        "page-9.png": "1fa09c42549a14b2cdc4756ab83aee57ba86475d42a509b128f82826634558d6"
+      }
+    },
+    "DPH_Engineering_Guide": {
+      "pages": 15,
+      "docx_sha256": "b84bb6c658a959d490ebbaa021d1a27da1d8a27f05c854cf23744c82494f775b",
+      "pdf_sha256": "f904d1cfc021ebc61d59f00ec3158c40b860cbaa683d5db6d908579c13c55225",
+      "editable_toc_preserved": true,
+      "all_final_pages_visually_inspected": true,
+      "png_sha256": {
+        "page-1.png": "3586d3c4663ee21b6177482188d580f1f234fe752e83bdbb156c26b09cab81b2",
+        "page-10.png": "e150e6d5a912bc96d0f3ef594ad87aade6cbecd70a9b46e4a5f70af65b43eb44",
+        "page-11.png": "bf65e05a9a517bd0ee3be389c127b521f91f05b8b8dcf74da79a1fa4c5502458",
+        "page-12.png": "a826674638dcddcf2880d02efaa4550eaed9b0a7fd7197478baf754467dea38d",
+        "page-13.png": "06a8106e2ceb31f99333d96f357b42e2493eefd83fab76a38e7a71c7678ab46c",
+        "page-14.png": "bff2549f0363c4968f1c9e6684aefff4d14ebd656e59c6f9e84b681f2b3c43b3",
+        "page-15.png": "d4cd78033a4a7159c2d0ff80199fdc1c03d3247c2485646f7eae775dbd30ce42",
+        "page-2.png": "890bab8f9488b40d57b92d68167010b5d663e5d8a501728f9ecd8c2dabf27e76",
+        "page-3.png": "42c5417309e9061820f8b88ea29a976038c02a5a36f5b9c03cd5f3abd361f236",
+        "page-4.png": "e8d24ff0ef20fc1e2fb4791151cd1e29cc6cedc2dbb6480d4766f01af1835a0a",
+        "page-5.png": "ee9c7ac98d362730ec853fdfaa2a7aaec3fee6f8f893edead62a617557c5b792",
+        "page-6.png": "69c00c92cfb9678f440b46fa693e9f16391bc930d7fd9ea5654959a4f12b95d5",
+        "page-7.png": "99e540156d7f74d7d3feff79ecb20795c7056f2375e86bc162ba2fb4a548e53c",
+        "page-8.png": "b08bbe2e8eaba96c566f1a6e5acd4d1d509903d52039c503a6d409825da490eb",
+        "page-9.png": "c68d2eb47e985e2d90105e75bf00e66fb8658611caca9d83e879d11a4baf8c06"
+      }
+    }
+  },
+  "native_forms": "Normal and compact serialized FMX control renders inspected; modal edit/new/cancel and unsaved-draft guards exercised",
+  "prechange_backup": {
+    "path": "H:\\DPH Backups\\BusinessGlossary_PreChange_20261011_202113",
+    "files": 4278,
+    "bytes": 646707077,
+    "verification": "Every copied file SHA-256 verified before source edits",
+    "wake_allowance_seconds": 65
+  },
+  "only_two_requirement_statuses_promoted": true,
+  "historical_reconciliation_reports_unchanged": true,
+  "original_plans_and_migrations_unchanged": true,
+  "disposable_fixtures_removed": [
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{7CEF16A0-AED5-409F-B47D-B87F3A9C2DD0}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{6D2FD3E6-6B88-4E9E-B5E7-FE5CA727449F}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{D9D277DE-55B3-4E80-B2F6-1A365514C8A2}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\phase1-tests-{66D195AE-B404-470C-A9CB-56AB4288366A}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp5-tests-{FFF45F27-4478-4FEB-B182-3C8B8AA82B76}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\wp6-tests-{7EACE25E-0E3B-4718-AD3C-7C23CC3327E3}",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\glossary-validation\\handoff-4",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\glossary-validation\\handoff-3",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\glossary-validation\\handoff-2",
+    "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\glossary-validation\\handoff-1"
+  ],
+  "source_and_evidence_sha256": {
+    "DPH.Knowledge.Glossary.pas": "9c50a06ccf405f786526e206e5e84ea956604eeb42e1a84b9f91c31cced70dcb",
+    "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
+    "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
+    "DPH.UI.Main.pas": "f4495d86b4a6390e3cf24f645d73ad8f69e5fe03af79aab9e5fdadcb78caa345",
+    "DPH.UI.Main.fmx": "6212567a7d5b8c1cd18a4f5b2ca0bb99c0deac95db5723ec633f1413f5b5206b",
+    "DPH.Storage.Database.pas": "28e17f8ddf7196406c1ef3ba3ce4e98959764660d90cec0ae7abd249d0043b33",
+    "DPH.Publish.Model.pas": "924538cea0f766a19094f0fd41ff4381094e905f1a2e7db9474e3b6437bad292",
+    "DPH.Publish.Export.pas": "0a36aa00c6c9591521d53977e2a4985b4cb390dfa79c7dcbc337c74ff306c39e",
+    "DelphiProjectHandoff.dproj": "717637f3a1d07f33e0902beb1da0d2765ba420ccbe5383db9c5bab082ee16977",
+    "tests/DPH.Tests.Glossary.dpr": "06183efabec6788fb8a04834b06799dbaf1c4bddffb59902dbd5319ceb5e928b",
+    "tools/build-glossary.cmd": "0f85434f9f33374c46f98573d13ba334fe42a03f1ec27ad5b55e2c2f4fb071e5",
+    "tools/backup-phase.ps1": "0bef14d8b0553eaaf040dec70bc75bc8c76f7ffa50e10f9027b7385e66bf09af",
+    "tools/build-guides.py": "7048ba901e0906b3eb7f04056a3e4b5615567186d62484f3855aa715ca5488aa",
+    "docs/Phase1_Requirements_Traceability.json": "c1b7f778394eba4d063baef98b6bc433a2b8098ec3a54e5411c3aec5a6af682c",
+    "docs/Phase1_Implementation_Backlog.csv": "995eeda1e8afcd287f2d9b4973a3f843419368b9386f8e95abf4b9ef385c33fb",
+    "docs/Phase1_Glossary_Completion.txt": "e765fc9b1ccded44fee14ecd6937adc5628aed0291387b638510ea9b272ca63e",
+    "docs/guides/Business_Glossary_Run_and_Test.txt": "389dd8b3fbe52e90ef21589b64fd6342d053f452651340cbfc692a912ecc22dd",
+    "help/index.html": "6d7acc5737ab28a2022a6b4019c8f2fcdbeadef27d613d28befa9dc1fa9172cf",
+    "docs/phase1-glossary-validation.json": "556b4cacf8c4546ea0412ce4eea7ba0b44e26ba652cde22aba2fb4f91751aa09",
+    "docs/wp5-validation.json": "02b554bd2d7afbf1db0178eb24f6698d76b8ebc2c8d8b1001387405f43d197ea",
+    "docs/wp6-validation.json": "e64ecb5788ba0d120ad70f6677a94dde6234d7d6c2107609755f216bfdd8126a",
+    "docs/phase1-profile-validation.json": "3c1038366fad32f2fcab35841a73c3eccfac84cd036d4e9f2742f06aeee3f5a1",
+    "docs/phase1-quality-validation.json": "38a4c2a843caaa60651e8065b3b6f76cee5a5618a72ed6bdc4d1cf1e4873a107",
+    "docs/phase1-comparison-validation.json": "ad587756cbb328b8996501905301c9aff87bcabf8092e624736141a470a7d8a5",
+    "docs/phase1-project-catalog-validation.json": "c3f9a2acd397b552ff1b51a31ab7b7e6f66d9986776e33eb9eef3051a0610590"
+  },
+  "binary_sha256": {
+    "bin/Win32/Debug/DelphiProjectHandoff.exe": "ad8770d4130b9dda8defd40bb42214259c76730592160b3a4e09644a2e70f5a5",
+    "bin/Win32/Debug/DPH.ValidateHandoff.exe": "cc38cf754939bf27773becd9e1601f25081224798c05180b47a5408a754170b0"
+  },
+  "limits": [
+    "Contributor-supplied business definitions require named review; no automatic business inference or authenticated-user claim.",
+    "This completes the glossary batch, not the 344 remaining partial/missing requirement records.",
+    "Controlled regression/native evidence does not substitute for independent whole-product first-time-user acceptance."
+  ]
+}
