@@ -1,0 +1,138 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17559 lines, 1.45 seconds, 10621744 bytes code, 348980 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: FMX binding links actual control target
+PASS 3: FMX edit has reverse binding link
+PASS 4: Persistent field is explicitly classified
+PASS 5: Data-aware control is classified
+PASS 6: Field parent resolves exact owning dataset
+PASS 7: Control resolves data source
+PASS 8: Control field resolves through dataset chain
+PASS 9: Field binding retains property line
+PASS 10: Field binding retains byte range
+PASS 11: Persistent field retains exact bound control among all dependents
+PASS 12: Duplicate field names remain ambiguous
+PASS 13: Duplicate fields never select arbitrary target
+PASS 14: Runtime field is not invented
+PASS 15: Missing source prevents field link
+PASS 16: Nil source prevents field link
+PASS 17: Lookup dataset reference navigable
+PASS 18: Field with non-dataset parent remains unowned
+PASS 19: FMX BindSource chain resolves captured field
+PASS 20: Binary DFM field chain resolves
+PASS 21: Field metadata shown
+PASS 22: Binding explanation precedes engine guidance
+PASS 23: Text DFM connection captured
+PASS 24: Known connection class classified
+PASS 25: Dataset classified
+PASS 26: Data source classified
+PASS 27: Transaction classified
+PASS 28: Session classified
+PASS 29: Custom class property signal remains candidate
+PASS 30: Pascal-only declaration retained
+PASS 31: Confirmed component-field binding avoids duplicate declaration row
+PASS 32: Dataset connection links uniquely
+PASS 33: Data source links to dataset
+PASS 34: Qualified cross-module reference links
+PASS 35: Missing target explicitly unresolved
+PASS 36: Missing target not fabricated
+PASS 37: Unqualified external target is not guessed
+PASS 38: Unrelated visual component excluded
+PASS 39: Nil stays explicit
+PASS 40: Wrong-role target not linked
+PASS 41: Unsupported expression masked
+PASS 42: IB database reference links
+PASS 43: Transaction reference links
+PASS 44: Transaction default database links
+PASS 45: BDE logical database alias links
+PASS 46: Session alias links
+PASS 47: Parent-local nested path links
+PASS 48: Self-qualified reference links
+PASS 49: Duplicate paths remain ambiguous
+PASS 50: Ambiguous target not followed
+PASS 51: Named definition inventoried
+PASS 52: Shared definition has both referencing connections
+PASS 53: External definition contents not invented
+PASS 54: Reverse dataset dependencies retained
+PASS 55: Binary DFM connection captured
+PASS 56: Binary reference resolved
+PASS 57: FMX connection reference resolved
+PASS 58: Inherited declaration preserved
+PASS 59: Missing configuration not invented
+PASS 60: All sensitive configuration canaries absent from projection
+PASS 61: Validated driver metadata shown
+PASS 62: Valid port shown
+PASS 63: Invalid driver and port masked
+PASS 64: Connected flag qualified
+PASS 65: Exact source hash retained
+PASS 66: Reopened captured database gives identical inventory
+PASS 67: Field constraints and hook body rules captured
+PASS 68: Normal fixture rules not truncated
+PASS 69: Declared numeric minimum retained
+PASS 70: Constraint context is exact field
+PASS 71: Constraint source points at property, not field container
+PASS 72: Custom constraint structure retained
+PASS 73: Default expression retained without evaluation
+PASS 74: Validation predicate captured
+PASS 75: Validation exception candidate retained
+PASS 76: Early return remains a visible source candidate
+PASS 77: Numeric transformation captured
+PASS 78: Assignment input expression shown
+PASS 79: Assignment output expression shown
+PASS 80: Input declaration navigable
+PASS 81: Output declaration navigable
+PASS 82: Handler navigable
+PASS 83: Transformation source SHA256 retained
+PASS 84: Text transformation retained
+PASS 85: Semicolon inside call literal never invents assignment
+PASS 86: Dataset BeforePost resolves captured handler
+PASS 87: Dataset BeforePost rule body captured
+PASS 88: Missing hook remains visible
+PASS 89: Missing hook explicitly unresolved
+PASS 90: Missing handler has no invented target
+PASS 91: Constraint and handler literals omitted from rule projection
+PASS 92: Encoded character literal omitted
+PASS 93: Rule explanation appears first
+PASS 94: Reopened capture retains identical rule evidence
+PASS 95: Unavailable handler syntax does not recreate transformation rules
+PASS 96: Full inventory reports omitted data rules explicitly
+PASS 97: Combined inventory never exceeds 10000 rows
+PASS 98: Inventory page discoverable
+PASS 99: Native page paginates at 250
+PASS 100: Next enabled for remaining rows
+PASS 101: Next shows bounded remaining rows
+PASS 102: Native text and kind filters find dataset
+PASS 103: Unique reference enables follow
+PASS 104: Follow navigates exact target
+PASS 105: Reverse references navigable
+PASS 106: Named definition kind filter
+PASS 107: Native details explain unknown definition contents
+PASS 108: Native details omit sensitive values
+PASS 109: Empty filter has no invented rows
+PASS 110: Empty filter disables reference navigation
+PASS 111: Empty inventory explains coverage limits
+PASS 112: Native bound control filter finds control
+PASS 113: Native details show captured field binding
+PASS 114: Native follow opens exact persistent field
+PASS 115: Field has dataset and reverse control links
+PASS 116: Field name search finds persistent field
+PASS 117: Native data rule filter searches transformation expression
+PASS 118: Native memo labels rule purpose
+PASS 119: Native input expression visible
+PASS 120: Native output expression visible
+PASS 121: Rule source command available
+PASS 122: Detached rule source is refused
+PASS 123: Native follow opens exact validation handler
+PASS 124: Compact commands scroll horizontally
+PASS 125: Evidence memo scrolls
+PASS 126: Compact evidence stays in workspace pane
+PASS 127: Compact evidence retains usable visible height
+PASS 128: Capture replacement retains redaction
+PASS 129: Owner catalog unchanged
+PASS 130: Analyzed source unchanged
+Data rules validation passed: 130 checks.

@@ -108,7 +108,7 @@ begin
  Check(Reference('AmountEdit','DataField').GetValue<string>('target_id')=Find('Amount').GetValue<string>('id'),'Control field resolves through dataset chain');
  Check(Reference('AmountEdit','DataField').GetValue<Integer>('line')>0,'Field binding retains property line');
  Check(Reference('AmountEdit','DataField').GetValue<Integer>('end')>Reference('AmountEdit','DataField').GetValue<Integer>('start'),'Field binding retains byte range');
- Check(Find('Amount').GetValue<TJSONArray>('used_by').Count=1,'Persistent field lists exact bound control');
+ Check(Find('Amount').GetValue<TJSONArray>('used_by').ToJSON.Contains(Find('AmountEdit').GetValue<string>('id')),'Persistent field retains exact bound control among all dependents');
  Check(Reference('CodeEdit','DataField').GetValue<string>('resolution').Contains('ambiguous'),'Duplicate field names remain ambiguous');
  Check(not Reference('CodeEdit','DataField').ToJSON.Contains('target_id'),'Duplicate fields never select arbitrary target');
  Check(not Reference('DynamicEdit','DataField').ToJSON.Contains('target_id'),'Runtime field is not invented');

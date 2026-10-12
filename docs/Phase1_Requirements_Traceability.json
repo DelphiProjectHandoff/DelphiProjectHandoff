@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Transaction boundaries and rollback behavior 05.13 implemented as qualified API requests and source CFG possibilities; 324 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Data validation and transformation rules 05.14 implemented as qualified field declarations and handler-context candidates; 323 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2264,14 +2264,31 @@
       "id": "05.14",
       "domain": "DPH-05",
       "requirement": "Data validation and transformation rules",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.Symbols.pas",
         "DPH.Analysis.Model.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Parse.Forms.pas",
+        "DPH.Parse.Model.pas",
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DataRules.dpr",
+        "tools/build-data-rules.cmd",
+        "docs/phase1-data-rules-validation.json",
+        "docs/phase1-data-rules-validation.log",
+        "docs/guides/Data_Rules_Run_and_Test.txt"
       ],
-      "limitation": "Add field-level validation/transformation rules with input/output/constraint evidence.",
+      "limitation": "Captured field declarations and handler-context rule candidates only. Lexical input/output references do not establish reaching definitions, actual values, successful validation or event execution. Missing or ambiguous handlers and unavailable syntax remain explicit. Inherited defaults, runtime assignments, aliases, factories, unsupported external validation and server enforcement remain unverified. Combined inventory is bounded to 10000 rows with explicit truncation. Target source remains passive; no target application, SQL, driver or database server executes.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database connections exposes field constraints and validation/transformation hooks with exact source evidence. Captured handler conditions, raises, early exits and assignment expressions show constraint, input and output expressions, conditional compilation, context and handler identity. Exact lexical input/output declaration links and reverse references are navigable. Missing handlers/syntax and inventory truncation remain explicit. Text and binary form parsers recognize BeforePost and related dataset hooks. Native filters, labeled details and hash-checked Source use IDE-editable controls.",
+        "remaining_work": "",
+        "purpose": "Data validation and transformation rules",
+        "evidence_group": "semantics",
+        "verification": "130 focused and 1014 regression checks pass (402 transactions, 232 operations, 92 bindings, 66 engines, 134 semantics, 88 parser). Actual app and FMX baseline pass. Real parser output, persisted/reopened captures, numeric/text transformations, constraints, missing handlers/syntax, literal redaction, semicolon-in-call regression, inventory limits, native navigation and source/catalog immutability verified. All 62 final guide pages and two native renders reviewed; 58 source hashes and 106 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Conditions, assignments and basic derives_from edges expose technical transformations.",
@@ -2279,6 +2296,12 @@
         "purpose": "Data validation and transformation rules",
         "evidence_group": "semantics",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Data validation and transformation rules",
+        "validation": "docs/phase1-data-rules-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12742,23 +12765,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Database transaction paths",
+    "completed_batch": "Data validation and transformation rules",
     "completed_requirement_ids": [
-      "05.13"
+      "05.14"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 229,
-      "implemented": 191,
+      "partial": 228,
+      "implemented": 192,
       "missing": 95
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 324,
-    "completion_record": "docs/Phase1_Database_Transactions_Completion.txt",
+    "incomplete_requirement_records": 323,
+    "completion_record": "docs/Phase1_Data_Rules_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.14",
-      "title": "Data validation and transformation rules",
-      "scope": "Add field-level validation/transformation rules with input/output/constraint evidence."
+      "requirement": "05.15",
+      "title": "Data lineage from input to final destination",
+      "scope": "Connect input controls, database fields, procedures and destinations into scoped lineage chains with unresolved breaks."
     }
   }
 }

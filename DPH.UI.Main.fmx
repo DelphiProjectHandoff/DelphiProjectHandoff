@@ -1460,7 +1460,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select transaction operation for begin, commit, rollback and possible normal/error/cleanup paths. Follow reference opens a receiver or next boundary; Source opens captured code. Database operation shows CRUD requests. Scroll commands sideways. No target database is opened.'
+Text = 'Choose data rule for field constraints, validation conditions and input/output transformations. Follow reference opens the field, handler or lexical declaration; Source opens captured code. Transaction and database operation filters inspect other requests. Scroll commands sideways.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1487,7 +1487,9 @@ Items.Strings = (
 'persistent field'
 'binding control target'
 'database operation'
- 'transaction operation')
+ 'transaction operation'
+ 'data rule'
+ 'rule declaration')
 ItemIndex = 0
 end
 object DatabaseInventoryFilter: TEdit

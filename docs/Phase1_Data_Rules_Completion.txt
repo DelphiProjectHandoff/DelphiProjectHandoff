@@ -1,0 +1,29 @@
+DPH REQUIREMENT 05.14 COMPLETION DATA VALIDATION AND TRANSFORMATION RULES
+Last changed: 12 October 2026
+
+Database connections now exposes persistent-field constraints and recognized
+validation/conversion hooks. Handler conditions, raises, early exits and
+assignment candidates retain source, SHA256, generation and conditional context.
+Input, output, constraint and captured expression appear first in labeled details.
+Exact field/dataset context, handler and lexical declarations can be followed;
+reverse references return to rules. Source uses existing attached-hash guards.
+BeforePost and related dataset hooks are captured from text and binary forms.
+Missing/ambiguous handler, unavailable syntax and truncation remain explicit.
+Analyzer versions: DPH-WP2-6 and DPH-WP3-15. No schema migration.
+
+Validation PASS: 130 focused + 402 transactions + 232 operations + 92 bindings +
+66 engines + 134 semantics + 88 parser = 1144 checks.
+Actual application and FMX baseline PASS. Normal and compact native renders
+reviewed. All 62 final guide pages visually reviewed; 58 source hashes and
+106 TOC destinations verified. Guides remain editable with companion PDFs.
+Explicit directions: docs/guides/Data_Rules_Run_and_Test.txt.
+
+Pre-change backup: H:\DPH Backups\DataRules_PreChange_20261012_155630
+5506 files, 2150426199 bytes; every SHA256 verified. No post-change backup.
+
+Captured field declarations and handler-context rule candidates only. Lexical input/output references do not establish reaching definitions, actual values, successful validation or event execution. Missing or ambiguous handlers and unavailable syntax remain explicit. Inherited defaults, runtime assignments, aliases, factories, unsupported external validation and server enforcement remain unverified. Combined inventory is bounded to 10000 rows with explicit truncation. Target source remains passive; no target application, SQL, driver or database server executes.
+
+Only 05.14 promoted. All 533 original requirement IDs and texts preserved.
+192 implemented; 18 implemented_manual_capture; 228 partial; 95 missing.
+323 incomplete; zero unassessed. The entire product is not complete.
+Next: 05.15 Data lineage from input to final destination.

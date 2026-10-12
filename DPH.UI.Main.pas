@@ -2253,11 +2253,12 @@ begin
  Kind:='';if DatabaseInventoryKind.ItemIndex>0 then Kind:=DatabaseInventoryKind.Selected.Text;Count:=0;
  for V in FDatabaseInventory.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (Kind<>'') and (Row.GetValue<string>('role')<>Kind) then Continue;
-  if (DatabaseInventoryFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('path')+' '+Row.GetValue<string>('class')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<TJSONArray>('configuration').ToJSON+' '+Row.GetValue<TJSONArray>('links').ToJSON+' '+Row.GetValue<TJSONArray>('used_by').ToJSON+' '+Row.GetValue<string>('engine.family')+' '+Row.GetValue<string>('engine.server_version'),DatabaseInventoryFilter.Text.Trim) then Continue;
+  if (DatabaseInventoryFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('path')+' '+Row.GetValue<string>('class')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<TJSONArray>('configuration').ToJSON+' '+Row.GetValue<TJSONArray>('links').ToJSON+' '+Row.GetValue<TJSONArray>('used_by').ToJSON+' '+Row.GetValue<string>('engine.family')+' '+Row.GetValue<string>('engine.server_version')+' '+Row.GetValue<string>('expression','')+' '+Row.GetValue<string>('constraint','')+' '+Row.GetValue<string>('input','')+' '+Row.GetValue<string>('output',''),DatabaseInventoryFilter.Text.Trim) then Continue;
   if (Count>=FDatabaseInventoryOffset) and (FDatabaseInventoryRows.Count<250) then begin FDatabaseInventoryRows.Add(Row);DatabaseInventoryList.Items.Add(Row.GetValue<string>('role')+' | '+Row.GetValue<string>('path')+' : '+Row.GetValue<string>('class')+' | Engine: '+Row.GetValue<string>('engine.family')+' | Declared version: '+Row.GetValue<string>('engine.server_version'));end;Inc(Count);
  end;
  DatabaseInventoryNext.Enabled:=Count>FDatabaseInventoryOffset+FDatabaseInventoryRows.Count;
  DatabaseInventoryStatus.Text:=Format('%d matches; %d shown from %d. Configuration is masked; no target database is opened.',[Count,FDatabaseInventoryRows.Count,FDatabaseInventoryOffset]);
+ if FDatabaseInventory.GetValue<Boolean>('data_rules_truncated',False) then DatabaseInventoryStatus.Text:=DatabaseInventoryStatus.Text+' Rule inventory truncated at 10000 rows; narrow the captured project.';
  if DatabaseInventoryList.Count>0 then begin DatabaseInventoryList.ItemIndex:=0;DatabaseInventorySelectionChange(nil);end
  else DatabaseInventoryMemo.Text:=FDatabaseInventory.GetValue<string>('qualification')+sLineBreak+sLineBreak+'No matching captured database declarations. Clear the filters or reassess with approved missing source. Runtime-only factories and configuration are not established by an empty inventory.';
 end;

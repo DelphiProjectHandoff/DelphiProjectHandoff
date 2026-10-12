@@ -125,7 +125,7 @@ begin
   repeat
     PropStart:=FPosition; PropertyName:=ReadShort; if PropertyName='' then Break;
     Value:=BinaryValue(0); PropertyNode:=Add('property',PropertyName,Value,Node,PropStart,FPosition,True);
-    if StartsText('On',PropertyName) and not MatchText(Value,['nil','null']) then
+    if (StartsText('On',PropertyName) or MatchText(PropertyName,['BeforePost','BeforeInsert','BeforeEdit','BeforeDelete','BeforeCancel','BeforeOpen'])) and not MatchText(Value,['nil','null']) then
       Add('event_binding',PropertyName,Value,PropertyNode,PropStart,FPosition,True);
   until False;
   while (FPosition<Length(FSource.Bytes)) and (FSource.Bytes[FPosition]<>0) do BinaryObject(Node,ADepth+1);
@@ -194,7 +194,7 @@ begin
         if Quote or (Depth<>0) then raise EReadError.Create('Unterminated serialized property');
         Value:=Trim(Copy(S,ValueStart+1,Scan-ValueStart)); Position:=Scan;
         PropertyNode:=Add('property',PropertyName,Value,Stack.Last,LineStart,Scan,False);
-        if StartsText('On',PropertyName) and (Value<>'') and not SameText(Value,'nil') then
+        if (StartsText('On',PropertyName) or MatchText(PropertyName,['BeforePost','BeforeInsert','BeforeEdit','BeforeDelete','BeforeCancel','BeforeOpen'])) and (Value<>'') and not SameText(Value,'nil') then
           Add('event_binding',PropertyName,Value,PropertyNode,LineStart,Scan,False);
       end;
     end;

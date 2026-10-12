@@ -1,0 +1,71 @@
+DPH FIELD VALIDATION AND TRANSFORMATIONS RUN AND TEST
+Last changed: 12 October 2026
+
+START AND INSPECT
+1. Open File Explorer and navigate to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. It opens maximized.
+3. Click Attach project at the upper left. Choose the OTHER application's
+   .dproj, .dpr or .groupproj. Save its proposed .dphdb in DPH's Databases
+   folder. Wait for the bottom activity line to finish. For an existing cache,
+   click Open cache, select its .dphdb, then attach its matching source.
+   Click Full reassessment to upgrade older captures to DPH-WP2-6/WP3-15.
+4. In the upper-right page selector choose Database connections.
+5. In the kind selector choose data rule. Clear the text filter.
+6. Select a rule. The central memo begins DATA VALIDATION AND TRANSFORMATION
+   EVIDENCE. Read Input expression, Output expression, Constraint, Captured
+   expression and conditional compilation. Scroll within the memo; drag the
+   divider below the list to give details more height.
+7. Search for a field, handler, predicate or transformation expression.
+   First page resets pagination; Next page shows the next 250 matches.
+8. Drag the toolbar's horizontal scrollbar right to reach the reference
+   selector, Follow reference and Source. Choose Target via rule context
+   and click Follow reference to inspect the field/dataset. Choose handler
+   for its routine, or lexical input/output for a captured declaration.
+   Follow clears filters to reveal its exact target. Choose data rule again
+   when returning. Used by entries provide reverse navigation.
+9. Click Source for unchanged attached source in the displayed generation.
+   Detached, changed, historical, binary or outside-root source is refused
+   with an explanation. Do not interpret refusal as an empty rule.
+
+READ THE EVIDENCE
+Required/ReadOnly/Size/Precision/MinValue/MaxValue and supported custom/default
+expressions are captured declarations. Missing values and inherited defaults
+stay unknown. Defaults are not evaluated. String and character-code literals,
+comments, message contents and masks are omitted from projected expressions.
+OnValidate/OnSetText/OnGetText and supported dataset/input hooks identify source
+contexts. Handler predicates, raises, exits and assignments are candidates.
+The context field is not proof that every statement changes that field.
+Lexical inputs/outputs are declarations, not observed values or reaching
+definitions. Actual event dispatch, successful validation and database effects
+remain unknown. Missing handlers/syntax stay explicit. A full combined inventory
+reports truncation at 10000 rows; narrow the captured project when needed.
+
+CONTROLLED PRACTICE
+Run the developer test below first. It creates a fixed ignored fixture under:
+C:\New Delphi Projects\Delphi Project Handoff\bin\data-rules-validation\source
+Attach that folder's Connections.dpr to DPH. Choose data rule and search for
+InputAmount * 1.2. Its input is InputAmount and output is OutputAmount.
+Follow handler to ValidateAmount. Search InputAmount < 0 to inspect its
+validation condition and associated exception source. Search MinValue for the
+Amount field's declared minimum. OnGetText = MissingHandler deliberately has
+no resolved handler. This fixture is analyzed only; never run its source.
+
+DEVELOPER VALIDATION
+1. Open Windows Start, type cmd, then select Run as administrator for
+   Command Prompt. Elevation lets RAD Studio read its environment file.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-data-rules.cmd
+   Expect Data rules validation passed and a zero exit code.
+   Results: docs\phase1-data-rules-validation.json and .log.
+   Normal/compact images are direct renders of running DPH controls.
+4. Run tools\build-database-transactions.cmd, tools\build-database-operations.cmd,
+   tools\build-dataset-bindings.cmd and tools\build-database-engines.cmd.
+5. Run tools\build-wp3.cmd, then:
+   bin\Win32\Debug\DPH.Tests.Semantics.exe "%CD%"
+6. Run tools\build-wp2.cmd for parser/discovery checks.
+7. Run tools\build-wp0.cmd. Expect PASS WP0-TEST for the actual app and FMX.
+The tools run DPH validation, not the selected application's code or SQL.
+Owner source and catalog remain unchanged.

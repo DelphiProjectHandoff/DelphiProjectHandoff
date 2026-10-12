@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "requirement": "05.14",
+  "status": "implemented",
+  "checks": 130,
+  "regression_checks": 1014,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.14",
+  "incomplete_requirement_records": 323,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 228,
+    "implemented": 192,
+    "missing": 95
+  },
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 33,
+        "toc_entries": 57,
+        "new_chapter_pages": [
+          3,
+          24
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 29,
+        "toc_entries": 49,
+        "new_chapter_pages": [
+          2,
+          27
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 62 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DataRules_PreChange_20261012_155630",
+    "files": 5506,
+    "bytes": 2150426199,
+    "sha256_verified": true
+  },
+  "qualification": "Captured field declarations and handler-context rule candidates only. Lexical input/output references do not establish reaching definitions, actual values, successful validation or event execution. Missing or ambiguous handlers and unavailable syntax remain explicit. Inherited defaults, runtime assignments, aliases, factories, unsupported external validation and server enforcement remain unverified. Combined inventory is bounded to 10000 rows with explicit truncation. Target source remains passive; no target application, SQL, driver or database server executes.",
+  "evidence_hashes": {
+    "DPH.Analysis.Model.pas": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035",
+    "DPH.Parse.Forms.pas": "3cf7d49afd859e2d2749cb30e5fdd76120eaf05ef5223e8fb8bf6eb1a7fcd66c",
+    "DPH.Parse.Model.pas": "bdecd758070044593a6a19bfd53b35f9a23286e2542194313222cdfee51d6557",
+    "DPH.Workspace.DatabaseConnections.pas": "7e24e0ef35ce20eed33186704327a075d5087023dc0d4be2790589854c5ebbeb",
+    "DPH.UI.Main.pas": "3ae9464703c174d8e35c492b01cdbda6c84986c1921397e5a8a78fb2f5cef5d9",
+    "DPH.UI.Main.fmx": "ca8d6fa10b1e0f6dd8c802e7308ee6479259353d39e1b940e7e2d7f962c55282",
+    "tests/DPH.Tests.DataRules.dpr": "69d59234bcaa6b3f90acd7bbb2d8a307d3be1619a4477740c00ba810da314aba",
+    "tools/build-data-rules.cmd": "7f8a2883dedd790d36ebb35f401433ffe44dcd55670ef6834e84b1d3d459f4c0",
+    "docs/phase1-data-rules-validation.json": "fc466848047f83a7a53e3505b19448c9b133b7f0ea6f146c197d65339dc974b0",
+    "docs/phase1-data-rules-validation.log": "a5756884cd6ae2064a4be528589534fe5dbdb7d454759bc2889412b18471ecd7",
+    "docs/guides/Data_Rules_Run_and_Test.txt": "db393a7850075ca2c31203ac402caba5578bd302062dca5cbf80a10c6ee3ad76",
+    "tools/build-guides.py": "5291bea9113d1528c116acced207546833ac84ee0e6524688d2c5de412644eb9",
+    "README.md": "2020a7f2c8630dc7d6b67ee32d1dfae4ba480b60a3e4151ca01110713a49c4ef",
+    "help/index.html": "f4e74aa9d70e368b1cdf478ddafd84747aea5cad9aeec29c7499a4d4e243dbaa",
+    "docs/guide-source-validation.json": "ecdc13ee7ebf123caca775062f7976a88037ba9c497a4fe8738284f2f1a1ac28",
+    "docs/guides/DPH_User_Guide.docx": "6bbd653e785dd8d049645d6ad5cba744eed875053d7eee230ea82849bd15c184",
+    "docs/guides/DPH_Engineering_Guide.docx": "33efcf23dc054e07e884ab6f540567216c6f232ba9ce157f9246a715d975d708",
+    "docs/pdf/DPH_User_Guide.pdf": "45d4bd3856a047df727f59163ba74dd57847d6ceb3fe7d7bda0d678f9d06bb11",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "5a6e28744dbf445da4bb8f7c91ae02912ae89f1d4c1d7d7ab1839e9b08cd7967",
+    "docs/phase1-data-rules-build.log": "351e105b05f395ce4791c27b1215f355378c17781f044dd4f546b16d407fd7d5",
+    "docs/Phase1_Data_Rules_Completion.txt": "bc0ae41c470d35d9b053157cab4f676cf6a234ba22dd713b3539221b594b337e",
+    "docs/Phase1_Requirements_Traceability.json": "c10508d7478c11668e0a6e33b12f5f45408d36a2d212dc123876a4d433a8220f",
+    "docs/Phase1_Implementation_Backlog.csv": "b0096bd268f2d8710a9ca3d262e4d933a8752234385ef84628f7de82bb555300",
+    "docs/Implementation_Completion_Tracker.txt": "33e4873266bb8af1692e9440c504d6a7e737169f602f93bbd8e6c012ec809ff4",
+    "docs/phase1-data-rules-workspace.png": "57c8c534311341df9e664fcdc6e9ff2997fca3ffeaf437760d78c67840f05b00",
+    "docs/phase1-data-rules-compact.png": "fe9efe1f9833c8256db54f5e32fc771b0c359526ebec5d1ee651cf78a58052d9",
+    "tests/DPH.Tests.DatabaseTransactions.dpr": "376c72daf95a28673c1a23ca9efc01db87719de82d4ba4d4ea0bb60583efb9f5",
+    "tests/DPH.Tests.DatabaseOperations.dpr": "ade35a9c6dfc057891bb7a22e6bb993fda988845162e008468bbe232ed5884bd",
+    "tests/DPH.Tests.DatasetBindings.dpr": "5de7dbd469e30b42a15c616a035e7df3bb812cbaa2e9d41e99d6baeed72618f3",
+    "tests/fixtures/syntax/expected-ir.json": "38b5f6f000dccb8e433e1e87c0cd38a6df3b35c9c52d6792b9228d88fcf92231",
+    "docs/phase1-data-rules-database-transactions-regression.json": "5e6c192d6031d9a1214d218350ab9fec9b549d1f96b4a47c6be6a0c84cc08589",
+    "docs/phase1-data-rules-database-transactions-regression.log": "7267958b81e0236221b573f49a68569bc4c13f310daa32f1b9a652c19f3f4f48",
+    "docs/phase1-data-rules-database-operations-regression.json": "480a874323c456c3b2cb77bfb86dad618fcf41770c538a602e97138686113fc6",
+    "docs/phase1-data-rules-database-operations-regression.log": "992b3a958d60879ab09a0539aea50789023db239ed7829df26b5f113dee9bbfe",
+    "docs/phase1-data-rules-dataset-bindings-regression.json": "7f0dccfaa38f7415a49623292722f627011c6a98c0038ce9fb3746432822de17",
+    "docs/phase1-data-rules-dataset-bindings-regression.log": "b5dd8da51a8ecdfae5505dfdd75b29fce35c28fac7869f1e9b722746341a2473",
+    "docs/phase1-data-rules-database-engines-regression.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-data-rules-database-engines-regression.log": "6ffeb740f3bdbcc8ac7d8ab5caceb8d67309bfaddefe86e01c6c2164d8a9045b",
+    "docs/phase1-data-rules-semantics-regression.json": "bebec09d2d00b976468224c9776c33abcaf0cfad27a8e2f89475cb7794675c67",
+    "docs/phase1-data-rules-semantics-regression.log": "84f9283aefac260974156cd922793fa4eb4b768f33af90bfa27c1c359bf5abc5",
+    "docs/phase1-data-rules-parser-regression.json": "f9da2b99733743f2c86032132be8757b053c6a68506f2c993498c77f47b96912",
+    "docs/phase1-data-rules-parser-regression.log": "090d9107dc801d59a5ce4cc138c73ea5d30003cefe9b10286a14fc599d071c9e"
+  }
+}
