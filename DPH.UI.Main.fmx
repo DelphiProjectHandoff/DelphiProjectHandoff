@@ -47,6 +47,7 @@ Items.Strings = (
 'Component dependencies'
 'Form inheritance'
 'Action purposes'
+'Screen history'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1446,6 +1447,267 @@ Margins.Bottom = 12
 ReadOnly = True
 WordWrap = True
 ShowScrollBars = True
+end
+end
+object HistoryTab: TTabItem
+Text = 'Screen history'
+object HistoryPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Compare imported screen evidence. Scroll commands sideways and this page down for images and details.'
+StyledSettings = []
+TextSettings.FontColor = xFF146CB4
+end
+object HistoryToolbar: THorzScrollBox
+Align = Top
+Height = 100
+ShowScrollBars = True
+object HistoryBeforeCombo: TComboBox
+Position.X = 8
+Position.Y = 22
+Width = 350
+Height = 28
+OnChange = HistorySelectionChange
+end
+object HistoryAfterCombo: TComboBox
+Position.X = 366
+Position.Y = 22
+Width = 350
+Height = 28
+OnChange = HistorySelectionChange
+end
+object HistoryModeCombo: TComboBox
+Position.X = 8
+Position.Y = 58
+Width = 160
+Height = 28
+OnChange = HistoryModeChange
+Items.Strings = (
+'Imported images'
+'Captured layouts')
+ItemIndex = 0
+end
+object HistoryBeforePath: TEdit
+Position.X = 176
+Position.Y = 58
+Width = 220
+Height = 28
+TextPrompt = 'Before relative form path (optional)'
+OnChange = HistorySelectionChange
+end
+object HistoryAfterPath: TEdit
+Position.X = 404
+Position.Y = 58
+Width = 220
+Height = 28
+TextPrompt = 'After relative form path (optional)'
+OnChange = HistorySelectionChange
+end
+object HistoryCompareButton: TButton
+Position.X = 632
+Position.Y = 58
+Width = 100
+Height = 28
+Text = 'Compare'
+OnClick = HistoryCompareClick
+end
+object HistorySwapButton: TButton
+Position.X = 740
+Position.Y = 58
+Width = 100
+Height = 28
+Text = 'Swap sides'
+OnClick = HistoryCompareClick
+end
+object HistoryFilter: TEdit
+Position.X = 848
+Position.Y = 58
+Width = 220
+Height = 28
+TextPrompt = 'Filter captured layout changes'
+OnChange = HistoryFilterChange
+end
+object HistoryFirstButton: TButton
+Position.X = 1076
+Position.Y = 58
+Width = 90
+Height = 28
+Text = 'First page'
+OnClick = HistoryFilterChange
+end
+object HistoryNextButton: TButton
+Position.X = 1174
+Position.Y = 58
+Width = 90
+Height = 28
+Text = 'Next page'
+OnClick = HistoryFilterChange
+Enabled = False
+end
+object HistoryBeforeSelectorLabel: TLabel
+Position.X = 8
+Position.Y = 0
+Width = 350
+Height = 20
+Text = 'BEFORE screenshot record'
+end
+object HistoryAfterSelectorLabel: TLabel
+Position.X = 366
+Position.Y = 0
+Width = 350
+Height = 20
+Text = 'AFTER screenshot record'
+end
+end
+object HistoryStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Import screenshots first. This page lists the newest 200 records.'
+end
+object HistoryBody: TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ShowScrollBars = True
+object HistoryContent: TLayout
+Align = Top
+Height = 620
+object HistoryGrid: TGridPanelLayout
+Align = Top
+Height = 220
+ColumnCollection = <
+item Value = 33.3333333333333 end
+item Value = 33.3333333333333 end
+item Value = 33.3333333333334 end>
+RowCollection = <item Value = 100 end>
+ControlCollection = <
+item Column = 0 Row = 0 Control = HistoryBeforePanel end
+item Column = 1 Row = 0 Control = HistoryAfterPanel end
+item Column = 2 Row = 0 Control = HistoryDifferencePanel end>
+object HistoryBeforePanel: TLayout
+Align = Client
+Margins.Left = 3
+Margins.Right = 3
+object HistoryBeforeTitle: TLabel
+Align = Top
+Height = 28
+Text = 'BEFORE'
+end
+object HistoryBeforeBackground: TRectangle
+Align = Client
+Fill.Color = xFFFFFFFF
+Stroke.Kind = None
+object HistoryBeforeImage: TImage
+Align = Client
+WrapMode = Fit
+end
+object HistoryBeforePaint: TPaintBox
+Align = Client
+Visible = False
+OnPaint = HistoryPaint
+end
+end
+end
+object HistoryAfterPanel: TLayout
+Align = Client
+Margins.Left = 3
+Margins.Right = 3
+object HistoryAfterTitle: TLabel
+Align = Top
+Height = 28
+Text = 'AFTER'
+end
+object HistoryAfterBackground: TRectangle
+Align = Client
+Fill.Color = xFFFFFFFF
+Stroke.Kind = None
+object HistoryAfterImage: TImage
+Align = Client
+WrapMode = Fit
+end
+object HistoryAfterPaint: TPaintBox
+Align = Client
+Visible = False
+OnPaint = HistoryPaint
+end
+end
+end
+object HistoryDifferencePanel: TLayout
+Align = Client
+Margins.Left = 3
+Margins.Right = 3
+object HistoryDifferenceTitle: TLabel
+Align = Top
+Height = 28
+Text = 'PIXEL DIFFERENCE'
+end
+object HistoryDifferenceBackground: TRectangle
+Align = Client
+Fill.Color = xFFFFFFFF
+Stroke.Kind = None
+object HistoryDifferenceImage: TImage
+Align = Client
+WrapMode = Fit
+end
+object HistoryDifferencePaint: TPaintBox
+Align = Client
+Visible = False
+OnPaint = HistoryPaint
+end
+end
+end
+end
+object HistoryLegend: TLayout
+Align = Top
+Height = 48
+object HistoryBeforeLegend: TRectangle
+Visible = False
+Position.X = 4
+Position.Y = 8
+Width = 12
+Height = 12
+Fill.Color = xFF146CB4
+Stroke.Kind = None
+end
+object HistoryAfterLegend: TRectangle
+Visible = False
+Position.X = 140
+Position.Y = 8
+Width = 12
+Height = 12
+Fill.Color = xFFF28C28
+Stroke.Kind = None
+end
+object HistoryLegendText: TLabel
+Align = Client
+WordWrap = True
+Text = 'Layouts: blue = Before, orange = After. Pixels: red = changed overlap, magenta = changed extent.'
+end
+end
+object HistoryList: TListBox
+Align = Top
+Height = 96
+OnChange = HistoryRowClick
+end
+object HistoryEvidenceLabel: TLabel
+Align = Top
+Height = 24
+Text = 'Comparison evidence and selected layout change'
+end
+object HistoryMemo: TMemo
+Align = Client
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
 end
 end
 object ActionPurposeTab: TTabItem

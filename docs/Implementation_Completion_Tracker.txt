@@ -35,7 +35,12 @@ UI mappings and independent project tasks, purpose/steps/outcome/evidence fields
 Knowledge history/review, search and publication; 81 focused and 186 regression
 checks. Business facts still require a knowledgeable contributor.
 See Phase1_Action_Purposes_Completion.txt.
-Current live backlog: 337 incomplete requirement records; 0 unassessed.
+Screen history and visual change comparisons completed (04.20): attributed
+Before/After image selection, exact pixel mask/counts/bounds, retained-generation
+layout changes and overlay, filtering/pagination, swap and stale-result safety.
+73 focused and 98 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Screen_History_Completion.txt.
+Current live backlog: 336 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

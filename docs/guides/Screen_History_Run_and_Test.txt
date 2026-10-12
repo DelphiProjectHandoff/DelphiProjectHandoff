@@ -1,0 +1,88 @@
+DPH SCREEN HISTORY — RUN AND TEST
+Last changed: 11 October 2026
+Requirement: 04.20 Screen history and visual change comparisons
+
+START THE UPDATED APPLICATION
+1. Save or discard any Knowledge draft, then close the existing DPH window.
+2. Open File Explorer. Paste this entire path into the address bar and press Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Open cache and select the intended .dphdb, or Attach project and select
+   the intended .dproj/.dpr/.groupproj. Wait for analysis to finish.
+
+IMPORT BEFORE AND AFTER EVIDENCE
+4. Choose Screenshots in the upper-right page selector. Enter a named contributor
+   and a caption identifying the screen, application build and capture conditions.
+   Click Import an existing PNG screenshot and select an actual PNG supplied by that contributor.
+   DPH records the generation current at import. Import the earlier image while
+   the matching earlier generation is current; import the later image after the
+   corresponding later source capture. Do not label an old image as new evidence.
+   DPH does not execute the selected application or verify when an image was taken.
+5. Before removing captures with Database tools, retain needed generations using
+   Keep current release. Missing historical cache files cannot supply layout facts.
+
+COMPARE THE IMAGES
+6. Choose Screen history in the upper-right selector. In BEFORE screenshot record
+   select the earlier import; in AFTER select the later one. Each entry shows its
+   artifact ID, generation and caption. The newest 200 imports are listed.
+7. Choose Imported images and click Compare. Drag the horizontal scrollbar below
+   the command rows if Compare is hidden. Wait for the background comparison.
+8. Read the Before, After and Pixel difference panes. Scroll the page down to read
+   the evidence memo and its attribution. Red = changed overlapping pixel;
+   magenta = extent present on only one side; white = unchanged or outside both.
+   The memo reports changed pixels, each one-sided extent and inclusive bounds
+   in original top-left coordinates, plus contributors and SHA256 fingerprints.
+9. Display fitting does not alter comparison. Exact eight-bit RGB is compared
+   after transparency is composited on white. There is no automatic alignment,
+   resampling, tolerance or color-profile normalization. Different themes, DPI,
+   timestamps, animation or data can change pixels. A change does not prove a
+   software defect, its source cause or its business effect.
+
+COMPARE CAPTURED LAYOUTS
+10. Enter both relative form paths in Before relative form path and After relative
+    form path, for example forms/Main.dfm. Use paths captured in those generations;
+    these are not file-picker fields. Either path can be DFM or FMX.
+11. Click Compare again, then choose Captured layouts. Before is blue; After is
+    orange; the third pane overlays them on a common scale. These are approximate
+    reconstructions from serialized properties, not runtime screenshots. Styles,
+    custom painting, inherited defaults and runtime layout remain unobserved.
+12. Scroll down to the change list. Enter a component path or value in Filter
+    captured layout changes; scroll the command bar right to reach this field.
+    First page and Next page show 250 rows at a time. Select a row to read the
+    exact before/after classes and properties in the evidence memo below it.
+    Renames appear as removed and added components; source offsets alone do not
+    count as property changes. Missing values remain unknown/default/inherited.
+13. If a historical capture or form is unavailable, read Layout unavailable in
+    the memo. Verified image comparison still works. Different projects, analysis
+    selections, incompatible parser contracts or duplicate paths prevent layout
+    matching. Drawings show at most 300 rectangles per side; all supported changes
+    remain in the paged list. At most 5000 components per form are supported.
+14. Swap sides exchanges images and paths. Click Compare again. Changing either
+    screenshot or form path clears the prior result; late responses are discarded.
+
+CONTROLLED PRACTICE AFTER DEVELOPER VALIDATION
+15. Open cache and select:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\screen-history-validation\history.dphdb
+16. Choose Screen history. Select Synthetic BEFORE and Synthetic AFTER, enter
+    main.dfm in both relative-path fields and click Compare. Imported images
+    shows exactly one changed pixel at x=2,y=1. Captured layouts has 273 change
+    rows. Filter mainform/changed to read Left = 10 becoming Left = 30.
+    This fixture uses synthetic PNGs, not screenshots of the target app running.
+    Re-running validation recreates this disposable fixture; do not keep real
+    project work in this test folder.
+
+DEVELOPER BUILD AND AUTOMATED CHECKS
+17. Close DPH after saving work. Open Start, type Command Prompt, select Run as
+    administrator, and accept Windows elevation. Run these commands separately:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-screen-history.cmd
+    tools\build-wp0.cmd
+18. Expect "Screen history validation passed: 73 checks." and "PASS WP0-TEST".
+    The focused suite covers PNG hashes, transparency, dimensions and exact mask,
+    captured text/binary DFM and FMX, stored generations, missing cache evidence,
+    native Compare, late-response rejection, paging, filtering, visible geometry,
+    compact layout and unchanged source/catalog. It restores the owner catalog
+    after exercising cached open. Native page images in docs show actual DPH
+    controls rendered by PaintTo; they do not prove analyzed runtime behavior.
+19. Comparison accepts PNGs up to 20 MiB, each dimension up to 8192 and at most
+    16 million pixels per image and union canvas. Larger inputs are refused with
+    an explicit message. The operation stays within the existing worker.

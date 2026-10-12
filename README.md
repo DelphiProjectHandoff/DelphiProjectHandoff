@@ -71,3 +71,12 @@ procedure. Enter a named contributor, Apply to Knowledge draft, then **Save**.
 Review explicitly in Knowledge. Captions do not establish business intent.
 [Full directions and tests](docs/guides/Action_Purposes_Run_and_Test.txt) cover
 all commands. Run `tools\build-action-purposes.cmd` elevated for 81 focused checks.
+
+Choose **Screen history** to compare two attributed screenshot records. Click
+**Compare** for side-by-side images, an exact pixel mask and counts. Enter both
+relative DFM/FMX paths for captured component/property differences and a layout
+overlay. Imported images and approximate reconstructions retain distinct labels.
+Scroll the command bar sideways and the page down for commands and evidence.
+[Explicit run and test directions](docs/guides/Screen_History_Run_and_Test.txt)
+cover import generations, pixel colors, retention and limitations. Run
+`tools\build-screen-history.cmd` elevated for 73 focused checks.

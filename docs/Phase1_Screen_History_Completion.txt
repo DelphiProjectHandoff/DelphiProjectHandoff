@@ -1,0 +1,69 @@
+DPH PHASE 1 REQUIREMENT 04.20 COMPLETION
+Last changed: 11 October 2026
+
+COMPLETED CAPABILITY
+Screen history selects two attributed imported PNG records and compares their
+verified bytes in the background. Before/After previews, exact pixel mask,
+changed-pixel counts, one-sided extents and inclusive changed bounds retain the
+contributors, generation IDs, original dimensions and image/metadata hashes.
+Swap exchanges both screenshots and form paths. Changed selection clears old
+results and invalidates pending results using request token and database identity.
+
+Optional relative DFM/FMX paths load the captures belonging to each screenshot.
+Component path/class/sorted-property comparisons produce added/removed/changed
+rows and blue/orange approximate layout previews and overlay. Filter, First page,
+Next page and a labeled evidence memo expose all supported changes. Missing or
+incompatible captures/forms remain explicit layout gaps; image comparison survives.
+All page controls are serialized in DPH.UI.Main.fmx for the IDE/Object Inspector.
+No target application, component class or production database is executed/loaded.
+
+VALIDATION
+- 73 focused checks: exact pixels/bounds/mask, size changes, transparency, changed
+  bytes, bounded union, text/binary DFM and FMX, parser/selection compatibility,
+  stored generations and attributed images, retained-cache worker, native Compare,
+  late-response rejection, paging/filtering, swap and clear, compact layout,
+  visible blue/orange geometry and unchanged source/owner catalog proof.
+- 98 existing regression checks: 17 revision comparison and 81 action purposes.
+- Actual DelphiProjectHandoff application build and FMX resource baseline passed.
+- Normal and compact native PaintTo renders inspected. These show real DPH
+  controls; the fixture PNGs are synthetic, not observed target-runtime images.
+- User and Engineering Guides rebuilt as editable DOCX and companion PDFs.
+  User: 23 pages, 44 TOC entries. Engineering: 19 pages, 36 TOC entries.
+  54 implementation hashes and exact editable cached TOC page numbers verified.
+  Every rendered page reviewed; changed chapters inspected at full-page scale.
+- Only 04.20 promoted. All 533 IDs and original requirement texts preserved.
+  Historical reconciliation evidence and original source planning files unchanged.
+- Historical regression outputs restored after current evidence was saved under
+  phase1-screen-history names. Disposable revision-comparison GUID folder removed.
+  Screen-history practice data reuses one ignored bin folder, recreated per run.
+
+DIRECTIONS AND EVIDENCE
+docs/guides/Screen_History_Run_and_Test.txt provides the full executable path,
+precise import-generation instructions, image and layout steps, pixel colors,
+scrolling and paging directions, a controlled practice and elevated test commands.
+README and translated HTML help describe the feature. Current logs and JSON
+results use docs/phase1-screen-history-*. The completion-validation JSON records
+counts, guide verification and SHA256 evidence hashes.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\ScreenHistory_PreChange_20261011_231435
+4,355 files; 952,141,088 bytes; SHA256 verified before edits. H: USB wake time
+was allowed. No post-change USB backup requested. Validated changes are committed
+to Git and pushed to both public and private remotes.
+
+LIMITS
+The newest 200 screenshot imports are selectable. Comparison accepts encoded PNGs
+up to 20 MiB, dimensions up to 8192 and 16 million pixels per image and union.
+Transparency composites on white; RGB comparison has no automatic registration,
+scaling, tolerance or color-profile normalization. Different pixels do not prove
+a defect, source cause or business effect. Contributor claims remain unverified.
+Layout comparison supports 5000 components per form; previews show at most 300
+rectangles per side, with 250 change rows per page. Missing properties remain
+unknown/default/inherited; source geometry does not prove runtime appearance.
+
+CURRENT IMPLEMENTATION BACKLOG
+179 implemented; 18 implemented through attributed manual capture;
+234 partial; 102 missing. Total: 533. Incomplete: 336. Unassessed: 0.
+Next bounded requirement: 05.01 Database connection inventory, linking captured
+datasets and connection definitions with safe redacted configuration, without
+connecting to production databases.

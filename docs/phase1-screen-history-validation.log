@@ -1,0 +1,84 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ScreenHistory.dpr(261) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ScreenHistory.dpr(262) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.ScreenHistory.dpr(245) Hint: H2077 Value assigned to 'After' never used
+15733 lines, 1.44 seconds, 10316500 bytes code, 348888 bytes data.
+PASS 1: One changed pixel counted exactly
+PASS 2: Changed bounds retain x
+PASS 3: Changed bounds retain y
+PASS 4: Equal dimensions have no missing extent
+PASS 5: Comparison metadata omits private managed path
+PASS 6: Attribution displayed
+PASS 7: Difference qualification explicit
+PASS 8: Changed overlapping pixel marked red
+PASS 9: Unchanged pixel white
+PASS 10: Identical images compare equal
+PASS 11: Equal images have no changed bounds
+PASS 12: New extent and overlapping change counted
+PASS 13: After-only extent explicit
+PASS 14: Union preserves full dimensions
+PASS 15: Swapping sides reverses extent attribution
+PASS 16: Invisible transparent RGB is composited on white
+PASS 17: Changed image bytes rejected
+PASS 18: Failure clears derived mask
+PASS 19: Oversized union refused without resampling
+PASS 20: Both generations retain screenshot evidence
+PASS 21: Imported history preserves SQLite integrity
+PASS 22: Changed, added and removed components counted
+PASS 23: Exact old and new geometry values retained
+PASS 24: Both source fingerprints retained
+PASS 25: Both captured generations retained
+PASS 26: Layout qualification explicit
+PASS 27: FMX visual text change compared
+PASS 28: Binary DFM layout compared from captured IR
+PASS 29: Identical captured layout has no changes
+PASS 30: Incompatible parser contracts refused
+PASS 31: Missing form stays unavailable
+PASS 32: Nonform path refused
+PASS 33: Different analysis selections refused
+PASS 34: Real background comparison succeeds
+PASS 35: Worker returns screen report
+PASS 36: Request selection token preserved
+PASS 37: Response bound to selected database
+PASS 38: Worker returns exact pixel result
+PASS 39: Worker reads both retained generations
+PASS 40: Native history selectors populated
+PASS 41: Before defaults oldest loaded record
+PASS 42: After defaults newest loaded record
+PASS 43: Page discoverable
+PASS 44: Layout list paged at 250
+PASS 45: More layout changes enable Next
+PASS 46: Next shows remaining changes
+PASS 47: Last page disables Next
+PASS 48: Layout filter selects component
+PASS 49: Native details display before and after values
+PASS 50: Before image original dimensions retained
+PASS 51: After image original dimensions retained
+PASS 52: Native difference image loaded
+PASS 53: Preview fills its grid cell
+PASS 54: Image preview has usable height
+PASS 55: Layout mode uses serialized paint controls
+PASS 56: Compact page and command bar scroll
+PASS 57: Responsive grid maintains three usable panes
+PASS 58: Compact layout retains scrollable preview height
+PASS 59: Swap exchanges screenshot choices
+PASS 60: Changing pair clears stale images and layout rows
+PASS 61: Changed form selection invalidates old result
+PASS 62: Native layout render contains Before geometry
+PASS 63: Native layout render contains After geometry
+PASS 64: Actual cached-open command populates history choices
+PASS 65: Actual Compare command loads layout changes
+PASS 66: Actual Compare command loads mask
+PASS 67: Late response for changed selection is discarded
+PASS 68: Owner catalog unchanged
+PASS 69: Worker and native comparison leave source unchanged
+PASS 70: Unknown screenshot ID refused without stale report
+PASS 71: Unavailable layout preserves image comparison with explicit gap
+PASS 72: Removed retained capture does not invent historical layout
+PASS 73: Image comparison survives missing layout cache
+Screen history validation passed: 73 checks.

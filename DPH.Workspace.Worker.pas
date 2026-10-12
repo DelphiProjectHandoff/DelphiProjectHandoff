@@ -22,6 +22,8 @@ type
     IncludeSourceNavigation: Boolean;
     PublicationLocale: string;
     AllowStaleBundle: Boolean;
+    BeforeScreenshot,AfterScreenshot,ScreenToken:Int64;
+    BeforeScreenSource,AfterScreenSource:string;
   end;
   TDPHWorkspaceResponse = class
   public
@@ -42,6 +44,10 @@ type
     TranslationRevision: Int64;
     ValidationReport: string;
     Comparison: TJSONObject;
+    ScreenHistory:TJSONObject;
+    BeforePNG,AfterPNG,DifferencePNG:TBytes;
+    ScreenToken:Int64;
+    ScreenDatabase:string;
     MessageText: string;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
@@ -64,10 +70,10 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory;
 
 destructor TDPHWorkspaceResponse.Destroy;
-begin Comparison.Free; Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
+begin ScreenHistory.Free;Comparison.Free; Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
 constructor TDPHWorkspaceWorker.Create(const ABaseDirectory: string);
 begin
   inherited Create(False); FreeOnTerminate:=False; FBaseDirectory:=ABaseDirectory;
@@ -104,6 +110,7 @@ var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanti
     Defines: TJSONArray; Value: string; JSONValue: TJSONValue; Status: TDPHProjectStatus; Changed,RunScan,OpeningCached: Boolean;
     View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray; LifecycleResponse: TDPHWorkspaceResponse;
     TranslationCache: TDPHTranslationCache; Provider: IDPHTranslationProvider; TranslationEntry: TJSONObject; RecordValue: TJSONValue;
+    BeforeImage,AfterImage:TJSONObject;BeforeView,AfterView:TDPHWorkspaceView;
 begin
   CoInitializeEx(nil,COINIT_APARTMENTTHREADED); Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
   try
@@ -140,7 +147,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['compare','open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['screen_history','compare','open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -235,6 +242,37 @@ begin
               LifecycleResponse.Detached:=Request.Entry=''; LifecycleResponse.MessageText:='Saved runtime claims loaded (newest 50). No program executed; contributor evidence remains unverified.';
               if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
             finally LifecycleResponse.Free; end;
+            Continue;
+          end;
+          if Request.Command='screen_history' then begin
+            Images:=Store.ScreenshotsJSON;
+            try
+              BeforeImage:=nil;AfterImage:=nil;
+              for JSONValue in Images do begin
+                if JSONValue.GetValue<Int64>('artifact_id')=Request.BeforeScreenshot then BeforeImage:=JSONValue as TJSONObject;
+                if JSONValue.GetValue<Int64>('artifact_id')=Request.AfterScreenshot then AfterImage:=JSONValue as TJSONObject;
+              end;
+              if (BeforeImage=nil) or (AfterImage=nil) then raise EArgumentException.Create('Select two screenshot records from this database; history lists the newest 200');
+              LifecycleResponse:=TDPHWorkspaceResponse.Create;
+              try
+                LifecycleResponse.ScreenHistory:=TDPHScreenHistory.CompareImages(BeforeImage,AfterImage,LifecycleResponse.BeforePNG,LifecycleResponse.AfterPNG,LifecycleResponse.DifferencePNG);
+                BeforeView:=nil;AfterView:=nil;
+                try
+                  try
+                    if (Request.BeforeScreenSource='') or (Request.AfterScreenSource='') then raise EArgumentException.Create('Enter both relative DFM/FMX paths and compare again to inspect captured layouts');
+                    Text:=Store.LoadWorkspaceView(BeforeImage.GetValue<Int64>('generation_id'));if Text='' then raise EReadError.Create('Before generation has no retained workspace capture');
+                    BeforeView:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Text) as TJSONObject);
+                    Text:=Store.LoadWorkspaceView(AfterImage.GetValue<Int64>('generation_id'));if Text='' then raise EReadError.Create('After generation has no retained workspace capture');
+                    AfterView:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Text) as TJSONObject);
+                    LifecycleResponse.ScreenHistory.AddPair('layout',TDPHScreenHistory.CompareLayouts(BeforeView,AfterView,Request.BeforeScreenSource,Request.AfterScreenSource));
+                  except on E:Exception do LifecycleResponse.ScreenHistory.AddPair('layout_gap',E.Message);end;
+                finally AfterView.Free;BeforeView.Free;end;
+                LifecycleResponse.ScreenToken:=Request.ScreenToken;LifecycleResponse.ScreenDatabase:=Request.Database;
+                LifecycleResponse.SearchGeneration:=Request.GenerationID;LifecycleResponse.Detached:=Request.Entry='';
+                LifecycleResponse.MessageText:='Screen history comparison ready. Contributor images and approximate captured layouts remain distinct evidence.';
+                if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
+              finally LifecycleResponse.Free;end;
+            finally Images.Free;end;
             Continue;
           end;
           if Request.Command='compare' then begin

@@ -1,0 +1,74 @@
+{
+  "result": "PASS",
+  "requirement": "04.20",
+  "status": "implemented",
+  "checks": 73,
+  "regression_checks": 98,
+  "requirements_preserved": 533,
+  "only_promoted_record": "04.20",
+  "incomplete_requirement_records": 336,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 234,
+    "implemented": 179,
+    "missing": 102
+  },
+  "guides": {
+    "guide_sources_verified": 54,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 23,
+        "toc_entries": 44,
+        "new_chapter_pages": [
+          2,
+          14
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 19,
+        "toc_entries": 36,
+        "new_chapter_pages": [
+          2,
+          17
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\ScreenHistory_PreChange_20261011_231435",
+    "files": 4355,
+    "bytes": 952141088,
+    "sha256_verified": true
+  },
+  "qualification": "Controlled PNGs are synthetic test data; native PaintTo renders are actual DPH controls. Image differences do not prove a defect or cause; layout drawings are approximate captured-source evidence. No target executable/classes or production connections are used.",
+  "evidence_hashes": {
+    "DPH.Workspace.ScreenHistory.pas": "bd05a76dcae7b4c872345021a56eab0b8b0108d954c1a5c35686321852082161",
+    "DPH.Workspace.Worker.pas": "110d8d7326f50b3a12a99f30ed3adac1aabf3d408c62c2ce52478a6e19bca4fc",
+    "DPH.UI.Main.pas": "b7927f288a7005afe44f58ee7107cf026a5681976137d1c69b3f93e0c70dce05",
+    "DPH.UI.Main.fmx": "e31910f431a73e1fc8fb872b8841a6ef8c51bf69cc522ab9748f1d2a5711846a",
+    "tests/DPH.Tests.ScreenHistory.dpr": "b8fca3b264485e45391bf23db2c8773ef7559638b3105d0905bad8288a91301e",
+    "tools/build-screen-history.cmd": "3252b36b218f66defb2086c04dc1815648d1d8fff9b6caf205d4c8fe50857389",
+    "docs/phase1-screen-history-validation.json": "936bb87924efb0ec47697f64d7c19e4eb3282d2a160cb154da0ec472ecde0ae2",
+    "docs/phase1-screen-history-validation.log": "b5dc4cf641c685bc667ec53adac73f9fe2e4253a374e60e595dce5febe533288",
+    "docs/guides/Screen_History_Run_and_Test.txt": "b8629335b49fbc4f74407dc4a54d2491aef73b18f4abf76dc1d98920074a7273",
+    "DelphiProjectHandoff.dproj": "f77424b469b0e054d8e711778066d4e46c1f4f330d4a27203b499ec08a222a6f",
+    "docs/guide-source-validation.json": "b2583e90e79cdaed941d1ad9ccd67bcf33619858a30e2671766a530102b1913e",
+    "docs/guides/DPH_User_Guide.docx": "93fabfd15208d38814a29ead08b926965edf0c23cf6a3493dd54f321337d0d54",
+    "docs/guides/DPH_Engineering_Guide.docx": "149badcea548eea08e5086eab7a258aaabeff8c7a1e5d5564127749887de226e",
+    "docs/pdf/DPH_User_Guide.pdf": "1d4e591644645587cd9048ca33b9464eec614ca92a6af93221444f7c21732f84",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "da19c95ae15cf8e846f175e23ec9a2202cbfb1bc3aee7918447f3bdcc6b3098c",
+    "docs/phase1-screen-history-build.log": "d90bd4e3c80410cb88d1deaf5d2514ba03c2841adb7ae2d181415590175e018a",
+    "docs/phase1-screen-history-comparison-regression.json": "88cca5c7486f97cdfc03eead9fe2ee7eccfb22c49fb2eaa34d2919a7aff0e6de",
+    "docs/phase1-screen-history-action-purposes-regression.json": "55456863391d4513785d13ee300eb9da6638dec1ef5a79748394749488c39ed9",
+    "docs/phase1-screen-history-images.png": "6c2d91351b4bba17498f7a5324b17308c88e46b45229ba7b6849d848fc683cf1",
+    "docs/phase1-screen-history-layouts.png": "4f5014769e3c2b0c3e613926f4623984d46ba092b61bb8f31cb11d8dc6f8731f",
+    "docs/phase1-screen-history-compact.png": "2292cd257d9ae5cd8c6a36e7a62ad8397eb24dcd269c6d4c14a724034faec0f8"
+  }
+}

@@ -1,0 +1,30 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(77) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(91) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Comparison.dpr(106) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'After' never used
+tests\tests\DPH.Tests.Comparison.dpr(52) Hint: H2077 Value assigned to 'Before' never used
+15320 lines, 1.45 seconds, 10300220 bytes code, 348776 bytes data.
+PASS 1: Changed file is identified by captured fingerprints
+PASS 2: Removed symbol is retained as Before evidence
+PASS 3: Added symbol is retained as After evidence
+PASS 4: Changed routine flow is distinguished from a file-level change
+PASS 5: Side-by-side evidence includes changed captured expressions
+PASS 6: Unchanged captured routine is qualified when another routine changes its file
+PASS 7: Comparison explains historical-source and inference limitations
+PASS 8: Native page displays the bounded revision results
+PASS 9: Native labeled panes show original and changed evidence
+PASS 10: Identical capture has no changes
+PASS 11: Control-flow edge changes are detected even when recorded expressions stay unchanged
+PASS 12: Configuration mismatch is rejected instead of reported as source changes
+PASS 13: Comparison result page is bounded and preserves the matching total
+PASS 14: Next comparison page reaches remaining changes
+PASS 15: Comparison leaves the project database consistent
+PASS 16: Background worker compares both verified retained database captures
+PASS 17: Missing historical cache is explained without inventing source history
+PASS revision comparison: 17 checks

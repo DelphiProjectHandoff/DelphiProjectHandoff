@@ -161,6 +161,20 @@ type
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotDialog: TOpenDialog;
+    HistoryTab:TTabItem;
+    HistoryPurpose,HistoryStatus,HistoryBeforeTitle,HistoryAfterTitle,HistoryDifferenceTitle:TLabel;
+    HistoryToolbar:THorzScrollBox;
+    HistoryBeforeCombo,HistoryAfterCombo,HistoryModeCombo:TComboBox;
+    HistoryBeforePath,HistoryAfterPath,HistoryFilter:TEdit;
+    HistoryCompareButton,HistorySwapButton,HistoryFirstButton,HistoryNextButton:TButton;
+    HistoryBody:TVertScrollBox;
+    HistoryContent,HistoryBeforePanel,HistoryAfterPanel,HistoryDifferencePanel:TLayout;
+    HistoryGrid:TGridPanelLayout;
+    HistoryBeforeImage,HistoryAfterImage,HistoryDifferenceImage:TImage;
+    HistoryBeforeBackground,HistoryAfterBackground,HistoryDifferenceBackground,HistoryBeforeLegend,HistoryAfterLegend:TRectangle;
+    HistoryBeforePaint,HistoryAfterPaint,HistoryDifferencePaint:TPaintBox;
+    HistoryList:TListBox;
+    HistoryMemo:TMemo;
     HelpButton: TButton;
     HelpTab: TTabItem;
     HelpBrowser: TWebBrowser;
@@ -324,6 +338,12 @@ type
     procedure ScreenshotClick(Sender: TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
+    procedure HistorySelectionChange(Sender:TObject);
+    procedure HistoryCompareClick(Sender:TObject);
+    procedure HistoryModeChange(Sender:TObject);
+    procedure HistoryFilterChange(Sender:TObject);
+    procedure HistoryRowClick(Sender:TObject);
+    procedure HistoryPaint(Sender:TObject;Canvas:TCanvas);
     procedure LearningClick(Sender: TObject);
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
@@ -418,6 +438,10 @@ type
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
     FComparison: TJSONObject;
+    FScreenHistory:TJSONObject;
+    FScreenToken:Int64;
+    FHistoryRows:TList<TJSONObject>;
+    FHistoryOffset:Integer;
     FComparisonOffset: Integer;
     FProjectMembers: TJSONArray;
     FKeyboard: TJSONObject;
@@ -462,6 +486,7 @@ type
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
     procedure LoadComparison(AReport: TJSONObject);
+    procedure LoadScreenHistory(AReport:TJSONObject;const ABeforePNG,AAfterPNG,ADifferencePNG:TBytes);
     procedure LoadTranslations(ARows: TJSONArray);
     property WorkspaceView: TDPHWorkspaceView read FView;
   end;
@@ -469,7 +494,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -485,6 +510,7 @@ begin
   FCommandRows:=TList<TJSONObject>.Create;
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
+  FHistoryRows:=TList<TJSONObject>.Create;
   FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
   FDependencyRows:=TList<TJSONObject>.Create;
   FLayoutRows:=TList<TJSONObject>.Create;
@@ -528,6 +554,7 @@ begin
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
   FActionPurposeRows.Free;FActionPurposes.Free;
+  FHistoryRows.Free;FScreenHistory.Free;
   FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
   FLayoutRows.Free; FLayout.Free;
@@ -814,6 +841,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+ HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:='Open a project to inspect inherited forms and frames.';InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
  FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:='Open a project to inspect component dependencies.';DependencyStatus.Text:='No capture loaded.';
@@ -874,6 +902,7 @@ begin
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
+    if R.Failed and (FPendingCommand='screen_history') then begin HistorySelectionChange(nil);HistoryStatus.Text:='Comparison failed; read details below.';HistoryMemo.Text:=R.MessageText;end;
     if R.Failed and (FPendingCommand='validate_bundle') then ValidationMemo.Text:='FAILED: '+R.MessageText+sLineBreak+'The bundle has not passed validation. Correct the reported mismatch before using it.';
     if R.Failed then begin
       FPendingEntry:=''; FPendingDatabase:='';
@@ -886,6 +915,7 @@ begin
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
     if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if (R.ScreenHistory<>nil) and (R.ScreenToken=FScreenToken) and SameText(R.ScreenDatabase,FDatabase) then begin LoadScreenHistory(R.ScreenHistory,R.BeforePNG,R.AfterPNG,R.DifferencePNG);R.ScreenHistory:=nil;end;
     if (R.Translations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) and (R.TranslationRevision=FKnowledgeRevision) then begin
       LoadTranslations(R.Translations); R.Translations:=nil;
     end;
@@ -937,6 +967,7 @@ procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
 var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
+  HistorySelectionChange(nil);
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
     SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
   SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
@@ -1869,10 +1900,15 @@ begin
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
-var V: TJSONValue; R: TJSONObject; Index: Integer; Thumbnail: TBitmap; Path: string;
+var V: TJSONValue; R: TJSONObject; Index: Integer; Thumbnail: TBitmap; Path,LabelText: string;BeforeID,AfterID:Int64;
 begin
+  BeforeID:=0;AfterID:=0;
+  if (FImages<>nil) and (HistoryBeforeCombo.ItemIndex>=0) and (HistoryBeforeCombo.ItemIndex<FImages.Count) then BeforeID:=FImages.Items[HistoryBeforeCombo.ItemIndex].GetValue<Int64>('artifact_id');
+  if (FImages<>nil) and (HistoryAfterCombo.ItemIndex>=0) and (HistoryAfterCombo.ItemIndex<FImages.Count) then AfterID:=FImages.Items[HistoryAfterCombo.ItemIndex].GetValue<Int64>('artifact_id');
+  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
   FImages.Free; FImages:=ARows; ScreenshotList.Items.Clear;
   for V in ARows do begin R:=V as TJSONObject;
+    LabelText:='ID '+R.GetValue('artifact_id').Value+' | gen '+R.GetValue('generation_id').Value+' | '+R.GetValue<string>('caption');HistoryBeforeCombo.Items.Add(LabelText);HistoryAfterCombo.Items.Add(LabelText);
     Index:=ScreenshotList.Items.Add(R.GetValue<string>('caption')+' | generation '+R.GetValue('generation_id').Value);
     Path:=R.GetValue<string>('managed_path'); Thumbnail:=TBitmap.Create;
     try
@@ -1885,6 +1921,8 @@ begin
   end;
   ScreenshotEvidence.Text:='Imported images are contributor evidence, separate from the design-time reconstruction. Capture time and runtime origin require review.';
   ScreenshotImage.Bitmap.SetSize(0,0);
+  if ARows.Count>0 then begin HistoryBeforeCombo.ItemIndex:=ARows.Count-1;HistoryAfterCombo.ItemIndex:=0;end;
+  for Index:=0 to ARows.Count-1 do begin if ARows.Items[Index].GetValue<Int64>('artifact_id')=BeforeID then HistoryBeforeCombo.ItemIndex:=Index;if ARows.Items[Index].GetValue<Int64>('artifact_id')=AfterID then HistoryAfterCombo.ItemIndex:=Index;end;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
 var R: TJSONObject; Path: string;
@@ -1900,6 +1938,82 @@ begin
       Format('Image: %d x %d pixels',[ScreenshotImage.Bitmap.Width,ScreenshotImage.Bitmap.Height])+sLineBreak+
       'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.HistorySelectionChange(Sender:TObject);
+begin
+ if FHistoryRows=nil then Exit;
+ Inc(FScreenToken);FHistoryRows.Clear;FreeAndNil(FScreenHistory);HistoryList.Items.Clear;HistoryNextButton.Enabled:=False;
+ HistoryBeforeTitle.Text:='BEFORE';HistoryAfterTitle.Text:='AFTER';
+ HistoryBeforeImage.Bitmap.SetSize(0,0);HistoryAfterImage.Bitmap.SetSize(0,0);HistoryDifferenceImage.Bitmap.SetSize(0,0);
+ HistoryStatus.Text:='Choose Before and After, then Compare. Newest 200 imported records are listed.';
+ HistoryMemo.Text:='Import attributed PNG evidence on Screenshots first. Optional relative form paths enable layout comparison using each image generation. Retain those captures in Database tools. Scroll this page for images, layout changes and evidence.';
+ HistoryBeforePaint.Repaint;HistoryAfterPaint.Repaint;HistoryDifferencePaint.Repaint;
+end;
+procedure TDPHMainForm.HistoryCompareClick(Sender:TObject);
+var Request:TDPHWorkspaceRequest;Index:Integer;Path:string;
+begin
+ if Sender=HistorySwapButton then begin Index:=HistoryBeforeCombo.ItemIndex;HistoryBeforeCombo.ItemIndex:=HistoryAfterCombo.ItemIndex;HistoryAfterCombo.ItemIndex:=Index;Path:=HistoryBeforePath.Text;HistoryBeforePath.Text:=HistoryAfterPath.Text;HistoryAfterPath.Text:=Path;HistorySelectionChange(nil);Exit;end;
+ if FBusy then begin StatusLabel.Text:='Wait for the current operation to finish';Exit;end;
+ if (FView=nil) or (FDatabase='') then begin HistoryMemo.Text:='Open a saved project database first';Exit;end;
+ if (FImages=nil) or (HistoryBeforeCombo.ItemIndex<0) or (HistoryAfterCombo.ItemIndex<0) or (HistoryBeforeCombo.ItemIndex>=FImages.Count) or (HistoryAfterCombo.ItemIndex>=FImages.Count) then begin HistoryMemo.Text:='Import screenshots and select both Before and After records';Exit;end;
+ HistorySelectionChange(nil);Request:=Default(TDPHWorkspaceRequest);Request.Command:='screen_history';Request.Database:=FDatabase;Request.Entry:=FEntry;Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');Request.ScreenToken:=FScreenToken;
+ Request.BeforeScreenshot:=FImages.Items[HistoryBeforeCombo.ItemIndex].GetValue<Int64>('artifact_id');Request.AfterScreenshot:=FImages.Items[HistoryAfterCombo.ItemIndex].GetValue<Int64>('artifact_id');Request.BeforeScreenSource:=HistoryBeforePath.Text.Trim;Request.AfterScreenSource:=HistoryAfterPath.Text.Trim;
+ FWorker.Submit(Request);FBusy:=True;FPendingCommand:='screen_history';HistoryStatus.Text:='Comparing saved images in the background...';StatusLabel.Text:='Comparing screen history without executing the selected project...';
+end;
+procedure TDPHMainForm.LoadScreenHistory(AReport:TJSONObject;const ABeforePNG,AAfterPNG,ADifferencePNG:TBytes);
+var Stream:TBytesStream;
+begin
+ HistorySelectionChange(nil);FScreenHistory:=AReport;
+ try
+  Stream:=TBytesStream.Create(ABeforePNG);try HistoryBeforeImage.Bitmap.LoadFromStream(Stream);finally Stream.Free;end;
+  Stream:=TBytesStream.Create(AAfterPNG);try HistoryAfterImage.Bitmap.LoadFromStream(Stream);finally Stream.Free;end;
+  Stream:=TBytesStream.Create(ADifferencePNG);try HistoryDifferenceImage.Bitmap.LoadFromStream(Stream);finally Stream.Free;end;
+  HistoryBeforeTitle.Text:='BEFORE | gen '+AReport.GetValue<TJSONObject>('before').GetValue('generation_id').Value;HistoryAfterTitle.Text:='AFTER | gen '+AReport.GetValue<TJSONObject>('after').GetValue('generation_id').Value;
+  HistoryStatus.Text:=AReport.GetValue('changed_pixels').Value+' changed pixels. Read attribution and limits below.';
+  HistoryFilterChange(nil);HistoryModeChange(nil);
+ except HistorySelectionChange(nil);raise;end;
+end;
+procedure TDPHMainForm.HistoryModeChange(Sender:TObject);
+var LayoutMode:Boolean;
+begin
+ if FHistoryRows=nil then Exit;
+ LayoutMode:=HistoryModeCombo.ItemIndex=1;HistoryBeforeImage.Visible:=not LayoutMode;HistoryAfterImage.Visible:=not LayoutMode;HistoryDifferenceImage.Visible:=not LayoutMode;
+ HistoryBeforePaint.Visible:=LayoutMode;HistoryAfterPaint.Visible:=LayoutMode;HistoryDifferencePaint.Visible:=LayoutMode;
+ if LayoutMode then HistoryDifferenceTitle.Text:='LAYOUT OVERLAY' else HistoryDifferenceTitle.Text:='PIXEL DIFFERENCE';
+ HistoryBeforePaint.Repaint;HistoryAfterPaint.Repaint;HistoryDifferencePaint.Repaint;
+end;
+procedure TDPHMainForm.HistoryFilterChange(Sender:TObject);
+var Layout,Row:TJSONObject;Value:TJSONValue;Count:Integer;
+begin
+ if FHistoryRows=nil then Exit;
+ if Sender=HistoryNextButton then Inc(FHistoryOffset,250) else FHistoryOffset:=0;FHistoryRows.Clear;HistoryList.Items.Clear;HistoryNextButton.Enabled:=False;
+ if FScreenHistory=nil then Exit;HistoryMemo.Text:=TDPHScreenHistory.Describe(FScreenHistory);
+ if not FScreenHistory.TryGetValue<TJSONObject>('layout',Layout) then Exit;Count:=0;
+ for Value in Layout.GetValue<TJSONArray>('changes') do begin Row:=Value as TJSONObject;if (HistoryFilter.Text.Trim<>'') and not ContainsText(Row.ToJSON,HistoryFilter.Text.Trim) then Continue;
+  if (Count>=FHistoryOffset) and (FHistoryRows.Count<250) then begin FHistoryRows.Add(Row);HistoryList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('path'));end;Inc(Count);
+ end;
+ HistoryNextButton.Enabled:=Count>FHistoryOffset+FHistoryRows.Count;HistoryMemo.Lines.Add(Format('Layout changes: %d matching; %d shown from %d',[Count,FHistoryRows.Count,FHistoryOffset]));
+end;
+procedure TDPHMainForm.HistoryRowClick(Sender:TObject);
+var Row:TJSONObject;
+begin
+ if (FScreenHistory=nil) or (HistoryList.ItemIndex<0) or (HistoryList.ItemIndex>=FHistoryRows.Count) then Exit;
+ Row:=FHistoryRows[HistoryList.ItemIndex];HistoryMemo.Text:=TDPHScreenHistory.Describe(FScreenHistory)+sLineBreak+sLineBreak+Row.GetValue<string>('kind')+' '+Row.GetValue<string>('path')+sLineBreak+'BEFORE serialized values (blank means absent component):'+sLineBreak+Row.GetValue<string>('before_values')+sLineBreak+'AFTER serialized values:'+sLineBreak+Row.GetValue<string>('after_values')+sLineBreak+'Exact captured component evidence:'+sLineBreak+Row.Format(2);
+end;
+procedure TDPHMainForm.HistoryPaint(Sender:TObject;Canvas:TCanvas);
+var Paint:TPaintBox;Layout,Screen,Row:TJSONObject;Value:TJSONValue;Scale,MinX,MinY,MaxX,MaxY:Single;R:TRectF;I,J,Count:Integer;
+begin
+ Paint:=Sender as TPaintBox;Canvas.Fill.Kind:=TBrushKind.Solid;Canvas.Fill.Color:=TAlphaColors.White;Canvas.FillRect(Paint.LocalRect,0,0,[],1);Canvas.Stroke.Kind:=TBrushKind.Solid;Canvas.Stroke.Thickness:=1;
+ if (FScreenHistory=nil) or not FScreenHistory.TryGetValue<TJSONObject>('layout',Layout) then begin Canvas.Fill.Color:=TAlphaColors.Gray;Canvas.FillText(Paint.LocalRect,'Layout unavailable; read evidence below.',True,1,[],TTextAlign.Center,TTextAlign.Center);Exit;end;
+ MinX:=0;MinY:=0;MaxX:=1;MaxY:=1;
+ for I:=0 to 1 do begin if I=0 then Screen:=Layout.GetValue<TJSONObject>('before') else Screen:=Layout.GetValue<TJSONObject>('after');for Value in Screen.GetValue<TJSONArray>('components') do begin Row:=Value as TJSONObject;MinX:=Min(MinX,Row.GetValue<Double>('x'));MinY:=Min(MinY,Row.GetValue<Double>('y'));MaxX:=Max(MaxX,Row.GetValue<Double>('x')+Row.GetValue<Double>('width'));MaxY:=Max(MaxY,Row.GetValue<Double>('y')+Row.GetValue<Double>('height'));end;end;
+ Scale:=Min(Max(1,Paint.Width-16)/(MaxX-MinX),Max(1,Paint.Height-16)/(MaxY-MinY));
+ for I:=0 to 1 do begin
+  if (Paint=HistoryBeforePaint) and (I=1) then Continue;if (Paint=HistoryAfterPaint) and (I=0) then Continue;
+  if I=0 then begin Screen:=Layout.GetValue<TJSONObject>('before');Canvas.Stroke.Color:=HistoryBeforeLegend.Fill.Color;end else begin Screen:=Layout.GetValue<TJSONObject>('after');Canvas.Stroke.Color:=HistoryAfterLegend.Fill.Color;end;
+  Count:=Min(300,Screen.GetValue<TJSONArray>('components').Count);
+  for J:=0 to Count-1 do begin Row:=Screen.GetValue<TJSONArray>('components').Items[J] as TJSONObject;R:=RectF(8+(Row.GetValue<Double>('x')-MinX)*Scale,8+(Row.GetValue<Double>('y')-MinY)*Scale,8+(Row.GetValue<Double>('x')-MinX+Row.GetValue<Double>('width'))*Scale,8+(Row.GetValue<Double>('y')-MinY+Row.GetValue<Double>('height'))*Scale);Canvas.DrawRect(R,0,0,[],1);end;
+ end;
 end;
 procedure TDPHMainForm.UpdateScreenshotBounds;
 var Scale: Single;

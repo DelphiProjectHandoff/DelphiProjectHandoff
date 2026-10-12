@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Action purposes 04.19 implemented through attributed manual capture; 337 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Screen history and visual change comparisons 04.20 implemented; 336 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1702,13 +1702,29 @@
       "id": "04.20",
       "domain": "DPH-04",
       "requirement": "Screen history and visual change comparisons",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Workspace.Comparison.pas",
-        "tests/DPH.Tests.Comparison.dpr"
+        "DPH.Workspace.ScreenHistory.pas",
+        "DPH.Workspace.Worker.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.ScreenHistory.dpr",
+        "tools/build-screen-history.cmd",
+        "docs/phase1-screen-history-validation.json",
+        "docs/phase1-screen-history-validation.log",
+        "docs/guides/Screen_History_Run_and_Test.txt"
       ],
-      "limitation": "Add paired screen-history selection and visual image/layout difference comparison.",
+      "limitation": "Contributor PNGs remain user-supplied unverified evidence. Exact decoded RGB comparison uses white transparency compositing and no alignment/resampling/tolerance/color-profile normalization. Layouts are approximate captured-source reconstructions, not runtime screenshots; missing/incompatible captures remain explicit gaps. Newest 200 imports; 20 MiB encoded PNG, 8192 per dimension and 16 million pixels per image/union; 5000 components per form, 300 drawn rectangles per side and 250 change rows per page.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Dedicated IDE-editable Screen history page selects attributed Before/After PNG records by artifact ID, generation and caption. Worker verifies bytes and produces side-by-side previews, exact pixel mask, changed counts/extents/inclusive bounds and full attribution. Optional relative form paths load each retained generation for component/class/property changes and blue/orange layout overlay. Filtering/pagination, swap, explicit cache gaps and selection-token/database safeguards are implemented.",
+        "remaining_work": "",
+        "purpose": "Screen history and visual change comparisons",
+        "evidence_group": "comparison",
+        "verification": "73 focused image/parser/storage/worker/native UI checks, including actual Compare, late-response rejection and visible layout geometry; 17 revision-comparison and 81 action-purpose regression checks. Actual application build and FMX baseline pass. Normal/compact native renders inspected. Both editable DOCX and companion PDF guides rendered; 54 implementation hashes and all 80 TOC entries verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Images retain capture attribution and revisions; structural revision comparison exists.",
@@ -1716,6 +1732,12 @@
         "purpose": "Screen history and visual change comparisons",
         "evidence_group": "comparison",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Screen history and visual change comparisons",
+        "validation": "docs/phase1-screen-history-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12462,23 +12484,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Attributed user actions and business purposes",
+    "completed_batch": "Screen history and visual change comparisons",
     "completed_requirement_ids": [
-      "04.19"
+      "04.20"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 235,
-      "implemented": 178,
+      "partial": 234,
+      "implemented": 179,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 337,
-    "completion_record": "docs/Phase1_Action_Purposes_Completion.txt",
+    "incomplete_requirement_records": 336,
+    "completion_record": "docs/Phase1_Screen_History_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.20",
-      "title": "Screen history and visual change comparisons",
-      "scope": "Paired screen-history selection and visual image/layout difference comparison, with exact attribution and captured generations."
+      "requirement": "05.01",
+      "title": "Database connection inventory",
+      "scope": "Explicit connection inventory linking datasets, connection definitions and safely redacted captured configuration without connecting to production."
     }
   }
 }
