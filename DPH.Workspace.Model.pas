@@ -25,6 +25,10 @@ type
     function Coverage: TJSONObject;
     function Questions(AKnowledge: TJSONArray = nil): TJSONArray;
     function ProjectMembers: TJSONArray;
+    class function NewDataRetentionPolicy:string;static;
+    class procedure ValidateDataRetentionRecord(ARecord:TJSONObject);static;
+    class function IsDataRetentionPolicy(ARow:TJSONObject):Boolean;static;
+    class function DescribeDataRetentionPolicy(ARow:TJSONObject):string;static;
     function FileFormats: TJSONObject;
     class function DescribeFileFormat(ARow:TJSONObject):string; static;
     class function FileFormatContractTitle(ARow:TJSONObject):string; static;
@@ -34,6 +38,62 @@ type
   end;
 implementation
 uses System.RegularExpressions, System.StrUtils, System.IOUtils, System.Hash, System.DateUtils, System.Generics.Defaults, DPH.Project.Inventory, DPH.Analysis.Quality;
+
+class function TDPHWorkspaceView.NewDataRetentionPolicy:string;
+begin
+ Result:='TARGET DATA RETENTION AND ARCHIVAL POLICY'+sLineBreak+
+  'Human-authored requirements for the selected application. Replace Unknown with evidence or explain who must resolve it. Do not enter credentials or customer data.'+sLineBreak+sLineBreak+
+  'Policy name and version: Unknown'+sLineBreak+
+  'Data categories, tables/files and business scope: Unknown'+sLineBreak+
+  'Business or regulatory basis and evidence: Unknown'+sLineBreak+
+  'Retention period, units and clock-start event: Unknown'+sLineBreak+
+  'Eligibility and expiry calculation, time zone: Unknown'+sLineBreak+
+  'Archive trigger, frequency and implementing job/procedure: Unknown'+sLineBreak+
+  'Archive destination, format and access permissions: Unknown'+sLineBreak+
+  'Deletion/disposal method and implementing job/procedure: Unknown'+sLineBreak+
+  'Legal holds, exceptions and override authority: Unknown'+sLineBreak+
+  'Policy owner, operator and approval responsibility: Unknown'+sLineBreak+
+  'Archive retrieval, restoration and disposal evidence: Unknown'+sLineBreak+
+  'Failure handling, monitoring and audit trail: Unknown'+sLineBreak+
+  'Verification procedure, test evidence and last review: Unknown'+sLineBreak+
+  'Remaining unknowns and responsible maintainer: Unknown'+sLineBreak+sLineBreak+
+  'Implementing links: use Knowledge links to attach captured routines, evidence or exact procedure-section revisions; Save the link edits. A written job name alone is not a resolved source link.'+sLineBreak+
+  'Qualification: this records target-application policy. DPH snapshot retention is separate. DPH never runs an archive, deletion, SQL statement or target job. Saving or reviewing this record does not establish legal compliance or observed job success.';
+end;
+class function TDPHWorkspaceView.IsDataRetentionPolicy(ARow:TJSONObject):Boolean;
+var RecordValue:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try
+  if not (RecordValue is TJSONObject) then Exit;
+  Result:=(ARow.GetValue<string>('kind','')='business_rule') and (RecordValue.GetValue<string>('record_type','')='data_retention');
+ finally RecordValue.Free;end;
+end;
+class procedure TDPHWorkspaceView.ValidateDataRetentionRecord(ARecord:TJSONObject);
+var ID:TGUID;Pair:TJSONPair;
+begin
+ if (ARecord=nil) or (ARecord.GetValue<string>('record_type','')<>'data_retention') then raise EArgumentException.Create('Expected a target-data retention policy');
+ if ARecord.Count<>2 then raise EArgumentException.Create('Retention policy requires only its record type and stable policy identity');
+ for Pair in ARecord do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Retention metadata must be text');
+ if Length(ARecord.GetValue<string>('policy_id',''))<>38 then raise EArgumentException.Create('Invalid retention policy identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('policy_id'));except raise EArgumentException.Create('Invalid retention policy identity');end;
+end;
+class function TDPHWorkspaceView.DescribeDataRetentionPolicy(ARow:TJSONObject):string;
+var Links,History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved target-data policy selected. New policy prepares an unsaved Knowledge draft. Empty results do not prove that the application has no retention obligations.';
+ if not IsDataRetentionPolicy(ARow) then Exit;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+
+  sLineBreak+'Review state: '+ARow.GetValue<string>('state','unknown')+' | revision '+ARow.GetValue<string>('revision','unknown')+
+  sLineBreak+'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do
+  if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then
+   Result:=Result+'Current revision author: '+Value.GetValue<string>('editor','unknown')+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
+ Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
+  'Open policy to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
+end;
 
 class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;
 var Files,Nodes: TJSONArray; FileValue,NodeValue: TJSONValue; Row,IR,Node: TJSONObject;
@@ -566,4 +626,3 @@ begin
   Result:=Result+' | static evidence; runtime behavior unobserved';
 end;
 end.
-

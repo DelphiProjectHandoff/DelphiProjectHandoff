@@ -1,0 +1,74 @@
+DPH TARGET DATA RETENTION AND ARCHIVAL REQUIREMENTS
+Last changed: 12 October 2026
+
+RUN AND RECORD A POLICY
+1. Open File Explorer and go to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Attach project and select the application .dproj, .dpr or .groupproj.
+   Save its proposed database when prompted. Alternatively click Open cache
+   and choose its existing .dphdb.
+4. In the upper-right page selector choose Target data retention.
+5. Click New policy. The Knowledge page opens with an UNSAVED policy draft.
+6. Replace the default title with a descriptive scope, such as
+   Orders: retention and archival policy. Enter your name in the author field.
+   A saved title remains stable; change the policy name/version within its body
+   when revising it later. Preserve the first policy heading.
+7. Complete each prompt: data categories/tables/files, policy basis, period and
+   clock-start event, expiry/time zone, archive job/schedule, destination and
+   permissions, disposal job/method, holds/exceptions, ownership, retrieval,
+   monitoring/failures, verification evidence and remaining unknowns.
+   If a fact is unavailable, explicitly record Unknown and its responsible
+   maintainer. Do not copy real customer data or credentials into the policy.
+
+LINK AN IMPLEMENTING JOB OR OPERATING PROCEDURE
+8. Choose Knowledge links in the page selector. In the target-kind selector,
+   choose entity. Enter the implementing routine's name and click Find targets.
+9. Select its result labeled [semantic_routine], choose depends_on, and click
+   Add link. Syntax records can also appear; the semantic routine provides
+   the captured explanation. Search returns up to 200 candidates: narrow
+   the name filter when needed. DPH does not execute the selected routine.
+10. For a saved operating procedure, choose section as the target kind,
+    search the procedure title, select it, choose cites and click Add link.
+    This cites that exact procedure revision.
+11. Return to Knowledge in the page selector and click Save. Both body and
+    link edits are unsaved until Save. A named author is required.
+12. Review the saved policy against evidence using the named review controls.
+    Save alone leaves needs_review. A later edit creates another revision and
+    reopens review. Earlier bodies, attribution and links remain in history.
+
+INSPECT AND EDIT SAVED POLICIES
+13. Return to Target data retention. Select the policy. Read the labeled memo
+    for original contributor, current revision author, reviewer, exact link
+    count and policy body. Scroll to see the complete body.
+14. Use the review-state selector or search policy text, owner, scope or job.
+    First page and Next page navigate lists over 250 policies. In a narrow
+    window scroll the command bar horizontally to reach all buttons.
+15. Open policy loads its saved Knowledge record for editing. Its body is
+    editable; stable identity/title and document scope remain protected.
+16. Implementation links opens its saved links. Select a link and click
+    Open saved target to inspect the semantic routine or exact section.
+17. Save or discard a current Knowledge draft before opening a different
+    policy. Unknown fields remain unknown even after human review.
+
+CONTROLLED PRACTICE AND AUTOMATED TESTS
+18. Open an elevated PowerShell window and run these commands separately:
+    Set-Location -LiteralPath 'C:\New Delphi Projects\Delphi Project Handoff'
+    cmd /c tools\build-data-retention.cmd
+    cmd /c tools\build-wp0.cmd
+19. PASS lines confirm the focused actual-parser/persistence/native workflow
+    and application/FMX binding checks. Any FAIL or compiler error means
+    validation did not pass. The tests do not attach your real source project.
+20. For practice, attach the controlled file created by the focused test:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\data-retention-validation\source\Retention.dpr
+    Create a practice policy and link Main.ArchiveOrders [semantic_routine].
+    This controlled empty routine is not a real archival implementation.
+21. For a handoff, choose Publish and include the maintenance or all audience.
+    Its output includes the policy and exact links subject to exclusions and
+    redaction. Publish and bundle validation never execute target jobs.
+
+LIMITS
+These are attributed requirements, not discovered legal obligations. Unknown
+facts and named job strings do not prove implementation, legal compliance or
+successful archival/deletion. DPH never executes target jobs, SQL or disposal.
+DPH's own snapshot retention is managed separately on Database tools.

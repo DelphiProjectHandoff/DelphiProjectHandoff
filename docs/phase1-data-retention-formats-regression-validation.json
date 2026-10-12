@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 57,
+    "qualification": "Controlled captured format candidates, resource shape, attributed contracts and native FMX workflows. Runtime transfers unobserved."
+}

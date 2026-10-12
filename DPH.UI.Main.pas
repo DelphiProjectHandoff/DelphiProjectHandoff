@@ -172,6 +172,14 @@ type
     DatabaseERMemo:TMemo;
     DatabaseERTableStyle,DatabaseERGapStyle,DatabaseERHeaderStyle:TRectangle;
     DatabaseERTextStyle,DatabaseERTitleStyle:TLabel;
+    DataRetentionTab:TTabItem;
+    DataRetentionPurpose,DataRetentionStatus,DataRetentionEvidenceLabel:TLabel;
+    DataRetentionToolbar:THorzScrollBox;
+    DataRetentionFilter:TEdit;
+    DataRetentionState:TComboBox;
+    DataRetentionFirst,DataRetentionNext,DataRetentionNew,DataRetentionOpen,DataRetentionLinks:TButton;
+    DataRetentionList:TListBox;
+    DataRetentionMemo:TMemo;
     FileFormatsTab:TTabItem;
     FileFormatsPurpose,FileFormatsStatus,FileFormatsEvidenceLabel:TLabel;
     FileFormatsToolbar:THorzScrollBox;
@@ -389,6 +397,10 @@ type
     procedure FileFormatsSelectionChange(Sender:TObject);
     procedure FileFormatsSourceClick(Sender:TObject);
     procedure FileFormatsExplainClick(Sender:TObject);
+    procedure DataRetentionFilterChange(Sender:TObject);
+    procedure DataRetentionSelectionChange(Sender:TObject);
+    procedure DataRetentionNewClick(Sender:TObject);
+    procedure DataRetentionOpenClick(Sender:TObject);
     procedure FileFormatsContractClick(Sender:TObject);
     procedure DatabaseSchemaFilterChange(Sender:TObject);
     procedure DatabaseSchemaSelectionChange(Sender:TObject);
@@ -505,6 +517,8 @@ type
     FDatabaseERFocusID,FDatabaseEREvidenceID:string;
     FDatabaseERScale:Single;
     FFileFormats:TJSONObject;
+    FDataRetentionRows:TList<TJSONObject>;
+    FDataRetentionOffset:Integer;
     FFileFormatRows:TList<TJSONObject>;
     FFileFormatOffset:Integer;
     FDatabaseSchema:TJSONObject;
@@ -590,7 +604,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -617,6 +631,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
+  DataRetentionFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -640,7 +655,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FFileFormatRows.Free;FFileFormats.Free;
+  FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -972,7 +987,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -2242,6 +2257,69 @@ begin
  Key:=FFileFormatRows[FileFormatsList.ItemIndex].GetValue<string>('target_key');if Key='' then Exit;
  SelectSymbol(Key);WorkspaceTabs.ActiveTab:=ExplainTab;
 end;
+procedure TDPHMainForm.DataRetentionFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FDataRetentionRows=nil then Exit;
+ if Sender=DataRetentionNext then Inc(FDataRetentionOffset,250) else FDataRetentionOffset:=0;
+ FDataRetentionRows.Clear;DataRetentionList.Items.Clear;DataRetentionNext.Enabled:=False;DataRetentionNew.Enabled:=FView<>nil;
+ DataRetentionSelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin DataRetentionStatus.Text:='Open a captured project, then New policy to record its target-data requirements.';Exit;end;
+ Query:=DataRetentionFilter.Text.Trim;StateFilter:='';if DataRetentionState.ItemIndex>0 then StateFilter:=DataRetentionState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsDataRetentionPolicy(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeDataRetentionPolicy(Row),Query) then Continue;
+  if (Count>=FDataRetentionOffset) and (FDataRetentionRows.Count<250) then begin
+   FDataRetentionRows.Add(Row);DataRetentionList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ DataRetentionNext.Enabled:=Count>FDataRetentionOffset+FDataRetentionRows.Count;
+ DataRetentionStatus.Text:=IntToStr(Count)+' saved policies match; '+IntToStr(FDataRetentionRows.Count)+' shown from '+IntToStr(FDataRetentionOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if DataRetentionList.Count>0 then DataRetentionList.ItemIndex:=0;
+ DataRetentionSelectionChange(nil);
+end;
+procedure TDPHMainForm.DataRetentionSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FDataRetentionRows<>nil) and (DataRetentionList.ItemIndex>=0) and (DataRetentionList.ItemIndex<FDataRetentionRows.Count) then Row:=FDataRetentionRows[DataRetentionList.ItemIndex];
+ DataRetentionOpen.Enabled:=Row<>nil;DataRetentionLinks.Enabled:=Row<>nil;
+ DataRetentionMemo.Text:=TDPHWorkspaceView.DescribeDataRetentionPolicy(Row);
+end;
+procedure TDPHMainForm.DataRetentionNewClick(Sender:TObject);
+var Policy:TJSONObject;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before starting a retention policy.';Exit;end;
+ NewKnowledgeClick(nil);FBinding:=True;
+ try
+  FKnowledgeLink:='';KnowledgeTitleEdit.Text:='Retention policy: enter descriptive data scope';
+  Policy:=TJSONObject.Create.AddPair('record_type','data_retention').AddPair('policy_id',TGUID.NewGuid.ToString);
+  try FKnowledgeStructuredJSON:=Policy.ToJSON;finally Policy.Free;end;
+  KnowledgeBodyMemo.Text:=TDPHWorkspaceView.NewDataRetentionPolicy;
+  KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');
+  KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');
+  KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+  KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+ finally FBinding:=False;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=KnowledgeTab;
+ StatusLabel.Text:='Enter a descriptive title and named author. Complete the policy fields, preserve the first heading, add implementation links, then Save. Review separately.';
+end;
+procedure TDPHMainForm.DataRetentionOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another policy.';Exit;end;
+ if (DataRetentionList.ItemIndex<0) or (DataRetentionList.ItemIndex>=FDataRetentionRows.Count) then Exit;
+ Row:=FDataRetentionRows[DataRetentionList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=DataRetentionLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
 procedure TDPHMainForm.FileFormatsContractClick(Sender:TObject);
 var Row:TJSONObject;Title:string;I:Integer;
 begin
@@ -2849,7 +2927,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -2878,7 +2956,7 @@ begin
   KnowledgeBodyMemo.Text:=Row.GetValue<string>('body');
   FKnowledgeQuestionJSON:=Row.GetValue<string>('question_json','');
   FKnowledgeStructuredJSON:=Row.GetValue<string>('structured_json','{}');
-  KnowledgeBodyMemo.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
+  KnowledgeBodyMemo.ReadOnly:=(FKnowledgeStructuredJSON<>'{}') and not TDPHWorkspaceView.IsDataRetentionPolicy(Row);
   KnowledgeTitleEdit.ReadOnly:=FKnowledgeStructuredJSON<>'{}';
   KnowledgeKindCombo.Enabled:=FKnowledgeStructuredJSON='{}';
   KnowledgeDocumentCombo.Enabled:=FKnowledgeStructuredJSON='{}'; KnowledgeAudienceCombo.Enabled:=FKnowledgeStructuredJSON='{}';

@@ -1,0 +1,111 @@
+program DPH.Tests.DataRetention;
+{$APPTYPE CONSOLE}
+uses System.SysUtils,System.Classes,System.IOUtils,System.JSON,System.Hash,System.StrUtils,System.UITypes,
+ FMX.Forms,FMX.Graphics,DPH.Project.Analysis,DPH.Analysis.Model,DPH.Analysis.Symbols,
+ DPH.Workspace.Model,DPH.UI.Main,DPH.Storage.Database,DPH.Analysis.Persistence,DPH.Workspace.Catalog,DPH.Publish.Model,DPH.Publish.Export;
+var Root,Work,Fixture,Body,Metadata,PolicyTitle,SourceHash,Catalog,CatalogHash,Before:string;
+ I,Checks:Integer;Config,Generation,PolicyID,Revision,OldRevision,ProcedureID:Int64;
+ Analyzer:TDPHAnalyzer;Semantic:TDPHSemanticAnalyzer;Scan:TDPHScan;Graph:TDPHSemanticGraph;
+ View:TDPHWorkspaceView;Store:TDPHKnowledgeStore;Form:TDPHMainForm;Bitmap:TBitmap;Model:TDPHDocumentModel;
+ Rows,Links,Policies:TJSONArray;Row,RecordValue,Log:TJSONObject;Value:TJSONValue;Denied:Boolean;
+procedure Check(OK:Boolean;const MessageText:string);
+begin if not OK then raise Exception.Create('FAIL '+MessageText);Inc(Checks);Writeln('PASS ',Checks,': ',MessageText);Flush(Output);end;
+function LoadPolicy:TJSONObject;
+var A:TJSONArray;V:TJSONValue;
+begin Result:=nil;A:=Store.KnowledgeJSON;try for V in A do if V.GetValue<string>('id')=IntToStr(PolicyID) then Exit(V.Clone as TJSONObject);finally A.Free;end;end;
+function SavePolicy(ID,Expected:Int64;const Title,Text,Author,Kind,Document,Audience,LinkJSON,Structured:string):Boolean;
+begin Result:=False;try Store.SaveKnowledge(ID,Expected,Generation,Title,Text,Author,Kind,'',Document,Audience,LinkJSON,'',Structured);except on E:Exception do Result:=True;end;end;
+procedure Render(const Name:string);
+begin Application.ProcessMessages;Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
+ if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
+ Bitmap.SaveToFile(TPath.Combine(Root,'docs\'+Name));finally Bitmap.Free;end;end;
+begin
+ Application.Initialize;
+ try
+ Root:=TPath.GetFullPath(ParamStr(1));Work:=TPath.Combine(Root,'bin\data-retention-validation');Fixture:=TPath.Combine(Work,'source');TDirectory.CreateDirectory(Fixture);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Retention.dpr'),'program Retention; uses Main; begin end.',TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Main.pas'),'unit Main; interface implementation procedure ArchiveOrders; begin end; end.',TEncoding.UTF8);
+ SourceHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
+ Analyzer:=TDPHAnalyzer.Create;Semantic:=TDPHSemanticAnalyzer.Create;
+ try Scan:=Analyzer.Scan(TPath.Combine(Fixture,'Retention.dpr'),'Debug','Win32',[],[],False);
+ try Graph:=Semantic.Analyze(Scan);
+ try Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'retention-'+TGUID.NewGuid.ToString+'.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
+ try Store.InitializeProject('Controlled target retention requirements','Delphi');Config:=Store.AddConfiguration('Win32','37.0','[]','[]','Debug');Store.SelectConfiguration(Config);
+ Generation:=TDPHSemanticPersistence.Stage(Scan,Graph,Store,Config);View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,Graph,Generation,'Retention.dpr','Debug','Win32',[],[]));
+ try Store.SaveWorkspaceView(Generation,View.Document.ToJSON);TDPHSemanticPersistence.Publish(Scan,Graph,Store,Generation);Before:=View.Document.ToJSON;
+ Body:=TDPHWorkspaceView.NewDataRetentionPolicy;PolicyTitle:='Orders retention and legal holds';
+ Check(Body.Contains('Retention period, units and clock-start event'),'Template explains retention period and clock trigger');
+ Check(Body.Contains('Legal holds, exceptions'),'Template captures holds and exceptions');
+ Check(Body.Contains('Archive destination, format and access'),'Template captures archive destination and permissions');
+ Check(Body.Contains('Deletion/disposal method'),'Template separates archival from disposal');
+ Check(Body.Contains('Policy owner, operator'),'Template attributes operational responsibility');
+ Check(Body.Contains('Failure handling, monitoring'),'Template prompts recovery and auditing');
+ Check(Body.Contains('Verification procedure, test evidence'),'Template requires explicit verification evidence');
+ Check(Body.Contains('DPH snapshot retention is separate'),'Target policy distinguished from DPH cache retention');
+ RecordValue:=TJSONObject.Create.AddPair('record_type','data_retention').AddPair('policy_id',TGUID.NewGuid.ToString);
+ try TDPHWorkspaceView.ValidateDataRetentionRecord(RecordValue);Metadata:=RecordValue.ToJSON;finally RecordValue.Free;end;
+ Body:=Body.Replace('Policy name and version: Unknown','Policy name and version: Orders v1').Replace('Retention period, units and clock-start event: Unknown','Retention period, units and clock-start event: 7 years from order closure; controlled fixture only');
+ Check(SavePolicy(0,0,PolicyTitle,Body,'','business_rule','maintenance','maintainer','',Metadata),'Anonymous policy author rejected');
+ Check(SavePolicy(0,0,'Retention policy: enter descriptive data scope',Body,'Author','business_rule','maintenance','maintainer','',Metadata),'Placeholder title rejected');
+ Check(SavePolicy(0,0,PolicyTitle,'Policy heading removed','Author','business_rule','maintenance','maintainer','',Metadata),'Removed policy heading rejected');
+ Check(SavePolicy(0,0,PolicyTitle,Body,'Author','engineering_rule','maintenance','maintainer','',Metadata),'Incorrect policy kind rejected');
+ Check(SavePolicy(0,0,PolicyTitle,Body,'Author','business_rule','user','user','',Metadata),'Incorrect policy audience rejected');
+ Check(SavePolicy(0,0,PolicyTitle,Body,'Author','business_rule','maintenance','maintainer','','{"record_type":"data_retention","policy_id":"invalid"}'),'Invalid stable policy identity rejected');
+ RecordValue:=TJSONObject.ParseJSONValue(Metadata) as TJSONObject;try RecordValue.AddPair('unexpected','x');Check(SavePolicy(0,0,PolicyTitle,Body,'Author','business_rule','maintenance','maintainer','',RecordValue.ToJSON),'Unknown policy metadata rejected');finally RecordValue.Free;end;
+ Links:=TJSONArray.Create;
+ try Rows:=Store.LinkCandidates(Generation,'entity','ArchiveOrders');try
+ Row:=nil;for Value in Rows do if View.Symbol(Value.GetValue<string>('canonical_key'))<>nil then begin Row:=Value.Clone as TJSONObject;Break;end;
+ Check(Row<>nil,'Actual captured semantic implementation routine available');Row.AddPair('link_role','depends_on');Links.AddElement(Row);finally Rows.Free;end;
+ ProcedureID:=Store.SaveKnowledge(0,0,Generation,'Archival operator procedure','Controlled procedure: inspect holds before requesting archival. No execution.','Procedure author','maintenance','','maintenance','maintainer');
+ Rows:=Store.LinkCandidates(Generation,'section','Archival operator procedure');try Row:=Rows.Items[0].Clone as TJSONObject;Row.AddPair('link_role','cites');Links.AddElement(Row);finally Rows.Free;end;
+ PolicyID:=Store.SaveKnowledge(0,0,Generation,PolicyTitle,Body,'Retention author','business_rule','','maintenance','maintainer',Links.ToJSON,'',Metadata);
+ finally Links.Free;end;
+ Row:=LoadPolicy;try Revision:=StrToInt64(Row.GetValue<string>('revision'));
+ Check(TDPHWorkspaceView.IsDataRetentionPolicy(Row),'Typed persisted policy recognized');Check(Row.GetValue<string>('owner')='Retention author','Named contributor persists');Check(Row.GetValue<string>('state')='needs_review','Saved policy remains pending review');
+ Check(Row.GetValue<TJSONArray>('rich_links').Count=2,'Routine and exact procedure-revision links persist');
+ Check(Row.GetValue<string>('body').Contains('7 years'),'Authored target period persists');Check(Row.GetValue<string>('body').Contains('Unknown'),'Unresolved fields stay explicit');
+ Check(TDPHWorkspaceView.DescribeDataRetentionPolicy(Row).Contains('Explicit implementation/evidence links: 2'),'Inspector distinguishes resolved link count');
+ finally Row.Free;end;
+ Check(SavePolicy(0,0,'Duplicate identity',Body,'Author','business_rule','maintenance','maintainer','',Metadata),'Duplicate policy identity rejected');
+ Check(SavePolicy(PolicyID,Revision,PolicyTitle,Body,'Author','business_rule','maintenance','maintainer','','{}'),'Typed metadata cannot be discarded');
+ RecordValue:=TJSONObject.Create.AddPair('record_type','data_retention').AddPair('policy_id',TGUID.NewGuid.ToString);try Check(SavePolicy(PolicyID,Revision,PolicyTitle,Body,'Author','business_rule','maintenance','maintainer','',RecordValue.ToJSON),'Saved policy identity cannot change');finally RecordValue.Free;end;
+ Denied:=False;try Store.ReviewKnowledge(PolicyID,Revision,Generation,'','verified');except Denied:=True;end;Check(Denied,'Anonymous policy review rejected');
+ OldRevision:=Revision;Store.ReviewKnowledge(PolicyID,Revision,Generation,'Retention reviewer','verified');Row:=LoadPolicy;try Revision:=StrToInt64(Row.GetValue<string>('revision'));Check(Row.GetValue<string>('reviewer')='Retention reviewer','Named reviewer persists');Check(Row.GetValue<TJSONArray>('history').Count=2,'Review appends immutable history');Check(Row.GetValue<TJSONArray>('rich_links').Count=2,'Review retains exact implementation links');finally Row.Free;end;
+ Check(SavePolicy(PolicyID,OldRevision,PolicyTitle,Body,'Editor','business_rule','maintenance','maintainer','',Metadata),'Stale policy edit rejected');
+ Store.SaveKnowledge(PolicyID,Revision,Generation,PolicyTitle,Body+sLineBreak+'Controlled revision: review disposal evidence.','Second author','business_rule','','maintenance','maintainer','','',Metadata);
+ Row:=LoadPolicy;try Check(Row.GetValue<string>('state')='needs_review','Policy edits reopen review');Check(Row.GetValue<TJSONArray>('history').Count=3,'Prior reviewed policy retained');Check(Row.GetValue<TJSONArray>('rich_links').Count=2,'Policy revision preserves implementation links');finally Row.Free;end;
+ Check(Store.IntegrityCheck='ok','Policy database integrity valid');
+ Rows:=Store.KnowledgeJSON;try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,False,nil,False,'maintainer');
+ try
+ Check(Model.Document.ToJSON.Contains('Orders retention and legal holds'),'Maintainer publication includes authored policy');
+ Check(Model.Document.ToJSON.Contains('data_retention'),'Canonical handoff preserves typed policy identity');
+ if TDirectory.Exists(TPath.Combine(Work,'handoff')) then begin
+  RecordValue:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'handoff\manifest.json'),TEncoding.UTF8)) as TJSONObject;
+  try if RecordValue.GetValue<string>('project','')<>'Retention.dpr' then raise Exception.Create('Refusing to replace an unrelated test export');finally RecordValue.Free;end;
+  TDirectory.Delete(TPath.Combine(Work,'handoff'),True);
+ end;
+ TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'handoff'));
+ TDPHPublisher.Validate(TPath.Combine(Work,'handoff'),Model.Document.GetValue<string>('input_fingerprint'));
+ Check(True,'Retention policy handoff passes full bundle validation');
+ Check(TFile.ReadAllText(TPath.Combine(Work,'handoff\index.html'),TEncoding.UTF8).Contains('7 years'),'Published HTML includes authored retention period');
+ finally Model.Free;end;finally Rows.Free;end;
+ Catalog:=TDPHWorkspaceCatalog.DefaultPath;CatalogHash:='';if TFile.Exists(Catalog) then CatalogHash:=THashSHA2.GetHashStringFromFile(Catalog);
+ Form:=TDPHMainForm.Create(nil);
+ try Form.PollTimer.Enabled:=False;Form.ChangeTimer.Enabled:=False;Form.LoadView(View.Document.Clone as TJSONObject);Form.LoadKnowledge(Store.KnowledgeJSON);
+ Check(Form.DataRetentionList.Count=1,'Native register includes policy and excludes unrelated procedure');Check(Form.DataRetentionMemo.Text.Contains('Second author'),'Native inspector shows current contributor');
+ Form.PendingKnowledgeCheck.IsChecked:=True;Form.DataRetentionOpenClick(nil);Check(Form.WorkspaceTabs.ActiveTab=Form.KnowledgeTab,'Open policy enters saved Knowledge workflow');Check(not Form.KnowledgeBodyMemo.ReadOnly,'Saved policy body remains editable');Check(Form.KnowledgeTitleEdit.ReadOnly,'Saved stable title protected');Check(not Form.KnowledgeKindCombo.Enabled,'Saved policy kind protected');
+ Form.DataRetentionOpenClick(Form.DataRetentionLinks);Check(Form.WorkspaceTabs.ActiveTab=Form.KnowledgeLinksTab,'Implementation links opens exact link workflow');Check(Form.KnowledgeLinksList.Count=2,'Native exact implementation links available');Form.KnowledgeLinksList.ItemIndex:=0;Form.OpenKnowledgeLinkClick(nil);Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Saved implementation routine opens captured explanation');
+ Form.DataRetentionNewClick(nil);Check(Form.WorkspaceTabs.ActiveTab=Form.KnowledgeTab,'New policy opens unsaved draft');Check(Form.KnowledgeBodyMemo.Text.Contains('Legal holds'),'Native policy draft includes essential fields');
+ Body:=Form.KnowledgeBodyMemo.Text;Form.DataRetentionOpenClick(nil);Check(Form.KnowledgeBodyMemo.Text=Body,'Unsaved draft protected from policy selection');Form.DataRetentionNewClick(nil);Check(Form.StatusLabel.Text.Contains('Save or discard'),'Unsaved draft protected from replacement');Form.DiscardKnowledgeClick(nil);
+ Form.DataRetentionState.ItemIndex:=2;Form.DataRetentionFilterChange(nil);Check(Form.DataRetentionList.Count=0,'Review-state filter respects pending edit');Form.DataRetentionState.ItemIndex:=0;Form.DataRetentionFilter.Text:='7 years';Form.DataRetentionFilterChange(nil);Check(Form.DataRetentionList.Count=1,'Policy text search finds authored period');
+ Form.DataRetentionFilter.Text:='absent';Form.DataRetentionFilterChange(nil);Check(Form.DataRetentionMemo.Text.Contains('Empty results do not prove'),'Empty register explains unresolved obligations');Check(not Form.DataRetentionOpen.Enabled,'Empty results disable opening');
+ Form.DataRetentionFilter.Text:='';Form.DataRetentionFilterChange(nil);Form.WorkspaceTabs.ActiveTab:=Form.DataRetentionTab;Form.Show;Render('phase1-data-retention-workspace.png');Form.WindowState:=TWindowState.wsNormal;Form.Width:=960;Form.Height:=600;Render('phase1-data-retention-compact.png');Check(Form.DataRetentionMemo.Height>=50,'Compact policy detail remains readable');Check(Form.DataRetentionToolbar.ShowScrollBars and Form.DataRetentionMemo.ShowScrollBars,'Compact commands and long policies scroll');Form.Hide;
+ Policies:=TJSONArray.Create;Row:=LoadPolicy;try for I:=1 to 270 do begin RecordValue:=Row.Clone as TJSONObject;Policies.AddElement(RecordValue);end;finally Row.Free;end;Form.LoadKnowledge(Policies);Check(Form.DataRetentionList.Count=250,'Large register first page bounded');Check(Form.DataRetentionNext.Enabled,'Large register next page accessible');Form.DataRetentionFilterChange(Form.DataRetentionNext);Check(Form.DataRetentionList.Count=20,'Remaining policy rows accessible');
+ Form.LoadKnowledge(nil);Check(Form.DataRetentionList.Count=0,'Clearing loaded knowledge removes prior policy rows');
+ finally Form.Free;end;
+ Form:=TDPHMainForm.Create(nil);try Form.PollTimer.Enabled:=False;Form.ChangeTimer.Enabled:=False;Check(not Form.DataRetentionNew.Enabled,'No capture disables new policy');finally Form.Free;end;
+ Check(View.Document.ToJSON=Before,'Policy workflow leaves captured workspace unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceHash,'Target source unchanged');Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
+ Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Attributed manual target-data retention policies with captured implementation links; legal compliance and runtime jobs remain unverified.');try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-data-retention-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ finally View.Free;end;finally Store.Free;end;finally Graph.Free;end;finally Scan.Free;end;finally Semantic.Free;Analyzer.Free;end;
+ except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
+end.

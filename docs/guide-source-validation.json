@@ -1,5 +1,5 @@
 {
-  "guide_version": 31,
+  "guide_version": 32,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -107,7 +107,7 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "88dd64242abb30706a448fe064978c22d641b9541ce67a2e55e40bacc045b005"
+      "sha256": "323e07e2255dc9c0780c42aaab2fea8cfdb03143a82eb1ec628eb9f8b8d0312e"
     },
     {
       "path": "DPH.Storage.Types.pas",
@@ -131,7 +131,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "f1f248e67d51cc4b4047c684491bcf2c275fa2abc5e785139ca7e4dc25eb20e9"
+      "sha256": "95803c5ffa1cb7cb42a619ac78bb8cc74766ddda1be32a448b14b2d5e4963c46"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -187,7 +187,7 @@
     },
     {
       "path": "DPH.Workspace.Model.pas",
-      "sha256": "74cf89748b06e15b73637e74ea57f1162b7fd1b31ce48522783cb6ae9893a4d8"
+      "sha256": "e53b536fb48bc324aff44773dc77e56dfd79298323d294f938586e729e50dc79"
     },
     {
       "path": "DPH.Workspace.Screen.pas",
@@ -203,7 +203,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "03c3afd6487178ea008b05f78673fc0ca83f2d12fc7304efb815299c16e5beb6"
+      "sha256": "ec537909d3115a294a09d0bf2efc4b2af06e75d806aff2edfb07da72c95b89c6"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",

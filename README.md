@@ -9,10 +9,10 @@ The owner rejected the original WP7 experience as inadequate. The 11 October 202
 1. Run `bin\Win32\Debug\DelphiProjectHandoff.exe`, or extract the latest experimental binary ZIP from `export` to a writable folder and run its executable.
 2. Read **Getting started**, which opens at launch. Keep the deployed `help`, `migrations` and `WebView2Loader.dll` files with the executable. Microsoft WebView2 Runtime enables embedded pages; native text remains available as a fallback.
 3. Choose the intended configuration and platform; enter required compiler defines. Choose **Attach project**, select its project file and save its `.dphdb` database outside the selected source tree.
-4. Start with **Learn the project Ã¢â€ â€™ How the program starts**. Choose a control under **Screens and user actions**, follow its event, and read **Explain**. Compare its decisions and connections with **Source** and **Graphs**.
+4. Start with **Learn the project ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ How the program starts**. Choose a control under **Screens and user actions**, follow its event, and read **Explain**. Compare its decisions and connections with **Source** and **Graphs**.
 5. Preserve missing business explanations in **Knowledge** with a named author. Use **Publish** to create a scoped offline handoff after reviewing exclusions and private information.
 
-DPH opens maximized. Click an object in the far-left Explorer to read the labeled **Selection details** pane; its text wraps and scrolls vertically. Choose **Explain**, **Source**, or **Learn the project** in the upper-right page selector. The **status line** is along the bottom edge. Choose **Coverage** for defined static measures, or **Learn the project Ã¢â€ â€™ Coverage and troubleshooting** for guidance. In a smaller restored window, scroll the command toolbar horizontally to reach commands that do not fit.
+DPH opens maximized. Click an object in the far-left Explorer to read the labeled **Selection details** pane; its text wraps and scrolls vertically. Choose **Explain**, **Source**, or **Learn the project** in the upper-right page selector. The **status line** is along the bottom edge. Choose **Coverage** for defined static measures, or **Learn the project ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Coverage and troubleshooting** for guidance. In a smaller restored window, scroll the command toolbar horizontally to reach commands that do not fit.
 
 **Databases** under the DPH application folder is now the default location for **Save knowledge database** and **Open cache**. For a source checkout this is the top-level `Databases` folder; for an extracted distribution it is beside the executable. Existing databases are not moved. You may browse to another location outside the selected source tree. Keep each database's adjacent `.dphdb.views` folder with it.
 
@@ -125,10 +125,12 @@ Requirement 05.12: Database connections now inventories source dataset CRUD requ
 
 Requirement 05.13 adds captured transaction API boundaries and conservative normal/error/cleanup routes in Database connections. Select transaction operation, inspect source-qualified routes, and follow a receiver or next boundary. Five framework families and captured descendants are recognized without executing a target or proving outcomes. Explicit directions: [Database transaction run and test guide](docs/guides/Database_Transactions_Run_and_Test.txt). Focused validation: 402 checks.
 
-Field validation and transformation evidence is under Database connections Ã¢â€ â€™ data rule. Inspect declared constraints, handler conditions and assignment inputs/outputs, then follow exact context, handler or lexical declaration references. Explicit launch and test directions: docs/guides/Data_Rules_Run_and_Test.txt.
+Field validation and transformation evidence is under Database connections ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ data rule. Inspect declared constraints, handler conditions and assignment inputs/outputs, then follow exact context, handler or lexical declaration references. Explicit launch and test directions: docs/guides/Data_Rules_Run_and_Test.txt.
 
 Data lineage: select a Database connections row, scroll its toolbar right and use Trace lineage or Lineage diagram. Inputs/Destinations filter lexical dependencies; context is separately qualified. Unresolved breaks and trace limits remain visible. Explicit directions: docs/guides/Data_Lineage_Run_and_Test.txt.
 
 Requirement 05.16 adds referenced migration-script candidates, filename/loader order evidence, explicit SQLite application-version assignments, verification request evidence and missing-script gaps in Database schema. See docs/guides/Schema_History_Run_and_Test.txt. Deployed versions and verification outcomes remain unknown.
 
 Requirement 05.17 adds Import/export formats with captured API/encoding candidates, JSON/XML/INI member structure, source/routine navigation and attributed format contracts. Read docs/guides/File_Formats_Run_and_Test.txt. Transfer success and formal schema compliance remain unverified.
+
+Requirement 05.18 adds Target data retention: attributed manual policies covering retention, archival, disposal and holds, with exact implementation/procedure links, revision history and named review. See docs/guides/Data_Retention_Run_and_Test.txt. No target archival or deletion job executes.

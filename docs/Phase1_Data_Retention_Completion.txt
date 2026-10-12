@@ -1,0 +1,22 @@
+DPH REQUIREMENT 05.18 COMPLETION: TARGET DATA RETENTION
+Last changed: 12 October 2026
+
+Native attributed retention policies now support stable identities, descriptive
+titles, policy prompts, source/procedure links, review and immutable history.
+Controls remain IDE-editable; no helper unit or schema migration.
+
+Validation PASS: 66 focused + 230 regression = 296 checks.
+Actual application and FMX baseline PASS. Normal/compact renders reviewed.
+All 69 final guide pages visually reviewed; 58 source hashes and 114 TOC
+destinations verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/Data_Retention_Run_and_Test.txt
+
+Attributed manual capture of selected-application retention and archival requirements. Policy prose and explicit Unknown answers are human evidence; DPH does not infer legal rules, validate compliance or execute archive/deletion jobs. Typed metadata identifies the record and stable GUID; the body remains editable. Existing rich links connect captured routines and exact procedure revisions. DPH snapshot retention remains separate. Existing 64-link and 200-candidate bounds apply; the register uses 250-row pages.
+
+Pre-change backup: H:\DPH Backups\DataRetention_PreChange_20261012_181552
+6940 files, 2900637903 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.18 promoted; all 533 original IDs and texts preserved.
+195 implemented; 19 implemented_manual_capture; 226 partial; 93 missing.
+319 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 05.19 Data quality and integrity checks.

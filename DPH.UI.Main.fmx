@@ -52,6 +52,7 @@ Items.Strings = (
 'Database schema'
 'Database ER diagram'
 'Import/export formats'
+'Target data retention'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1607,6 +1608,103 @@ ShowScrollBars = True
 Margins.Left = 12
 Margins.Right = 12
 Margins.Bottom = 12
+end
+end
+object DataRetentionTab: TTabItem
+Text = 'Target data retention'
+object DataRetentionPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Record the selected application''s retention and archival rules. New policy prepares an attributed Knowledge draft. Link implementing routines or procedures; review the policy separately. No target job runs.'
+end
+object DataRetentionToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object DataRetentionState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = DataRetentionFilterChange
+end
+object DataRetentionFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find policy, scope, owner or job'
+OnChange = DataRetentionFilterChange
+end
+object DataRetentionFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = DataRetentionFilterChange
+end
+object DataRetentionNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = DataRetentionFilterChange
+end
+object DataRetentionNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New policy'
+OnClick = DataRetentionNewClick
+end
+object DataRetentionOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open policy'
+OnClick = DataRetentionOpenClick
+end
+object DataRetentionLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = DataRetentionOpenClick
+end
+end
+object DataRetentionStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object DataRetentionList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = DataRetentionSelectionChange
+end
+object DataRetentionEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved policy, attribution and review state (scroll for details)'
+end
+object DataRetentionMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object FileFormatsTab: TTabItem

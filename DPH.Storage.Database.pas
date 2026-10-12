@@ -839,6 +839,16 @@ begin
           try for ActionIdentityField in ['action_id','target','target_key'] do if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Action purpose target identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''action_purpose'' AND lower(json_extract(r.structured_json,''$.fields.action_id''))=lower(:identity)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.action_id')])<>0 then raise EDPHStorage.Create('A purpose record already exists for this target; refresh and edit it. Retired identities remain reserved.');
+      end else if StructuredValue.GetValue<string>('record_type','')='data_retention' then begin
+        TDPHWorkspaceView.ValidateDataRetentionRecord(StructuredValue as TJSONObject);
+        if SameText(ATitle.Trim,'Retention policy: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive retention policy title before saving');
+        if (AKind<>'business_rule') or (DocumentKind<>'maintenance') or (Audience<>'maintainer') or (AEntityKey<>'') then raise EDPHStorage.Create('Retention policy must preserve its project scope, business rule kind and maintenance audience');
+        if not ABody.StartsWith('TARGET DATA RETENTION AND ARCHIVAL POLICY'+sLineBreak) then raise EDPHStorage.Create('Preserve the target-data retention policy heading; edit the requirements below it');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('policy_id','')<>StructuredValue.GetValue<string>('policy_id','') then raise EDPHStorage.Create('Retention policy identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''data_retention'' AND json_extract(r.structured_json,''$.policy_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('policy_id')])<>0 then raise EDPHStorage.Create('This retention policy identity already exists; refresh and edit its current revision');
       end else if StructuredValue.GetValue<string>('record_type','')='data_dictionary' then begin
         TDPHDatabaseSchema.ValidateDictionary(StructuredValue as TJSONObject);
         if AKnowledgeID=0 then begin

@@ -1,0 +1,87 @@
+{
+  "result": "PASS",
+  "requirement": "05.18",
+  "status": "implemented_manual_capture",
+  "checks": 66,
+  "regression_checks": 230,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.18",
+  "counts": {
+    "implemented_manual_capture": 19,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 93
+  },
+  "incomplete_requirement_records": 319,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 36,
+        "toc_entries": 61,
+        "new_chapter_pages": [
+          3,
+          26
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 33,
+        "toc_entries": 53,
+        "new_chapter_pages": [
+          3,
+          30
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 69 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DataRetention_PreChange_20261012_181552",
+    "files": 6940,
+    "bytes": 2900637903,
+    "sha256_verified": true
+  },
+  "qualification": "Attributed manual capture of selected-application retention and archival requirements. Policy prose and explicit Unknown answers are human evidence; DPH does not infer legal rules, validate compliance or execute archive/deletion jobs. Typed metadata identifies the record and stable GUID; the body remains editable. Existing rich links connect captured routines and exact procedure revisions. DPH snapshot retention remains separate. Existing 64-link and 200-candidate bounds apply; the register uses 250-row pages.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "e53b536fb48bc324aff44773dc77e56dfd79298323d294f938586e729e50dc79",
+    "DPH.Storage.Database.pas": "323e07e2255dc9c0780c42aaab2fea8cfdb03143a82eb1ec628eb9f8b8d0312e",
+    "DPH.UI.Main.pas": "95803c5ffa1cb7cb42a619ac78bb8cc74766ddda1be32a448b14b2d5e4963c46",
+    "DPH.UI.Main.fmx": "ec537909d3115a294a09d0bf2efc4b2af06e75d806aff2edfb07da72c95b89c6",
+    "tests/DPH.Tests.DataRetention.dpr": "c26a676e37e8084521db316284c552c22ad075becd71e4304b2548a6f91fc60f",
+    "tools/build-data-retention.cmd": "db879de797a2c8693fb476d5ff444210dba449e6e9344934f7562c0f743784aa",
+    "docs/phase1-data-retention-validation.json": "7a549911d2cc72181ff4da95821a262c67af77c0890554fc5ec0e8e6afc0d477",
+    "docs/phase1-data-retention-validation.log": "efa55843dbf4832e673d1f2430d4745e1531109973f5bc527a69ca69ed92bc81",
+    "docs/guides/Data_Retention_Run_and_Test.txt": "9c5dca296878f3a25d85ae26b6eeefe49accb1a3329f42a151551384ede65b64",
+    "tools/build-guides.py": "8e24cf7a485715e1089682bf62b3369de1ab3f6912ca1b0ddb28fcf77089ea21",
+    "README.md": "6b789d83a90efb579bd310f256c9bf1dd8b73013c2fc32fe4d31bfb265594968",
+    "help/index.html": "1013b3550cc8c091cb1b6fe4f1aa25df0967b6ae156cefb3fd20758d8c3140c7",
+    "docs/guide-source-validation.json": "75f1126a3a400ab8bffc8c8879b07f6043ef01d0912b65eb49fb3c780df3146b",
+    "docs/guides/DPH_User_Guide.docx": "3f6a927432abb5712985a169a9f16cd8eb8609ef96d61d86ede4afd11fd8ab64",
+    "docs/guides/DPH_Engineering_Guide.docx": "6ccbd13019525906c1115fef54ca316f3f25035fe08a822f5742416e0fab1e02",
+    "docs/pdf/DPH_User_Guide.pdf": "9f7cc509088699512d33964d5c4b4adc0e42a23ea30b81a92be9d69a3933082d",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "133d9da4d477bc334d2c1858e6ec9e8360c751c6e645e4b333dcad3eb8654e12",
+    "docs/Phase1_Data_Retention_Completion.txt": "cb12bbc9e15a29c6bae0c9ff150941423f3ab41e88a6f7a593f62e2ba7017116",
+    "docs/Phase1_Requirements_Traceability.json": "eda3a6e272c67af80ee582dd5df1833f144d88ae13e4583bf1280becaf19ac6a",
+    "docs/Phase1_Implementation_Backlog.csv": "1a775484aa29be13bf0006ca286b414cd10a681ac4d4ef2dc01e435bd9729559",
+    "docs/Implementation_Completion_Tracker.txt": "67cc9d2726541c78de0a469b95885c2ee29b24dd254f0d13b355ad065c133a82",
+    "docs/phase1-data-retention-build.log": "3ebbe0880b2d015062433965ef18a49b92c97ca2decae8cce5ff43b49892b0da",
+    "docs/phase1-data-retention-compact.png": "bc38a9cbcd3376e76258385c0f77999a05464ccac14ac00ce9828cd87ecb1fa3",
+    "docs/phase1-data-retention-formats-regression-compact.png": "db105b705ec6412f8805667a4ee521d0cab8ff216029e260eb46147a8596e672",
+    "docs/phase1-data-retention-formats-regression-validation.json": "499af5d079ec683164de495dcc16f6a1ec2a850f330e7fab65c93598c02eedb4",
+    "docs/phase1-data-retention-formats-regression-workspace.png": "75c80c4a392e5fd9f0daacef9b23652fd340001a0ed469c1e004eff01ce79600",
+    "docs/phase1-data-retention-formats-regression.log": "03e1a20b5ca12d2a386ea50960a250f229249f3bf158ab768a8af3583eb89ca4",
+    "docs/phase1-data-retention-knowledge-regression-validation.json": "c98062444a65cb5831488aabafcf83d6e2b832b1068c33b52b67ee4de094ae01",
+    "docs/phase1-data-retention-knowledge-regression.log": "6aac577301f282f9578fa7a45c99bdf460cff1a154bdc9e8e3b4cde9c4f83930",
+    "docs/phase1-data-retention-publishing-regression-canonical-fixture.json": "d38367d1e9d92418c4d9cd7e890dea7f135f831fa48df52b78f7931b7d6e41ce",
+    "docs/phase1-data-retention-publishing-regression-validation.json": "81e413bc9427bff342af81c40aced8aa146f72cc4a3889008c6c767a5fbb13e6",
+    "docs/phase1-data-retention-publishing-regression.log": "91ae1aea2ff40f5361c328cb7ade6bc8a6b6dd26ca1b56ea4e1ce8d30a6e1355",
+    "docs/phase1-data-retention-workspace.png": "0df9ed11865b3da9fdfa2cec8060268dda6772aa03e39bfb540a89978a55f266"
+  }
+}

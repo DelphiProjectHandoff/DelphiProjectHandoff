@@ -1,0 +1,74 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DataRetention.dpr(60) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+18039 lines, 1.64 seconds, 10670488 bytes code, 348924 bytes data.
+PASS 1: Template explains retention period and clock trigger
+PASS 2: Template captures holds and exceptions
+PASS 3: Template captures archive destination and permissions
+PASS 4: Template separates archival from disposal
+PASS 5: Template attributes operational responsibility
+PASS 6: Template prompts recovery and auditing
+PASS 7: Template requires explicit verification evidence
+PASS 8: Target policy distinguished from DPH cache retention
+PASS 9: Anonymous policy author rejected
+PASS 10: Placeholder title rejected
+PASS 11: Removed policy heading rejected
+PASS 12: Incorrect policy kind rejected
+PASS 13: Incorrect policy audience rejected
+PASS 14: Invalid stable policy identity rejected
+PASS 15: Unknown policy metadata rejected
+PASS 16: Actual captured semantic implementation routine available
+PASS 17: Typed persisted policy recognized
+PASS 18: Named contributor persists
+PASS 19: Saved policy remains pending review
+PASS 20: Routine and exact procedure-revision links persist
+PASS 21: Authored target period persists
+PASS 22: Unresolved fields stay explicit
+PASS 23: Inspector distinguishes resolved link count
+PASS 24: Duplicate policy identity rejected
+PASS 25: Typed metadata cannot be discarded
+PASS 26: Saved policy identity cannot change
+PASS 27: Anonymous policy review rejected
+PASS 28: Named reviewer persists
+PASS 29: Review appends immutable history
+PASS 30: Review retains exact implementation links
+PASS 31: Stale policy edit rejected
+PASS 32: Policy edits reopen review
+PASS 33: Prior reviewed policy retained
+PASS 34: Policy revision preserves implementation links
+PASS 35: Policy database integrity valid
+PASS 36: Maintainer publication includes authored policy
+PASS 37: Canonical handoff preserves typed policy identity
+PASS 38: Retention policy handoff passes full bundle validation
+PASS 39: Published HTML includes authored retention period
+PASS 40: Native register includes policy and excludes unrelated procedure
+PASS 41: Native inspector shows current contributor
+PASS 42: Open policy enters saved Knowledge workflow
+PASS 43: Saved policy body remains editable
+PASS 44: Saved stable title protected
+PASS 45: Saved policy kind protected
+PASS 46: Implementation links opens exact link workflow
+PASS 47: Native exact implementation links available
+PASS 48: Saved implementation routine opens captured explanation
+PASS 49: New policy opens unsaved draft
+PASS 50: Native policy draft includes essential fields
+PASS 51: Unsaved draft protected from policy selection
+PASS 52: Unsaved draft protected from replacement
+PASS 53: Review-state filter respects pending edit
+PASS 54: Policy text search finds authored period
+PASS 55: Empty register explains unresolved obligations
+PASS 56: Empty results disable opening
+PASS 57: Compact policy detail remains readable
+PASS 58: Compact commands and long policies scroll
+PASS 59: Large register first page bounded
+PASS 60: Large register next page accessible
+PASS 61: Remaining policy rows accessible
+PASS 62: Clearing loaded knowledge removes prior policy rows
+PASS 63: No capture disables new policy
+PASS 64: Policy workflow leaves captured workspace unchanged
+PASS 65: Target source unchanged
+PASS 66: Owner catalog unchanged

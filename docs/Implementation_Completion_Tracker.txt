@@ -114,7 +114,10 @@ Import/export file formats completed (05.17): captured resource shapes,
 transfer and encoding candidates, routine links and attributed contracts.
 57 focused and 437 regression checks passed; actual app/FMX passed.
 See Phase1_File_Formats_Completion.txt.
-Current live backlog: 320 incomplete requirement records; 0 unassessed.
+Target data retention completed as attributed manual capture (05.18).
+66 focused and 230 regression checks passed; actual app/FMX passed.
+See Phase1_Data_Retention_Completion.txt.
+Current live backlog: 319 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

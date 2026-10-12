@@ -1,0 +1,64 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+18036 lines, 1.55 seconds, 10669956 bytes code, 348928 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: Actual parser exposes text import candidate
+PASS 3: Actual parser exposes text export candidate
+PASS 4: Binary import retained
+PASS 5: Binary export retained
+PASS 6: Receiver save retained as candidate
+PASS 7: Receiver load retained as candidate
+PASS 8: Explicit UTF8 source argument visible
+PASS 9: Literal filename extension retained without full path
+PASS 10: Enclosing consumer routine available
+PASS 11: Routine target retains exact identity
+PASS 12: Explicit Unicode output argument retained
+PASS 13: Producer routine retained
+PASS 14: Dynamic path does not invent file format
+PASS 15: Byte API not assigned text encoding
+PASS 16: Referenced JSON resource discovered
+PASS 17: Resource encoding labeled separately from transfer contract
+PASS 18: JSON scalar types visible without values
+PASS 19: JSON boolean shape retained
+PASS 20: JSON null shape retained
+PASS 21: XML element structure retained
+PASS 22: INI key structure retained
+PASS 23: Large captured schema display bounded
+PASS 24: Schema omission explicit
+PASS 25: Literal values and false API text remain absent
+PASS 26: API text inside a string is not captured
+PASS 27: Comment API not captured
+PASS 28: Transfer evidence retains source hash
+PASS 29: Transfer evidence retains generation
+PASS 30: Newcomer details expose consumer explanation
+PASS 31: Guarded source opens unchanged attachment
+PASS 32: Detached source navigation refused
+PASS 33: Changed source refuses captured range navigation
+PASS 34: Changed source cannot silently inherit an old contract
+PASS 35: Explicit format contract persists
+PASS 36: Contract contributor attribution persists
+PASS 37: Saved contract requires human review
+PASS 38: Inspector leaves captured workspace unchanged
+PASS 39: Persisted reopening yields identical format evidence
+PASS 40: Native first page bounded to 250
+PASS 41: Native next page available
+PASS 42: Native remaining candidates accessible
+PASS 43: Native filters expose import candidates
+PASS 44: Native inspector shows matching saved contract
+PASS 45: Native routine navigation available
+PASS 46: Explain opens enclosing captured routine
+PASS 47: Native source refusal explains missing attachment
+PASS 48: Existing contract opens immutable Knowledge workflow
+PASS 49: New contract template includes schema fields
+PASS 50: New contract template includes encoding policy
+PASS 51: New contract template includes failure behavior
+PASS 52: Compact evidence area readable
+PASS 53: Long details scroll
+PASS 54: Compact commands scroll horizontally
+PASS 55: Empty result explains unknown transfers
+PASS 56: Owner catalog unchanged
+PASS 57: Target source unchanged

@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Import/export file formats 05.17 implemented as qualified captured evidence and attributed contracts; 320 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target retention 05.18 implemented as attributed manual capture; 319 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2432,15 +2432,29 @@
       "id": "05.18",
       "domain": "DPH-05",
       "requirement": "Data retention and archival requirements",
-      "implementation": "missing",
+      "implementation": "implemented_manual_capture",
       "evidence": [
+        "DPH.Workspace.Model.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "tests/DPH.Tests.DataRetention.dpr",
+        "tools/build-data-retention.cmd",
+        "docs/phase1-data-retention-validation.json",
+        "docs/phase1-data-retention-validation.log",
+        "docs/guides/Data_Retention_Run_and_Test.txt"
       ],
-      "limitation": "Add attributed target-data retention/archive rules and links to implementing jobs or procedures.",
+      "limitation": "Attributed manual capture of selected-application retention and archival requirements. Policy prose and explicit Unknown answers are human evidence; DPH does not infer legal rules, validate compliance or execute archive/deletion jobs. Typed metadata identifies the record and stable GUID; the body remains editable. Existing rich links connect captured routines and exact procedure revisions. DPH snapshot retention remains separate. Existing 64-link and 200-candidate bounds apply; the register uses 250-row pages.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native target retention register supports attributed policies with stable identities, retention/archive/disposal/hold/ownership/retrieval/verification prompts, review status, immutable history, filters, paging and source/procedure links. Existing Knowledge and publication workflows persist and publish the records.",
+        "remaining_work": "",
+        "purpose": "Data retention and archival requirements",
+        "evidence_group": "knowledge",
+        "verification": "66 focused and 230 regression checks pass; actual application and FMX baseline pass. Saved policy identity, attribution, review/edit history, source/procedure links, stale and invalid saves, canonical/HTML publication and bundle validation, native filters/paging/draft guards and compact layout verified. All 69 final guide pages visually reviewed; 58 source hashes and 114 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "DPH cache retention is not the selected application's data-retention policy.",
@@ -2448,6 +2462,12 @@
         "purpose": "Data retention and archival requirements",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Target data retention",
+        "validation": "docs/phase1-data-retention-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12827,23 +12847,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Import/export file formats",
+    "completed_batch": "Target data retention",
     "completed_requirement_ids": [
-      "05.17"
+      "05.18"
     ],
     "counts": {
-      "implemented_manual_capture": 18,
+      "implemented_manual_capture": 19,
       "partial": 226,
       "implemented": 195,
-      "missing": 94
+      "missing": 93
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 320,
-    "completion_record": "docs/Phase1_File_Formats_Completion.txt",
+    "incomplete_requirement_records": 319,
+    "completion_record": "docs/Phase1_Data_Retention_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.18",
-      "title": "Data retention and archival requirements",
-      "scope": "Add attributed target-data retention/archive rules and links to implementing jobs or procedures."
+      "requirement": "05.19",
+      "title": "Data quality and integrity checks",
+      "scope": "Add selected-data quality rules, safe imported check results and source-linked integrity procedures."
     }
   }
 }
