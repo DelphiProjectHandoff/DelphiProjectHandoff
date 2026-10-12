@@ -1,0 +1,58 @@
+DPH keyboard and focus inspector completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.13 Keyboard shortcuts and focus order
+
+The Keyboard and focus workspace page inspects captured text DFM, binary DFM
+and FMX components. It presents parent-local numeric focus order, explicit
+TabStop/CanFocus/Enabled/Visible declarations, shortcuts with common Windows
+key labels, action references, key event bindings and source evidence.
+Unknown, inherited, invalid and unresolved values remain explicit.
+Possible shortcut conflicts stay form-local; duplicate focus positions stay
+sibling-local. Multiple consumers of the same action are not counted again.
+Secondary shortcut collections remain raw evidence with a diagnostic.
+
+The IDE-editable native page supports filtering, 250-row pagination,
+component/action source navigation and compact-window scrolling. Navigation
+checks generation, text location, path containment and SHA-256. Detached,
+changed, historical and binary text navigation are refused with explanations.
+No migration or target program execution is needed.
+
+VALIDATION
+55 focused checks passed: actual DFM/FMX/binary parsing, duplicate scoping,
+unknowns, actions, readable shortcuts, source guards, 270 additional controls,
+pagination, instantiated native UI and compact layout. Source and the user
+project catalog remain unchanged. Fixture work uses bin/keyboard-validation.
+Application Win32 Debug build and FMX binding baseline passed elevated.
+Previous business glossary acceptance still passes all 57 checks.
+PNG evidence is PaintTo output from running DPH controls, not screenshots
+of the target app. User and Engineering Guides rendered through LibreOffice,
+with editable TOCs and companion PDFs. Explicit instructions are in
+docs/guides/Keyboard_and_Focus_Run_and_Test.txt.
+
+BACKUP
+Full pre-change SHA-256 verified backup, 3239 files / 655656938 bytes:
+H:\DPH Backups\KeyboardFocus_PreChange_20261011_210032
+No post-change USB backup was made. Git and both GitHub remotes are retained.
+
+CURRENT STATUS
+533 original requirement records preserved. Only 04.13 is promoted by this
+batch. Current counts: 173 implemented, 17 manual capture, 241 partial,
+102 missing, zero unassessed. 343 records remain incomplete.
+Historical reconciliation reports and original planning files are unchanged.
+
+LIMITS
+Captured design values do not establish actual runtime focus traversal,
+accessibility compliance or platform-wide hotkey conflicts. Arbitrary keyboard
+handler logic, inherited defaults and runtime changes require observed tests.
+External/custom/ambiguous action references remain unresolved. Secondary
+shortcut collections are not decoded for duplicate detection. Common key
+labels use Windows virtual-key conventions; original codes remain visible.
+
+NEXT BOUNDED REQUIREMENT
+04.14 Menus, context menus, and toolbars. Add a dedicated command inventory
+and captured action-to-handler/shortcut relationships, with unresolved states,
+source evidence, native views, acceptance checks and explicit directions.
+The keyboard inspector provides reusable action evidence, but does not yet
+complete that separate command-inventory requirement.

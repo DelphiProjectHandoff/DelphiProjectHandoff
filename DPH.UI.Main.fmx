@@ -40,6 +40,7 @@ Items.Strings = (
 'Revision comparison'
 'Knowledge'
 'Business glossary'
+'Keyboard and focus'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1321,6 +1322,95 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object KeyboardTab: TTabItem
+Text = 'Keyboard and focus'
+object KeyboardPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Captured shortcuts, actions and sibling focus order. Select a component for explanations and conflicts. Runtime behavior is unobserved.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object KeyboardToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object KeyboardFilterEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 280
+Height = 30
+TextPrompt = 'Find form, component, property or diagnostic'
+OnChange = KeyboardFilterChange
+end
+object KeyboardRefreshButton: TButton
+Position.X = 296
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = KeyboardFilterChange
+end
+object KeyboardNextButton: TButton
+Position.X = 394
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = KeyboardFilterChange
+end
+object KeyboardSourceButton: TButton
+Position.X = 492
+Position.Y = 4
+Width = 140
+Height = 30
+Text = 'Component source'
+OnClick = KeyboardSourceClick
+end
+object KeyboardActionButton: TButton
+Position.X = 640
+Position.Y = 4
+Width = 120
+Height = 30
+Enabled = False
+Text = 'Action source'
+OnClick = KeyboardSourceClick
+end
+end
+object KeyboardStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object KeyboardList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnClick = KeyboardSelectionClick
+end
+object KeyboardSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object KeyboardMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object GlossaryTab: TTabItem

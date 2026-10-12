@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business glossary requirements 06.12 and 12.09 implemented; 344 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09 and keyboard/focus 04.13 implemented; 343 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1401,16 +1401,28 @@
       "id": "04.13",
       "domain": "DPH-04",
       "requirement": "Keyboard shortcuts and focus order",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Parse.Forms.pas",
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Workspace.Screen.pas",
+        "DPH.Workspace.Keyboard.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Semantics.dpr"
+        "tests/DPH.Tests.Keyboard.dpr",
+        "tools/build-keyboard.cmd",
+        "docs/phase1-keyboard-validation.json",
+        "docs/phase1-keyboard-validation.log",
+        "docs/guides/Keyboard_and_Focus_Run_and_Test.txt"
       ],
-      "limitation": "Add a dedicated keyboard-shortcut/focus-order view including action references, duplicates and missing/unknown values.",
+      "limitation": "Static captured declarations, not runtime traversal or accessibility proof. Missing/default/inherited properties remain unknown; external/custom/ambiguous actions remain unresolved. Secondary shortcut collections remain raw evidence and are excluded from decoded conflicts. Common key names follow Windows conventions.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 2,
+        "finding": "Dedicated IDE-editable keyboard/focus inspector: DFM/FMX/binary declarations, parent-local TabOrder, focus flags, original/readable shortcuts, local action references, keyboard events, scoped duplicate/unknown diagnostics, filtering, 250-row paging and generation/hash/path-verified source navigation.",
+        "remaining_work": "",
+        "purpose": "Keyboard shortcuts and focus order",
+        "evidence_group": "forms",
+        "verification": "55 focused checks passed, native form resources and compact renders inspected; actual application build/FMX baseline and 57-check glossary regression passed."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 2,
         "finding": "Serialized ShortCut/TabOrder-related values remain available in general component properties.",
@@ -1418,6 +1430,12 @@
         "purpose": "Keyboard shortcuts and focus order",
         "evidence_group": "forms",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Keyboard and focus inspector",
+        "validation": "docs/phase1-keyboard-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12321,24 +12339,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Business glossary",
+    "completed_batch": "Keyboard and focus inspector",
     "completed_requirement_ids": [
-      "06.12",
-      "12.09"
+      "04.13"
     ],
     "counts": {
       "implemented_manual_capture": 17,
-      "partial": 242,
-      "implemented": 172,
+      "partial": 241,
+      "implemented": 173,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 344,
-    "completion_record": "docs/Phase1_Glossary_Completion.txt",
+    "incomplete_requirement_records": 343,
+    "completion_record": "docs/Phase1_Keyboard_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.13",
-      "title": "Keyboard shortcuts and focus-order inspector",
-      "scope": "Inspect captured shortcuts, action references and TabOrder in an IDE-designed view with duplicate/unknown diagnostics, source navigation, tests and directions. Preserve explicit inherited/runtime unknowns rather than claiming runtime focus order."
+      "requirement": "04.14",
+      "title": "Menus, context menus, and toolbars",
+      "scope": "Dedicated command inventory and captured action-to-handler/shortcut relationships, source evidence, unresolved states, native views, acceptance checks and directions."
     }
   }
 }

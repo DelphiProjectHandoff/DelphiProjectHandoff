@@ -1,0 +1,98 @@
+{
+  "result": "PASS",
+  "baseline_commit": "517e05b",
+  "completed_requirement_ids": [
+    "04.13"
+  ],
+  "counts": {
+    "implemented_manual_capture": 17,
+    "partial": 241,
+    "implemented": 173,
+    "missing": 102
+  },
+  "incomplete": 343,
+  "unassessed": 0,
+  "requirements_preserved": 533,
+  "focused_checks": 55,
+  "glossary_regression_checks": 57,
+  "application_and_fmx_baseline": "PASS",
+  "pre_change_backup": "H:\\DPH Backups\\KeyboardFocus_PreChange_20261011_210032",
+  "backup_files": 3239,
+  "backup_bytes": 655656938,
+  "guide_sources_verified": 41,
+  "evidence": [
+    {
+      "path": "DPH.Workspace.Keyboard.pas",
+      "sha256": "90cd886ce1c00b911c25c7ebf437a7cbf2989a67169b41e43d35a5c666d3ef20"
+    },
+    {
+      "path": "DPH.UI.Main.pas",
+      "sha256": "4c047871c06a68bfd3ce650a36ebd347010f43985ae9b5f40b83859222b67615"
+    },
+    {
+      "path": "DPH.UI.Main.fmx",
+      "sha256": "021365f90fb3a6d3aadac37f98a6b37a7f021dbfbfa6d79b474278ec9a1fe54c"
+    },
+    {
+      "path": "tests/DPH.Tests.Keyboard.dpr",
+      "sha256": "3c14fe415a5c1193a38fbeff86d706e38008979921ce0f5da13c22cd5d049889"
+    },
+    {
+      "path": "tools/build-keyboard.cmd",
+      "sha256": "2b27bc9ef63160f34e4ceaa9e09e0394abfe021bb6734b5ea8c637e6b3b58a81"
+    },
+    {
+      "path": "docs/phase1-keyboard-validation.json",
+      "sha256": "ad2be4701d692a81f02c44d72a9cd70c8ba14789e38a4d6da54ff64c471d0455"
+    },
+    {
+      "path": "docs/phase1-keyboard-validation.log",
+      "sha256": "583b17fa8574ddfb335801f34a98bd3b4b343ca546375fe8f826ccd7b80d7996"
+    },
+    {
+      "path": "docs/guides/Keyboard_and_Focus_Run_and_Test.txt",
+      "sha256": "06aac67f7cf0d1811cb70a3a97be9e505e5f0f9926b0d1e731d49bab635a39a6"
+    },
+    {
+      "path": "DelphiProjectHandoff.dproj",
+      "sha256": "a1237b831fb2d64dceb866fa1b32232c8b31b01f47fb631806fa4516db3272a2"
+    },
+    {
+      "path": "docs/Phase1_Keyboard_Completion.txt",
+      "sha256": "a257b12b731d1b1b3f3ab60090c6bf30bbea14dadeb56d888ee3094298aeb596"
+    },
+    {
+      "path": "docs/Phase1_Requirements_Traceability.json",
+      "sha256": "362e9b8757c9c6d6af6fff167d82360f228d68443b7514b1e1aed3ef02739157"
+    },
+    {
+      "path": "docs/Phase1_Implementation_Backlog.csv",
+      "sha256": "06a1b8414f77e0944fd6d64bcd2d310d08b60a4efb8a18ec9c90f04fb9763e2e"
+    },
+    {
+      "path": "docs/guides/DPH_User_Guide.docx",
+      "sha256": "8329f3b5f474cbd1265465f9971d4a331d6f361ad2413bb70f1468118d2c94e7"
+    },
+    {
+      "path": "docs/guides/DPH_Engineering_Guide.docx",
+      "sha256": "774cd07b9c5c2d58ff451685d5184b65092b765b5302c2c6a0ea47f1dd889b72"
+    },
+    {
+      "path": "docs/pdf/DPH_User_Guide.pdf",
+      "sha256": "93a49fc1eb6d142163d466faaf50b3fe372c360a1af8797aac97f262232b91c9"
+    },
+    {
+      "path": "docs/pdf/DPH_Engineering_Guide.pdf",
+      "sha256": "087729dcc11a850419c44b73192ca4ff2939cb7ae9b82c2499f6ad1003440e67"
+    },
+    {
+      "path": "docs/phase1-keyboard-workspace.png",
+      "sha256": "e4b3b852630e37148443215d1fe8b042cdba8230a9d712f7867b53636d4cbcb8"
+    },
+    {
+      "path": "docs/phase1-keyboard-compact.png",
+      "sha256": "010ef342e7f5b5510800de68c5807353351cf94997b904caa788deea8096f2fc"
+    }
+  ],
+  "guide_visual_inspection": "All 19 User Guide and 16 Engineering Guide pages inspected. After the final command-state fix, 32 page PNG hashes were unchanged; the 3 changed pages were reinspected."
+}

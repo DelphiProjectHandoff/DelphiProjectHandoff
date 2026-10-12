@@ -63,6 +63,14 @@ type
     GlossaryList: TListBox;
     GlossaryMemo: TMemo;
     GlossarySplitter: TSplitter;
+    KeyboardTab: TTabItem;
+    KeyboardPurpose,KeyboardStatus: TLabel;
+    KeyboardToolbar: THorzScrollBox;
+    KeyboardFilterEdit: TEdit;
+    KeyboardRefreshButton,KeyboardNextButton,KeyboardSourceButton,KeyboardActionButton: TButton;
+    KeyboardList: TListBox;
+    KeyboardMemo: TMemo;
+    KeyboardSplitter: TSplitter;
     PublishTab: TTabItem;
     PublishToolbar: THorzScrollBox;
     PublishScopeCombo: TComboBox;
@@ -196,6 +204,9 @@ type
     ComparisonBeforePanel,ComparisonAfterPanel: TLayout;
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
+    procedure KeyboardFilterChange(Sender: TObject);
+    procedure KeyboardSelectionClick(Sender: TObject);
+    procedure KeyboardSourceClick(Sender: TObject);
     procedure ComparisonClick(Sender: TObject);
     procedure ProjectMemberSelectionClick(Sender: TObject);
     procedure ComparisonSelectionClick(Sender: TObject);
@@ -328,6 +339,9 @@ type
     FComparison: TJSONObject;
     FComparisonOffset: Integer;
     FProjectMembers: TJSONArray;
+    FKeyboard: TJSONObject;
+    FKeyboardRows: TList<TJSONObject>;
+    FKeyboardOffset: Integer;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
@@ -356,7 +370,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -368,6 +382,7 @@ begin
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FGlossaryRows:=TList<TJSONObject>.Create;
+  FKeyboardRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
@@ -403,6 +418,7 @@ begin
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
   FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
+  FKeyboardRows.Free; FKeyboard.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -686,6 +702,9 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FKeyboardRows.Clear; FreeAndNil(FKeyboard); KeyboardList.Items.Clear;
+  KeyboardMemo.Text:='Open a project capture to inspect keyboard declarations.'; KeyboardNextButton.Enabled:=False;
+  KeyboardStatus.Text:='No capture loaded.';
   FGlossaryRows.Clear; GlossaryList.Items.Clear; GlossaryMemo.Text:='Open a selected project, then add its business terms.';
   FreeAndNil(FProjectMembers); ProjectMembersList.Items.Clear; ProjectMemberMemo.Text:='Open a captured project to inspect its project and output declarations.';
   FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
@@ -807,6 +826,7 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
   for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
   ProjectMemberMemo.Text:='Select a captured project or output declaration above to read its settings and evidence.';
@@ -852,6 +872,55 @@ begin
   RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions; QualityClick(nil);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
+end;
+procedure TDPHMainForm.KeyboardFilterChange(Sender: TObject);
+var Value: TJSONValue; Row: TJSONObject; Count,Order: Integer; Text,Query: string;
+begin
+  if Sender=KeyboardNextButton then Inc(FKeyboardOffset,250) else FKeyboardOffset:=0;
+  KeyboardList.Items.Clear; FKeyboardRows.Clear; KeyboardNextButton.Enabled:=False;
+  KeyboardActionButton.Enabled:=False; KeyboardSourceButton.Enabled:=False;
+  KeyboardMemo.Text:='Select a component to see its keyboard declarations, source evidence and diagnostics.';
+  if FKeyboard=nil then Exit;
+  Count:=0; Query:=KeyboardFilterEdit.Text.Trim;
+  for Value in FKeyboard.GetValue<TJSONArray>('rows') do begin
+    Row:=Value as TJSONObject;
+    if (Query<>'') and not ContainsText(TDPHKeyboardInspector.Describe(Row),Query) then Continue;
+    if (Count>=FKeyboardOffset) and (FKeyboardRows.Count<250) then begin
+      FKeyboardRows.Add(Row); Order:=Row.GetValue<Integer>('tab_order'); Text:='?'; if Order<>MaxInt then Text:=IntToStr(Order);
+      KeyboardList.Items.Add(Row.GetValue<string>('source')+' | '+Row.GetValue<string>('parent')+' | Tab '+Text+' | '+
+        Row.GetValue<string>('name')+' | ShortCut '+Row.GetValue<string>('shortcut','')+' | Action '+Row.GetValue<string>('action',''));
+    end;
+    Inc(Count);
+  end;
+  KeyboardNextButton.Enabled:=Count>FKeyboardOffset+FKeyboardRows.Count;
+  KeyboardStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FKeyboardRows.Count)+' from offset '+IntToStr(FKeyboardOffset)+'. Grouped by file, form and parent; known TabOrder first.';
+  if KeyboardList.Count>0 then begin KeyboardSourceButton.Enabled:=True; KeyboardList.ItemIndex:=0; KeyboardSelectionClick(nil); end
+  else KeyboardMemo.Text:='No matching captured component. Clear the filter or inspect Coverage for missing form inputs.';
+end;
+
+procedure TDPHMainForm.KeyboardSelectionClick(Sender: TObject);
+var Row: TJSONObject;
+begin
+  KeyboardActionButton.Enabled:=False;
+  if (KeyboardList.ItemIndex<0) or (KeyboardList.ItemIndex>=FKeyboardRows.Count) then Exit;
+  Row:=FKeyboardRows[KeyboardList.ItemIndex];
+  KeyboardMemo.Text:=TDPHKeyboardInspector.Describe(Row)+sLineBreak+sLineBreak+FKeyboard.GetValue<string>('qualification');
+  KeyboardActionButton.Enabled:=Row.GetValue('action_range')<>nil;
+end;
+
+procedure TDPHMainForm.KeyboardSourceClick(Sender: TObject);
+var Row,Range: TJSONObject;
+begin
+  if (FView=nil) or (KeyboardList.ItemIndex<0) or (KeyboardList.ItemIndex>=FKeyboardRows.Count) then Exit;
+  Row:=FKeyboardRows[KeyboardList.ItemIndex];
+  if Sender=KeyboardActionButton then begin if not Row.TryGetValue<TJSONObject>('action_range',Range) then Exit; end
+  else Range:=Row.GetValue<TJSONObject>('range');
+  if FDetached then begin KeyboardMemo.Lines.Add('Source is detached. Captured locations and properties remain readable above. Attach the unchanged project to navigate.'); Exit; end;
+  try
+    SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);
+    SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
+    WorkspaceTabs.ActiveTab:=SourceTab;
+  except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
 end;
 procedure TDPHMainForm.ComparisonClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Baseline: Int64;

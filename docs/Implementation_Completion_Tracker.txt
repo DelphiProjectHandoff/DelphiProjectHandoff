@@ -9,7 +9,9 @@ and Phase1_Implementation_Backlog.csv; later updates do not rewrite audit histor
 Business glossary completed (06.12, 12.09): typed fields, native editor/list,
 revisions, named review, source links, search and canonical publication.
 Focused suite: 57 checks passed; details in Phase1_Glossary_Completion.txt.
-Current live backlog: 344 incomplete requirement records; 0 unassessed.
+Keyboard and focus inspector completed (04.13): native view, scoped conflicts,
+source safeguards, 55 focused checks; see Phase1_Keyboard_Completion.txt.
+Current live backlog: 343 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

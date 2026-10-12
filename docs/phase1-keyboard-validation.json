@@ -1,0 +1,1 @@
+﻿{"result":"PASS","checks":55,"fixture":"C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\keyboard-validation","qualification":"Real parser/model and instantiated FMX form validation. PaintTo renders are DPH control renders, not target-runtime screenshots."}

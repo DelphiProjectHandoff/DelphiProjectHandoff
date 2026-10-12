@@ -1,0 +1,92 @@
+DPH keyboard and focus inspector
+Last changed 11 October 2026
+Requirement 04.13
+
+RUN THE APPLICATION
+1. In File Explorer, open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. DPH opens maximized.
+3. Click Attach project. Choose the target application's .dproj or .dpr,
+   not DelphiProjectHandoff itself. Choose its .dphdb under the DPH Databases
+   folder if prompted. Wait for the bottom activity line to finish.
+   Alternatively, click Open cache and select an existing project .dphdb.
+4. Use the page selector at the upper right. Choose Keyboard and focus.
+
+READ THE RESULTS
+5. The list contains captured components from DFM and FMX files, including
+   binary DFM. Each row identifies file, parent, TabOrder, component,
+   own shortcut code and action reference. Select a row once.
+6. The detail box below explains the component, captured generation,
+   source hash, line/byte location, focus flags, own shortcut, referenced
+   action, relevant properties and diagnostics. Scroll inside this box.
+   Common Windows shortcut codes have readable labels such as Ctrl+S;
+   the original serialized numeric or hex code remains visible.
+7. Focus order is grouped by file, form and serialized parent. Numeric
+   TabOrder values sort from lowest to highest within that parent.
+   A question mark means unknown or not applicable. It does not mean zero.
+   TabStop=False or CanFocus=False is a captured exclusion declaration.
+   Missing flags, defaults and inherited values remain unknown.
+8. Possible duplicate shortcuts are compared within one form. Repeated
+   uses of one action do not count as separate shortcut declarations.
+   Duplicate TabOrder diagnostics compare siblings only. Different
+   containers can legitimately start at zero. A diagnostic is a review
+   candidate, not proof of an observed runtime defect.
+9. An action is resolved only when a unique local action declaration can
+   be identified. External, inherited or ambiguous references remain
+   unresolved. Secondary shortcut collections remain raw captured evidence
+   and are explicitly excluded from decoded conflict detection.
+
+FIND AND NAVIGATE
+10. Enter a component name, form, property or diagnostic in the filter.
+    Clear it to see all components. Each page holds at most 250 rows.
+    Next page advances; First page resets. The status line states the
+    matching total and displayed offset. A filter change resets pagination.
+11. Click Component source to open the verified attached form in Source.
+    Click Action source to open the resolved action declaration. This
+    button is disabled for unresolved references. Source navigation checks
+    generation, location, containment and SHA-256 before applying a range.
+12. Detached caches retain captured evidence but cannot navigate live source.
+    Use Relocate verified source to attach the unchanged project directory.
+    Changed source requires reassessment. Binary forms provide byte evidence;
+    they cannot be navigated as text lines. Read the explanation in the
+    detail box when navigation is refused.
+13. At a narrow window size, scroll the toolbar horizontally to reach
+    commands. Drag the divider below the component list to resize it.
+
+MANUAL CHECKS
+14. On a project with known keyboard shortcuts, locate a local action and
+    its consuming button or menu. Check the separate action/own codes
+    against the form's properties in RAD Studio. DPH does not change them.
+15. Compare TabOrder inside two separate containers. Review any duplicate
+    diagnostic within each container. Open an inherited control and confirm
+    that absent values are identified as unknown.
+16. To establish actual runtime navigation, run the target yourself and
+    press Tab/Shift+Tab and its declared shortcuts on the relevant screen.
+    DPH does not execute the target. Runtime code, inherited defaults,
+    visibility and framework rules can change the captured design order.
+
+AUTOMATED CHECKS FOR THE DEVELOPER
+17. Open Windows Start, type Command Prompt, right-click it and choose
+    Run as administrator. The elevated environment is required by the
+    installed RAD Studio toolchain.
+18. Enter these commands, pressing Enter after each:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-keyboard.cmd
+19. Expect exit code zero and Keyboard validation passed. The suite uses
+    controlled text/binary forms in the fixed bin\keyboard-validation
+    folder. It tests action resolution, conflicts, unknowns, source safety,
+    pagination and instantiated native FMX controls. It does not register
+    test databases in your project catalog or modify selected user source.
+20. Build the actual app and run its baseline checks:
+    tools\build-wp0.cmd
+    The executable is bin\Win32\Debug\DelphiProjectHandoff.exe.
+    Open DPH.UI.Main.fmx in RAD Studio to edit inspector controls through
+    the form designer and Object Inspector. No controls are runtime-created.
+
+EVIDENCE AND LIMITS
+docs\phase1-keyboard-validation.json and its companion .log record validation.
+docs\phase1-keyboard-workspace.png and phase1-keyboard-compact.png are
+PaintTo renders of running DPH controls, not screenshots of the target app.
+This inspector reads captured source; it does not establish accessibility
+compliance, platform-wide hotkey ownership, runtime focus traversal or
+complete handling of keyboard events written in arbitrary code.

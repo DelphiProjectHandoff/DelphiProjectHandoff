@@ -400,13 +400,28 @@ for chapters in (USER, ENGINEERING):
         paragraphs = [paragraph.replace('all eight immutable migration files', 'all nine immutable migration files').replace('Schema 8 is created through eight checksum-verified migrations.', 'Schema 9 is created through nine checksum-verified migrations.').replace('Schema 8 uses checksum-verified migrations 001 through 008.', 'Schema 9 uses checksum-verified migrations 001 through 009.').replace('Keep the deployed migrations and help folders and the Win32 WebView2Loader.dll supplied by the build beside the executable.', 'Keep migrations and help in the source checkout root, and WebView2Loader.dll beside the executable. A development launch locates its source checkout; an extracted distribution keeps all three beside the executable.') for paragraph in paragraphs]
         chapters[index] = (heading, paragraphs)
 
+USER.append(('Inspect keyboard shortcuts and focus order', [
+'Open the intended project and choose Keyboard and focus in the upper-right page selector. Select a component in the list. The detail box identifies its form, serialized parent, class, generation, source hash and line or byte location. It explains captured TabOrder, TabStop, CanFocus, visibility, enabled state, shortcut codes, action references and keyboard event bindings. Scroll inside the detail box to read diagnostics.',
+'The list groups by file, form and parent, then sorts known sibling TabOrder values numerically. A question mark means unknown or not applicable, not zero. Missing properties can come from class defaults or inheritance. Duplicate sibling positions and possible duplicate shortcuts within a form are review candidates. Common Windows shortcut codes have readable labels such as Ctrl+S, while original numeric or hex codes remain visible. Repeated consumers of one action do not count again as duplicate shortcut declarations.',
+'Use the filter to find a component, form, property or diagnostic. Next page advances through at most 250 components per page; First page resets. Scroll the toolbar horizontally in a narrow window to reach the source commands. Component source navigates to verified attached form text. Action source opens a uniquely resolved local action declaration. Detached caches, changed source, historical generations, binary text offsets and paths outside the attached project are refused with an explanation.',
+'DPH does not run the target program. Runtime code, nested containers, inherited values and framework behavior can change keyboard navigation. External or ambiguous actions remain unresolved. Secondary shortcut collections are retained as raw evidence and explicitly excluded from decoded conflict checks. Run the target yourself to check Tab, Shift+Tab and its declared shortcuts. Complete directions are in docs/guides/Keyboard_and_Focus_Run_and_Test.txt. Developers can run tools\\build-keyboard.cmd from an elevated Command Prompt.'
+]))
+ENGINEERING.append(('Keyboard inspector implementation and validation', [
+'DPH.Workspace.Keyboard projects captured text and binary form IR into source-backed component records. A parent-property index avoids rescanning every node for every component. Rows retain generation, source SHA256, line and byte extents, original property values and explicit unknowns. Numeric shortcut conflicts normalize decimal and hexadecimal codes within each serialized form; sibling TabOrder conflicts stay parent-local. Unique local action declarations carry separate shortcut and source evidence; uncaptured custom, external or inherited actions remain unresolved.',
+'DPH.UI.Main.fmx serializes every inspector control for the IDE and Object Inspector. The Keyboard and focus page filters readable evidence, sorts sibling TabOrder and uses 250-row pages. TDPHKeyboardInspector.ReadSource enforces matching generation, source identity, project containment, text availability and source hash before navigation. Binary forms expose byte evidence without applying it as text lines. No database migration or target execution is required.',
+'Run tools\\build-keyboard.cmd elevated for 55 checks covering actual DFM, FMX and binary parsing, action references, conflicts, unknown states, readable key names, source safeguards, pagination and instantiated FMX controls. The fixed bin/keyboard-validation fixture avoids new disposable test folders. Native PaintTo images in docs/phase1-keyboard-workspace.png and phase1-keyboard-compact.png are renders of running DPH controls, not target application screenshots. The suite checks the user catalog and selected fixture bytes remain unchanged. Runtime traversal and accessibility conformance require separate observed tests.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('After the glossary implementation, 344 requirement records remain incomplete', 'After the glossary and keyboard inspector implementations, 343 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -531,5 +546,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 7, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 8, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')
