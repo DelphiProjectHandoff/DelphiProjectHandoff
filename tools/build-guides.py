@@ -430,13 +430,28 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('After the glossary and keyboard inspector implementations, 343 requirement records remain incomplete', 'After the glossary, keyboard and command inventory implementations, 342 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Inspect dynamic and runtime created controls', [
+'Open the intended project and choose Dynamic controls in the upper-right page selector. Attach the source and click Full reassessment for an older capture; DPH-WP3-12 adds owner, parent and event relationships that old captures do not contain. Select a row to read its constructor class, generation, source range and fingerprint. Each row is a source creation site; a loop does not establish its runtime instance count.',
+'The detail box separates the lexical result variable, constructor owner, visual Parent assignment, event assignment and other property expressions. Owner describes lifetime ownership; it does not set Parent. Self refers to the declaring type, not an observed instance. Inferred links identify source declarations. nil preserves an explicit empty-reference expression. A reused or overwritten variable or assignment before construction remains ambiguous. Missing references remain unknown.',
+'Filter by routine, class, parent, owner or event. Next page advances through 250 sites and First page resets. Scroll the command bar horizontally to reach Explain creation site, the reference dropdown and Explain reference. Choose a relationship before explaining its target. Unresolved targets and nil expressions disable reference navigation. Explain opens captured evidence; use Source there for verified attached code. Scroll the detail box vertically or drag its divider to resize it.',
+'DPH does not execute the target or reconstruct observed controls from these sites. Runtime instances, final layout, dispatch and lifetime remain unobserved. Factories, aliases, casts, with scopes and cross-routine mutations can remain unsupported. See docs/guides/Dynamic_Controls_Run_and_Test.txt for explicit directions and manual exercises. Developers can run tools\\build-dynamic-controls.cmd elevated for the focused acceptance suite.'
+]))
+ENGINEERING.append(('Dynamic control relationships and validation', [
+'DPH.Analysis.Symbols captures constructor owner expressions and visual property assignments in reusable routine facts. VisualSites joins them to creation-site identities after cache reuse. Unique same-routine result handles support parent and event declaration references. Multiple constructors, intervening variable writes and assignments before construction prevent attribution and retain ambiguous evidence. Target declarations are inferred lexical references; no runtime binding or reaching-definition proof is claimed. DPHSemanticVersion is DPH-WP3-12 so older semantic captures are reassessed.',
+'DPH.Workspace.DynamicControls indexes the new relationships and retains target symbols, source hashes, ranges, conditions and generation evidence. DPH.UI.Main.fmx serializes the filter, 250-row list, details, relationship selector and Explain controls for the IDE. Changing capture clears stale rows. Missing references disable Explain reference. Creation sites remain distinct from serialized form geometry and observed screenshot evidence. No database migration or runtime UI construction was introduced.',
+'Run tools\\build-dynamic-controls.cmd elevated for 51 focused checks, including owner/parent/event references, nil, reused and overwritten variables, pre-creation assignments, unresolved expressions, loop counts, exact fresh/cache equivalence, pagination and native form controls. Fixtures reuse bin/dynamic-validation. The 134-check semantic regression and 62-check command inventory regression pass, as does the actual app and FMX resource baseline. Historical phase evidence is preserved; current semantic evidence is docs/phase1-dynamic-semantics-regression.json. Native normal/compact PaintTo renders show running DPH controls, not target screenshots.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('After the glossary, keyboard and command inventory implementations, 342 requirement records remain incomplete', 'After the glossary, keyboard, command inventory and dynamic control implementations, 341 requirement records remain incomplete').replace('DPH-WP3-11', 'DPH-WP3-12') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -561,5 +576,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 9, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 10, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

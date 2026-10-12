@@ -1,0 +1,135 @@
+PASS SYM01: Method prototype and implementation share one identity
+PASS SYM02: Overload identities retain parameter types
+PASS SYM03: Cross-unit class and interface ancestry
+PASS CALL01: Literal argument types select separate overloads
+PASS CALL02: Public routine resolved through uses
+PASS CALL03: Implementation-private cross-unit routine stays unresolved
+PASS CALL04: Virtual receiver is a possible dynamic target
+PASS CALL05: Interface dispatch is a possible dynamic target
+PASS CALL07: Explicit inherited invocation resolves to the ancestor implementation
+PASS UNCERTAIN01: Unknown overload argument retains multiple possible targets
+PASS UNCERTAIN02: Known incompatible argument does not become a confirmed call
+PASS UNCERTAIN04: Unknown parameterless invocation remains an explicit unresolved call
+PASS UNCERTAIN05: Unknown read on an assignment right-hand side remains explicit
+PASS CALL06: Local procedural variable shadows a public routine
+PASS ASYNC01: Anonymous thread callback is prepared without an invented Start
+PASS ASYNC02: Callback body uses its own local lexical scope
+PASS ASYNC03: Nested queue callback retains a second asynchronous boundary
+PASS EVENT01: Serialized event binds to its form method
+PASS NEG01: Comment containing a fake call produces no semantic call
+PASS CFG_SCOPE: CFG edges never enter another routine or callback
+PASS CFG01: Branch, loop, break and continue transfers
+PASS CFG02: Return and raise traverse finally before their destinations
+PASS CFG03: Loop break crosses its finally body before leaving the loop
+PASS CFG04: Typed exception matching remains a possible handler edge
+PASS CFG05: Case dispatch is structured while unresolved source calls keep analysis partial
+PASS IMPACT01: Reverse references include direct calls and callbacks
+PASS IMPACT02: Bounded reverse traversal reaches possible dependents
+PASS IMPACT04: Each non-seed impact result links its derivation evidence
+PASS IMPACT03: Impact budget also bounds multiple seeds
+PASS DEF01: Def-use facts coexist with explicit unresolved coverage
+PASS PROVENANCE: Every relation has a captured source range and hash
+PASS INC_CACHE01: Unchanged binding context reuses routine semantics
+PASS INC_CACHE02: Explicit full analysis rebuilds semantics independently of its cache
+PASS INCR01: Full and cached syntax produce identical complete semantic graphs
+PASS VAR01: Same source under changed defines has distinct conditional semantic identities
+PASS STORE_CONTEXT: Same byte manifest cannot mix semantic facts from different defines
+PASS STORE01: Partial semantic generation cannot become published head
+PASS STORE02: Semantic entities, evidence, relations and normalized CFG satisfy SQLite constraints
+PASS SAFE01: Captured semantic fixture bytes remain unchanged
+PASS IDENTITY01: Whitespace shift preserves symbol identity while changing provenance
+PASS INC_CACHE03: Source change rebuilds affected file routines and reuses unaffected routines
+PASS INC_CACHE04: Affected routine reuse exactly matches an independent clean semantic rebuild
+PASS STORE03: Complete empty fixture publishes atomically
+PASS STORE04: Published head points to the matching semantic generation
+PASS STORE05: Partial reassessment retains the previous complete head
+PASS STORE_CFG01: CFG API rejects an edge between different routines
+PASS STORE_CFG02: CFG API rejects an out-of-capture byte range
+PASS STORE_CFG03: CFG API rejects a routine without a version in this generation
+PASS STORE06: Mid-analysis source change supersedes semantics and requests reassessment
+PASS STORE07: Negative generation and CFG checks preserve database integrity
+PASS UNCERTAIN03: Module entry is analyzed while its unresolved call remains explicitly partial
+PASS NAV01: Declared form Show and ShowModal retain separate qualified actions
+PASS NAV02: Hide and Close retain distinct source transitions
+PASS NAV03: Serialized form links to its declared class and matching global instance
+PASS NAV04: Serialized child matches its field while ordinary control Show is not form navigation
+PASS NAV05: Unselected form navigation starts at captured forms and follows source transitions
+PASS NAV06: Form transition and binding facts agree across cache reuse
+PASS OUT01: File writing has a separate source-backed output artifact
+PASS OUT02: Output artifact links to its declared content parameter
+PASS OUT03: Literal destination is retained without creating or opening the output file
+PASS OUT04: SaveToFile output links to its source collection receiver
+PASS OUT05: Dynamic output destination remains an explicit coverage question
+PASS OUT06: Output lineage agrees across routine cache reuse
+PASS VIS01: Framework control constructor has a separate qualified source creation site
+PASS VIS02: Dynamic control site links to its lexical handle without a runtime identity claim
+PASS VIS03: Runtime text/property assignment links to its visual receiver and source evidence
+PASS VIS04: Dynamic event assignment retains its candidate callback connection
+PASS VIS05: Runtime control construction remains separate from design-time component geometry
+PASS VIS06: Visual creation and property facts agree after routine cache reuse
+PASS REL01: Declared-type creation call has an inferred lifetime relationship
+PASS REL02: Free receiver keeps alias and completion uncertainty
+PASS REL03: Explicit raised exception type has source evidence
+PASS REL04: Typed exception handler identifies the declared type without claiming a runtime match
+PASS REL05: Explicit DUnitX Test declaration and direct call create a qualified coverage link
+PASS REL06: Ordinary methods do not become tests from their class or filename
+PASS REL07: Lifetime, exception and test relationships survive cache reuse exactly
+PASS DATA01: Assignment output links to its parameter input without claiming a runtime value
+PASS DATA03: Captured call argument links to its formal parameter with context uncertainty
+PASS DATA04: Assignment links to its candidate function-result producer
+PASS DATA05: Input-focused data graph includes dependent output consumers
+PASS SQL01: Simple literal SELECT identifies its sole table with schema qualification
+PASS SQL02: Explicit SELECT projection identifies a column in the sole table
+PASS SQL03: Join and alias SQL retains text without invented table/column resolution
+PASS SQL04: UPDATE assignment column has a qualified write relationship
+PASS SQL05: INSERT explicit column list has a qualified write relationship
+PASS SQL06: Literal SQL.Text concatenation is captured without executing a component
+PASS SQL07: Nonliteral SQL.Text remains an explicit dynamic SQL gap
+PASS SQL08: Predicate and complex-statement coverage limits are visible
+PASS SQL09: Directly referenced SQL file has source-backed schema references without execution
+PASS DATA02: Data and SQL postprocessing agrees across routine cache reuse
+PASS ASYNC04: Thread creation retains a separate callback preparation fact
+PASS ASYNC05: Known local handle Start links to its lexical creation site
+PASS ASYNC06: Cancellation request and blocking wait remain separate qualified actions
+PASS ASYNC07: Named callbacks retain distinct main-thread queue and synchronize sites
+PASS ASYNC08: Synchronize documents its normal-return completion contract with qualification
+PASS ASYNC09: Closure capture is linked to the outer local without claiming lifetime safety
+PASS ASYNC10: Event signal and async lifetime review keep static coverage honest
+PASS ASYNC11: Postprocessed async facts are identical after routine cache reuse
+PASS FLOW01: Case arms and all default statements survive as separate control-flow nodes
+PASS FLOW02: Case labels have separate alternatives and explicit else has no invented fallthrough
+PASS FLOW03: Resolved goto targets its label without a false sequential edge
+PASS FLOW04: Goto crossing a finally scope remains explicitly unresolved instead of bypassing cleanup
+PASS FLOW05: With executes its body sequentially rather than as independent possible branches
+PASS FLOW06: Unqualified call under with cannot falsely confirm the global candidate
+PASS FLOW07: With member-binding coverage gap is visible in diagnostics
+PASS START01: Program entry and separate unit initialization/finalization have complete bounded routine semantics
+PASS START02: Program declaration reaches its executable body and startup call
+PASS START03: Reachable direct and transitive unit initialization are included
+PASS START04: An unused project-manager file does not become an executed initialization dependency
+PASS START05: Finalization phase and initialization body calls retain separate evidence
+PASS START06: Unit initialization has a navigable control-flow graph
+PASS START07: Unselected Execution graph starts at the program and keeps static provenance
+PASS RESOLVE01: Primitive type alias selects the correct overload
+PASS RESOLVE02: Property read/write declarations link to their actual accessor methods
+PASS RESOLVE03: Class aliases and inherited properties retain def-use links
+PASS RESOLVE04: Indexed property parameters are not mistaken for property names or result types
+PASS RESOLVE05: A unique candidate with unknown argument type remains qualified
+PASS RESOLVE06: Indexed inherited property reads have a captured property target
+PASS INC_CACHE05: Ancestry change invalidates dependent routine bindings across unchanged files
+PASS INC_CACHE06: Changed ancestry resolves the unchanged caller to its new inherited method
+PASS INC_CACHE07: Binding-invalidated semantics match a clean full rebuild
+PASS DEF01: Literal loader acquires only its bounded referenced definition file
+PASS DEF02: Referenced JSON definitions receive parsed resource IR
+PASS DEF03: Definition source links to its consuming routine without claiming compiler resolution
+PASS DEF04: Configuration dependency exposes lexical loader order with runtime precedence qualified
+PASS DEF05: Resource and loader relationships persist with valid captured source evidence
+PASS REF01: Reference btnConvert.OnClick resolves to btnConvertClick
+PASS REF02: Reference anonymous worker creation is distinct from its later handle Start
+PASS REF03: Reference callback resolves through ConversionThreadProc to Engine.Convert
+PASS REF04: DryRunPreview condition is located in engine control flow
+PASS REF05: Report model-to-renderer relationship has typed static evidence
+PASS REF06: Missing framework and opaque constructs keep reference analysis partial
+PASS REF07: Full and incremental reference graphs are exactly equivalent, including bounded cache fallback
+PASS REF08: Reference capture rehashes unchanged after semantics
+PASS WP3: 134 checks; evidence: C:\New Delphi Projects\Delphi Project Handoff\bin\dynamic-semantics-validation

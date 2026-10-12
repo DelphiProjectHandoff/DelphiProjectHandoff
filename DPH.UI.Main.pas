@@ -71,6 +71,15 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    DynamicTab:TTabItem;
+    DynamicPurpose,DynamicStatus:TLabel;
+    DynamicToolbar:THorzScrollBox;
+    DynamicFilterEdit:TEdit;
+    DynamicFirstButton,DynamicNextButton,DynamicExplainButton,DynamicReferenceButton:TButton;
+    DynamicReferenceCombo:TComboBox;
+    DynamicList:TListBox;
+    DynamicSplitter:TSplitter;
+    DynamicMemo:TMemo;
     CommandsTab: TTabItem;
     CommandsPurpose,CommandsStatus: TLabel;
     CommandsToolbar: THorzScrollBox;
@@ -214,6 +223,10 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure DynamicFilterChange(Sender:TObject);
+    procedure DynamicSelectionClick(Sender:TObject);
+    procedure DynamicReferenceChange(Sender:TObject);
+    procedure DynamicExplainClick(Sender:TObject);
     procedure CommandsFilterChange(Sender: TObject);
     procedure CommandsSelectionClick(Sender: TObject);
     procedure CommandsSourceClick(Sender: TObject);
@@ -356,6 +369,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FDynamic:TJSONObject;
+    FDynamicRows:TList<TJSONObject>;
+    FDynamicOffset:Integer;
     FCommands: TJSONObject;
     FCommandRows: TList<TJSONObject>;
     FCommandOffset: Integer;
@@ -387,7 +403,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -401,6 +417,7 @@ begin
   FGlossaryRows:=TList<TJSONObject>.Create;
   FKeyboardRows:=TList<TJSONObject>.Create;
   FCommandRows:=TList<TJSONObject>.Create;
+  FDynamicRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
@@ -438,6 +455,7 @@ begin
   FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
+  FDynamicRows.Free; FDynamic.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -721,6 +739,9 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FDynamicRows.Clear; FreeAndNil(FDynamic); DynamicList.Items.Clear; DynamicReferenceCombo.Items.Clear;
+  DynamicMemo.Text:='Open a project to inspect creation sites.'; DynamicStatus.Text:='No capture loaded.';
+  DynamicNextButton.Enabled:=False; DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False;
   FCommandRows.Clear; FreeAndNil(FCommands); CommandsList.Items.Clear; CommandsHandlerCombo.Items.Clear;
   CommandsMemo.Text:='Open a captured project to inspect its commands.'; CommandsStatus.Text:='No capture loaded.';
   CommandsNextButton.Enabled:=False; CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False;
@@ -850,6 +871,7 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
+  FDynamicRows.Clear; FreeAndNil(FDynamic); FDynamic:=TDPHDynamicControls.Inspect(FView); DynamicFilterChange(nil);
   FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
   for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
   ProjectMemberMemo.Text:='Select a captured project or output declaration above to read its settings and evidence.';
@@ -945,6 +967,58 @@ begin
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
 end;
+procedure TDPHMainForm.DynamicFilterChange(Sender:TObject);
+var V:TJSONValue; Row:TJSONObject; Count:Integer; Query:string;
+begin
+ if Sender=DynamicNextButton then Inc(FDynamicOffset,250) else FDynamicOffset:=0;
+ DynamicList.Items.Clear; FDynamicRows.Clear; DynamicReferenceCombo.Items.Clear;
+ DynamicNextButton.Enabled:=False; DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False;
+ DynamicMemo.Text:='Select a creation site to read its evidence and limits.';
+ if FDynamic=nil then Exit;
+ Query:=DynamicFilterEdit.Text.Trim; Count:=0;
+ for V in FDynamic.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (Query<>'') and not ContainsText(TDPHDynamicControls.Describe(Row),Query) then Continue;
+  if (Count>=FDynamicOffset) and (FDynamicRows.Count<250) then begin FDynamicRows.Add(Row); DynamicList.Items.Add(Row.GetValue<string>('name')+' | '+Row.GetValue<string>('type')+' | instances unobserved'); end;
+  Inc(Count);
+ end;
+ DynamicNextButton.Enabled:=Count>FDynamicOffset+FDynamicRows.Count;
+ DynamicStatus.Text:=IntToStr(Count)+' matching creation sites; showing '+IntToStr(FDynamicRows.Count)+' from offset '+IntToStr(FDynamicOffset)+'. Reassess older captures for new links.';
+ if DynamicList.Count>0 then begin DynamicList.ItemIndex:=0; DynamicSelectionClick(nil); end
+ else DynamicMemo.Text:='No matching captured creation sites. Clear the filter or reassess. Unsupported factories and indirect creation remain gaps; this is not proof of no runtime controls.';
+end;
+procedure TDPHMainForm.DynamicSelectionClick(Sender:TObject);
+var Row:TJSONObject; V:TJSONValue;
+begin
+ DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False; DynamicReferenceCombo.Items.Clear;
+ if (DynamicList.ItemIndex<0) or (DynamicList.ItemIndex>=FDynamicRows.Count) then Exit;
+ Row:=FDynamicRows[DynamicList.ItemIndex]; DynamicMemo.Text:=TDPHDynamicControls.Describe(Row)+sLineBreak+sLineBreak+FDynamic.GetValue<string>('qualification');
+ DynamicExplainButton.Enabled:=True;
+ for V in Row.GetValue<TJSONArray>('links') do DynamicReferenceCombo.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('label')+' ['+V.GetValue<string>('resolution')+']');
+ if DynamicReferenceCombo.Items.Count>0 then DynamicReferenceCombo.ItemIndex:=0;
+ DynamicReferenceChange(nil);
+end;
+procedure TDPHMainForm.DynamicReferenceChange(Sender:TObject);
+var Links:TJSONArray; Key:string;
+begin
+ DynamicReferenceButton.Enabled:=False;
+ if (FView=nil) or (DynamicList.ItemIndex<0) or (DynamicList.ItemIndex>=FDynamicRows.Count) then Exit;
+ Links:=FDynamicRows[DynamicList.ItemIndex].GetValue<TJSONArray>('links');
+ if (DynamicReferenceCombo.ItemIndex<0) or (DynamicReferenceCombo.ItemIndex>=Links.Count) then Exit;
+ Key:=Links.Items[DynamicReferenceCombo.ItemIndex].GetValue<string>('to','');
+ DynamicReferenceButton.Enabled:=(Key<>'') and (FView.Symbol(Key)<>nil);
+end;
+procedure TDPHMainForm.DynamicExplainClick(Sender:TObject);
+var Key:string;
+begin
+ if (FView=nil) or (DynamicList.ItemIndex<0) or (DynamicList.ItemIndex>=FDynamicRows.Count) then Exit;
+ Key:=FDynamicRows[DynamicList.ItemIndex].GetValue<string>('key');
+ if Sender=DynamicReferenceButton then begin
+  DynamicReferenceChange(nil); if not DynamicReferenceButton.Enabled then Exit;
+  Key:=FDynamicRows[DynamicList.ItemIndex].GetValue<TJSONArray>('links').Items[DynamicReferenceCombo.ItemIndex].GetValue<string>('to','');
+ end;
+ SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+
 procedure TDPHMainForm.CommandsFilterChange(Sender: TObject);
 var Value: TJSONValue; Row: TJSONObject; Count: Integer; Kind,Query: string;
 begin

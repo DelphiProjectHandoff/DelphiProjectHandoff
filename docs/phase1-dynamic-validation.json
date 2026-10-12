@@ -1,0 +1,1 @@
+﻿{"result":"PASS","checks":51,"fixture":"C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\dynamic-validation","qualification":"Actual Pascal parser/semantic evidence and instantiated native FMX form. PaintTo renders are running DPH controls, not target-runtime screenshots."}

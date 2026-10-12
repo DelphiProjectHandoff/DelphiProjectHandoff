@@ -1,0 +1,63 @@
+DPH dynamic control inspector completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.15 Dynamic and runtime-created controls
+
+The native Dynamic controls page presents recognized constructor source sites,
+lexical result handles, constructor owners, Parent assignments, event routine
+references and captured property expressions. Source location, fingerprint,
+generation and conditional compilation context remain attached to evidence.
+Owner and Parent are explained separately. Inferred references lead to their
+captured declarations through Explain. Unresolved or nil targets disable
+reference navigation. Runtime instance counts always remain unobserved.
+
+Multiple constructors, intervening variable writes and assignments before
+construction are marked ambiguous rather than attributed to one runtime
+control. Dynamic sites remain separate from serialized form geometry and
+actual imported screenshot evidence. No target execution was added.
+The native form is serialized in FMX and editable in the Object Inspector.
+Filtering, 250-row pagination, independent reference selection, Explain,
+compact scrolling and replacement-capture cleanup are implemented.
+Semantic version DPH-WP3-12 invalidates old analyzer results; reassess old
+captures to obtain the new owner/parent/event relationships.
+
+VALIDATION
+51 focused checks pass, including actual Pascal parsing, owner/parent/events,
+explicit nil, unresolved expressions, reused and overwritten handles,
+pre-construction mutations, loop instances, conditional provenance, exact
+fresh/cache graph equivalence, native form navigation and compact layout.
+The 134-check semantic regression and 62-check command inventory regression
+pass. Actual Win32 Debug application build and FMX baseline pass elevated.
+Source fixtures and the user project catalog remain unchanged.
+Semantic regression reused a fixed generated folder; its final rerun required
+clearing only that verified bin fixture folder to avoid existing-file errors.
+Historical wp3-validation.json is restored byte-for-byte after each run.
+Normal and compact native PaintTo renders are DPH control renders, not target
+application screenshots. User and Engineering Guides have editable TOCs and
+companion PDFs. All 21 User Guide and 17 Engineering Guide pages were reviewed.
+Explicit directions: docs/guides/Dynamic_Controls_Run_and_Test.txt.
+
+BACKUP
+Full pre-change SHA-256 verified backup: 3433 files / 693686621 bytes.
+H:\DPH Backups\DynamicControls_PreChange_20261011_212931
+No post-change USB backup was made. Git and both GitHub remotes remain enabled.
+
+CURRENT STATUS
+533 original requirement identities/text/order preserved. Only 04.15 is
+promoted by this batch. Counts: 175 implemented, 17 manual capture, 239 partial,
+102 missing, zero unassessed. 341 requirement records remain incomplete.
+Original planning files and historical reconciliation reports are unchanged.
+
+LIMITS
+These are supported lexical references, not executed control instances.
+Runtime order, aliases, reaching definitions, lifetime, final property values
+and actual event dispatch remain unobserved. Factories, casts, indirect handles,
+unqualified with assignments and cross-routine changes may remain gaps.
+A source creation site can execute zero, one or many times. Custom/framework
+class recognition retains its existing conservative boundaries.
+
+NEXT BOUNDED REQUIREMENT
+04.16 Responsive layouts, anchors, and alignments. Explain captured layout
+rules and responsive changes with explicit limits of approximate reconstruction.
+The dynamic control inspector does not evaluate FMX/VCL layout engines.

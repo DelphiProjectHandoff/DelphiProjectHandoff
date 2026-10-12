@@ -1,0 +1,101 @@
+DPH dynamic and runtime-created controls
+Last changed 11 October 2026
+Requirement 04.15
+
+RUN AND OPEN THE INSPECTOR
+1. In File Explorer, open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. It opens maximized.
+3. Click Attach project, select the target .dproj or .dpr, choose its proper
+   configuration and platform, and save its .dphdb outside selected source.
+   Alternatively click Open cache and select its existing .dphdb.
+4. For an older capture, attach or relocate its source and click Full
+   reassessment. Wait for the bottom activity line to finish. The new
+   DPH-WP3-12 analyzer adds relationships that older captures do not contain.
+5. Choose Dynamic controls in the page selector at the upper right.
+
+READ THE RESULTS
+6. Select a row. Each row identifies one recognized constructor source site.
+   A site inside a loop remains one site; it may create zero, one or many
+   controls when executed. Runtime instance count always remains unobserved.
+7. Read the detail box below the list. It identifies the class, generation,
+   source line/byte location, fingerprint, conditional compilation context,
+   and captured relationships. Scroll vertically to read HOW TO READ THIS.
+8. assigned_to identifies the declared variable or field receiving the result.
+   constructor_owner describes the constructor argument and its declaration,
+   when resolvable. Owner is about lifetime ownership. It does not determine
+   the visual Parent. Self identifies the declaring type, not a proven instance.
+9. dynamic_parent captures a separate Parent assignment and its target
+   declaration. dynamic_event captures an On... assignment and the uniquely
+   matched routine, when available. dynamic_property preserves expressions
+   such as Caption or position assignments; it does not evaluate them.
+10. Inferred means a source reference, not an observed runtime connection.
+    Unresolved targets remain explicit. nil preserves an empty-reference
+    expression. It does not establish what ultimately happened at runtime.
+11. dynamic_assignment_ambiguous identifies a reused/overwritten variable or
+    an assignment before construction. DPH does not assign that mutation
+    to one runtime control. Aliases, factories, casts, unqualified with
+    assignments and cross-routine mutations can remain unsupported gaps.
+
+FILTER AND FOLLOW REFERENCES
+12. Type a routine name, class, owner, parent, event or diagnostic in the
+    filter. Clear the filter to restore all captured sites. A changed filter
+    resets pagination. Next page advances through at most 250 sites;
+    First page resets. The status line gives matching count and offset.
+13. Click Explain creation site to inspect that captured source object.
+    Use Source there to navigate unchanged attached code. Existing generation,
+    path and fingerprint checks apply. Detached or changed source cannot
+    silently substitute current code for captured evidence.
+14. Return to Dynamic controls using the upper-right selector. In the command
+    bar, choose a relationship from the reference dropdown, then click
+    Explain reference. This opens the referenced field, type or routine.
+    The button is disabled when no captured target declaration is available,
+    including unresolved targets and explicit nil expressions.
+15. Drag the scrollbar below the command bar to the right to reach commands
+    that do not fit. This may be necessary even when maximized. Drag the
+    divider below the list to resize it. Scroll inside the detail box.
+16. No matches does not prove there are no dynamic controls. Clear filters,
+    reassess with the correct defines, read Coverage and inspect source.
+
+MANUAL CHECKS
+17. On a known target, locate B := TButton.Create(Self), B.Parent := Panel
+    and B.OnClick := Click. Confirm the site lists these as separate
+    relationships with the correct source locations and declarations.
+18. Follow the event reference and confirm Explain opens the intended
+    routine. Try an unresolved handler; Explain reference must be disabled.
+19. Inspect a variable assigned two constructors or overwritten before a
+    Parent assignment. Confirm that the mutation is marked ambiguous.
+20. Inspect a constructor in a loop. Confirm the page reports the site and
+    unknown instance count. Run the target yourself if actual control count,
+    ownership, layout, lifetime or event dispatch must be established.
+    DPH does not execute the target and does not draw these sites as observed
+    screen controls. Saved runtime observations remain separate evidence.
+
+AUTOMATED CHECKS FOR THE DEVELOPER
+21. Open Windows Start, type Command Prompt, right-click it and choose
+    Run as administrator. RAD Studio requires the elevated environment.
+22. Enter these commands and press Enter after each:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-dynamic-controls.cmd
+    Expect exit code zero and Dynamic controls validation passed: 51 checks.
+23. Check the preceding inspector and rebuild the actual app:
+    tools\build-commands.cmd
+    tools\build-wp0.cmd
+    Expect 62 command checks and PASS WP0-TEST.
+24. The dynamic suite reuses bin\dynamic-validation, analyzes actual Pascal
+    fixtures, compares fresh/cached evidence and instantiates the native
+    form. It checks that fixture source and the user catalog stay unchanged.
+    The broad semantic suite source remains tests\DPH.Tests.Semantics.dpr.
+    This batch's 134-check result is recorded separately in
+    docs\phase1-dynamic-semantics-regression.json and its companion log.
+25. Open DPH.UI.Main.fmx in RAD Studio. All inspector controls are serialized
+    and editable in the form designer and Object Inspector.
+
+EVIDENCE AND LIMITS
+The focused JSON/log are docs\phase1-dynamic-validation.*.
+phase1-dynamic-workspace.png and phase1-dynamic-compact.png in docs are
+PaintTo renders of running DPH controls, not target application screenshots.
+This inspector resolves supported lexical declarations. It does not prove
+runtime execution order, aliases, reaching definitions, actual lifetime or
+final layout. Unsupported cases remain unknown rather than invented.
+Responsive layout explanations are the separate next requirement, 04.16.

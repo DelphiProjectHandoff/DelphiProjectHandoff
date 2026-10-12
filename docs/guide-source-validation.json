@@ -1,5 +1,5 @@
 {
-  "guide_version": 9,
+  "guide_version": 10,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -15,7 +15,7 @@
     },
     {
       "path": "DPH.Analysis.Model.pas",
-      "sha256": "67383aae374aabba6832526e9d373827a5133e4369a61eaad9cffef9f239ecdb"
+      "sha256": "98ecd089264555c80cd293fbd5cc70fb6c6d0549e788f3f50313f76653874d3c"
     },
     {
       "path": "DPH.Analysis.Persistence.pas",
@@ -31,7 +31,7 @@
     },
     {
       "path": "DPH.Analysis.Symbols.pas",
-      "sha256": "a362f3a2b46bdc77883c129efd1c14192d6128ecb616f82915222df370d2d006"
+      "sha256": "1da99806fa3a71afbfe4c58e8e1bb40041d308e32b42fd06f412723c79f7799b"
     },
     {
       "path": "DPH.Knowledge.Glossary.pas",
@@ -111,7 +111,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "956e597b27924091fd7d6acbfc8bc8eda62182a3a89e1be7ca3346126def441e"
+      "sha256": "752100b4862ae04fe9ded675b00503408a50611131d4d16cef5b562252f4e5e0"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -128,6 +128,10 @@
     {
       "path": "DPH.Workspace.Comparison.pas",
       "sha256": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce"
+    },
+    {
+      "path": "DPH.Workspace.DynamicControls.pas",
+      "sha256": "abd5350eab05058b885b95e0c947a1badd54eba33877cbe9a448cac194db25ed"
     },
     {
       "path": "DPH.Workspace.Graphs.pas",
@@ -151,7 +155,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "a924181a6412caabab27a3d440680255c44ef93179d514eea15296252b00452b"
+      "sha256": "dc8422d60872f852d3a9f5bcc186fcd9a8c373c7872f11798028e20ba7b3fb35"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",
@@ -167,7 +171,7 @@
     },
     {
       "path": "DelphiProjectHandoff.dproj",
-      "sha256": "c77e545e8d113edd5853664d50ffc62e0c34d6bf8e7f5de842465d87f00bbdf2"
+      "sha256": "8b9a2ca58594c21eeae0d9dda4018f2453a4383f93d3270358a94c74962f979e"
     }
   ],
   "last_changed": "2026-10-11"

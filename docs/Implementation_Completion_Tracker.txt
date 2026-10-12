@@ -14,7 +14,10 @@ source safeguards, 55 focused checks; see Phase1_Keyboard_Completion.txt.
 Menu and toolbar inventory completed (04.14): paths, attachments, action/handler
 evidence, native view, 62 focused checks and 55 keyboard regression checks;
 see Phase1_Commands_Completion.txt.
-Current live backlog: 342 incomplete requirement records; 0 unassessed.
+Dynamic controls completed (04.15): owner, parent and event references,
+creation-site distinction, ambiguity guards, native view and 51 focused checks;
+134 semantic and 62 command regression checks pass. See Phase1_Dynamic_Controls_Completion.txt.
+Current live backlog: 341 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

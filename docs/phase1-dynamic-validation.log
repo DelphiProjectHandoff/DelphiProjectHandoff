@@ -1,0 +1,59 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+13985 lines, 1.26 seconds, 10018404 bytes code, 344532 bytes data.
+PASS 1: Incremental cache reuses new relationship candidates
+PASS 2: Cached and fresh semantic relationships are identical
+PASS 3: Creation sites counted independently of loop execution
+PASS 4: Actual Pascal parser supplies creation site
+PASS 5: Constructor owner expression retained
+PASS 6: Self resolves to declaring type not invented runtime object
+PASS 7: Parent assignment recorded separately
+PASS 8: Parent declaration linked
+PASS 9: Event assignment recorded
+PASS 10: Unique event routine linked
+PASS 11: Property expression retained without evaluation
+PASS 12: Lexical control handle retained
+PASS 13: Reused handle is not attributed to one instance
+PASS 14: Ambiguous reused handle gets no false parent link
+PASS 15: Overwritten handle is not attributed to the creation site
+PASS 16: Overwritten handle gets no false parent link
+PASS 17: Assignment before construction is not attributed
+PASS 18: Explicit nil owner preserved
+PASS 19: Explicit nil parent preserved
+PASS 20: Explicit event clearing preserved
+PASS 21: Factory owner expression stays unresolved
+PASS 22: Factory parent expression stays unresolved
+PASS 23: Missing event routine stays unresolved
+PASS 24: Loop site never invents ten runtime instances
+PASS 25: Creation site retains conditional compilation context
+PASS 26: Source fingerprint retained
+PASS 27: Creation source line retained
+PASS 28: Instance uncertainty explained
+PASS 29: Owner versus parent explained
+PASS 30: Native page holds at most 250 sites
+PASS 31: Further sites enable next page
+PASS 32: Next page shows remaining sites
+PASS 33: Last page disables Next
+PASS 34: First page resets offset
+PASS 35: Page discoverable through selector
+PASS 36: Filter finds creation routine
+PASS 37: Native detail displays parent evidence
+PASS 38: Selected site enables Explain
+PASS 39: Creation Explain opens captured site
+PASS 40: Resolved event enables reference Explain
+PASS 41: Event reference opens Explain
+PASS 42: Unresolved reference disables Explain
+PASS 43: Unresolved reference disables Explain
+PASS 44: Unresolved reference disables Explain
+PASS 45: Empty filter clears sites
+PASS 46: Empty filter disables commands
+PASS 47: Compact layout retains detail area
+PASS 48: Compact command bar scrolls
+PASS 49: New capture clears previous sites
+PASS 50: User project catalog unchanged
+PASS 51: Selected fixture source unchanged
+Dynamic controls validation passed: 51 checks.

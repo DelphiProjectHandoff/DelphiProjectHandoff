@@ -42,6 +42,7 @@ Items.Strings = (
 'Business glossary'
 'Keyboard and focus'
 'Menus and commands'
+'Dynamic controls'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1323,6 +1324,103 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object DynamicTab: TTabItem
+Text = 'Dynamic controls'
+object DynamicPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Source creation sites with owner, parent and event references. Select a site to read evidence. Runtime instances and final state are unobserved.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object DynamicToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object DynamicFilterEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find creation site, owner, parent or event'
+OnChange = DynamicFilterChange
+end
+object DynamicFirstButton: TButton
+Position.X = 266
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = DynamicFilterChange
+end
+object DynamicNextButton: TButton
+Position.X = 364
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = DynamicFilterChange
+end
+object DynamicExplainButton: TButton
+Position.X = 462
+Position.Y = 4
+Width = 160
+Height = 30
+Enabled = False
+Text = 'Explain creation site'
+OnClick = DynamicExplainClick
+end
+object DynamicReferenceCombo: TComboBox
+Position.X = 630
+Position.Y = 4
+Width = 360
+Height = 30
+OnChange = DynamicReferenceChange
+end
+object DynamicReferenceButton: TButton
+Position.X = 998
+Position.Y = 4
+Width = 150
+Height = 30
+Enabled = False
+Text = 'Explain reference'
+OnClick = DynamicExplainClick
+end
+end
+object DynamicStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object DynamicList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnClick = DynamicSelectionClick
+end
+object DynamicSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object DynamicMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object CommandsTab: TTabItem

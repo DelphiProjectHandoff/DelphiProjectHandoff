@@ -1,0 +1,128 @@
+{
+  "result": "PASS",
+  "baseline_commit": "9da0486",
+  "completed_requirement_ids": [
+    "04.15"
+  ],
+  "counts": {
+    "implemented_manual_capture": 17,
+    "partial": 239,
+    "implemented": 175,
+    "missing": 102
+  },
+  "incomplete": 341,
+  "unassessed": 0,
+  "requirements_preserved": 533,
+  "focused_checks": 51,
+  "semantic_regression_checks": 134,
+  "command_regression_checks": 62,
+  "application_and_fmx_baseline": "PASS",
+  "pre_change_backup": "H:\\DPH Backups\\DynamicControls_PreChange_20261011_212931",
+  "backup_files": 3433,
+  "backup_bytes": 693686621,
+  "guide_sources_verified": 43,
+  "guides": [
+    {
+      "name": "DPH_User_Guide",
+      "pages": 21,
+      "toc_entries": 39,
+      "all_pages_visually_reviewed": true
+    },
+    {
+      "name": "DPH_Engineering_Guide",
+      "pages": 17,
+      "toc_entries": 31,
+      "all_pages_visually_reviewed": true
+    }
+  ],
+  "evidence": [
+    {
+      "path": "DPH.Analysis.Symbols.pas",
+      "sha256": "1da99806fa3a71afbfe4c58e8e1bb40041d308e32b42fd06f412723c79f7799b"
+    },
+    {
+      "path": "DPH.Analysis.Model.pas",
+      "sha256": "98ecd089264555c80cd293fbd5cc70fb6c6d0549e788f3f50313f76653874d3c"
+    },
+    {
+      "path": "DPH.Workspace.DynamicControls.pas",
+      "sha256": "abd5350eab05058b885b95e0c947a1badd54eba33877cbe9a448cac194db25ed"
+    },
+    {
+      "path": "DPH.UI.Main.pas",
+      "sha256": "752100b4862ae04fe9ded675b00503408a50611131d4d16cef5b562252f4e5e0"
+    },
+    {
+      "path": "DPH.UI.Main.fmx",
+      "sha256": "dc8422d60872f852d3a9f5bcc186fcd9a8c373c7872f11798028e20ba7b3fb35"
+    },
+    {
+      "path": "tests/DPH.Tests.DynamicControls.dpr",
+      "sha256": "b461ee22511a48ec6d3f8122fe6d308bbc60cb388d651ce3af1a05b2e8766f8c"
+    },
+    {
+      "path": "tools/build-dynamic-controls.cmd",
+      "sha256": "75ce34cbf1f0f159f15457969e7d266d88c3bc71547cef33bfcffa0a34eed0ec"
+    },
+    {
+      "path": "docs/phase1-dynamic-validation.json",
+      "sha256": "863e12b9ac1174baf94b02862bc5e72140f9a080ecc9467bab5bef77e37d7d5d"
+    },
+    {
+      "path": "docs/phase1-dynamic-validation.log",
+      "sha256": "7d18dda14ed5eabb3f3a1682502b4fbfba96381489ebade60b67b0d4fcbb2dd1"
+    },
+    {
+      "path": "docs/phase1-dynamic-semantics-regression.json",
+      "sha256": "d93d9f8b4f30bddd33a17c787a4646295deed3ec9a265bfad1eb0b25789c2271"
+    },
+    {
+      "path": "docs/phase1-dynamic-semantics-regression.log",
+      "sha256": "d733199f02ad9f0656ba464a0267e6856aa9be2bc11b4083a20f4d66a879abc6"
+    },
+    {
+      "path": "docs/guides/Dynamic_Controls_Run_and_Test.txt",
+      "sha256": "5fb26a17fc025f492c248391456a3536c45219357f5bdd2946d3d4d9334bb903"
+    },
+    {
+      "path": "DelphiProjectHandoff.dproj",
+      "sha256": "8b9a2ca58594c21eeae0d9dda4018f2453a4383f93d3270358a94c74962f979e"
+    },
+    {
+      "path": "docs/Phase1_Dynamic_Controls_Completion.txt",
+      "sha256": "e542c0786506d43801e99502c2ec07edb313b2b11162f67f61643d3f8e6380b8"
+    },
+    {
+      "path": "docs/Phase1_Requirements_Traceability.json",
+      "sha256": "98361770b5362086691556bff436fffef6f8b2a1ae6b3e2e10fd6fd957c99f68"
+    },
+    {
+      "path": "docs/Phase1_Implementation_Backlog.csv",
+      "sha256": "6bb565486f34ed29d16f78c79aae4aa90ed0634f2204eac98e2c295673d1519b"
+    },
+    {
+      "path": "docs/guides/DPH_User_Guide.docx",
+      "sha256": "8461a673341ccce7e7835badcbb1588da3992181499d539e39e0cf2e3d06b651"
+    },
+    {
+      "path": "docs/guides/DPH_Engineering_Guide.docx",
+      "sha256": "691b3ae26eaa4df11d7526b1160be4abf2701716558668b0b909cab072d9937f"
+    },
+    {
+      "path": "docs/pdf/DPH_User_Guide.pdf",
+      "sha256": "ba15150c68f773391d334bdba9642ca4e82f97db673c8c06612ddde7870a9cf4"
+    },
+    {
+      "path": "docs/pdf/DPH_Engineering_Guide.pdf",
+      "sha256": "aa31e9550ff7a7698bd8d36f81c45251399a4c9e2ad28a3704ccdfd484a0e246"
+    },
+    {
+      "path": "docs/phase1-dynamic-workspace.png",
+      "sha256": "4479c4428e354cd0a88029c94a19f38fc314a0726fde6ab32d643f9fccdfe15a"
+    },
+    {
+      "path": "docs/phase1-dynamic-compact.png",
+      "sha256": "477d49270ca099b622903ad874b2755513ab4e67f49fb7ee7a16a55d20de749a"
+    }
+  ]
+}
