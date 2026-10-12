@@ -1,0 +1,54 @@
+DPH DATASET AND SCREEN FIELD BINDINGS RUN AND TEST
+Last changed 12 October 2026
+
+START THE UPDATED APPLICATION
+1. Save or discard any authored draft before closing DPH.
+2. Start C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe.
+3. Click Attach project and choose the intended Delphi project, or Open cache and
+   choose its existing .dphdb. DPH refuses its own project/database.
+4. Wait for the capture to open. In the upper-right page selector choose
+   Database connections. Click the kind selector and choose bound control.
+5. Clear the text filter. Select a control in the list. Read DATASET AND SCREEN
+   BINDINGS in the labeled details memo below the list.
+6. In the reference selector choose Target via DataSource; click Follow reference.
+   If commands are outside the visible area, scroll the toolbar horizontally.
+7. On the data-source row choose Target via DataSet and click Follow reference.
+   On the dataset choose Target via Connection to inspect the captured connection.
+8. To inspect a field directly, return to the bound control and select Target via
+   DataField, then Follow reference. The persistent field shows its serialized
+   FieldName and optional kind, required/read-only, size and precision metadata.
+9. Use Used by references to return from a field to its control. The kind selector
+   has persistent field and binding control target choices. Text search matches
+   captured names, field metadata and references. Clear it to restore all rows.
+10. FMX TLinkControlToField uses Target via DataSource, FieldName and Control.
+    Follow DataSource to TBindSourceDB, then DataSet. FieldName opens a uniquely
+    captured persistent field; Control opens the serialized visual target.
+11. Duplicate fields, missing targets and runtime-created fields remain unresolved
+    and have no navigable field target. Read the qualification rather than treating
+    an empty result as proof that the application has no database fields.
+
+CONTROLLED PRACTICE AND DEVELOPER TESTS
+1. Open Windows Start, type cmd, right-click Command Prompt and select
+   Run as administrator. RAD Studio needs access to its environment settings.
+2. Enter exactly:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-dataset-bindings.cmd
+4. Expected: Dataset bindings validation passed: 92 checks. Exit code must be 0.
+   The suite uses the fixed ignored bin\dataset-bindings-validation folder and
+   controlled text/binary DFM and FMX files. No SQL or target application runs.
+5. Run shared regressions:
+   tools\build-database-connections.cmd
+   tools\build-database-engines.cmd
+   Expected: 66 checks pass in each suite.
+6. Build the actual app and verify its serialized controls:
+   tools\build-wp0.cmd
+   Expected: PASS WP0-TEST: FMX resource instantiation and component binding.
+7. Logs and evidence for this batch are under docs\phase1-dataset-bindings-*.
+
+LIMITS
+Captured references are lexical candidates, not runtime binding proof. A persistent
+field can be calculated or a lookup; it is not automatically a physical SQL column.
+General FMX binding expressions, runtime assignments, factories, inherited defaults
+not present in the captured resource and dynamic fields remain unknown. No target
+class, driver, SQL or server is opened. Original source files remain read only.

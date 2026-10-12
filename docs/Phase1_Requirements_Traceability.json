@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Data dictionaries and business meanings 05.09 implemented with attributed definitions and exact captured source links; 327 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Dataset components and bindings 05.11 implemented with captured field/control chains; 326 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2139,13 +2139,27 @@
       "id": "05.11",
       "domain": "DPH-05",
       "requirement": "Dataset components and bindings",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatasetBindings.dpr",
+        "tools/build-dataset-bindings.cmd",
+        "docs/phase1-dataset-bindings-validation.json",
+        "docs/phase1-dataset-bindings-validation.log",
+        "docs/guides/Dataset_Bindings_Run_and_Test.txt"
       ],
-      "limitation": "Resolve dataset/connection/datasource/control bindings and persistent fields.",
+      "limitation": "Captured serialized lexical candidates only. Dynamic fields, runtime assignments, general LiveBindings expressions, custom field classes and uncaptured inherited values remain unknown. A persistent field name does not establish a live database column. Duplicate or incomplete reference chains receive no invented target. No target application, SQL, driver or database server executes. Existing 10000-row bound applies.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database connections inventory resolves captured dataset/connection/data-source/control references, persistent TField ownership and dataset-scoped field names. VCL DataSource/DataField and FMX TLinkControlToField DataSource/FieldName/Control chains retain exact property evidence, unique targets and reverse links. TBindSourceDB and referenced visual controls are included. Persistent field metadata and binding explanations appear first. IDE-editable kind filters and existing Follow reference navigate exact IDs across pages; ambiguous, missing and incomplete chains remain explicit.",
+        "remaining_work": "",
+        "purpose": "Dataset components and bindings",
+        "evidence_group": "sql",
+        "verification": "92 focused checks and 132 regressions pass (66 connection and 66 engine). Actual application build and FMX resource baseline pass. Real text/binary DFM and FMX fixtures cover ownership, source/field chains, reverse links, duplicates, missing/nil sources, lookup datasets, property provenance, filtering, navigation, compact layouts, persistence/reopening and unchanged source/catalog. All 59 final guide pages individually visually reviewed; 58 source hashes and 100 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Serialized dataset-like components and SQL receiver declarations are present.",
@@ -2153,6 +2167,12 @@
         "purpose": "Dataset components and bindings",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Dataset components and bindings",
+        "validation": "docs/phase1-dataset-bindings-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12677,23 +12697,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Data dictionaries and business meanings",
+    "completed_batch": "Dataset components and bindings",
     "completed_requirement_ids": [
-      "05.09"
+      "05.11"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 231,
-      "implemented": 188,
+      "partial": 230,
+      "implemented": 189,
       "missing": 96
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 327,
-    "completion_record": "docs/Phase1_Database_Dictionary_Completion.txt",
+    "incomplete_requirement_records": 326,
+    "completion_record": "docs/Phase1_Dataset_Bindings_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.11",
-      "title": "Dataset components and bindings",
-      "scope": "Resolve dataset/connection/datasource/control bindings and persistent fields."
+      "requirement": "05.12",
+      "title": "Read, insert, update, and delete operations",
+      "scope": "Expand operation records and dataset API recognition beyond the supported single-table SQL subset."
     }
   }
 }

@@ -1,0 +1,29 @@
+DPH REQUIREMENT 05.11 COMPLETION - DATASET COMPONENTS AND BINDINGS
+Last changed: 12 October 2026
+
+Captured dataset/connection/data-source/control chains and persistent field
+ownership are implemented in the existing Database connections inventory.
+VCL DataField and FMX FieldName resolve through unique captured dataset chains.
+FMX Control references expose their actual visual target. Persistent TField
+metadata, property line/byte evidence, lookup datasets and reverse references
+remain inspectable. Duplicate, incomplete, missing and nil chains stay explicit.
+Binding details appear first; IDE-editable kind choices and Follow reference
+provide exact navigation across 250-row pages. No runtime controls/helper units
+or storage migrations were introduced.
+
+Validation: PASS 92 focused + 66 connection + 66 engine = 224 checks.
+Actual application build and FMX resource baseline PASS. Normal and compact
+native PaintTo renders reviewed. These depict running DPH controls, not target
+application screenshots. All 59 final manual pages individually reviewed.
+58 source hashes and 100 TOC destinations verified; no blank guide pages.
+Directions: docs/guides/Dataset_Bindings_Run_and_Test.txt.
+
+Pre-change backup: H:\DPH Backups\DatasetBindings_PreChange_20261012_143022
+5174 files, 1790230671 bytes; every SHA256 verified. No post-change backup.
+
+Captured serialized lexical candidates only. Dynamic fields, runtime assignments, general LiveBindings expressions, custom field classes and uncaptured inherited values remain unknown. A persistent field name does not establish a live database column. Duplicate or incomplete reference chains receive no invented target. No target application, SQL, driver or database server executes. Existing 10000-row bound applies.
+
+Only 05.11 promoted. All 533 original requirement IDs and texts preserved.
+189 implemented; 18 implemented_manual_capture; 230 partial; 96 missing.
+326 incomplete; zero unassessed. The entire product is not complete.
+Next: 05.12 Read, insert, update, and delete operations.

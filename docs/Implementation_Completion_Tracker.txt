@@ -86,7 +86,11 @@ captured source links, immutable Knowledge history, independent review, search
 and source-scoped publication. Native controls remain IDE-editable.
 79 focused and 607 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Dictionary_Completion.txt.
-Current live backlog: 327 incomplete requirement records; 0 unassessed.
+Dataset components and bindings completed (05.11): captured dataset/source/control
+chains, persistent fields, FMX bindings, reverse references and exact navigation.
+92 focused and 132 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Dataset_Bindings_Completion.txt.
+Current live backlog: 326 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

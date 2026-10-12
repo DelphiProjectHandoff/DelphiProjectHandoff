@@ -1460,7 +1460,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select a row for database engine, version declarations and masked evidence. Filter by engine name or component. Scroll commands sideways to follow references. No target database is opened.'
+Text = 'Select a dataset, data source, bound control or persistent field. Follow reference traces captured screen-data links in either direction. Filter by field or component name. Scroll commands sideways. No target database is opened.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1482,7 +1482,10 @@ Items.Strings = (
 'transaction'
 'session'
 'connection definition'
-'database candidate')
+'database candidate'
+'bound control'
+'persistent field'
+'binding control target')
 ItemIndex = 0
 end
 object DatabaseInventoryFilter: TEdit

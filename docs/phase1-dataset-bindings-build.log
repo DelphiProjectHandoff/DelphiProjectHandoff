@@ -1,0 +1,15 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Workspace.Worker.pas(292): Hint warning H2077: Value assigned to 'Cached' never used [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Workspace.Worker.pas(292): Hint warning H2077: Value assigned to 'Document' never used [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(84): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\DelphiProjectHandoff.dproj]
+  16882 lines, 1.53 seconds, 10507736 bytes code, 348680 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+16866 lines, 1.48 seconds, 10507852 bytes code, 348676 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding

@@ -1,0 +1,80 @@
+{
+  "result": "PASS",
+  "requirement": "05.11",
+  "status": "implemented",
+  "checks": 92,
+  "regression_checks": 132,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.11",
+  "incomplete_requirement_records": 326,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 230,
+    "implemented": 189,
+    "missing": 96
+  },
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 31,
+        "toc_entries": 54,
+        "new_chapter_pages": [
+          2,
+          21
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 28,
+        "toc_entries": 46,
+        "new_chapter_pages": [
+          2,
+          25
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 59 final pages reviewed individually; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DatasetBindings_PreChange_20261012_143022",
+    "files": 5174,
+    "bytes": 1790230671,
+    "sha256_verified": true
+  },
+  "qualification": "Captured serialized lexical candidates only. Dynamic fields, runtime assignments, general LiveBindings expressions, custom field classes and uncaptured inherited values remain unknown. A persistent field name does not establish a live database column. Duplicate or incomplete reference chains receive no invented target. No target application, SQL, driver or database server executes. Existing 10000-row bound applies.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseConnections.pas": "fa7a808b18614e2389536d5d4053656aba6fee2096f29abbf8868c56d4798866",
+    "DPH.UI.Main.fmx": "3377a20f2e305a2e667438205d1698c4df79bdab35edb70649e0cae7f4db340c",
+    "tests/DPH.Tests.DatasetBindings.dpr": "7b0b8dc152537190327e614594f1b5be45064f20f3f3e64ae733f4025b2e6236",
+    "tools/build-dataset-bindings.cmd": "8033fc88202bebcf98a701ec4b4a266c410358aff77b7e6a96b88d84b595d2d6",
+    "docs/phase1-dataset-bindings-validation.json": "7f0dccfaa38f7415a49623292722f627011c6a98c0038ce9fb3746432822de17",
+    "docs/phase1-dataset-bindings-validation.log": "b3caee17c3992ea5578d172cc1958c4b3470427624712d4e883aa68aa3d9a409",
+    "docs/guides/Dataset_Bindings_Run_and_Test.txt": "ebd227a93d091c8f70c5ef6daa79d3d04f318fbbcd7fdf97742316d613064467",
+    "docs/phase1-dataset-bindings-connections-regression.json": "3e142e32078b98a31883ee1c352225aa1b02c64ef78b658fa4f9cefd737a6c2a",
+    "docs/phase1-dataset-bindings-connections-regression.log": "0995380b0ab58bd0f4fd197391610d665cb628322639386b8b5997dea8b80554",
+    "docs/phase1-dataset-bindings-engines-regression.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-dataset-bindings-engines-regression.log": "f00b9345e281ae5b0595fbbe1d8d423f95a2cefdc3b2e66344127853612c838d",
+    "tools/build-guides.py": "acd14124525d976eebe2c0422c10eaad8caa7419b537ca2e5e4a04f273bdf351",
+    "README.md": "926a249a0b54b91f166692d8be53f9d1ad3da962e097de675c77cc92b7b3861f",
+    "help/index.html": "e00b3fbd0d1099c14d696f43f2f0f5de3dd2b3778964a2e4eebedac4e410fe1e",
+    "docs/guide-source-validation.json": "de133d037731e5dd862839f1951b5bfca85610ac29eb8fbe35bb3a050659d02e",
+    "docs/guides/DPH_User_Guide.docx": "81b42d7aa2328a7986d8ca833404ea0befd4540c6fea67af7a29b3617efaddc6",
+    "docs/guides/DPH_Engineering_Guide.docx": "8de9c6553c367c13c174dca606e41f2387edc02aee54e728a2647b09a4539e81",
+    "docs/pdf/DPH_User_Guide.pdf": "b3325b7d3cbe4b861621b74241f3c7db3c2fea13f765206d26a0f4727f30b598",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "d0a2265b1769cb691f4abccbc6249d22f7a1c14491b145deec870c1f6df45be7",
+    "docs/phase1-dataset-bindings-build.log": "1150eb645568a0f869af71e5d4d215d602370b1fcb5d929e24ae41b6d64670e6",
+    "docs/Phase1_Dataset_Bindings_Completion.txt": "4c40ea46f8caf27446b8832fef07e612cabaa1329c37ef6936dfe99edb23f72c",
+    "docs/Phase1_Requirements_Traceability.json": "66fdf8353eb715d1bb271096f6a8dc38efcfd8a5daa147a8a717c25f4cba8516",
+    "docs/Phase1_Implementation_Backlog.csv": "0a3adcf69cabd9e33af35ab2e370d0875404f5fd1124714b7640061553048de3",
+    "docs/Implementation_Completion_Tracker.txt": "cb67a9566e5ec31917413095e249a8dc9a4b651410789567154d7a5c181e16af",
+    "docs/phase1-dataset-bindings-workspace.png": "94edfb097c45bbfd5a6bf245576b7f1dc7583e2ab398c402afeee9ab0cb45daa",
+    "docs/phase1-dataset-bindings-compact.png": "c16bc289c47f06cfcb98ccdf387db7c64ece9d8104a01d6b6536ffbb05ada5f5"
+  }
+}
