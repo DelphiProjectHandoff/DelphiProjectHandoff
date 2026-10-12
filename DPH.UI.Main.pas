@@ -166,7 +166,7 @@ type
     DatabaseERToolbar:THorzScrollBox;
     DatabaseERFilter:TEdit;
     DatabaseERPageSize,DatabaseERZoom,DatabaseERRelations:TComboBox;
-    DatabaseERFirst,DatabaseERNext,DatabaseERAll,DatabaseERFocus,DatabaseEROpen,DatabaseSchemaER:TButton;
+    DatabaseERFirst,DatabaseERNext,DatabaseERAll,DatabaseERFocus,DatabaseEROpen,DatabaseSchemaER,DatabaseDictionaryEdit,DatabaseDictionaryKnowledge:TButton;
     DatabaseERScroll:TScrollBox;
     DatabaseERPaint:TPaintBox;
     DatabaseERMemo:TMemo;
@@ -374,6 +374,8 @@ type
     procedure DatabaseERResize(Sender:TObject);
     procedure DatabaseERPaintPaint(Sender:TObject;Canvas:TCanvas);
     procedure DatabaseERMouseDown(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
+    procedure DatabaseDictionaryEditClick(Sender:TObject);
+    procedure DatabaseDictionaryKnowledgeClick(Sender:TObject);
     procedure DatabaseSchemaFilterChange(Sender:TObject);
     procedure DatabaseSchemaSelectionChange(Sender:TObject);
     procedure DatabaseSchemaSourceClick(Sender:TObject);
@@ -551,7 +553,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -1360,6 +1362,44 @@ begin
  finally Editor.Free;Initial.Free;end;
 end;
 
+procedure TDPHMainForm.DatabaseDictionaryEditClick(Sender:TObject);
+var Editor:TDPHDatabaseDictionaryForm;Row,ComponentRow,RecordValue,Initial:TJSONObject;Links:TJSONArray;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ if (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
+ ComponentRow:=FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex];if not DatabaseDictionaryEdit.Enabled then Exit;Row:=TDPHDatabaseSchema.FindDictionary(FKnowledge,ComponentRow);
+ if Row<>nil then Initial:=TJSONObject.ParseJSONValue(Row.GetValue<string>('structured_json')) as TJSONObject
+ else Initial:=TDPHDatabaseSchema.NewDictionary(ComponentRow);
+ Editor:=TDPHDatabaseDictionaryForm.Create(nil);
+ try
+  Editor.LoadRecord(Initial,KnowledgeAuthorEdit.Text);if Editor.ShowModal<>mrOk then Exit;
+  RecordValue:=Editor.RecordJSON;
+  try
+   FBinding:=True;
+   try
+    FKnowledgeID:=0;FKnowledgeRevision:=0;if Row<>nil then begin FKnowledgeID:=StrToInt64(Row.GetValue<string>('id'));FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision'));end;
+    KnowledgeTitleEdit.Text:=TDPHDatabaseSchema.DictionaryTitle(RecordValue);KnowledgeAuthorEdit.Text:=Editor.ProfileAuthorEdit.Text;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('overview');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
+    KnowledgeBodyMemo.Text:=TDPHDatabaseSchema.DictionaryBody(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:='';FreeAndNil(FEditableLinks);
+    if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Data dictionary draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit fields using Database schema > Edit dictionary. Captured source, SHA256, statement line and schema identity stay read only. Use Knowledge links for additional evidence. Saving does not verify business meanings.';
+   finally FBinding:=False;end;
+   WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Dictionary draft prepared. Click Save to persist; review requires a named reviewer.';
+  finally RecordValue.Free;end;
+ finally Editor.Free;Initial.Free;end;
+end;
+
+procedure TDPHMainForm.DatabaseDictionaryKnowledgeClick(Sender:TObject);
+var Row:TJSONObject;I:Integer;
+begin
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ if (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
+ Row:=TDPHDatabaseSchema.FindDictionary(FKnowledge,FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex],True);if Row=nil then Exit;
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=Row.GetValue<string>('id') then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;Exit;end;
+end;
 procedure TDPHMainForm.LayoutFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
 begin
@@ -2128,7 +2168,7 @@ begin
  DatabaseERMemo.Lines.Add('Evidence target is no longer in this captured schema. Rebuild the diagram.');
 end;
 procedure TDPHMainForm.DatabaseSchemaFilterChange(Sender:TObject);
-var V:TJSONValue;Row:TJSONObject;Count:Integer;Parameters:TJSONArray;ParameterText:string;
+var V:TJSONValue;Row,SavedDictionary:TJSONObject;Count:Integer;Parameters:TJSONArray;ParameterText:string;
 begin
  if FDatabaseSchemaRows=nil then Exit;
  if Sender=DatabaseSchemaNext then Inc(FDatabaseSchemaOffset,250) else FDatabaseSchemaOffset:=0;
@@ -2138,7 +2178,7 @@ begin
  for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (DatabaseSchemaKind.ItemIndex>0) and (Row.GetValue<string>('kind')<>DatabaseSchemaKind.Selected.Text) then Continue;
   if (DatabaseSchemaState.ItemIndex>0) and (Row.GetValue<string>('status')<>DatabaseSchemaState.Selected.Text) then Continue;
-  ParameterText:='';if Row.TryGetValue<TJSONArray>('parameters',Parameters) then ParameterText:=Parameters.ToJSON;
+  ParameterText:='';if Row.TryGetValue<TJSONArray>('parameters',Parameters) then ParameterText:=Parameters.ToJSON;SavedDictionary:=TDPHDatabaseSchema.FindDictionary(FKnowledge,Row);if SavedDictionary<>nil then ParameterText:=ParameterText+' '+SavedDictionary.GetValue<string>('body');
   if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints','')+' '+Row.GetValue<string>('key_kind','')+' '+Row.GetValue<string>('reference_table','')+' '+Row.GetValue<string>('relationship_status','')+' '+Row.GetValue<string>('table','')+' '+Row.GetValue<string>('method','')+' '+Row.GetValue<string>('predicate','')+' '+Row.GetValue<string>('storage_kind','')+' '+Row.GetValue<string>('storage_options','')+' '+Row.GetValue<string>('language','')+' '+Row.GetValue<string>('returns','')+' '+Row.GetValue<string>('trigger_table','')+' '+Row.GetValue<string>('events','')+' '+Row.GetValue<string>('body','')+' '+Row.GetValue<string>('timing','')+' '+Row.GetValue<string>('when','')+' '+ParameterText,DatabaseSchemaFilter.Text.Trim) then Continue;
   if (Count>=FDatabaseSchemaOffset) and (FDatabaseSchemaRows.Count<250) then begin FDatabaseSchemaRows.Add(Row);DatabaseSchemaList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('status')+' | '+Row.GetValue<string>('source')+':'+Row.GetValue<TJSONObject>('range').GetValue('line').Value);end;Inc(Count);
  end;
@@ -2148,12 +2188,22 @@ begin
  else DatabaseSchemaMemo.Text:=FDatabaseSchema.GetValue<string>('qualification')+sLineBreak+sLineBreak+'No matching captured evidence. Clear filters or attach approved SQL scripts referenced by the project and reassess. Empty results do not prove the application has no schema.';
 end;
 procedure TDPHMainForm.DatabaseSchemaSelectionChange(Sender:TObject);
-var Link:TJSONValue;ID:string;
+var Link:TJSONValue;ID,SchemaText:string;SavedDictionary:TJSONObject;
 begin
  if FDatabaseSchemaTargets=nil then Exit;FDatabaseSchemaTargets.Clear;DatabaseSchemaLinks.Items.Clear;DatabaseSchemaFollow.Enabled:=False;
+ DatabaseDictionaryEdit.Enabled:=False;DatabaseDictionaryKnowledge.Enabled:=False;
  DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a schema object or unsupported statement to read its captured evidence and next investigation.';
  if (FDatabaseSchemaRows=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
  DatabaseSchemaMemo.Text:=TDPHDatabaseSchema.Describe(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex])+sLineBreak+sLineBreak+FDatabaseSchema.GetValue<string>('qualification');
+ DatabaseDictionaryEdit.Enabled:=MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['table','column']) and MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('status'),['declared header','declared column']);
+ if DatabaseDictionaryEdit.Enabled then begin
+  SchemaText:=DatabaseSchemaMemo.Text;SavedDictionary:=TDPHDatabaseSchema.FindDictionary(FKnowledge,FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex]);
+  if SavedDictionary<>nil then DatabaseSchemaMemo.Text:=SavedDictionary.GetValue<string>('body')+sLineBreak+'Review state: '+SavedDictionary.GetValue<string>('state')+' | Open dictionary history for contributor, revisions and review.'
+  else DatabaseSchemaMemo.Text:='BUSINESS DICTIONARY'+sLineBreak+'Business meaning not recorded for these captured bytes. Click Edit dictionary. Do not infer purpose or sensitivity from SQL names.';
+  DatabaseDictionaryKnowledge.Enabled:=TDPHDatabaseSchema.FindDictionary(FKnowledge,FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex],True)<>nil;
+  if DatabaseDictionaryKnowledge.Enabled and (SavedDictionary=nil) then DatabaseSchemaMemo.Lines.Add('Historical dictionary exists for this source/record/name with different captured bytes. Open dictionary history; it is not transferred or verified against this capture.');
+  DatabaseSchemaMemo.Lines.Add(sLineBreak+'CAPTURED SCHEMA EVIDENCE'+sLineBreak+SchemaText);
+ end;
  DatabaseSchemaSource.Enabled:=True;
  if MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['key','index','procedure','function','trigger']) then
   for Link in FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<TJSONArray>('links') do
@@ -2659,7 +2709,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

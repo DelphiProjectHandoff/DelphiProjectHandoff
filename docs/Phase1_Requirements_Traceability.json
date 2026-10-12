@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Entity-relationship diagrams 05.08 implemented from captured table/key evidence with explicit incomplete-schema qualification; 328 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Data dictionaries and business meanings 05.09 implemented with attributed definitions and exact captured source links; 327 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2073,15 +2073,33 @@
       "id": "05.09",
       "domain": "DPH-05",
       "requirement": "Data dictionaries and business meanings",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
+        "DPH.Workspace.DatabaseSchema.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.Publish.Model.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "DPH.UI.DatabaseDictionary.pas",
+        "DPH.UI.DatabaseDictionary.fmx",
+        "DelphiProjectHandoff.dproj",
+        "tests/DPH.Tests.DatabaseDictionary.dpr",
+        "tools/build-database-dictionary.cmd",
+        "docs/phase1-database-dictionary-validation.json",
+        "docs/phase1-database-dictionary-validation.log",
+        "docs/guides/Database_Dictionary_Run_and_Test.txt"
       ],
-      "limitation": "Add table/column business definitions, ownership, sensitivity and source/schema links.",
+      "limitation": "Business definitions, ownership, sensitivity, evidence and usage are attributed human claims with independent review state. Exact captured table/column identity, source SHA256, generation and statement line do not establish live deployment or business truth. Changed source bytes never automatically inherit a definition; historical and unmatched records remain available in Knowledge. Sensitivity text is descriptive, not access control. Fourteen text fields are limited to 4096 characters each and 64 KiB per record. No target SQL, program or database server executes.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native IDE-editable table/column dictionary editor captures business definition, owner/steward, sensitivity/handling, evidence/unknowns and optional units/usage. Read-only identity preserves exact captured schema ID, file, SHA256, generation, kind, name, owning table and statement line. Apply prepares a protected Knowledge draft; explicit Save persists attributed immutable history and independent review. Storage validates new anchors against persisted captured schema, rejects forged/duplicate anchors and prevents identity changes or loss of structured fields. Schema details show business meaning first; filtering searches current saved definitions. Exact current and qualified historical lookup, history navigation and source-scoped hash-matching publication are implemented.",
+        "remaining_work": "",
+        "purpose": "Data dictionaries and business meanings",
+        "evidence_group": "knowledge",
+        "verification": "79 focused checks and 607 regression checks pass (436 ER, 114 publishing, 57 glossary). Actual application build and FMX baseline pass. Checks cover persisted source anchors, field types/bounds, forged/duplicate anchors, immutable identity/history, stale edits/review, attribution, reopening, publication exclusions/hash mismatches, native modal Apply-to-draft, search/history and compact layouts. Both guides rendered and all 57 pages visually reviewed; 58 source hashes and 98 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "General authored notes exist; there is no structured selected-database data dictionary.",
@@ -2089,6 +2107,12 @@
         "purpose": "Data dictionaries and business meanings",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Data dictionaries and business meanings",
+        "validation": "docs/phase1-database-dictionary-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12653,23 +12677,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Entity relationship diagrams",
+    "completed_batch": "Data dictionaries and business meanings",
     "completed_requirement_ids": [
-      "05.08"
+      "05.09"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 231,
-      "implemented": 187,
-      "missing": 97
+      "implemented": 188,
+      "missing": 96
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 328,
-    "completion_record": "docs/Phase1_Database_ER_Completion.txt",
+    "incomplete_requirement_records": 327,
+    "completion_record": "docs/Phase1_Database_Dictionary_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.09",
-      "title": "Data dictionaries and business meanings",
-      "scope": "Add table/column business definitions, ownership, sensitivity and source/schema links."
+      "requirement": "05.11",
+      "title": "Dataset components and bindings",
+      "scope": "Resolve dataset/connection/datasource/control bindings and persistent fields."
     }
   }
 }

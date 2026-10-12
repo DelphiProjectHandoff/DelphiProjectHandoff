@@ -1,0 +1,90 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseDictionary.dpr(97) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseDictionary.dpr(97) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseDictionary.dpr(97) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+16911 lines, 1.59 seconds, 10522312 bytes code, 348868 bytes data.
+PASS 1: Actual project SQL capture provides exact table and column targets
+PASS 2: Dictionary pins the exact captured bytes and column declaration
+PASS 3: Dictionary retains owning table and original generation
+PASS 4: Blank business definition owner sensitivity and evidence require explicit unknowns
+PASS 5: Business claims retain explicit unverified qualification
+PASS 6: Optional units and usage are described
+PASS 7: Required definition cannot be whitespace
+PASS 8: Required business_owner cannot be whitespace
+PASS 9: Required sensitivity cannot be whitespace
+PASS 10: Required evidence cannot be whitespace
+PASS 11: Forged anchor digest rejected
+PASS 12: Invalid SHA256 alphabet rejected
+PASS 13: Nonpositive generation rejected
+PASS 14: Nonpositive source_line rejected
+PASS 15: Inferred or unsupported object kind cannot become a dictionary target
+PASS 16: Unknown record metadata rejected
+PASS 17: Unknown field rejected
+PASS 18: Missing structured field rejected
+PASS 19: Nontext definition rejected
+PASS 20: Oversized field rejected
+PASS 21: Anonymous contributor rejected
+PASS 22: New target name must match the actual persisted capture
+PASS 23: New source line must match the actual persisted capture
+PASS 24: Saved business dictionary starts pending named review
+PASS 25: Named business contributor persists
+PASS 26: Duplicate dictionary anchor rejected
+PASS 27: Conflicting plain body cannot bypass structured definition
+PASS 28: Structured fields cannot be discarded
+PASS 29: Definition edit reopens human review
+PASS 30: Original contributor and revision editor remain distinct
+PASS 31: Authored and review history retained
+PASS 32: Stale revision cannot be reviewed
+PASS 33: Existing captured name identity cannot change
+PASS 34: Original capture generation cannot change
+PASS 35: Table dictionary is separate from its column dictionary
+PASS 36: Exact captured column retrieves its dictionary
+PASS 37: Changed source bytes do not inherit old definition
+PASS 38: Old definition remains explicitly historical
+PASS 39: Generic handoff publication includes attributed table and column definitions
+PASS 40: Excluded SQL source excludes its dictionary definitions
+PASS 41: Handoff omits a dictionary whose captured source bytes differ
+PASS 42: Captured dictionary_id is IDE-serialized read only
+PASS 43: Captured schema_id is IDE-serialized read only
+PASS 44: Captured source is IDE-serialized read only
+PASS 45: Captured source_hash is IDE-serialized read only
+PASS 46: Captured generation is IDE-serialized read only
+PASS 47: Captured kind is IDE-serialized read only
+PASS 48: Captured name is IDE-serialized read only
+PASS 49: Captured table is IDE-serialized read only
+PASS 50: Captured source_line is IDE-serialized read only
+PASS 51: Business fields are editable
+PASS 52: Serialized editor round trips dictionary_id
+PASS 53: Serialized editor round trips schema_id
+PASS 54: Serialized editor round trips source
+PASS 55: Serialized editor round trips source_hash
+PASS 56: Serialized editor round trips generation
+PASS 57: Serialized editor round trips kind
+PASS 58: Serialized editor round trips name
+PASS 59: Serialized editor round trips table
+PASS 60: Serialized editor round trips source_line
+PASS 61: Serialized editor round trips definition
+PASS 62: Serialized editor round trips business_owner
+PASS 63: Serialized editor round trips sensitivity
+PASS 64: Serialized editor round trips evidence
+PASS 65: Serialized editor round trips usage
+PASS 66: Editor refuses anonymous Apply
+PASS 67: Editor accepts validated attributed dictionary
+PASS 68: Captured column exposes edit and dictionary-history commands
+PASS 69: Schema details display attributed business meaning
+PASS 70: Schema search finds business definitions
+PASS 71: Native edit and Apply create the attributed Knowledge draft
+PASS 72: Native draft explicitly requires Save before persistence
+PASS 73: Applying editor does not silently save or verify
+PASS 74: Open dictionary history uses protected structured Knowledge view
+PASS 75: Dictionary history and review are visible
+PASS 76: Inferred SQL reference does not enable dictionary creation
+PASS 77: Dictionary editing leaves captured workspace immutable
+PASS 78: Dictionary editing leaves target SQL unchanged
+PASS 79: Dictionary survives SQLite reopen
+Database dictionary validation passed: 79 checks.

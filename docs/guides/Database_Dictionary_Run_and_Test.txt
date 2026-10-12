@@ -1,0 +1,90 @@
+DATABASE DICTIONARY RUN AND TEST DIRECTIONS
+Last changed: 12 October 2026
+Requirement 05.09 Data dictionaries and business meanings
+
+RUN THE REBUILT APPLICATION
+1. Save any Knowledge draft in the running DPH application. Close DPH.
+2. In File Explorer, open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+3. Double-click DelphiProjectHandoff.exe. Maximize its window.
+4. Choose the intended Debug/Release and Win32/Win64 analysis settings.
+5. Click Attach project and select your intended Delphi project, or click Open
+   cache and select its existing .dphdb. Wait for the capture to finish loading.
+   DPH's own project is not a valid target.
+6. In the upper-right page selector, choose Database schema.
+7. Select a row whose kind is table or column and whose state is declared header
+   or declared column. A table/column must come from captured supported SQL.
+   Inferred names alone cannot receive invented dictionary identities.
+   If there are no such rows, clear the schema filters. If still empty, review
+   Coverage for uncaptured SQL resources and the schema gaps. An empty result
+   does not prove the application has no database. Do not alter target SQL merely
+   to make a definition appear.
+
+CREATE OR EDIT A DEFINITION
+1. Read the selected row's Business dictionary and schema evidence area.
+2. Scroll the narrow command strip below the blue purpose text horizontally all
+   the way to the right. Click Edit dictionary.
+3. Enter a Named contributor. Then fill in these four required business fields:
+   - Business definition: what this particular table or column means.
+   - Business owner or steward: who can explain and approve its use.
+   - Sensitivity and handling: the handling classification and its basis.
+   - Evidence and remaining unknowns: references supporting the claims and gaps.
+   If a fact is unknown, explicitly say Unknown and name the evidence/person
+   needed. Do not invent answers. Optional Units values and business usage may
+   describe currency, time zones, valid values or business processes.
+4. Scroll down to inspect the read-only source, SHA256, original capture
+   generation, exact schema record, object kind/name, owning table and statement
+   line. Separate captured declarations with identical names remain separate.
+5. Click Apply to Knowledge draft. The editor closes and Knowledge opens.
+6. Read the draft and click Save in Knowledge. Apply alone does not save it.
+   Use Discard edit if you want to abandon the draft.
+7. For later changes, return to Database schema, select the same row, and click
+   Edit dictionary again. Structured title/body editing in Knowledge is disabled
+   to prevent contradictions with its actual fields.
+
+REVIEW, SEARCH AND SOURCE
+1. On Database schema, scroll the command strip right and click Open dictionary
+   history. Knowledge shows the contributor, editor, state and immutable history.
+2. Enter a named reviewer and click Verify review, Reject or Retire as appropriate.
+   Editing a definition creates another revision requiring fresh review.
+3. Use Knowledge links for additional exact captured evidence. On Database schema,
+   scroll commands left to Open source for the selected source location. Live
+   source navigation requires attached source whose captured hash still matches.
+4. The Database schema filter searches saved current definitions, owners,
+   sensitivity, usage and technical names. Clear it to show the inventory again.
+5. After SQL source bytes change, the old definition is not copied onto the new
+   capture. A matching old source/record/name is labeled historical and remains
+   accessible through Open dictionary history. Other old records remain in
+   Knowledge. Author and review a definition for the newly captured declaration.
+6. Publication includes matching dictionary Knowledge sections and structured
+   records. Excluded SQL sources or mismatched source hashes omit their dictionary.
+   Review descriptions before sharing. Sensitivity text does not enforce access.
+
+DEVELOPER VALIDATION
+1. Open the Windows Start menu, type Command Prompt, right-click Command Prompt,
+   and choose Run as administrator.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-database-dictionary.cmd
+   Expected: Database dictionary validation passed: 79 checks.
+4. Run regressions, one command at a time:
+   tools\build-database-er.cmd
+   Expected: 436 checks passed.
+   tools\build-wp6.cmd
+   Expected: PASS WP6: 114 checks.
+   tools\build-glossary.cmd
+   Expected: PASS business glossary: 57 checks.
+5. Build the real application and verify serialized FMX bindings:
+   tools\build-wp0.cmd
+   Expected: PASS WP0-TEST: FMX resource instantiation and component binding.
+6. The focused tests use only fixed ignored bin\database-dictionary-validation
+   practice data. They do not alter your selected application's source, execute
+   target SQL or launch its application. Validation logs/results and native
+   screenshots are preserved in docs under phase1-database-dictionary names.
+
+EXPECTED LIMITS
+Business definitions, ownership, sensitivity and usage are human-authored claims.
+Saving does not prove their truth. Unknowns remain explicit. Captured SQL links
+do not prove a complete or deployed schema. Source stays read only. No database
+server connection, target SQL execution or automatic business inference occurs.

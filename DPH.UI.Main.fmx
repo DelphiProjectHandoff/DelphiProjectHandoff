@@ -1570,7 +1570,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select a key, index or stored object for structure and evidence. Scroll commands sideways to Follow relationship. Missing targets remain gaps; source references do not prove execution. No SQL is executed.'
+Text = 'Select a table or column to read its business dictionary and schema evidence. Scroll commands sideways for Edit dictionary, history and relationship links. Business meanings require contributor review. No SQL runs.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1677,6 +1677,24 @@ Height = 28
 Text = 'View ER diagram'
 OnClick = DatabaseERFocusClick
 end
+object DatabaseDictionaryEdit: TButton
+Position.X = 1557
+Position.Y = 0
+Width = 150
+Height = 30
+Text = 'Edit dictionary'
+Enabled = False
+OnClick = DatabaseDictionaryEditClick
+end
+object DatabaseDictionaryKnowledge: TButton
+Position.X = 1717
+Position.Y = 0
+Width = 180
+Height = 30
+Text = 'Open dictionary history'
+Enabled = False
+OnClick = DatabaseDictionaryKnowledgeClick
+end
 end
 object DatabaseSchemaStatus: TLabel
 Align = Top
@@ -1702,7 +1720,7 @@ Align = Top
 Height = 26
 Margins.Left = 12
 Margins.Right = 12
-Text = 'Schema evidence and next investigation (scroll for details)'
+Text = 'Business dictionary and schema evidence (scroll for details)'
 end
 object DatabaseSchemaMemo: TMemo
 Align = Client

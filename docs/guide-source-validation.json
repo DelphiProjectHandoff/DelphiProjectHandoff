@@ -1,5 +1,5 @@
 {
-  "guide_version": 23,
+  "guide_version": 24,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -95,7 +95,7 @@
     },
     {
       "path": "DPH.Publish.Model.pas",
-      "sha256": "924538cea0f766a19094f0fd41ff4381094e905f1a2e7db9474e3b6437bad292"
+      "sha256": "532727b11c1245adceaab9e43a6f16d4bce573cf1f31c148978a78457462039f"
     },
     {
       "path": "DPH.Publish.Translation.pas",
@@ -107,7 +107,7 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "62acdcbefdae51057f277c072c7d820798295da4b99f79a0705df25028389118"
+      "sha256": "88dd64242abb30706a448fe064978c22d641b9541ce67a2e55e40bacc045b005"
     },
     {
       "path": "DPH.Storage.Types.pas",
@@ -122,12 +122,16 @@
       "sha256": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682"
     },
     {
+      "path": "DPH.UI.DatabaseDictionary.pas",
+      "sha256": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b"
+    },
+    {
       "path": "DPH.UI.Glossary.pas",
       "sha256": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741"
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "135fa48981d11a58f8ca0ea0db327f915eb11ad6d15e888f93ad3a258c5b86f3"
+      "sha256": "cc5b8ea9f5ef9bbb10a7eb55d17836d6a0b9511ddf269819f34a6ed28ec5c478"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -159,7 +163,7 @@
     },
     {
       "path": "DPH.Workspace.DatabaseSchema.pas",
-      "sha256": "3d973d0f7307a1c24bbd2d1895ccdbcadee8f1d015d1cb3a9f71d5a9a3b92f2b"
+      "sha256": "1ce7aecbca802acd814daf550d778378f4543ec7734fc4ff1ada7607fd458f04"
     },
     {
       "path": "DPH.Workspace.DynamicControls.pas",
@@ -199,7 +203,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "bb3dd3d492e5c81ff37c1e7613f3cf2feb63d3819b1e2bac9ffd667179746a97"
+      "sha256": "6cd643a2b380db20d59b250a0a02c0b4242e6ff8053ccbdb6db77f3970c42f1a"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",
@@ -218,12 +222,16 @@
       "sha256": "9eb57da0310277432db54c9a80d8d03be09aa6163acd8895f04fa21f176f8e15"
     },
     {
+      "path": "DPH.UI.DatabaseDictionary.fmx",
+      "sha256": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e"
+    },
+    {
       "path": "DelphiProjectHandoff.dpr",
       "sha256": "2b922d5561c2ab3e2b65590583f646e29fc12c8b5c36a08fe401a6ebed90d3f9"
     },
     {
       "path": "DelphiProjectHandoff.dproj",
-      "sha256": "ebdbe1b5d16a07dd0a0222afb55c09337917ea27826df9daa4fb9b99fffa0a79"
+      "sha256": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d"
     }
   ],
   "last_changed": "2026-10-12"

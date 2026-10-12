@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-8';
+const DPHPublishVersion = 'DPH-LEARNING-9';
 type
   TDPHDocumentModel = class
   private
@@ -174,6 +174,14 @@ begin
         if Path<>'' then begin Exclude:=True; for LinkFileValue in Files do if LinkFileValue.GetValue<string>('path')=Path then begin Exclude:=False; Break; end;
           if Exclude then IncludeRow:=False; end;
       end; end;
+      if IncludeRow then begin
+        QuestionMetadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject;
+        try if (QuestionMetadata<>nil) and (QuestionMetadata.GetValue<string>('record_type','')='data_dictionary') then begin
+          IncludeRow:=False;Path:=QuestionMetadata.GetValue<string>('fields.source','');
+          for LinkFileValue in Files do if (LinkFileValue.GetValue<string>('path')=Path) and
+            (LinkFileValue.GetValue<string>('sha256','')=QuestionMetadata.GetValue<string>('fields.source_hash','')) then begin IncludeRow:=True;Break;end;
+        end;finally QuestionMetadata.Free;end;
+      end;
       if (AAudience<>'all') and not MatchText(R.GetValue<string>('audience','engineer'),['all',AAudience]) then IncludeRow:=False;
       if IncludeRow and (R.GetValue<string>('question_json','')<>'') then begin
         QuestionMetadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('question_json')) as TJSONObject;

@@ -1,0 +1,91 @@
+{
+  "result": "PASS",
+  "requirement": "05.09",
+  "status": "implemented",
+  "checks": 79,
+  "regression_checks": 607,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.09",
+  "incomplete_requirement_records": 327,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 188,
+    "missing": 96
+  },
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 30,
+        "toc_entries": 53,
+        "new_chapter_pages": [
+          2,
+          20
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 27,
+        "toc_entries": 45,
+        "new_chapter_pages": [
+          2,
+          24
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 57 final pages reviewed individually; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseDictionary_PreChange_20261012_135552",
+    "files": 4486,
+    "bytes": 1746035298,
+    "sha256_verified": true
+  },
+  "qualification": "Business definitions, ownership, sensitivity, evidence and usage are attributed human claims with independent review state. Exact captured table/column identity, source SHA256, generation and statement line do not establish live deployment or business truth. Changed source bytes never automatically inherit a definition; historical and unmatched records remain available in Knowledge. Sensitivity text is descriptive, not access control. Fourteen text fields are limited to 4096 characters each and 64 KiB per record. No target SQL, program or database server executes.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "1ce7aecbca802acd814daf550d778378f4543ec7734fc4ff1ada7607fd458f04",
+    "DPH.Storage.Database.pas": "88dd64242abb30706a448fe064978c22d641b9541ce67a2e55e40bacc045b005",
+    "DPH.Publish.Model.pas": "532727b11c1245adceaab9e43a6f16d4bce573cf1f31c148978a78457462039f",
+    "DPH.UI.Main.pas": "cc5b8ea9f5ef9bbb10a7eb55d17836d6a0b9511ddf269819f34a6ed28ec5c478",
+    "DPH.UI.Main.fmx": "6cd643a2b380db20d59b250a0a02c0b4242e6ff8053ccbdb6db77f3970c42f1a",
+    "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
+    "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
+    "DelphiProjectHandoff.dproj": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d",
+    "tests/DPH.Tests.DatabaseDictionary.dpr": "4987ecfe3841da4d9c655361c5fdedb4e7f313f598d9a83067be2e94533b5d3a",
+    "tools/build-database-dictionary.cmd": "e0a5897aff7a0ed48799063f694a72fb57da55285178e14bad2690089234cd37",
+    "docs/phase1-database-dictionary-validation.json": "81a65af369db0fbc26efa7f9b82d6238d580655dc607eb6c91a87845598142ac",
+    "docs/phase1-database-dictionary-validation.log": "8d86082b3b5b2f6d8dd8cd6459f7bcf765c40b20fe416d104bf5b3b9305da489",
+    "docs/guides/Database_Dictionary_Run_and_Test.txt": "0f4e5ad6e6b81c30a2df3c7cdd9c0cfa9d9b5a0eb4b79a11676e265b5744150c",
+    "docs/phase1-database-dictionary-er-regression.json": "56c7223850b65824905665540239655abd03ce67a4d3c40ef97187a9d7bb2f26",
+    "docs/phase1-database-dictionary-er-regression.log": "7dc589d7d8a64c24a837f757bed90995338ce642254fd0f03dcdcf5bbff569f4",
+    "docs/phase1-database-dictionary-glossary-regression.json": "556b4cacf8c4546ea0412ce4eea7ba0b44e26ba652cde22aba2fb4f91751aa09",
+    "docs/phase1-database-dictionary-glossary-regression.log": "b98dcd03b6880c1dde26936515a1f42ddbbf41efdea878f9047daaed169d4690",
+    "docs/phase1-database-dictionary-publish-regression.json": "d51a3bc2d1cd666ea3f39c01a0422d7d5396db5bc7d23530f9d642cdcd2634f7",
+    "docs/phase1-database-dictionary-publish-regression.log": "184956bcb9d51c3446fc3043b22d8bdeb5eea61bf690413351646bd5473de5ca",
+    "tools/build-guides.py": "6ef0f35840ef6d2d6b31bdc2052635427c7cd9ffd4e2503c5e4af013c004ad7a",
+    "README.md": "ebb07c8af41fa69252cb769e344629d1fd25cda8fcbbda71a8d2c733b1d02bb9",
+    "help/index.html": "a00ac897bb38c2560af9828d152362716fe0f381e966eb97495bbf776c2cafd7",
+    "docs/guide-source-validation.json": "f5ec53414c33bbfec21eb5c2fa6a3f7e2980eb62b303c0b65991c9a37a87cdfa",
+    "docs/guides/DPH_User_Guide.docx": "fae9812eab6d08946d9c7059a5afafa73c25a8f943e8e5d4390068c69b40068b",
+    "docs/guides/DPH_Engineering_Guide.docx": "dc8bafa6023fd9dae5769354130b29ba11c5c7827572e86c069dad0876708db3",
+    "docs/pdf/DPH_User_Guide.pdf": "5036440da43d87456e2729f7a40b6a1d5f8a3bc289f60eb547cd319cc10764c0",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "0283cbf0d50ef9b56715d3ce3250402b8c13bc2fc8088049870096e1735a7034",
+    "docs/phase1-database-dictionary-build.log": "ad75f87134810b4711f6d120c4747e53dbe3ff9a491ac9a6b6e3cd87404ff360",
+    "docs/Phase1_Database_Dictionary_Completion.txt": "c393a01ef44b3357f2c3ff5335b1b984469569d7891df24c5e4f0a5da9767165",
+    "docs/Phase1_Requirements_Traceability.json": "f9a3e1692fe6b6f5b03458f7e32802e8ac39537346c585641adddfd365e289b1",
+    "docs/Phase1_Implementation_Backlog.csv": "035abf784803f10ae66a76dea377132fdf63fd93737f8c8210717c7d64b9d174",
+    "docs/Implementation_Completion_Tracker.txt": "37af9a48144040458a3992fe31e8ce71e1d26705c9f6bb7d4ff377cd265fdc65",
+    "docs/phase1-database-dictionary-workspace.png": "1fa48a1596ef4c91622a81fb5b6462864781d661d46e9286dfd1cd52ee4d1837",
+    "docs/phase1-database-dictionary-compact.png": "cddc924fdc5e1566f56b23c1c289272c3beaa2c561691db89f4bfbc09d2e0a65",
+    "docs/phase1-database-dictionary-editor.png": "d985e00a9c9979cc239498fa0358ecc21dad9cefc483da0401dede235e602ded",
+    "docs/phase1-database-dictionary-editor-compact.png": "ba2122fa3cdd5229b87c1e36aaeefa35312988cc36ae4fe136b0f3139fecaee6",
+    "docs/phase1-database-dictionary-fields.png": "24436caedd5f547313d05a4a0ffa9b67ecb8fa812804db15e7c7222b578b9dcf"
+  }
+}

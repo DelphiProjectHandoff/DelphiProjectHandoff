@@ -80,7 +80,13 @@ key cards and numbered FK arrows with exact evidence navigation, qualified gaps,
 one-hop focus, filtering, paging, zoom and serialized IDE-editable controls.
 436 focused and 536 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_ER_Completion.txt.
-Current live backlog: 328 incomplete requirement records; 0 unassessed.
+Data dictionaries and business meanings completed (05.09): attributed table/column
+business definitions, ownership, sensitivity, evidence and usage with exact
+captured source links, immutable Knowledge history, independent review, search
+and source-scoped publication. Native controls remain IDE-editable.
+79 focused and 607 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Dictionary_Completion.txt.
+Current live backlog: 327 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

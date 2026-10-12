@@ -36,6 +36,7 @@
         <DCCReference Include="DPH.Workspace.DatabaseSchema.pas"/>
         <DCCReference Include="DPH.Workspace.DatabaseConnections.pas" />
       <DCCReference Include="DPH.Knowledge.ActionPurpose.pas" />
+      <DCCReference Include="DPH.UI.DatabaseDictionary.pas"><Form>DPHDatabaseDictionaryForm</Form><FormType>fmx</FormType></DCCReference>
       <DCCReference Include="DPH.UI.ActionPurpose.pas"><Form>DPHActionPurposeForm</Form><FormType>fmx</FormType></DCCReference>
       <DCCReference Include="DPH.Knowledge.ComponentDependency.pas" />
       <DCCReference Include="DPH.UI.ComponentDependency.pas"><Form>DPHComponentDependencyForm</Form><FormType>fmx</FormType></DCCReference>

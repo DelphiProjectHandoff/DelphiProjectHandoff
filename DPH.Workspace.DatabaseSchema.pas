@@ -1,13 +1,85 @@
 unit DPH.Workspace.DatabaseSchema;
 interface
 uses System.JSON,DPH.Workspace.Model;
+const
+ DPHDictionaryKeys:array[0..13] of string=('dictionary_id','schema_id','source','source_hash','generation','kind','name','table','source_line','definition','business_owner','sensitivity','evidence','usage');
+ DPHDictionaryLabels:array[0..13] of string=('Exact dictionary identity','Captured schema record','Captured source','Source SHA256','Original capture generation','Object kind','Object name','Owning table','Statement source line','Business definition','Business owner or steward','Sensitivity and handling','Evidence and remaining unknowns','Units values and business usage');
 type TDPHDatabaseSchema=class
+ class function NewDictionary(ARow:TJSONObject):TJSONObject;static;
+ class procedure ValidateDictionary(ARecord:TJSONObject);static;
+ class function DictionaryBody(ARecord:TJSONObject):string;static;
+ class function DictionaryTitle(ARecord:TJSONObject):string;static;
+ class function FindDictionary(AKnowledge:TJSONArray;ARow:TJSONObject;AHistorical:Boolean=False):TJSONObject;static;
+ class function DictionaryIdentity(const ASource,AHash,AID:string):string;static;
  class function Inspect(AView:TDPHWorkspaceView):TJSONObject;static;
  class function Describe(ARow:TJSONObject):string;static;
  class function Diagram(AInventory:TJSONObject;const AFilter,AFocusID:string;AOffset,ALimit,AMaxColumns:Integer):TJSONObject;static;
 end;
 implementation
-uses System.SysUtils,System.StrUtils,System.Classes,System.Generics.Collections;
+uses System.SysUtils,System.StrUtils,System.Classes,System.Generics.Collections,System.Hash;
+class function TDPHDatabaseSchema.DictionaryIdentity(const ASource,AHash,AID:string):string;
+begin Result:='schema:'+THashSHA2.GetHashString(ASource+#0+AHash+#0+AID);end;
+class function TDPHDatabaseSchema.NewDictionary(ARow:TJSONObject):TJSONObject;
+var F:TJSONObject;K:string;
+begin
+ if (ARow=nil) or not MatchText(ARow.GetValue<string>('kind',''),['table','column']) or
+ not MatchText(ARow.GetValue<string>('status',''),['declared header','declared column']) then raise EArgumentException.Create('Select a captured table or column declaration');
+ Result:=TJSONObject.Create.AddPair('record_type','data_dictionary');F:=TJSONObject.Create;Result.AddPair('fields',F);
+ for K in DPHDictionaryKeys do F.AddPair(K,'');
+ for K in ['source','source_hash','kind','name','table'] do begin F.RemovePair(K).Free;F.AddPair(K,ARow.GetValue<string>(K,''));end;
+ F.RemovePair('schema_id').Free;F.AddPair('schema_id',ARow.GetValue<string>('id'));
+ F.RemovePair('generation').Free;F.AddPair('generation',ARow.GetValue('generation_id').Value);
+ F.RemovePair('source_line').Free;F.AddPair('source_line',ARow.GetValue<TJSONObject>('range').GetValue('line').Value);
+ F.RemovePair('dictionary_id').Free;F.AddPair('dictionary_id',DictionaryIdentity(F.GetValue<string>('source'),F.GetValue<string>('source_hash'),F.GetValue<string>('schema_id')));
+end;
+class procedure TDPHDatabaseSchema.ValidateDictionary(ARecord:TJSONObject);
+var F:TJSONObject;P:TJSONPair;K,H:string;Known:Boolean;N:Int64;FieldValue:TJSONString;
+begin
+ if (ARecord=nil) or (ARecord.GetValue<string>('record_type','')<>'data_dictionary') then raise EArgumentException.Create('Expected a data dictionary record');
+ if Length(ARecord.ToJSON)>65536 then raise EArgumentException.Create('Dictionary exceeds 64 KiB');
+ for P in ARecord do if not MatchText(P.JsonString.Value,['record_type','fields']) then raise EArgumentException.Create('Unknown dictionary metadata');
+ if not ARecord.TryGetValue<TJSONObject>('fields',F) then raise EArgumentException.Create('Dictionary requires fields');
+ if F.Count<>Length(DPHDictionaryKeys) then raise EArgumentException.Create('Dictionary requires all fields');
+ for K in DPHDictionaryKeys do if not F.TryGetValue<TJSONString>(K,FieldValue) then raise EArgumentException.Create('Dictionary requires every named text field');
+ for P in F do begin Known:=False;for K in DPHDictionaryKeys do if P.JsonString.Value=K then Known:=True;
+  if not Known or not (P.JsonValue is TJSONString) then raise EArgumentException.Create('Unknown dictionary field or non-text value');
+  if Length(P.JsonValue.Value)>4096 then raise EArgumentException.Create('Dictionary field exceeds 4096 characters');
+ end;
+ for K in ['dictionary_id','schema_id','source','source_hash','generation','kind','name','source_line','definition','business_owner','sensitivity','evidence'] do
+  if F.GetValue<string>(K,'').Trim='' then raise EArgumentException.Create('Enter '+K+'; explicitly state unknowns when needed');
+ if not MatchText(F.GetValue<string>('kind'),['table','column']) then raise EArgumentException.Create('Dictionary target must be a table or column');
+ H:=F.GetValue<string>('source_hash');if Length(H)<>64 then raise EArgumentException.Create('Invalid source SHA256');
+ for K in H do if not CharInSet(K[1],['0'..'9','a'..'f']) then raise EArgumentException.Create('Invalid source SHA256');
+ if not TryStrToInt64(F.GetValue<string>('generation'),N) or (N<1) then raise EArgumentException.Create('Invalid captured generation');
+ if not TryStrToInt64(F.GetValue<string>('source_line'),N) or (N<1) then raise EArgumentException.Create('Invalid statement line');
+ if (F.GetValue<string>('kind')='column') and (F.GetValue<string>('table').Trim='') then raise EArgumentException.Create('Column requires its captured owning table');
+ if F.GetValue<string>('dictionary_id')<>DictionaryIdentity(F.GetValue<string>('source'),H,F.GetValue<string>('schema_id')) then raise EArgumentException.Create('Dictionary identity must match its captured source and schema record');
+end;
+class function TDPHDatabaseSchema.DictionaryTitle(ARecord:TJSONObject):string;
+begin ValidateDictionary(ARecord);Result:='Data dictionary: '+ARecord.GetValue<string>('fields.dictionary_id');end;
+class function TDPHDatabaseSchema.DictionaryBody(ARecord:TJSONObject):string;
+var I,J:Integer;T:string;
+begin
+ ValidateDictionary(ARecord);Result:='DATA DICTIONARY'+sLineBreak+'Human-authored business meanings and handling claims. Saving does not verify them. Captured schema links identify source evidence, not a live database. Read the named review state.'+sLineBreak;
+ for J:=0 to High(DPHDictionaryKeys) do begin I:=(J+9) mod Length(DPHDictionaryKeys);T:=ARecord.GetValue<string>('fields.'+DPHDictionaryKeys[I],'');if T.Trim='' then T:='Not supplied; remains unknown.';
+ Result:=Result+sLineBreak+DPHDictionaryLabels[I]+':'+sLineBreak+T+sLineBreak;end;Result:=TrimRight(Result);
+end;
+class function TDPHDatabaseSchema.FindDictionary(AKnowledge:TJSONArray;ARow:TJSONObject;AHistorical:Boolean):TJSONObject;
+var V:TJSONValue;R:TJSONObject;ID:string;
+begin
+ Result:=nil;if (AKnowledge=nil) or (ARow=nil) then Exit;
+ ID:=DictionaryIdentity(ARow.GetValue<string>('source'),ARow.GetValue<string>('source_hash'),ARow.GetValue<string>('id'));
+ for V in AKnowledge do begin R:=TJSONObject.ParseJSONValue(V.GetValue<string>('structured_json','{}')) as TJSONObject;
+  try if (R=nil) or (R.GetValue<string>('record_type','')<>'data_dictionary') then Continue;
+   if (R.GetValue<string>('fields.dictionary_id','')=ID) and (R.GetValue<string>('fields.kind','')=ARow.GetValue<string>('kind')) and
+    (R.GetValue<string>('fields.name','')=ARow.GetValue<string>('name')) and (R.GetValue<string>('fields.table','')=ARow.GetValue<string>('table','')) then Exit(V as TJSONObject);
+   if AHistorical and (R.GetValue<string>('fields.source','')=ARow.GetValue<string>('source')) and
+    (R.GetValue<string>('fields.schema_id','')=ARow.GetValue<string>('id')) and (R.GetValue<string>('fields.kind','')=ARow.GetValue<string>('kind')) and
+    (R.GetValue<string>('fields.name','')=ARow.GetValue<string>('name')) then Result:=V as TJSONObject;
+  finally R.Free;end;
+ end;
+end;
+
 type TSchemaToken=record Text,Body:string;Line:Integer;Identifier:Boolean;end;
 class function TDPHDatabaseSchema.Inspect(AView:TDPHWorkspaceView):TJSONObject;
 var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:TJSONObject;

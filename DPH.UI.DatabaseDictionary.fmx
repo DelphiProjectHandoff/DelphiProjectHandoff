@@ -1,0 +1,378 @@
+object DPHDatabaseDictionaryForm: TDPHDatabaseDictionaryForm
+  Caption = 'Table or column business dictionary'
+  ClientWidth = 820
+  ClientHeight = 740
+  Constraints.MinWidth = 620
+  Constraints.MinHeight = 480
+  Position = ScreenCenter
+  object ProfilePurpose: TLabel
+    Align = Top
+    Height = 136
+    Margins.Left = 12
+    Margins.Right = 12
+    WordWrap = True
+    Text = 'Define the selected table or column for readers learning this project. Enter its business definition, owner or steward, sensitivity and evidence. State unknowns explicitly. Scroll down for captured identity fields; these are read only. Apply creates a Knowledge draft; Save there, then review explicitly. Do not enter actual confidential values.'
+    StyledSettings = []
+    TextSettings.Font.Size = 16
+    TextSettings.FontColor = xFF146CB4
+  end
+  object ProfileToolbar: TLayout
+    Align = Top
+    Height = 92
+    object ProfileAuthorLabel: TLabel
+      Position.X = 12
+      Position.Y = 0
+      Width = 180
+      Height = 24
+      Text = 'Named contributor'
+    end
+    object ProfileAuthorEdit: TEdit
+      Position.X = 12
+      Position.Y = 26
+      Width = 270
+      Height = 30
+    end
+    object ApplyProfileButton: TButton
+      Position.X = 292
+      Position.Y = 26
+      Width = 210
+      Height = 30
+      Text = 'Apply to Knowledge draft'
+      OnClick = ApplyProfileClick
+    end
+    object CancelProfileButton: TButton
+      Position.X = 512
+      Position.Y = 26
+      Width = 86
+      Height = 30
+      Text = 'Cancel'
+      ModalResult = 2
+    end
+  end
+  object ProfileScroll: TVertScrollBox
+    Align = Client
+    ShowScrollBars = True
+    object Profile_dictionary_id_Row: TLayout
+      Position.Y = 610
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_dictionary_id_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Exact dictionary identity'
+      end
+      object Profile_dictionary_id: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_schema_id_Row: TLayout
+      Position.Y = 732
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_schema_id_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Captured schema record'
+      end
+      object Profile_schema_id: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_source_Row: TLayout
+      Position.Y = 854
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_source_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Captured source'
+      end
+      object Profile_source: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_source_hash_Row: TLayout
+      Position.Y = 976
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_source_hash_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Source SHA256'
+      end
+      object Profile_source_hash: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_generation_Row: TLayout
+      Position.Y = 1098
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_generation_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Original capture generation'
+      end
+      object Profile_generation: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_kind_Row: TLayout
+      Position.Y = 1220
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_kind_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Object kind'
+      end
+      object Profile_kind: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_name_Row: TLayout
+      Position.Y = 1342
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_name_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Object name'
+      end
+      object Profile_name: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_table_Row: TLayout
+      Position.Y = 1464
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_table_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Owning table'
+      end
+      object Profile_table: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_source_line_Row: TLayout
+      Position.Y = 1586
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_source_line_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Statement source line'
+      end
+      object Profile_source_line: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_definition_Row: TLayout
+      Position.Y = 0
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_definition_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Business definition'
+      end
+      object Profile_definition: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = False
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_business_owner_Row: TLayout
+      Position.Y = 122
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_business_owner_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Business owner or steward'
+      end
+      object Profile_business_owner: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = False
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_sensitivity_Row: TLayout
+      Position.Y = 244
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_sensitivity_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Sensitivity and handling'
+      end
+      object Profile_sensitivity: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = False
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_evidence_Row: TLayout
+      Position.Y = 366
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_evidence_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Evidence and remaining unknowns'
+      end
+      object Profile_evidence: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = False
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_usage_Row: TLayout
+      Position.Y = 488
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_usage_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Units values and business usage'
+      end
+      object Profile_usage: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = False
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+  end
+end

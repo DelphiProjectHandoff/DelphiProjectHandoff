@@ -104,7 +104,7 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary, DPH.Knowledge.ComponentDependency, DPH.Knowledge.ActionPurpose;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary, DPH.Knowledge.ComponentDependency, DPH.Knowledge.ActionPurpose,DPH.Workspace.DatabaseSchema,DPH.Workspace.Model;
 
 const
   CurrentSchemaVersion = 9;
@@ -783,6 +783,7 @@ function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenera
   const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON,AStructuredJSON: string): Int64;
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
   LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;
+  DictionaryView:TDPHWorkspaceView;DictionaryInventory,DictionaryExpected:TJSONObject;DictionaryValue:TJSONValue;DictionaryMatched:Boolean;
   StructuredValue,PriorRecord: TJSONValue; GlossaryQuery: TFDQuery; ExistingGlossary: TJSONObject;
   TermNames,ExistingNames: TArray<string>; GlossaryName,ExistingName,ActionIdentityField: string;
 begin
@@ -838,6 +839,33 @@ begin
           try for ActionIdentityField in ['action_id','target','target_key'] do if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Action purpose target identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''action_purpose'' AND lower(json_extract(r.structured_json,''$.fields.action_id''))=lower(:identity)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.action_id')])<>0 then raise EDPHStorage.Create('A purpose record already exists for this target; refresh and edit it. Retired identities remain reserved.');
+      end else if StructuredValue.GetValue<string>('record_type','')='data_dictionary' then begin
+        TDPHDatabaseSchema.ValidateDictionary(StructuredValue as TJSONObject);
+        if AKnowledgeID=0 then begin
+          DictionaryView:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(LoadWorkspaceView(AGenerationID)) as TJSONObject);
+          try DictionaryInventory:=TDPHDatabaseSchema.Inspect(DictionaryView);
+            try DictionaryMatched:=False;
+              for DictionaryValue in DictionaryInventory.GetValue<TJSONArray>('rows') do begin
+                if not MatchText(DictionaryValue.GetValue<string>('kind'),['table','column']) or not MatchText(DictionaryValue.GetValue<string>('status'),['declared header','declared column']) then Continue;
+                if DictionaryValue.GetValue<string>('id')<>StructuredValue.GetValue<string>('fields.schema_id') then Continue;
+                DictionaryExpected:=TDPHDatabaseSchema.NewDictionary(DictionaryValue as TJSONObject);
+                try DictionaryMatched:=True;for ActionIdentityField in ['dictionary_id','schema_id','source','source_hash','generation','kind','name','table','source_line'] do
+                  if DictionaryExpected.GetValue<string>('fields.'+ActionIdentityField)<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField) then DictionaryMatched:=False;
+                finally DictionaryExpected.Free;end;
+                if DictionaryMatched then Break;
+              end;
+              if not DictionaryMatched then raise EDPHStorage.Create('Dictionary target must exactly match a table or column in the selected captured generation');
+            finally DictionaryInventory.Free;end;
+          finally DictionaryView.Free;end;
+        end;
+        if (ATitle<>TDPHDatabaseSchema.DictionaryTitle(StructuredValue as TJSONObject)) or (AKind<>'business_rule') or (DocumentKind<>'overview') or (Audience<>'all') or (AEntityKey<>'') then raise EDPHStorage.Create('Dictionary identity and project business scope must be preserved');
+        if ABody<>TDPHDatabaseSchema.DictionaryBody(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit dictionary fields on Database schema');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try for ActionIdentityField in ['dictionary_id','schema_id','source','source_hash','generation','kind','name','table','source_line'] do
+            if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Dictionary captured identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''data_dictionary'' AND json_extract(r.structured_json,''$.fields.dictionary_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('fields.dictionary_id')])<>0 then raise EDPHStorage.Create('A dictionary already exists for this captured target; refresh and edit it. Retired identities remain reserved.');
       end else if StructuredValue.GetValue<string>('record_type','')='component_dependency' then begin
         TDPHComponentDependency.Validate(StructuredValue as TJSONObject);
         if (ATitle<>TDPHComponentDependency.Title(StructuredValue as TJSONObject)) or (AKind<>'engineering_rule') or (DocumentKind<>'engineering') or (Audience<>'engineer') or (AEntityKey<>'') then raise EDPHStorage.Create('Component dependency identity and engineering scope must be preserved');
