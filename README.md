@@ -112,3 +112,5 @@ expressions and deployed enforcement are unverified. See
 Requirement 05.05: Database schema now exposes captured primary, foreign and unique keys with ordered columns, exact declaration ownership, evidence relationships and Follow relationship navigation. Missing, ambiguous and unsupported evidence is explained. No SQL is executed. See docs/guides/Database_Keys_Run_and_Test.txt.
 
 Requirement 05.06: Database schema now exposes captured indexes with ordered members/expressions, includes, predicates, methods and storage declarations. Exact captured table, column and SQL reference links reuse Follow relationship. SQL references do not prove index use or performance benefit. See docs/guides/Database_Indexes_Run_and_Test.txt.
+
+Requirement 05.07: Database schema now exposes captured procedures, functions and triggers with ordered parameters, return types, sanitized bodies and supported dependency evidence links. Dynamic SQL, ambiguous overloads and unsupported grammar remain explained gaps. See docs/guides/Database_Stored_Objects_Run_and_Test.txt.

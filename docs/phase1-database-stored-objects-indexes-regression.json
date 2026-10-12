@@ -1,0 +1,5 @@
+{
+  "result": "PASS",
+  "checks": 273,
+  "qualification": "Controlled captured index structures, ordered membership, includes, predicates/options, exact evidence relationships, explicit gaps, persistence and native FMX navigation; SQL references do not prove actual index use. Expressions and deployed enforcement unverified; no SQL executed."
+}

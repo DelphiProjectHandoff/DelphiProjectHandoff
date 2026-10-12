@@ -1,0 +1,403 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(311) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(318) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(349) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(350) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(351) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(352) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(353) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(363) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(364) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(373) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(374) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(407) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(408) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(409) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(410) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(411) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(415) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(416) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(417) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(421) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(429) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(431) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(439) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(443) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(444) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(445) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(452) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseStoredObjects.dpr(455) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.DatabaseStoredObjects.dpr(507) Hint: H2077 Value assigned to 'Other' never used
+tests\tests\DPH.Tests.DatabaseStoredObjects.dpr(475) Hint: H2077 Value assigned to 'Other' never used
+tests\tests\DPH.Tests.DatabaseStoredObjects.dpr(403) Hint: H2077 Value assigned to 'Other' never used
+tests\tests\DPH.Tests.DatabaseStoredObjects.dpr(401) Hint: H2077 Value assigned to 'Other' never used
+16901 lines, 1.26 seconds, 10551260 bytes code, 349020 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: CREATE SCHEMA declaration captured
+PASS 3: Qualified table captured
+PASS 4: CREATE OR REPLACE VIEW distinguished from table
+PASS 5: Schema qualifier retained
+PASS 6: Qualifier references distinct from explicit schemas
+PASS 7: Duplicate declarations counted without selecting winner
+PASS 8: Duplicate deployment uncertainty explained
+PASS 9: Dots inside quoted identifiers preserved
+PASS 10: Bracket identifiers captured
+PASS 11: Backtick identifiers captured
+PASS 12: Temporary table header captured
+PASS 13: Conditional table header captured
+PASS 14: Conditional schema header captured
+PASS 15: Nested comments and quoted semicolons do not split declaration
+PASS 16: Comment and string SQL do not invent objects
+PASS 17: Nested comment SQL ignored
+PASS 18: Malformed lexical source not partially promoted
+PASS 19: Unbalanced body remains unsupported
+PASS 20: Incomplete qualified name not promoted
+PASS 21: Unsupported replace-table header refused
+PASS 22: Unsupported temporary schema refused
+PASS 23: Unsupported conditional view refused
+PASS 24: Unsupported view column-list header not guessed
+PASS 25: Existing SQL reference retained without inventing a definition
+PASS 26: Inferred reference has no invented definition
+PASS 27: Inferred reference never promoted to declaration
+PASS 28: Actual CREATE column declaration captured
+PASS 29: First duplicate retains its own declared type
+PASS 30: Type precision and comma retained without splitting a column
+PASS 31: Signed numeric default retained
+PASS 32: Nullability after DEFAULT parsed separately
+PASS 33: Column retains qualified table
+PASS 34: Column retains original source file
+PASS 35: Column declaration start line retained
+PASS 36: Column retains actual source hash
+PASS 37: Column retains captured generation
+PASS 38: Column retains unique parent declaration identity
+PASS 39: Multiword type retained
+PASS 40: Explicit NULL distinguished from unspecified
+PASS 41: Literal default masked with explicit marker
+PASS 42: Timestamp qualifier retained
+PASS 43: Symbolic default retained without evaluating
+PASS 44: Absent nullability not invented
+PASS 45: Absent default not invented
+PASS 46: DEFAULT NULL remains a default expression
+PASS 47: DEFAULT NULL does not become an explicit nullability clause
+PASS 48: Named CHECK text retained
+PASS 49: Inline reference clause retained as text only
+PASS 50: Named NOT NULL clause captured
+PASS 51: Function default commas and literals handled
+PASS 52: Parenthesized default expression retained
+PASS 53: Default and CHECK stay separate
+PASS 54: Primary key does not invent explicit NOT NULL declaration
+PASS 55: Quoted name and qualified custom type preserved
+PASS 56: Array type suffix retained
+PASS 57: Table constraint not misclassified as column
+PASS 58: Table CHECK commas remain in one entry
+PASS 59: Unsupported column not promoted: bad
+PASS 60: Unsupported column entry explained: bad
+PASS 61: Unsupported column not promoted: conflict
+PASS 62: Unsupported column entry explained: conflict
+PASS 63: Unsupported column not promoted: missing
+PASS 64: Unsupported column entry explained: missing
+PASS 65: Unsupported column not promoted: repeated
+PASS 66: Unsupported column entry explained: repeated
+PASS 67: Unsupported column not promoted: expression
+PASS 68: Unsupported column entry explained: expression
+PASS 69: Unsupported column not promoted: absenttype
+PASS 70: Unsupported column entry explained: absenttype
+PASS 71: Unsupported column not promoted: badname
+PASS 72: Unsupported column entry explained: badname
+PASS 73: Unsupported column not promoted: namedbad
+PASS 74: Unsupported column entry explained: namedbad
+PASS 75: Unsupported column not promoted: malformeddefault
+PASS 76: Unsupported column entry explained: malformeddefault
+PASS 77: Unsupported column not promoted: missingtype
+PASS 78: Unsupported column entry explained: missingtype
+PASS 79: Unsupported column not promoted: typeless
+PASS 80: Unsupported column entry explained: typeless
+PASS 81: Supported following column survives earlier entry gaps
+PASS 82: Trailing empty column entry explicitly reported
+PASS 83: All column literal canaries absent from projection
+PASS 84: Column explanation displays type before long qualifications
+PASS 85: Column explanation teaches absent-declaration meaning
+PASS 86: Other duplicate column retains distinct type
+PASS 87: Duplicate table declarations never merge column ownership
+PASS 88: Composite named primary key captured
+PASS 89: Primary type retained
+PASS 90: Composite primary membership order retained
+PASS 91: Primary members resolve inside exact table declaration
+PASS 92: Owner and ordered primary member links present
+PASS 93: Unique member order distinct from primary order
+PASS 94: Composite foreign key captured
+PASS 95: Foreign local order retained
+PASS 96: Foreign referenced order retained
+PASS 97: Foreign target exact name retained
+PASS 98: Declared delete action captured
+PASS 99: Declared update action captured
+PASS 100: Unique foreign targets resolved
+PASS 101: Owner local target table and referenced column links present
+PASS 102: Referenced first member points to exact captured column
+PASS 103: Named inline primary key becomes single member
+PASS 104: Named inline unique key captured
+PASS 105: Named inline reference captured
+PASS 106: Self reference resolves after full capture
+PASS 107: Absent target remains explicit relationship gap
+PASS 108: Duplicate table targets do not choose a winner
+PASS 109: Ambiguous referenced table has no invented link
+PASS 110: Omitted reference columns remain unknown
+PASS 111: Arity mismatch explicitly qualified
+PASS 112: Missing local key column reported
+PASS 113: Duplicate local column remains ambiguous
+PASS 114: Conflicting primary declarations retained without winner
+PASS 115: Conflicting primary declarations retained without winner
+PASS 116: Malformed or unsupported key not promoted: Repeated_UQ
+PASS 117: Malformed or unsupported key not promoted: Expression_UQ
+PASS 118: Malformed or unsupported key not promoted: Tail_UQ
+PASS 119: Malformed or unsupported key not promoted: Empty_PK
+PASS 120: Malformed or unsupported key not promoted: BadAction_FK
+PASS 121: Unsupported key grammar has explicit explanation
+PASS 122: Unsupported column tail cannot leak partial key
+PASS 123: Quoted dotted identifier remains exact single member
+PASS 124: Dialect case folding is not guessed
+PASS 125: Missing referenced column reported
+PASS 126: Duplicate constraint names remain distinct and flagged
+PASS 127: Key-like string content omitted
+PASS 128: Default and CHECK do not invent keys
+PASS 129: Key retains capture generation
+PASS 130: Key retains original SQL hash
+PASS 131: Key explanation leads with structured facts
+PASS 132: Guarded key source navigation works
+PASS 133: Detached key source refused
+PASS 134: Structured composite index captured
+PASS 135: Unique declaration captured
+PASS 136: CONCURRENTLY declaration captured
+PASS 137: Conditional creation declaration captured
+PASS 138: ONLY declaration captured
+PASS 139: Index target exact qualified spelling retained
+PASS 140: Target schema qualifier captured
+PASS 141: Explicit index method retained
+PASS 142: Composite index member count captured
+PASS 143: First composite member retained
+PASS 144: Second composite member retained
+PASS 145: Descending member order retained
+PASS 146: Ascending member order retained
+PASS 147: Declared NULLS LAST retained
+PASS 148: Included columns distinct from ordered members
+PASS 149: Unique null treatment retained
+PASS 150: Captured storage options retained without evaluation
+PASS 151: Declared tablespace retained
+PASS 152: Partial index predicate retained
+PASS 153: Predicate literals omitted
+PASS 154: Unique table column and include evidence resolved
+PASS 155: Exact captured SQL table usage linked
+PASS 156: Table member include and SQL evidence links present
+PASS 157: Indexed column link targets exact captured row
+PASS 158: SQL evidence never claims actual index selection
+PASS 159: No-reference interpretation explained
+PASS 160: Index retains original SQL SHA256
+PASS 161: Index retains capture generation
+PASS 162: Index statement line retained
+PASS 163: Index explanation qualifies performance conclusions
+PASS 164: Unchanged index source can open
+PASS 165: Detached index source refused
+PASS 166: Function expression does not invent a column
+PASS 167: Parenthesized expression captured
+PASS 168: Expression dependencies remain explicit gaps
+PASS 169: Expression uncertainty explained
+PASS 170: Clustered structure declaration retained
+PASS 171: Nonclustered structure declaration retained
+PASS 172: Alternate explicit method retained
+PASS 173: Absent supported SQL references do not fabricate usage
+PASS 174: Missing method is not assigned a guessed dialect default
+PASS 175: Missing target table explained
+PASS 176: Ambiguous target table not guessed
+PASS 177: Missing indexed column explained
+PASS 178: Missing included column explained
+PASS 179: Duplicate captured column stays ambiguous
+PASS 180: Duplicate index declarations counted
+PASS 181: Duplicate index migration remains unresolved
+PASS 182: Quoted dotted index and column names retained exactly
+PASS 183: Explicit index qualifier retained separately
+PASS 184: Index target case folding is not guessed
+PASS 185: Unsupported/malformed index not promoted: IX_Empty
+PASS 186: Unsupported/malformed index explained: IX_Empty
+PASS 187: Unsupported/malformed index not promoted: IX_Trailing
+PASS 188: Unsupported/malformed index explained: IX_Trailing
+PASS 189: Unsupported/malformed index not promoted: IX_BadSort
+PASS 190: Unsupported/malformed index explained: IX_BadSort
+PASS 191: Unsupported/malformed index not promoted: IX_Collation
+PASS 192: Unsupported/malformed index explained: IX_Collation
+PASS 193: Unsupported/malformed index not promoted: IX_BadInclude
+PASS 194: Unsupported/malformed index explained: IX_BadInclude
+PASS 195: Unsupported/malformed index not promoted: IX_EmptyPredicate
+PASS 196: Unsupported/malformed index explained: IX_EmptyPredicate
+PASS 197: Unsupported/malformed index not promoted: IX_BadPredicate
+PASS 198: Unsupported/malformed index explained: IX_BadPredicate
+PASS 199: Unsupported/malformed index not promoted: IX_NoOn
+PASS 200: Unsupported/malformed index explained: IX_NoOn
+PASS 201: Unsupported/malformed index not promoted: IX_BadTail
+PASS 202: Unsupported/malformed index explained: IX_BadTail
+PASS 203: Unsupported/malformed index not promoted: IX_NoName
+PASS 204: Unsupported/malformed index explained: IX_NoName
+PASS 205: Unsupported/malformed index not promoted: IX_EmptyExpression
+PASS 206: Unsupported/malformed index explained: IX_EmptyExpression
+PASS 207: Unsupported/malformed index not promoted: IX_EmptyStorage
+PASS 208: Unsupported/malformed index explained: IX_EmptyStorage
+PASS 209: Unsupported/malformed index not promoted: IX_ComplexPredicate
+PASS 210: Unsupported/malformed index explained: IX_ComplexPredicate
+PASS 211: Unsupported/malformed index not promoted: IX_NullOrder
+PASS 212: Unsupported/malformed index explained: IX_NullOrder
+PASS 213: Unsupported/malformed index not promoted: IX_NoMethod
+PASS 214: Unsupported/malformed index explained: IX_NoMethod
+PASS 215: Unsupported/malformed index not promoted: IX_MissingIncluded
+PASS 216: Unsupported/malformed index explained: IX_MissingIncluded
+PASS 217: Incomplete qualified index name not promoted
+PASS 218: Incomplete qualified index name retains a source gap
+PASS 219: Comment index is not promoted
+PASS 220: Index literal canaries omitted
+PASS 221: Unsupported index grammar explicitly reported
+PASS 222: Multi-statement procedure captured as one definition
+PASS 223: Procedure kind retained
+PASS 224: Ordered IN OUT and INOUT parameters captured
+PASS 225: First parameter name retained
+PASS 226: Parameter precision comma does not split parameter
+PASS 227: Output parameter mode retained
+PASS 228: Inout parameter mode retained
+PASS 229: Parameter default literal omitted
+PASS 230: Nested block stays in stored body
+PASS 231: CASE expression does not terminate routine
+PASS 232: Body insert/update/call/nested/table references captured in order
+PASS 233: Insert table dependency links exact declaration
+PASS 234: Forward procedure call resolves after all source capture
+PASS 235: Stored body dependency resolves target beyond first page
+PASS 236: Stored source hash retained
+PASS 237: Stored generation retained
+PASS 238: Stored statement start line retained
+PASS 239: Parameter source line retained
+PASS 240: Incomplete dependency coverage explained
+PASS 241: Stored explanation leads with parameter facts
+PASS 242: Stored explanation teaches declaration/execution distinction
+PASS 243: Tagged dollar SQL function captured
+PASS 244: Scalar return precision retained
+PASS 245: Declared function language retained
+PASS 246: Replace operation retained without migration winner
+PASS 247: Numeric parameter default retained
+PASS 248: Dollar body table reference inspected without executing
+PASS 249: Dollar body reference keeps resource line
+PASS 250: Post-body language declaration captured
+PASS 251: Trigger kind retained
+PASS 252: Trigger timing retained
+PASS 253: Ordered trigger events retained
+PASS 254: Trigger row scope retained
+PASS 255: Trigger WHEN preserved unevaluated
+PASS 256: Trigger table and called function links present
+PASS 257: Trigger links exact captured function
+PASS 258: Inline trigger block captured
+PASS 259: Inline trigger owns event table and body dependency
+PASS 260: TSQL PROC and OR ALTER header captured
+PASS 261: TSQL parameter marker retained
+PASS 262: TSQL output mode retained
+PASS 263: Output suffix separated from default
+PASS 264: Explicit EXEC procedure evidence captured
+PASS 265: Standalone client GO separator preserves following routine
+PASS 266: Single-quoted body unescapes only for masked inspection
+PASS 267: Single-quoted SQL body dependency captured
+PASS 268: Missing stored dependencies explained
+PASS 269: Ambiguous table dependency has no winner
+PASS 270: Ambiguous table dependency has no invented navigation
+PASS 271: Dynamic SQL is explicit unresolved execution
+PASS 272: Dynamic execution cannot invent targets
+PASS 273: Quoted parameter spelling preserved
+PASS 274: Overloaded function definitions remain independent
+PASS 275: Trigger overload target not guessed
+PASS 276: Absent trigger table reported
+PASS 277: Inline body DDL retained within routine
+PASS 278: Internal DDL not promoted to top-level schema
+PASS 279: Unterminated block does not leak internal declarations
+PASS 280: Top-level declaration after routine survives
+PASS 281: Unsupported stored object not promoted: TypeTail
+PASS 282: Unsupported stored object not promoted: EmptyDefault
+PASS 283: Unsupported stored object not promoted: DuplicateParam
+PASS 284: Unsupported stored object not promoted: TrailingParam
+PASS 285: Unsupported stored object not promoted: TypelessParam
+PASS 286: Unsupported stored object not promoted: NoReturns
+PASS 287: Unsupported stored object not promoted: BadLanguage
+PASS 288: Unsupported stored object not promoted: EmptyBody
+PASS 289: Unsupported stored object not promoted: BadEvent
+PASS 290: Unsupported stored object not promoted: BadCall
+PASS 291: Unsupported stored object not promoted: BadTail
+PASS 292: Unsupported stored object not promoted: Broken
+PASS 293: Unsupported stored object not promoted: BrokenDollar
+PASS 294: Dot inside quoted routine name is not a schema separator
+PASS 295: CTE scope prevents guessed table binding
+PASS 296: Stored dependency extraction bounded to 1000 entries
+PASS 297: Stored dependency limit explicitly explained
+PASS 298: Missing stored-object name cannot consume AS keyword
+PASS 299: Comment routine is not promoted
+PASS 300: Body defaults/comments/dynamic literals never leak
+PASS 301: Unsupported stored grammar explicitly explained
+PASS 302: Malformed dollar resource has lexical gap
+PASS 303: String literal omitted from projected definitions
+PASS 304: Quoted semicolon content omitted
+PASS 305: Malformed lexical resources explain gaps
+PASS 306: Oversize resource explicitly reported
+PASS 307: Migration and unsupported statements retained as gaps
+PASS 308: Definition retains captured SHA256
+PASS 309: Definition retains generation
+PASS 310: Statement start line retained
+PASS 311: Details qualify definition validation
+PASS 312: Unchanged attached source opens
+PASS 313: Detached source navigation refused
+PASS 314: Outside-project navigation refused
+PASS 315: Historical generation navigation refused
+PASS 316: Changed source navigation refused
+PASS 317: Inspector leaves captured workspace unchanged
+PASS 318: Persisted reopening yields identical schema evidence
+PASS 319: Controlled reference-bound test starts from actual captured SQL evidence
+PASS 320: Controlled bound case preserves the captured relation contract
+PASS 321: Total reference count retained beyond navigation bound
+PASS 322: SQL reference navigation bounded to 250 per index
+PASS 323: Structural links preserved alongside capped usage links
+PASS 324: Native list bounds first page to 250 rows
+PASS 325: Next page enabled for remaining declarations
+PASS 326: Native next page exposes remainder
+PASS 327: Kind, state and name filters combine
+PASS 328: Native memo explains selected definition
+PASS 329: Native details expose source hash
+PASS 330: Native navigation explains detached attachment
+PASS 331: Empty result teaches missing-evidence interpretation
+PASS 332: Native declared-type filter finds captured column
+PASS 333: Native column nullability explained
+PASS 334: Native default evidence displayed
+PASS 335: Native column empty filter handled
+PASS 336: Native key kind state and constraint name filters combine
+PASS 337: Native key details explain composite membership
+PASS 338: Native relationship selector exposes exact targets
+PASS 339: Follow relationship selects exact captured target across pages
+PASS 340: Foreign target on later inventory page selected by exact ID
+PASS 341: Native index kind/state/name filters combine
+PASS 342: Native index details teach declared structure
+PASS 343: Native index relationship selector includes SQL evidence
+PASS 344: Follow opens exact captured SQL table-reference evidence
+PASS 345: Index column beyond first page opens by exact identity
+PASS 346: Storage option text filter searches captured index
+PASS 347: Method filter searches index declarations
+PASS 348: Native procedure kind/state/name filters combine
+PASS 349: Native stored-object details expose ordered parameters
+PASS 350: Native stored dependency selector contains exact evidence targets
+PASS 351: Stored dependency target beyond first page opens exactly
+PASS 352: Native return-type search finds function
+PASS 353: Native trigger kind/state filters combine
+PASS 354: Native trigger facts displayed before body
+PASS 355: Native trigger function navigation opens exact definition
+PASS 356: Native parameter-name search finds procedure header
+PASS 357: Relationship command reachable at minimum width
+PASS 358: Compact memo has readable area
+PASS 359: Long schema details scroll
+PASS 360: Compact commands can scroll horizontally
+PASS 361: Capture replacement rebuilds projection under current filters
+PASS 362: Owner catalog unchanged
+PASS 363: Target source restored unchanged after navigation refusal test
+Database stored objects validation passed: 363 checks.

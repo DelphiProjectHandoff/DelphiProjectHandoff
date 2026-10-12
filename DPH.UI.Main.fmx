@@ -1569,7 +1569,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select a key or index for structure and evidence. Scroll commands sideways to Follow relationship. Missing targets remain gaps. SQL references do not prove index use. No SQL is executed.'
+Text = 'Select a key, index or stored object for structure and evidence. Scroll commands sideways to Follow relationship. Missing targets remain gaps; source references do not prove execution. No SQL is executed.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1592,7 +1592,10 @@ Items.Strings = (
 'column'
 'constraint'
 'key'
-'index')
+'index'
+'procedure'
+'function'
+'trigger')
 ItemIndex = 0
 end
 object DatabaseSchemaFilter: TEdit
@@ -1635,7 +1638,8 @@ Items.Strings = (
 'declared column'
 'captured constraint'
 'declared key'
-'declared index')
+'declared index'
+'declared stored object')
 ItemIndex = 0
 end
 object DatabaseSchemaSource: TButton

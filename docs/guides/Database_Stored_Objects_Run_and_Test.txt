@@ -1,0 +1,91 @@
+DPH STORED PROCEDURES, FUNCTIONS AND TRIGGERS RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.07 Stored procedures, functions, and triggers
+
+RUN AND OPEN THE STORED-OBJECT VIEW
+1. Save any Knowledge draft, then close the existing DPH instance.
+2. In File Explorer open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+3. Double-click DelphiProjectHandoff.exe. It opens maximized.
+4. Click Attach project to select the application's .dproj or .dpr, or Open cache
+   to select an existing .dphdb. DPH rejects its own project and caches of itself.
+5. Select the intended Debug/Release and Win32/Win64 configuration and required
+   defines. Save a new cache in Databases. Wait for capture to finish. Approved
+   SQL resources must be referenced by the selected project. For an existing
+   cache lacking these resources, attach the source and choose Full reassessment.
+6. Choose Database schema in the upper-right page selector.
+7. In the leftmost kind selector choose procedure, function or trigger. In the
+   state selector choose declared stored object. Select a result in the list.
+8. Read the labeled memo below the divider. It starts with name, header operation,
+   language, return type and ordered parameters. For triggers it shows the event
+   table, timing, events, row/statement scope and captured WHEN text. Scroll down
+   for relationships, sanitized body, explanation and source provenance.
+
+FOLLOW AND SEARCH EVIDENCE
+9. Scroll the page's command strip sideways to the relationship selector after
+   Open source. Choose a table reference, procedure call, trigger table or function
+   call, then click Follow relationship. DPH clears the filters and selects the
+   exact captured target, including its page when there are over 250 rows.
+10. Return by choosing the kind and declared stored object again, then search the
+    object's name. Search also accepts source, language, return type, parameter
+    text, trigger facts or sanitized body text. First page resets pagination;
+    Next page shows the next group of up to 250 matching rows.
+11. Open source requires an attached project, current capture generation and an
+    unchanged source hash. Detached caches cannot open live source. Refusals are
+    explained in the memo. Original SQL can contain sensitive literal values.
+
+UNDERSTAND THE RESULTS
+A procedure groups database work, a function declares a returned value, and a
+trigger associates work with an event. These are captured declarations, not proof
+of execution or deployed behavior. Parameter order, names, modes, types, defaults
+and source lines remain separate facts. Literal defaults and body literals are
+omitted from this projection. Not declared means absent, not an engine default.
+Follow relationship opens unique exact captured name matches; it does not prove
+runtime binding. Missing or ambiguous declarations and overloaded targets have
+no guessed links. Multiple definitions remain separate; migration order is unknown.
+Dynamic SQL, expression calls, alias/CTE/column binding and unsupported grammar
+remain qualified gaps. Body grammar and permissions are unverified. Empty
+dependencies do not prove independence. Table references in WITH/CTE bodies stay
+unresolved. Lists are capped at 1000 dependencies per object and 10000 across the
+projection, with an explanation when the limit is reached. Body display is capped
+at approximately 16000 characters; attached source remains unchanged.
+No target application, SQL statement or database server is executed.
+
+CONTROLLED PRACTICE
+Developer validation below creates fixed ignored practice files under:
+C:\New Delphi Projects\Delphi Project Handoff\bin\database-stored-objects-validation
+After it passes, attach source\Schema.dpr in that folder using Debug/Win32. Save
+the proposed cache in the application's Databases folder. Choose Database schema,
+procedure, declared stored object and search Data.Save.
+Expected: three ordered IN/OUT/INOUT parameters; NUMERIC precision; masked literal
+default; body references to Data.Target, Data.Log and Page270. Choose the Page270
+relationship and Follow relationship to verify navigation beyond page one.
+Choose trigger and search Data.Audit. Expected: AFTER INSERT OR UPDATE on
+Data.Target, ROW scope, captured WHEN and a link to function Data.Hook.
+Choose function and search Data.Total. Expected: SQL language, DECIMAL return
+precision, default 1 and a sanitized dollar-quoted body referencing Data.Target.
+Inspect MissingRef, DynamicRef and AmbiguousHook for explained missing, dynamic
+and overloaded evidence. Unsupported declarations appear under gap/unsupported.
+These are deliberate fixture cases. Neither the fixture application nor SQL runs.
+
+DEVELOPER BUILD AND VALIDATION
+Open Windows Command Prompt as Administrator. Enter:
+cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+tools\build-database-stored-objects.cmd
+Expected: all focused checks PASS. Exact count and result are saved in:
+docs\phase1-database-stored-objects-validation.json
+The suite checks actual captured resources, structure, dependencies, gaps,
+persistence, source guards and native filtering/navigation/compact rendering.
+Run each of these separately:
+tools\build-database-indexes.cmd
+tools\build-database-schema.cmd
+tools\build-wp0.cmd
+Expected: 273 index checks, 57 schema checks and PASS WP0-TEST, respectively.
+The last command builds the actual app and checks serialized FMX bindings.
+Elevation lets RAD Studio 37 read its environment file. These tests refresh their
+own evidence artifacts, leave the owner catalog unchanged and do not execute the
+selected target project or connect to a database server.
+
+MANUALS
+docs\guides\DPH_User_Guide.docx and docs\pdf\DPH_User_Guide.pdf
+docs\guides\DPH_Engineering_Guide.docx and docs\pdf\DPH_Engineering_Guide.pdf

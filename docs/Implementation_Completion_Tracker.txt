@@ -70,7 +70,12 @@ index structures, exact table/column and SQL reference evidence links, bounded
 usage navigation and explicit unsupported/ambiguous evidence gaps.
 273 focused and 230 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Indexes_Completion.txt.
-Current live backlog: 330 incomplete requirement records; 0 unassessed.
+Stored procedures, functions, and triggers completed (05.07): captured definitions,
+ordered parameters/defaults/returns, trigger structure, sanitized bodies and
+supported exact-name dependency evidence with unresolved cases and limits.
+363 focused and 330 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Stored_Objects_Completion.txt.
+Current live backlog: 329 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

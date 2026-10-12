@@ -1,0 +1,74 @@
+STORED PROCEDURES, FUNCTIONS AND TRIGGERS COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.07 Stored procedures, functions, and triggers
+
+DELIVERED
+Database schema now exposes supported captured procedure, function and trigger
+definitions, with explicit qualified/quoted names and CREATE header operations.
+Ordered parameter names, modes, declared types, sanitized defaults and source
+lines are retained. Scalar return types and declared body languages are separate.
+Inline BEGIN/END blocks retain internal semicolons and nested BEGIN/CASE structure.
+Supported single-quoted/dollar-quoted SQL and PLPGSQL bodies are inspected with
+comments and literal values omitted. Internal DDL never becomes a top-level
+table declaration. Unterminated blocks remain gaps; standalone GO batch
+separators preserve following declarations. Original source/cache is unchanged.
+Trigger rows retain timing, event lists, event table, row/statement scope, WHEN
+text and supported inline blocks or zero-argument trigger-function calls.
+Supported table references and explicit routine calls retain resource lines and
+resolve only to exact unique captured names. Missing/ambiguous definitions,
+overloads, complex references and dynamic execution have explained states.
+All definitions remain independent; no migration winner or overload is selected.
+Rows retain source SHA256, generation, statement line and resource byte extent.
+IDE-editable kind/state selectors add procedure/function/trigger records. Existing
+exact-ID Follow relationship, paging and source guards are reused. Search includes
+parameter text, returns, language, trigger facts and sanitized body text.
+
+LIMITS
+These are source declarations and textual dependency evidence, not executions.
+Body grammar, permissions, dialect validity, runtime argument binding, expression
+calls, aliases, column binding, CTE scope and deployed behavior are unverified.
+Table references in WITH/CTE bodies remain unresolved. Empty dependencies do not
+establish independence. Unsupported headers/options, unnamed parameters, table-
+valued returns, unsupported trigger arrangements and custom terminators remain
+extraction gaps. Dependency lists are capped at 1000 per object and 10000 across
+the projection; a reached limit is explained. Body display is approximately 16000
+characters and definition display approximately 8000. Existing resource/token/
+row limits remain. No target SQL, database server or target app is executed.
+
+VALIDATION
+363 focused checks PASS: actual captured resources, parameters/defaults/types,
+returns, quoted bodies, trigger structure, nested blocks, batch boundaries,
+exact relationships/source references, missing/ambiguous evidence, overloads,
+dynamic execution, unsupported grammar, literal omission, limits, persistence,
+source guards and unchanged sources/catalog/workspace. Native FMX filtering,
+parameter search, follow across pages, capture replacement and normal/compact
+rendering pass. 273 index + 57 schema regressions PASS: 693 checks total.
+Actual application build and serialized FMX component binding baseline PASS.
+User Guide: 28 pages, 51 TOC entries. Engineering Guide: 25 pages, 43 TOC entries.
+Both DOCX guides and companion PDFs rendered and visually inspected. A spillover
+TOC page-break paragraph was replaced with the first heading's page-break setting;
+no guide font reduction was needed. 56 source hashes and 94 TOC destinations
+verified. HTML help and explicit run/test directions updated.
+533 requirement identities, original plans, reconciliation history and historical
+validation artifacts preserved. Fixtures use fixed ignored bin folders.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseStoredObjects_PreChange_20261012_125632
+4605 files / 1435720789 bytes; every copied file SHA256 verified before editing.
+H: is the owner's explicitly selected current USB backup drive.
+
+RUN AND TEST
+Save any Knowledge draft, then close and restart the rebuilt application:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project/cache. Choose Database schema in the upper-right page
+selector, choose procedure/function/trigger and declared stored object, then a row.
+Scroll the command strip sideways to select and Follow relationship.
+Full launch, practice and developer validation directions:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Stored_Objects_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.07 promoted in this execution.
+186 implemented; 18 implemented_manual_capture; 231 partial; 98 missing.
+329 incomplete requirement records remain; zero unassessed.
+Next: 05.08 Entity-relationship diagrams. Generate an ER diagram from verified
+table/key metadata and label incomplete schemas.

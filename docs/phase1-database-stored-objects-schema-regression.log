@@ -1,0 +1,65 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+16464 lines, 1.70 seconds, 10467884 bytes code, 348712 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: CREATE SCHEMA declaration captured
+PASS 3: Qualified table captured
+PASS 4: CREATE OR REPLACE VIEW distinguished from table
+PASS 5: Schema qualifier retained
+PASS 6: Qualifier references distinct from explicit schemas
+PASS 7: Duplicate declarations counted without selecting winner
+PASS 8: Duplicate deployment uncertainty explained
+PASS 9: Dots inside quoted identifiers preserved
+PASS 10: Bracket identifiers captured
+PASS 11: Backtick identifiers captured
+PASS 12: Temporary table header captured
+PASS 13: Conditional table header captured
+PASS 14: Conditional schema header captured
+PASS 15: Nested comments and quoted semicolons do not split declaration
+PASS 16: Comment and string SQL do not invent objects
+PASS 17: Nested comment SQL ignored
+PASS 18: Malformed lexical source not partially promoted
+PASS 19: Unbalanced body remains unsupported
+PASS 20: Incomplete qualified name not promoted
+PASS 21: Unsupported replace-table header refused
+PASS 22: Unsupported temporary schema refused
+PASS 23: Unsupported conditional view refused
+PASS 24: Unsupported view column-list header not guessed
+PASS 25: Existing SQL reference retained without inventing a definition
+PASS 26: Inferred reference has no invented definition
+PASS 27: Inferred reference never promoted to declaration
+PASS 28: String literal omitted from projected definitions
+PASS 29: Quoted semicolon content omitted
+PASS 30: Malformed lexical resources explain gaps
+PASS 31: Oversize resource explicitly reported
+PASS 32: Migration and unsupported statements retained as gaps
+PASS 33: Definition retains captured SHA256
+PASS 34: Definition retains generation
+PASS 35: Statement start line retained
+PASS 36: Details qualify definition validation
+PASS 37: Unchanged attached source opens
+PASS 38: Detached source navigation refused
+PASS 39: Outside-project navigation refused
+PASS 40: Historical generation navigation refused
+PASS 41: Changed source navigation refused
+PASS 42: Inspector leaves captured workspace unchanged
+PASS 43: Persisted reopening yields identical schema evidence
+PASS 44: Native list bounds first page to 250 rows
+PASS 45: Next page enabled for remaining declarations
+PASS 46: Native next page exposes remainder
+PASS 47: Kind, state and name filters combine
+PASS 48: Native memo explains selected definition
+PASS 49: Native details expose source hash
+PASS 50: Native navigation explains detached attachment
+PASS 51: Empty result teaches missing-evidence interpretation
+PASS 52: Compact memo has readable area
+PASS 53: Long schema details scroll
+PASS 54: Compact commands can scroll horizontally
+PASS 55: Capture replacement rebuilds projection under current filters
+PASS 56: Owner catalog unchanged
+PASS 57: Target source restored unchanged after navigation refusal test
+Database schema validation passed: 57 checks.

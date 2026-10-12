@@ -1,0 +1,73 @@
+{
+  "result": "PASS",
+  "requirement": "05.07",
+  "status": "implemented",
+  "checks": 363,
+  "regression_checks": 330,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.07",
+  "incomplete_requirement_records": 329,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 186,
+    "missing": 98
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 28,
+        "toc_entries": 51,
+        "new_chapter_pages": [
+          2,
+          18
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 25,
+        "toc_entries": 43,
+        "new_chapter_pages": [
+          2,
+          22
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseStoredObjects_PreChange_20261012_125632",
+    "files": 4605,
+    "bytes": 1435720789,
+    "sha256_verified": true
+  },
+  "qualification": "Supported captured CREATE procedure/function/trigger definitions only: named ordered parameters, scalar returns, trigger structure and sanitized body text with supported literal table/explicit call evidence. Unsupported grammar, dynamic execution, complex/CTE binding, missing/ambiguous declarations and overloads remain explained gaps. Body grammar, expression/column/alias binding, dialect validity, permissions, migration order and deployed effects are unverified. Dependency display is capped at 1000 per object and 10000 per projection; body display is approximately 16000 characters. No target SQL, application or server is executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "56be73d4a73042c0da6a291cae9f9bf9c92c3cff742df6e5cfd9060c65f84153",
+    "DPH.UI.Main.pas": "9a576f362f06f80bcab6254d181c42350e22c7407573a1f47a8c27b936c9c827",
+    "DPH.UI.Main.fmx": "2c36bb792a460d81936923ff366f6d739f917f81aba9223f4990c82fdd2963b2",
+    "tests/DPH.Tests.DatabaseStoredObjects.dpr": "0587425d8caacffdecaacce5f0475ed1fd3fc14f30996778ffbb35f9d04a0d64",
+    "tools/build-database-stored-objects.cmd": "61fa16e97ceddcbab9ac27a821ef8be38d37ea5422b2dc6339afb6d80506fdac",
+    "docs/phase1-database-stored-objects-validation.json": "8cfea3efb9e3ce9648ad56a462402f2dce49704ad796a52ded7c89f4788901e2",
+    "docs/phase1-database-stored-objects-validation.log": "f5f9232f9286842f07c168286259b5bae1967b3b96e09f403f17a63c8ebc1e1a",
+    "docs/guides/Database_Stored_Objects_Run_and_Test.txt": "8aed2e768559253b2f59e68781244f63cbff85a6fa6beb91f268ce3e23465bf3",
+    "docs/guide-source-validation.json": "5152466512bd57270b40f7e87fcaf74aef93c0829a884693617b73ffefba2880",
+    "docs/guides/DPH_User_Guide.docx": "df825ca3c9dbb65abba8b668590788a1f625235947ad69ef6157dd48f01c70bf",
+    "docs/guides/DPH_Engineering_Guide.docx": "85b3d9c9026eaf98787b13bac50f0de669ad95809c1a40a1cca01faa9876442c",
+    "docs/pdf/DPH_User_Guide.pdf": "da81dbcd28adc66e523e941e35c193a6d4904e01426528e089cf0616eedda815",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "cb9cd4b3e96ad5c019d8f1653f3edf0eaf27365b8a241d704a354743ad337ab5",
+    "docs/phase1-database-stored-objects-build.log": "2068b3c731d629a3a0d3376db844ffc4e3bb4130b0a7301ed38c8ad775e937df",
+    "docs/phase1-database-stored-objects-indexes-regression.json": "858985f58b6eb3148b53b96ca8c066ec5fb2ede86fbc922a49d97bb9c8618c7e",
+    "docs/phase1-database-stored-objects-schema-regression.json": "36682a3a2a3ff2f74c515acead1dc7cfb7c429471ff415aa21331d92cba4df0f",
+    "docs/phase1-database-stored-objects-workspace.png": "98c5a1045b7a092de4946502c986c85d18eb6f75942c5770bb4055373bbf0c2b",
+    "docs/phase1-database-stored-objects-compact.png": "a28c5f308fd452d3d17192f69a92cc14c2097253e8a184830578c5fae38e77e0",
+    "docs/phase1-database-stored-objects-relationships.png": "92e149d8fb9c4eb1cb565a54a81c24ecad745e40eb8ee82408de332688c06488",
+    "docs/Phase1_Database_Stored_Objects_Completion.txt": "17d94546ea1e009c183e2b6d17ae9058ce3d8a23f84776688f343f29d25ee972"
+  }
+}

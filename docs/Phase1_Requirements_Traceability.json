@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Indexes and performance-related structures 05.06 implemented as captured declarations and evidence-backed relationships; 330 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Stored procedures, functions, and triggers 05.07 implemented as captured definitions, parameters and evidence-backed dependencies; 329 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1991,13 +1991,28 @@
       "id": "05.07",
       "domain": "DPH-05",
       "requirement": "Stored procedures, functions, and triggers",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseSchema.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseStoredObjects.dpr",
+        "tools/build-database-stored-objects.cmd",
+        "docs/phase1-database-stored-objects-validation.json",
+        "docs/phase1-database-stored-objects-validation.log",
+        "docs/guides/Database_Stored_Objects_Run_and_Test.txt"
       ],
-      "limitation": "Parse/import stored-object definitions, parameters and dependencies with source references.",
+      "limitation": "Supported captured CREATE procedure/function/trigger definitions only: named ordered parameters, scalar returns, trigger structure and sanitized body text with supported literal table/explicit call evidence. Unsupported grammar, dynamic execution, complex/CTE binding, missing/ambiguous declarations and overloads remain explained gaps. Body grammar, expression/column/alias binding, dialect validity, permissions, migration order and deployed effects are unverified. Dependency display is capped at 1000 per object and 10000 per projection; body display is approximately 16000 characters. No target SQL, application or server is executed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database schema exposes captured procedures, functions and triggers with explicit names, header operations, ordered parameter names/modes/types/defaults/source lines, scalar returns, language and sanitized inline/single-quoted/dollar-quoted bodies. Trigger timing/events/table/scope/WHEN and supported explicit trigger-function calls are retained. Supported body table/explicit routine references receive exact unique captured-name links; missing/ambiguous evidence, overloads, dynamic execution and CTE/complex binding remain explained. Internal DDL stays inside stored bodies, batch separators preserve following definitions, and bounds prevent unbounded projections. IDE-editable selectors, parameter/body filtering, exact-ID Follow relationship and guarded source reading remain.",
+        "remaining_work": "",
+        "purpose": "Stored procedures, functions, and triggers",
+        "evidence_group": "sql",
+        "verification": "363 focused checks pass for actual captured resources, ordered parameters/defaults/returns, trigger structure, quoted bodies, nested blocks, exact source references and dependency targets, missing/ambiguous evidence, overloads, unsupported syntax, literal omission, bounds, batch boundaries, SQLite reopening, source guards, unchanged catalog/source/workspace and native filtering/navigation/replacement/normal/compact renders. 273 index and 57 schema regression checks pass. Actual app build and FMX baseline pass. Both DOCX guides and PDFs rendered and visually reviewed; 56 source hashes and 94 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "SQL text is retained but stored procedures/functions/triggers have no dedicated models.",
@@ -2005,6 +2020,12 @@
         "purpose": "Stored procedures, functions, and triggers",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Stored procedures functions and triggers",
+        "validation": "docs/phase1-database-stored-objects-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12611,23 +12632,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Indexes and performance-related structures",
+    "completed_batch": "Stored procedures functions and triggers",
     "completed_requirement_ids": [
-      "05.06"
+      "05.07"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 231,
-      "implemented": 185,
-      "missing": 99
+      "implemented": 186,
+      "missing": 98
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 330,
-    "completion_record": "docs/Phase1_Database_Indexes_Completion.txt",
+    "incomplete_requirement_records": 329,
+    "completion_record": "docs/Phase1_Database_Stored_Objects_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.07",
-      "title": "Stored procedures, functions, and triggers",
-      "scope": "Parse/import stored-object definitions, parameters and dependencies with source references."
+      "requirement": "05.08",
+      "title": "Entity-relationship diagrams",
+      "scope": "Generate an ER diagram from verified table/key metadata and label incomplete schemas."
     }
   }
 }

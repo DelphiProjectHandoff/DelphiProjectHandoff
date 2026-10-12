@@ -7,12 +7,12 @@ type TDPHDatabaseSchema=class
 end;
 implementation
 uses System.SysUtils,System.StrUtils,System.Classes,System.Generics.Collections;
-type TSchemaToken=record Text:string;Line:Integer;Identifier:Boolean;end;
+type TSchemaToken=record Text,Body:string;Line:Integer;Identifier:Boolean;end;
 class function TDPHDatabaseSchema.Inspect(AView:TDPHWorkspaceView):TJSONObject;
 var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:TJSONObject;
  Tokens:TList<TSchemaToken>;Counts:TDictionary<string,Integer>;ReferenceNames:TDictionary<string,string>;Token:TSchemaToken;
  SQL,Path,Text,Name,SchemaName,Kind,Status,Issue,Definition,Key:string;
- Position,Start,Line,Depth,I,J,First,Last,NameAt,BodyAt,Count,Ordinal:Integer;
+ Position,Start,Line,Depth,I,J,First,Last,NameAt,BodyAt,Count,Ordinal,StoredDependencies:Integer;
  C,Closing:Char;Closed,Valid,Quoted,ReplaceHeader,TemporaryHeader,IfHeader:Boolean;
  procedure AddRow(const AKind,AName,ASchema,AStatus,AReason,ADefinition:string;ALine:Integer;ARange:TJSONObject);
  var Range:TJSONObject;
@@ -24,6 +24,53 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
   Range:=TJSONObject.Create.AddPair('source',Path).AddPair('start',ARange.GetValue('start').Clone as TJSONValue).AddPair('end',ARange.GetValue('end').Clone as TJSONValue).AddPair('line',TJSONNumber.Create(ALine)).AddPair('column',TJSONNumber.Create(1));
   Row.AddPair('range',Range).AddPair('range_precision','Byte extent covers the captured SQL resource; line identifies the statement start. Inferred references retain their captured semantic range.');
   Row.AddPair('definition_count',TJSONNumber.Create(0));
+ end;
+ procedure Tokenize(const SQL:string;BaseLine:Integer;ATokens:TList<TSchemaToken>;out Issue:string);
+ var Position,Start,Line,Depth,J,ClosingAt:Integer;C,Closing:Char;Closed,Quoted:Boolean;Token:TSchemaToken;Delimiter:string;
+ begin
+  ATokens.Clear;Position:=1;Line:=BaseLine;Issue:='';
+  if Length(SQL)>2*1024*1024 then Issue:='SQL resource exceeds 2 MiB character inspection limit';
+     while (Position<=Length(SQL)) and (Issue='') do begin
+      C:=SQL[Position];if C<=#32 then begin if C=#10 then Inc(Line);Inc(Position);Continue;end;
+      if (C='-') and (Position<Length(SQL)) and (SQL[Position+1]='-') then begin
+       while (Position<=Length(SQL)) and (SQL[Position]<>#10) do Inc(Position);Continue;
+      end;
+      if (C='/') and (Position<Length(SQL)) and (SQL[Position+1]='*') then begin
+       Inc(Position,2);Depth:=1;
+       while (Position<=Length(SQL)) and (Depth>0) do begin
+        if SQL[Position]=#10 then Inc(Line);
+        if (Position<Length(SQL)) and (Copy(SQL,Position,2)='/*') then begin Inc(Depth);Inc(Position,2);if Depth>16 then begin Issue:='Comment nesting exceeds 16';Break;end;end
+        else if (Position<Length(SQL)) and (Copy(SQL,Position,2)='*/') then begin Dec(Depth);Inc(Position,2);end else Inc(Position);
+       end;
+       if Depth>0 then Issue:='Unterminated or unsupported block comment';Continue;
+      end;
+      Token:=Default(TSchemaToken);Token.Line:=Line;Start:=Position;
+      if C='$' then begin
+       J:=Position+1;while (J<=Length(SQL)) and CharInSet(SQL[J],['A'..'Z','a'..'z','0'..'9','_']) do Inc(J);
+       if (J<=Length(SQL)) and (SQL[J]='$') and ((J=Position+1) or not CharInSet(SQL[Position+1],['0'..'9'])) then begin
+        Delimiter:=Copy(SQL,Position,J-Position+1);Position:=J+1;Start:=Position;ClosingAt:=PosEx(Delimiter,SQL,Position);
+        if ClosingAt=0 then begin Issue:='Unterminated dollar-quoted body';Break;end;
+        Token.Text:='[literal omitted]';Token.Body:=Copy(SQL,Start,ClosingAt-Start);
+        while Position<ClosingAt do begin if SQL[Position]=#10 then Inc(Line);Inc(Position);end;Inc(Position,Length(Delimiter));
+        ATokens.Add(Token);if ATokens.Count>100000 then Issue:='SQL resource exceeds 100000-token limit';Continue;
+       end;
+      end;
+      if CharInSet(C,['''','"','[','`']) then begin
+       Quoted:=C<>'''';Closing:=C;if C='[' then Closing:=']';Inc(Position);Closed:=False;
+       while Position<=Length(SQL) do begin
+        if SQL[Position]=#10 then Inc(Line);
+        if SQL[Position]=Closing then begin Inc(Position);if (Position<=Length(SQL)) and (SQL[Position]=Closing) then Inc(Position) else begin Closed:=True;Break;end;end else Inc(Position);
+       end;
+       if not Closed then begin Issue:='Unterminated string or quoted identifier';Break;end;
+       Token.Identifier:=Quoted and (Position-Start>2);if Quoted then Token.Text:=Copy(SQL,Start,Position-Start) else begin Token.Text:='[literal omitted]';Token.Body:=StringReplace(Copy(SQL,Start+1,Position-Start-2),'''''','''',[rfReplaceAll]);end;
+      end else if CharInSet(C,['0'..'9']) then begin
+       Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['0'..'9']) do Inc(Position);Token.Text:=Copy(SQL,Start,Position-Start);
+      end else if CharInSet(C,['A'..'Z','a'..'z','_']) then begin
+       Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['A'..'Z','a'..'z','0'..'9','_','$']) do Inc(Position);
+       Token.Text:=Copy(SQL,Start,Position-Start);Token.Identifier:=True;
+      end else begin Token.Text:=C;Inc(Position);end;
+      ATokens.Add(Token);if ATokens.Count>100000 then Issue:='SQL resource exceeds 100000-token limit';
+     end;
  end;
  procedure InspectColumns(ABody,ALast:Integer;const ATable,ASchema,ADeclaration:string;ARange:TJSONObject);
  var EntryFirst,EntryLast,Cursor,TypeFirst,TypeLast,ClauseFirst,ExpressionFirst,ExpressionLast,Nesting,Part,Number:Integer;
@@ -270,6 +317,206 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
    Members:=nil;Included:=nil;
   finally Seen.Free;Members.Free;Included.Free;end;
  end;
+ function InspectStored(AFirst:Integer;var AEnd:Integer;ARange:TJSONObject):Boolean;
+ var P,Q,N,BodyFirst,BodyLast,BlockDepth,BracketDepth,ParamFirst,ParamLast,TypeFirst,DefaultAt,Order,ScanAt:Integer;
+     ObjectKind,ObjectName,Qualifier,Problem,LanguageName,ReturnType,BodyText,BodyIssue,TriggerTable,Timing,Scope,Events,WhenText,Mode,ParamName,ParamType,DefaultText,TargetName,Role,DependencyNote,HeaderOperation:string;
+     Params,Dependencies:TJSONArray;ParamRow,Dependency:TJSONObject;BodyTokens:TList<TSchemaToken>;Seen:TDictionary<string,Boolean>;TokenValue:TSchemaToken;QuotedBody,Parenthesized,ComplexScope:Boolean;
+  function Span(AStart,AStop:Integer):string;
+  var T:Integer;
+  begin Result:='';for T:=AStart to AStop-1 do begin if Length(Result)>8000 then Exit(Result+' [display truncated]');if Result<>'' then Result:=Result+' ';Result:=Result+Tokens[T].Text;end;end;
+  function ReadName(var Cursor:Integer;Limit:Integer;Source:TList<TSchemaToken>):string;
+  var Parts:Integer;
+  begin
+   Result:='';Parts:=0;
+   repeat
+    if (Cursor>=Limit) or not Source[Cursor].Identifier or MatchText(Source[Cursor].Text,['AS','BEGIN','END','CREATE','RETURNS','LANGUAGE','SELECT','FROM','WHERE','ON']) then begin Problem:='Missing qualified identifier';Exit;end;
+    if Result<>'' then Result:=Result+'.';Result:=Result+Source[Cursor].Text;Inc(Cursor);Inc(Parts);
+    if (Cursor<Limit) and (Source[Cursor].Text='.') then Inc(Cursor) else Break;
+   until False;
+   if Parts>3 then Problem:='Identifier has more than three parts';
+  end;
+  function TypeSupported(AStart,AStop:Integer):Boolean;
+  var T,Value:Integer;
+  begin
+   Result:=False;if (AStart>=AStop) or not Tokens[AStart].Identifier or MatchText(Tokens[AStart].Text,['AS','RETURNS','LANGUAGE','DEFAULT','BEGIN','TABLE']) then Exit;
+   T:=AStart+1;
+   while (T+1<AStop) and (Tokens[T].Text='.') and Tokens[T+1].Identifier do Inc(T,2);
+   if (T<AStop) and MatchText(Tokens[T].Text,['PRECISION','VARYING']) then Inc(T);
+   if (T<AStop) and (Tokens[T].Text='(') then begin
+    Inc(T);if (T>=AStop) or not TryStrToInt(Tokens[T].Text,Value) then Exit;Inc(T);
+    if (T<AStop) and (Tokens[T].Text=',') then begin Inc(T);if (T>=AStop) or not TryStrToInt(Tokens[T].Text,Value) then Exit;Inc(T);end;
+    if (T>=AStop) or (Tokens[T].Text<>')') then Exit;Inc(T);
+   end;
+   if (T+2<AStop) and MatchText(Tokens[T].Text,['WITH','WITHOUT']) and SameText(Tokens[T+1].Text,'TIME') and SameText(Tokens[T+2].Text,'ZONE') then Inc(T,3);
+   while (T<AStop) and (Tokens[T].Text='[]') do Inc(T);
+   Result:=T=AStop;
+  end;
+  procedure ParameterEntry(AStart,AStop:Integer);
+  var T,B:Integer;
+  begin
+   Q:=AStart;Mode:='IN';DefaultText:='not declared';ParamName:='';
+   if (Q<AStop) and MatchText(Tokens[Q].Text,['IN','OUT','INOUT','VARIADIC']) then begin Mode:=UpperCase(Tokens[Q].Text);Inc(Q);end;
+   if (Q<AStop) and (Tokens[Q].Text='@') then begin ParamName:='@';Inc(Q);end;
+   if (Q>=AStop) or not Tokens[Q].Identifier then begin Problem:='Parameter requires an explicit name and type';Exit;end;
+   ParamName:=ParamName+Tokens[Q].Text;Inc(Q);TypeFirst:=Q;DefaultAt:=AStop;B:=0;
+   for T:=Q to AStop-1 do begin
+    if Tokens[T].Text='(' then Inc(B) else if Tokens[T].Text=')' then Dec(B);
+    if (B=0) and MatchText(Tokens[T].Text,['DEFAULT','=']) then begin DefaultAt:=T;Break;end;
+   end;
+   Q:=DefaultAt;if (Q>TypeFirst) and MatchText(Tokens[Q-1].Text,['OUT','OUTPUT','READONLY']) then begin Mode:=UpperCase(Tokens[Q-1].Text);Dec(Q);end;
+   if not TypeSupported(TypeFirst,Q) then begin Problem:='Unsupported parameter type structure';Exit;end;
+   ParamType:=Span(TypeFirst,Q);
+   if DefaultAt<AStop then begin
+    Q:=AStop;if (Q>DefaultAt+1) and MatchText(Tokens[Q-1].Text,['OUT','OUTPUT']) then begin Mode:=UpperCase(Tokens[Q-1].Text);Dec(Q);end;
+    if Q<=DefaultAt+1 then begin Problem:='Parameter default has no expression';Exit;end;DefaultText:=Span(DefaultAt+1,Q);
+   end;
+   if Seen.ContainsKey(ParamName) then begin Problem:='Duplicate parameter name';Exit;end;Seen.Add(ParamName,True);Inc(Order);
+   ParamRow:=TJSONObject.Create.AddPair('position',TJSONNumber.Create(Order)).AddPair('name',ParamName).AddPair('mode',Mode).AddPair('declared_type',ParamType).AddPair('default',DefaultText).AddPair('line',TJSONNumber.Create(Tokens[AStart].Line));Params.AddElement(ParamRow);
+  end;
+  procedure AddDependency(const ARole,AName,AState:string;ALine:Integer);
+  begin
+   if StoredDependencies>=10000 then begin DependencyNote:='Dependency display limited to 10000 entries across the projection; coverage incomplete.';Exit;end;
+   if Dependencies.Count>=1000 then begin DependencyNote:='Dependency display limited to 1000 entries; coverage incomplete.';Exit;end;
+   Dependency:=TJSONObject.Create.AddPair('role',ARole).AddPair('reference',AName).AddPair('line',TJSONNumber.Create(ALine)).AddPair('state',AState);Dependencies.AddElement(Dependency);Inc(StoredDependencies);
+  end;
+ begin
+  Result:=False;P:=AFirst+1;HeaderOperation:='CREATE';
+  if (P+1<Tokens.Count) and SameText(Tokens[P].Text,'OR') and MatchText(Tokens[P+1].Text,['REPLACE','ALTER']) then begin HeaderOperation:='CREATE OR '+UpperCase(Tokens[P+1].Text);Inc(P,2);end;
+  if (P>=Tokens.Count) or not MatchText(Tokens[P].Text,['PROCEDURE','PROC','FUNCTION','TRIGGER']) then Exit;
+  Result:=True;ObjectKind:=LowerCase(Tokens[P].Text);if ObjectKind='proc' then ObjectKind:='procedure';Inc(P);
+  Problem:='';ObjectName:='';Qualifier:='unknown';LanguageName:='not declared';ReturnType:='not declared';TriggerTable:='';Timing:='not declared';Events:='';Scope:='not declared';WhenText:='not declared';DependencyNote:='Supported literal table references and explicit calls only; aliases, column binding, expression calls, CTEs and dynamic SQL are unverified. Empty dependencies do not establish independence.';
+  BodyFirst:=-1;BodyLast:=-1;QuotedBody:=False;
+  // Keep an inline block together; never reinterpret its internal DDL as top-level declarations.
+  for ScanAt:=P to AEnd-1 do if SameText(Tokens[ScanAt].Text,'BEGIN') then begin
+   BodyFirst:=ScanAt;BlockDepth:=0;Q:=ScanAt;
+   while Q<Tokens.Count do begin
+    if MatchText(Tokens[Q].Text,['BEGIN','CASE']) then Inc(BlockDepth)
+    else if SameText(Tokens[Q].Text,'END') and not ((Q+1<Tokens.Count) and MatchText(Tokens[Q+1].Text,['IF','LOOP','WHILE'])) then begin Dec(BlockDepth);if BlockDepth=0 then begin BodyLast:=Q+1;Break;end;end;
+    if (BlockDepth>128) then begin Problem:='Stored-object nesting exceeds 128';Break;end;
+    if SameText(Tokens[Q].Text,'END') and (Q+1<Tokens.Count) and SameText(Tokens[Q+1].Text,'CASE') then Inc(Q);
+    Inc(Q);
+   end;
+   if BodyLast<0 then begin Problem:='Unterminated stored-object block; remaining resource held as a gap';AEnd:=Tokens.Count;end
+   else begin AEnd:=BodyLast;if (AEnd<Tokens.Count) and (Tokens[AEnd].Text<>';') and not SameText(Tokens[AEnd].Text,'GO') then begin Problem:='Unsupported tail after stored-object block';while (AEnd<Tokens.Count) and (Tokens[AEnd].Text<>';') do Inc(AEnd);end;end;
+   Break;
+  end;
+  Params:=TJSONArray.Create;Dependencies:=TJSONArray.Create;BodyTokens:=TList<TSchemaToken>.Create;Seen:=TDictionary<string,Boolean>.Create;
+  try
+   if Problem='' then begin Q:=P;ObjectName:=ReadName(P,AEnd,Tokens);if P-Q>2 then begin Qualifier:='';for ScanAt:=Q to P-3 do Qualifier:=Qualifier+Tokens[ScanAt].Text;end;end;
+   if (Problem='') and (ObjectKind<>'trigger') then begin
+    Parenthesized:=(P<AEnd) and (Tokens[P].Text='(');ParamFirst:=P;
+    if Parenthesized then begin
+     Inc(P);ParamFirst:=P;BracketDepth:=1;
+     while (P<AEnd) and (BracketDepth>0) do begin if Tokens[P].Text='(' then Inc(BracketDepth) else if Tokens[P].Text=')' then Dec(BracketDepth);if BracketDepth>0 then Inc(P);end;
+     if BracketDepth<>0 then Problem:='Incomplete parameter list';ParamLast:=P;Inc(P);
+    end else begin
+     if ObjectKind='function' then Problem:='Function requires a parenthesized parameter list';
+     while (P<AEnd) and not MatchText(Tokens[P].Text,['AS','BEGIN','LANGUAGE']) do Inc(P);ParamLast:=P;
+    end;
+    Q:=ParamFirst;Order:=0;
+    while (Q<ParamLast) and (Problem='') do begin
+     N:=Q;BracketDepth:=0;while N<ParamLast do begin if Tokens[N].Text='(' then Inc(BracketDepth) else if Tokens[N].Text=')' then Dec(BracketDepth);if (BracketDepth=0) and (Tokens[N].Text=',') then Break;Inc(N);end;
+     ScanAt:=N;ParameterEntry(Q,N);Q:=ScanAt+1;
+     if (Q=ParamLast) and (Tokens[ParamLast-1].Text=',') then Problem:='Trailing empty parameter';
+    end;
+    if (Problem='') and (ObjectKind='function') then begin
+     if (P>=AEnd) or not SameText(Tokens[P].Text,'RETURNS') then Problem:='Function requires RETURNS type'
+     else begin Inc(P);TypeFirst:=P;while (P<AEnd) and not MatchText(Tokens[P].Text,['AS','BEGIN','LANGUAGE']) do Inc(P);if not TypeSupported(TypeFirst,P) then Problem:='Unsupported return type structure' else ReturnType:=Span(TypeFirst,P);end;
+    end;
+   end;
+   if (Problem='') and (ObjectKind='trigger') then begin
+    if (P<AEnd) and MatchText(Tokens[P].Text,['BEFORE','AFTER']) then begin Timing:=UpperCase(Tokens[P].Text);Inc(P);end
+    else if (P+1<AEnd) and SameText(Tokens[P].Text,'INSTEAD') and SameText(Tokens[P+1].Text,'OF') then begin Timing:='INSTEAD OF';Inc(P,2);end
+    else Problem:='Expected trigger timing BEFORE, AFTER or INSTEAD OF';
+    while (Problem='') and (P<AEnd) do begin
+     if not MatchText(Tokens[P].Text,['INSERT','UPDATE','DELETE','TRUNCATE']) then begin Problem:='Unsupported trigger event';Break;end;
+     if Events<>'' then Events:=Events+' OR ';Events:=Events+UpperCase(Tokens[P].Text);Inc(P);
+     if (P<AEnd) and SameText(Tokens[P].Text,'OR') then Inc(P) else Break;
+    end;
+    if (Problem='') and ((P>=AEnd) or not SameText(Tokens[P].Text,'ON')) then Problem:='Expected trigger ON table';
+    if Problem='' then begin Inc(P);TriggerTable:=ReadName(P,AEnd,Tokens);AddDependency('trigger table',TriggerTable,'captured reference',Tokens[AFirst].Line);end;
+    if (P+2<AEnd) and SameText(Tokens[P].Text,'FOR') and SameText(Tokens[P+1].Text,'EACH') and MatchText(Tokens[P+2].Text,['ROW','STATEMENT']) then begin Scope:=UpperCase(Tokens[P+2].Text);Inc(P,3);end;
+    if (P<AEnd) and SameText(Tokens[P].Text,'WHEN') then begin
+     Inc(P);Q:=P;BracketDepth:=0;
+     if (P>=AEnd) or (Tokens[P].Text<>'(') then Problem:='Trigger WHEN requires parentheses'
+     else repeat if Tokens[P].Text='(' then Inc(BracketDepth) else if Tokens[P].Text=')' then Dec(BracketDepth);Inc(P);until (P>=AEnd) or (BracketDepth=0);
+     if BracketDepth<>0 then Problem:='Incomplete trigger WHEN';WhenText:=Span(Q,P);
+    end;
+    if (Problem='') and (P+1<AEnd) and SameText(Tokens[P].Text,'EXECUTE') and MatchText(Tokens[P+1].Text,['FUNCTION','PROCEDURE']) then begin
+     Inc(P,2);TargetName:=ReadName(P,AEnd,Tokens);AddDependency('function call',TargetName,'captured reference',Tokens[AFirst].Line);
+     if (P+1<>AEnd-1) or (Tokens[P].Text<>'(') or (Tokens[P+1].Text<>')') then Problem:='Only zero-argument trigger calls are supported' else begin Inc(P,2);BodyText:='EXECUTE FUNCTION '+TargetName+' ( )';BodyFirst:=-2;end;
+    end;
+   end;
+   if (Problem='') and (BodyFirst<>-2) then begin
+    if (P+1<AEnd) and SameText(Tokens[P].Text,'LANGUAGE') and Tokens[P+1].Identifier then begin LanguageName:=Tokens[P+1].Text;Inc(P,2);end;
+    if (P<AEnd) and SameText(Tokens[P].Text,'AS') then Inc(P);
+    if (P<AEnd) and (Tokens[P].Text='[literal omitted]') then begin
+     QuotedBody:=True;Tokenize(Tokens[P].Body,Tokens[P].Line,BodyTokens,BodyIssue);Inc(P);
+     if BodyIssue<>'' then Problem:='Body lexical gap: '+BodyIssue;
+     if (P+1<AEnd) and SameText(Tokens[P].Text,'LANGUAGE') and Tokens[P+1].Identifier then begin LanguageName:=Tokens[P+1].Text;Inc(P,2);end;
+     if not MatchText(LanguageName,['sql','plpgsql']) then Problem:='Quoted body language must be SQL or PLPGSQL';
+     if P<>AEnd then Problem:='Unsupported stored-object option tail';
+     if BodyTokens.Count=0 then Problem:='Empty stored-object body';
+    end else if (P=BodyFirst) and (BodyLast>BodyFirst) then begin for Q:=BodyFirst to BodyLast-1 do BodyTokens.Add(Tokens[Q]);P:=BodyLast;end
+    else Problem:='Expected supported AS quoted SQL body or BEGIN/END block';
+    BodyText:='';for TokenValue in BodyTokens do begin if Length(BodyText)>16000 then begin BodyText:=BodyText+' [display truncated]';Break;end;if BodyText<>'' then BodyText:=BodyText+' ';BodyText:=BodyText+TokenValue.Text;end;
+   end;
+   if Problem<>'' then begin AddRow('gap','stored object '+ObjectName,Qualifier,'unsupported','Stored-object extraction gap: '+Problem+'. No structured stored object promoted.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);Exit;end;
+   // These are textual evidence, never a complete or executable dependency graph.
+   ComplexScope:=False;for TokenValue in BodyTokens do if SameText(TokenValue.Text,'WITH') then ComplexScope:=True;
+   Q:=0;
+   while Q<BodyTokens.Count do begin
+    Role:='';ScanAt:=Q;
+    if MatchText(BodyTokens[Q].Text,['FROM','JOIN','UPDATE']) then begin Role:='table reference';Inc(Q);end
+    else if (Q>0) and (Q+1<BodyTokens.Count) and SameText(BodyTokens[Q].Text,'INTO') and SameText(BodyTokens[Q-1].Text,'INSERT') then begin Role:='table reference';Inc(Q);end
+    else if MatchText(BodyTokens[Q].Text,['CALL','EXEC']) then begin Role:='procedure call';Inc(Q);end
+    else if (Q+1<BodyTokens.Count) and SameText(BodyTokens[Q].Text,'EXECUTE') and SameText(BodyTokens[Q+1].Text,'PROCEDURE') then begin Role:='procedure call';Inc(Q,2);end
+    else if SameText(BodyTokens[Q].Text,'EXECUTE') then AddDependency('unresolved dynamic execution','','dynamic SQL or dialect-specific execution; no target guessed',BodyTokens[Q].Line);
+    if Role<>'' then begin
+     if (Q<BodyTokens.Count) and BodyTokens[Q].Identifier and not MatchText(BodyTokens[Q].Text,['SELECT','SET','ONLY']) then begin
+      TargetName:=ReadName(Q,BodyTokens.Count,BodyTokens);
+      if (Problem='') and not ((Role='table reference') and ComplexScope) and not ((Role='table reference') and not SameText(BodyTokens[ScanAt].Text,'INTO') and (Q<BodyTokens.Count) and (BodyTokens[Q].Text='(')) then AddDependency(Role,TargetName,'captured reference',BodyTokens[ScanAt].Line)
+      else AddDependency('unresolved dependency',TargetName,'complex reference; no target guessed',BodyTokens[ScanAt].Line);
+      Problem:='';
+     end else AddDependency('unresolved dependency','','complex reference; no target guessed',BodyTokens[ScanAt].Line);
+    end;
+    if StoredDependencies>=10000 then begin DependencyNote:='Dependency display limited to 10000 entries across the projection; coverage incomplete.';Break;end;
+    if Dependencies.Count>=1000 then begin DependencyNote:='Dependency display limited to 1000 entries; coverage incomplete.';Break;end;
+    Q:=ScanAt+1;
+   end;
+   AddRow(ObjectKind,ObjectName,Qualifier,'declared stored object','Captured definition and supported header structure only. Body grammar, permissions, overload selection, migration order and deployed behavior remain unverified.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);
+   Row.AddPair('parameters',Params).AddPair('returns',ReturnType).AddPair('language',LanguageName).AddPair('body',BodyText).AddPair('dependencies',Dependencies).AddPair('dependency_note',DependencyNote).AddPair('header_operation',HeaderOperation).AddPair('trigger_table',TriggerTable).AddPair('timing',Timing).AddPair('events',Events).AddPair('scope',Scope).AddPair('when',WhenText).AddPair('quoted_body',TJSONBool.Create(QuotedBody));Params:=nil;Dependencies:=nil;
+  finally Seen.Free;BodyTokens.Free;Params.Free;Dependencies.Free;end;
+ end;
+ procedure ResolveStored;
+ var Index:TDictionary<string,TJSONObject>;Multiplicity:TDictionary<string,Integer>;Item,Target,Link:TJSONObject;Value,Dependency:TJSONValue;Identity,TargetKey,StateText:string;N:Integer;Links:TJSONArray;Complete:Boolean;
+  procedure RegisterName(const Key:string;ObjectRow:TJSONObject);
+  var Count:Integer;
+  begin Count:=0;Multiplicity.TryGetValue(Key,Count);Multiplicity.AddOrSetValue(Key,Count+1);Index.AddOrSetValue(Key,ObjectRow);end;
+ begin
+  Index:=TDictionary<string,TJSONObject>.Create;Multiplicity:=TDictionary<string,Integer>.Create;
+  try
+   for Value in Rows do begin Item:=Value as TJSONObject;
+    if MatchText(Item.GetValue<string>('kind'),['table','view']) and (Item.GetValue<string>('status')='declared header') then RegisterName('relation|'+Item.GetValue<string>('name'),Item);
+    if Item.GetValue<string>('status')='declared stored object' then begin RegisterName(Item.GetValue<string>('kind')+'|'+Item.GetValue<string>('name'),Item);end;
+   end;
+   for Value in Rows do begin Item:=Value as TJSONObject;if Item.GetValue<string>('status')<>'declared stored object' then Continue;
+    Links:=TJSONArray.Create;Item.AddPair('links',Links);Complete:=True;
+    Identity:=Item.GetValue<string>('kind')+'|'+Item.GetValue<string>('name');N:=Multiplicity[Identity];Item.RemovePair('definition_count').Free;Item.AddPair('definition_count',TJSONNumber.Create(N));
+    if N>1 then begin Complete:=False;Item.AddPair('conflict','Multiple captured definitions or overloads with this exact kind/name; no effective definition or overload selected.');end;
+    for Dependency in Item.GetValue<TJSONArray>('dependencies') do begin
+     TargetKey:='';if MatchText(Dependency.GetValue<string>('role'),['table reference','trigger table']) then TargetKey:='relation|'+Dependency.GetValue<string>('reference')
+     else if Dependency.GetValue<string>('role')='procedure call' then TargetKey:='procedure|'+Dependency.GetValue<string>('reference')
+     else if Dependency.GetValue<string>('role')='function call' then TargetKey:='function|'+Dependency.GetValue<string>('reference');
+     Link:=TJSONObject.Create.AddPair('role',Dependency.GetValue<string>('role')).AddPair('reference',Dependency.GetValue<string>('reference')).AddPair('position',TJSONNumber.Create(Links.Count+1)).AddPair('line',TJSONNumber.Create(Dependency.GetValue<Integer>('line')));Links.AddElement(Link);
+     N:=0;if TargetKey<>'' then Multiplicity.TryGetValue(TargetKey,N);
+     if N=1 then begin Target:=Index[TargetKey];Link.AddPair('state','unique captured name match; binding unverified').AddPair('target_id',Target.GetValue<string>('id'));end
+     else begin Complete:=False;if TargetKey='' then StateText:=Dependency.GetValue<string>('state') else if N=0 then StateText:='missing captured declaration' else StateText:='ambiguous captured declarations or overloads';Link.AddPair('state',StateText);end;
+    end;
+    if Complete then StateText:='captured links complete; coverage unverified' else StateText:='relationship gaps';Item.AddPair('relationship_status',StateText);
+   end;
+  finally Multiplicity.Free;Index.Free;end;
+ end;
  procedure ResolveKeys;
  var Index:TDictionary<string,TJSONObject>;Multiplicity:TDictionary<string,Integer>;
      UsageIndex:TObjectDictionary<string,TList<TJSONObject>>;UsageRows:TList<TJSONObject>;UsageRow:TJSONObject;UsageShown,UsageLinks:Integer;
@@ -343,7 +590,7 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
 begin
  Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
  Result.AddPair('qualification','Captured schema evidence only. CREATE headers declare intended objects; body grammar, column/constraint semantics, deployment order, dialect, existence and current production schema are unverified. SQL references do not prove object definitions. No SQL or target application is executed. Comments and string literals are omitted from displayed definitions; original source/cache remains unchanged. Unsupported statements are explicit gaps. Quoted identifier spelling is preserved; cross-dialect identity is not guessed.');
- Tokens:=TList<TSchemaToken>.Create;Counts:=TDictionary<string,Integer>.Create;ReferenceNames:=TDictionary<string,string>.Create;Ordinal:=0;
+ Tokens:=TList<TSchemaToken>.Create;Counts:=TDictionary<string,Integer>.Create;ReferenceNames:=TDictionary<string,string>.Create;Ordinal:=0;StoredDependencies:=0;
  try
   try
    for FileValue in AView.Document.GetValue<TJSONArray>('syntax.files') do begin
@@ -355,46 +602,16 @@ begin
     end;
     for NodeValue in Nodes do begin
      Node:=NodeValue as TJSONObject;if Node.GetValue<string>('kind')<>'sql_text' then Continue;
-     SQL:=Node.GetValue<string>('value');Tokens.Clear;Position:=1;Line:=Node.GetValue<Integer>('line',1);Issue:='';
-     if Length(SQL)>2*1024*1024 then Issue:='SQL resource exceeds 2 MiB character inspection limit';
-     while (Position<=Length(SQL)) and (Issue='') do begin
-      C:=SQL[Position];if C<=#32 then begin if C=#10 then Inc(Line);Inc(Position);Continue;end;
-      if (C='-') and (Position<Length(SQL)) and (SQL[Position+1]='-') then begin
-       while (Position<=Length(SQL)) and (SQL[Position]<>#10) do Inc(Position);Continue;
-      end;
-      if (C='/') and (Position<Length(SQL)) and (SQL[Position+1]='*') then begin
-       Inc(Position,2);Depth:=1;
-       while (Position<=Length(SQL)) and (Depth>0) do begin
-        if SQL[Position]=#10 then Inc(Line);
-        if (Position<Length(SQL)) and (Copy(SQL,Position,2)='/*') then begin Inc(Depth);Inc(Position,2);if Depth>16 then begin Issue:='Comment nesting exceeds 16';Break;end;end
-        else if (Position<Length(SQL)) and (Copy(SQL,Position,2)='*/') then begin Dec(Depth);Inc(Position,2);end else Inc(Position);
-       end;
-       if Depth>0 then Issue:='Unterminated or unsupported block comment';Continue;
-      end;
-      Token:=Default(TSchemaToken);Token.Line:=Line;Start:=Position;
-      if CharInSet(C,['''','"','[','`']) then begin
-       Quoted:=C<>'''';Closing:=C;if C='[' then Closing:=']';Inc(Position);Closed:=False;
-       while Position<=Length(SQL) do begin
-        if SQL[Position]=#10 then Inc(Line);
-        if SQL[Position]=Closing then begin Inc(Position);if (Position<=Length(SQL)) and (SQL[Position]=Closing) then Inc(Position) else begin Closed:=True;Break;end;end else Inc(Position);
-       end;
-       if not Closed then begin Issue:='Unterminated string or quoted identifier';Break;end;
-       Token.Identifier:=Quoted and (Position-Start>2);if Quoted then Token.Text:=Copy(SQL,Start,Position-Start) else Token.Text:='[literal omitted]';
-      end else if CharInSet(C,['0'..'9']) then begin
-       Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['0'..'9']) do Inc(Position);Token.Text:=Copy(SQL,Start,Position-Start);
-      end else if CharInSet(C,['A'..'Z','a'..'z','_']) then begin
-       Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['A'..'Z','a'..'z','0'..'9','_','$']) do Inc(Position);
-       Token.Text:=Copy(SQL,Start,Position-Start);Token.Identifier:=True;
-      end else begin Token.Text:=C;Inc(Position);end;
-      Tokens.Add(Token);if Tokens.Count>100000 then Issue:='SQL resource exceeds 100000-token limit';
-     end;
+     SQL:=Node.GetValue<string>('value');Tokenize(SQL,Node.GetValue<Integer>('line',1),Tokens,Issue);
      if Issue<>'' then begin AddRow('gap',Path,'unknown','unsupported',Issue,'',Line,Node);Continue;end;
      First:=0;
      while First<Tokens.Count do begin
+      if SameText(Tokens[First].Text,'GO') and ((First=0) or (Tokens[First-1].Line<Tokens[First].Line)) and ((First+1=Tokens.Count) or (Tokens[First+1].Line>Tokens[First].Line)) then begin Inc(First);Continue;end;
       Last:=First;while (Last<Tokens.Count) and (Tokens[Last].Text<>';') do Inc(Last);
       if Last=First then begin Inc(First);Continue;end;
       Kind:='gap';Name:='statement at line '+IntToStr(Tokens[First].Line);SchemaName:='unknown';Status:='unsupported';Issue:='Unsupported SQL statement; no object definition inferred.';Definition:='';Valid:=True;
       if SameText(Tokens[First].Text,'CREATE') then begin
+       if InspectStored(First,Last,Node) then begin First:=Last+1;Continue;end;
        if InspectIndex(First,Last,Node) then begin First:=Last+1;Continue;end;
        J:=First+1;ReplaceHeader:=False;TemporaryHeader:=False;IfHeader:=False;
        if (J+1<Last) and SameText(Tokens[J].Text,'OR') and SameText(Tokens[J+1].Text,'REPLACE') then begin ReplaceHeader:=True;Inc(J,2);end;
@@ -444,7 +661,7 @@ begin
    end;
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=0;Counts.TryGetValue(Key,Count);Counts.AddOrSetValue(Key,Count+1);end;
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=Counts[Key];Row.RemovePair('definition_count').Free;Row.AddPair('definition_count',TJSONNumber.Create(Count));if Count>1 then begin Row.RemovePair('reason').Free;Row.AddPair('reason','Multiple captured declarations have this exact kind/spelling. Migration order and effective definition are unresolved; no last-definition winner is selected.');end;end;
-   ResolveKeys;
+   ResolveKeys;ResolveStored;
   except Result.Free;raise;end;
  finally ReferenceNames.Free;Counts.Free;Tokens.Free;end;
 end;
@@ -452,6 +669,14 @@ class function TDPHDatabaseSchema.Describe(ARow:TJSONObject):string;
 var ColumnFacts,CountText:string;Link,Member:TJSONValue;
 begin
  ColumnFacts:='';CountText:='';
+ if MatchText(ARow.GetValue<string>('kind'),['procedure','function','trigger']) then begin
+  ColumnFacts:='Stored object: '+ARow.GetValue<string>('name')+' | Header: '+ARow.GetValue<string>('header_operation')+sLineBreak+'Language: '+ARow.GetValue<string>('language')+' | Returns: '+ARow.GetValue<string>('returns')+sLineBreak+'Ordered parameters:'+sLineBreak;
+  for Member in ARow.GetValue<TJSONArray>('parameters') do ColumnFacts:=ColumnFacts+Member.GetValue<Integer>('position').ToString+': '+Member.GetValue<string>('name')+' | '+Member.GetValue<string>('mode')+' | '+Member.GetValue<string>('declared_type')+' | default '+Member.GetValue<string>('default')+' | line '+Member.GetValue<Integer>('line').ToString+sLineBreak;
+  if ARow.GetValue<string>('kind')='trigger' then ColumnFacts:=ColumnFacts+'Trigger table: '+ARow.GetValue<string>('trigger_table')+sLineBreak+'Timing: '+ARow.GetValue<string>('timing')+' | Events: '+ARow.GetValue<string>('events')+' | Scope: '+ARow.GetValue<string>('scope')+sLineBreak+'WHEN (unevaluated text): '+ARow.GetValue<string>('when')+sLineBreak;
+  ColumnFacts:=ColumnFacts+'Relationships: '+ARow.GetValue<string>('relationship_status')+' | Captured definitions/overloads: '+ARow.GetValue<Integer>('definition_count').ToString+sLineBreak+ARow.GetValue<string>('conflict','')+sLineBreak+ARow.GetValue<string>('dependency_note')+sLineBreak;
+  for Link in ARow.GetValue<TJSONArray>('links') do ColumnFacts:=ColumnFacts+Link.GetValue<string>('role')+': '+Link.GetValue<string>('reference')+' | '+Link.GetValue<string>('state')+' | line '+Link.GetValue<Integer>('line').ToString+sLineBreak;
+  ColumnFacts:=ColumnFacts+sLineBreak+'CAPTURED BODY (comments and literals omitted)'+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+'A procedure groups database work; a function declares a returned value; a trigger declares work associated with an event. These are source declarations, not observed executions. Follow relationship opens captured evidence; name matches do not prove runtime binding. Body grammar, dynamic SQL, expression calls, permissions and deployed effects remain unverified.'+sLineBreak+sLineBreak;
+ end;
  if ARow.GetValue<string>('kind')='index' then begin
   ColumnFacts:='Indexed table: '+ARow.GetValue<string>('table')+sLineBreak+'Unique declared: '+ARow.GetValue('unique').Value+' | Method: '+ARow.GetValue<string>('method')+' | Storage kind: '+ARow.GetValue<string>('storage_kind')+sLineBreak+'Ordered index members:'+sLineBreak;
   for Member in ARow.GetValue<TJSONArray>('members') do ColumnFacts:=ColumnFacts+Member.GetValue<Integer>('position').ToString+': '+Member.GetValue<string>('expression')+' | order '+Member.GetValue<string>('sort')+' | nulls '+Member.GetValue<string>('nulls')+sLineBreak;

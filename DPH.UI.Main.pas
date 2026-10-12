@@ -1984,7 +1984,7 @@ begin
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.DatabaseSchemaFilterChange(Sender:TObject);
-var V:TJSONValue;Row:TJSONObject;Count:Integer;
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Parameters:TJSONArray;ParameterText:string;
 begin
  if FDatabaseSchemaRows=nil then Exit;
  if Sender=DatabaseSchemaNext then Inc(FDatabaseSchemaOffset,250) else FDatabaseSchemaOffset:=0;
@@ -1994,7 +1994,8 @@ begin
  for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (DatabaseSchemaKind.ItemIndex>0) and (Row.GetValue<string>('kind')<>DatabaseSchemaKind.Selected.Text) then Continue;
   if (DatabaseSchemaState.ItemIndex>0) and (Row.GetValue<string>('status')<>DatabaseSchemaState.Selected.Text) then Continue;
-  if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints','')+' '+Row.GetValue<string>('key_kind','')+' '+Row.GetValue<string>('reference_table','')+' '+Row.GetValue<string>('relationship_status','')+' '+Row.GetValue<string>('table','')+' '+Row.GetValue<string>('method','')+' '+Row.GetValue<string>('predicate','')+' '+Row.GetValue<string>('storage_kind','')+' '+Row.GetValue<string>('storage_options',''),DatabaseSchemaFilter.Text.Trim) then Continue;
+  ParameterText:='';if Row.TryGetValue<TJSONArray>('parameters',Parameters) then ParameterText:=Parameters.ToJSON;
+  if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints','')+' '+Row.GetValue<string>('key_kind','')+' '+Row.GetValue<string>('reference_table','')+' '+Row.GetValue<string>('relationship_status','')+' '+Row.GetValue<string>('table','')+' '+Row.GetValue<string>('method','')+' '+Row.GetValue<string>('predicate','')+' '+Row.GetValue<string>('storage_kind','')+' '+Row.GetValue<string>('storage_options','')+' '+Row.GetValue<string>('language','')+' '+Row.GetValue<string>('returns','')+' '+Row.GetValue<string>('trigger_table','')+' '+Row.GetValue<string>('events','')+' '+Row.GetValue<string>('body','')+' '+Row.GetValue<string>('timing','')+' '+Row.GetValue<string>('when','')+' '+ParameterText,DatabaseSchemaFilter.Text.Trim) then Continue;
   if (Count>=FDatabaseSchemaOffset) and (FDatabaseSchemaRows.Count<250) then begin FDatabaseSchemaRows.Add(Row);DatabaseSchemaList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('status')+' | '+Row.GetValue<string>('source')+':'+Row.GetValue<TJSONObject>('range').GetValue('line').Value);end;Inc(Count);
  end;
  DatabaseSchemaNext.Enabled:=Count>FDatabaseSchemaOffset+FDatabaseSchemaRows.Count;
@@ -2006,11 +2007,11 @@ procedure TDPHMainForm.DatabaseSchemaSelectionChange(Sender:TObject);
 var Link:TJSONValue;ID:string;
 begin
  if FDatabaseSchemaTargets=nil then Exit;FDatabaseSchemaTargets.Clear;DatabaseSchemaLinks.Items.Clear;DatabaseSchemaFollow.Enabled:=False;
- DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a table, view, schema or unsupported statement to read its captured evidence and next investigation.';
+ DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a schema object or unsupported statement to read its captured evidence and next investigation.';
  if (FDatabaseSchemaRows=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
  DatabaseSchemaMemo.Text:=TDPHDatabaseSchema.Describe(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex])+sLineBreak+sLineBreak+FDatabaseSchema.GetValue<string>('qualification');
  DatabaseSchemaSource.Enabled:=True;
- if MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['key','index']) then
+ if MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['key','index','procedure','function','trigger']) then
   for Link in FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<TJSONArray>('links') do
    if Link.TryGetValue<string>('target_id',ID) then begin FDatabaseSchemaTargets.Add(ID);DatabaseSchemaLinks.Items.Add(Link.GetValue<string>('role')+': '+Link.GetValue<string>('reference'));end;
  DatabaseSchemaFollow.Enabled:=FDatabaseSchemaTargets.Count>0;if DatabaseSchemaFollow.Enabled then DatabaseSchemaLinks.ItemIndex:=0;
