@@ -223,6 +223,7 @@ end
 object ExplorerLayout: TLayout
 Align = Left
 Width = 240
+Margins.Left = 16
 object FilterLayout: TLayout
 Align = Top
 Height = 110
