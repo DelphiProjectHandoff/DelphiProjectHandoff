@@ -54,7 +54,8 @@ begin
         for Value in Nodes do begin
           PropertyNode:=Value as TJSONObject;
           if (PropertyNode.GetValue<string>('kind')<>'property') or
-            not MatchText(PropertyNode.GetValue<string>('name'),['ShortCut','SecondaryShortCuts.Strings','TabOrder','TabStop','CanFocus','Action','OnKeyDown','OnKeyUp','OnKeyPress','Enabled','Visible','FocusControl']) then Continue;
+            not MatchText(PropertyNode.GetValue<string>('name'),['ShortCut','SecondaryShortCuts.Strings','TabOrder','TabStop','CanFocus','Action','OnKeyDown','OnKeyUp','OnKeyPress','Enabled','Visible','FocusControl',
+              'Caption','Text','Hint','Menu','PopupMenu','OnClick','OnExecute','OnUpdate','OnPopup','Checked','AutoCheck','GroupIndex','RadioItem','Category','ImageIndex','Style','AutoPopup']) then Continue;
           ParentID:=PropertyNode.GetValue<Integer>('parent');
           if not PropertyGroups.TryGetValue(ParentID,Group) then begin Group:=TList<TJSONObject>.Create; PropertyGroups.Add(ParentID,Group); end;
           Group.Add(PropertyNode);

@@ -71,6 +71,15 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    CommandsTab: TTabItem;
+    CommandsPurpose,CommandsStatus: TLabel;
+    CommandsToolbar: THorzScrollBox;
+    CommandsFilterEdit: TEdit;
+    CommandsKindCombo,CommandsHandlerCombo: TComboBox;
+    CommandsFirstButton,CommandsNextButton,CommandsSourceButton,CommandsActionButton,CommandsHandlerButton: TButton;
+    CommandsList: TListBox;
+    CommandsMemo: TMemo;
+    CommandsSplitter: TSplitter;
     PublishTab: TTabItem;
     PublishToolbar: THorzScrollBox;
     PublishScopeCombo: TComboBox;
@@ -205,6 +214,11 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure CommandsFilterChange(Sender: TObject);
+    procedure CommandsSelectionClick(Sender: TObject);
+    procedure CommandsSourceClick(Sender: TObject);
+    procedure CommandsHandlerChange(Sender: TObject);
+    procedure CommandsHandlerClick(Sender: TObject);
     procedure KeyboardSelectionClick(Sender: TObject);
     procedure KeyboardSourceClick(Sender: TObject);
     procedure ComparisonClick(Sender: TObject);
@@ -342,6 +356,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FCommands: TJSONObject;
+    FCommandRows: TList<TJSONObject>;
+    FCommandOffset: Integer;
     procedure RefreshQuestions;
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
@@ -370,7 +387,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -383,6 +400,7 @@ begin
   FKnowledgeRows:=TList<TJSONObject>.Create;
   FGlossaryRows:=TList<TJSONObject>.Create;
   FKeyboardRows:=TList<TJSONObject>.Create;
+  FCommandRows:=TList<TJSONObject>.Create;
   FCatalogPaths:=TList<string>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
@@ -419,6 +437,7 @@ begin
   FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
   FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
   FKeyboardRows.Free; FKeyboard.Free;
+  FCommandRows.Free; FCommands.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
   // Remove only this form's generated preview files, never a recursive tree.
@@ -702,6 +721,9 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FCommandRows.Clear; FreeAndNil(FCommands); CommandsList.Items.Clear; CommandsHandlerCombo.Items.Clear;
+  CommandsMemo.Text:='Open a captured project to inspect its commands.'; CommandsStatus.Text:='No capture loaded.';
+  CommandsNextButton.Enabled:=False; CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False;
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); KeyboardList.Items.Clear;
   KeyboardMemo.Text:='Open a project capture to inspect keyboard declarations.'; KeyboardNextButton.Enabled:=False;
   KeyboardStatus.Text:='No capture loaded.';
@@ -827,6 +849,7 @@ begin
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
+  FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
   FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
   for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
   ProjectMemberMemo.Text:='Select a captured project or output declaration above to read its settings and evidence.';
@@ -922,6 +945,77 @@ begin
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
 end;
+procedure TDPHMainForm.CommandsFilterChange(Sender: TObject);
+var Value: TJSONValue; Row: TJSONObject; Count: Integer; Kind,Query: string;
+begin
+  if Sender=CommandsNextButton then Inc(FCommandOffset,250) else FCommandOffset:=0;
+  CommandsList.Items.Clear; FCommandRows.Clear; CommandsHandlerCombo.Items.Clear;
+  CommandsNextButton.Enabled:=False; CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False;
+  CommandsMemo.Text:='Select a captured menu, toolbar command or action for explanations and source evidence.';
+  if FCommands=nil then Exit;
+  Query:=CommandsFilterEdit.Text.Trim; Kind:=''; if CommandsKindCombo.ItemIndex>0 then Kind:=CommandsKindCombo.Selected.Text; Count:=0;
+  for Value in FCommands.GetValue<TJSONArray>('rows') do begin
+    Row:=Value as TJSONObject;
+    if (Kind<>'') and (Kind<>Row.GetValue<string>('kind')) then Continue;
+    if (Query<>'') and not ContainsText(TDPHCommandInventory.Describe(Row),Query) then Continue;
+    if (Count>=FCommandOffset) and (FCommandRows.Count<250) then begin
+      FCommandRows.Add(Row); CommandsList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('command_path')+' | '+Row.GetValue<string>('caption'));
+    end;
+    Inc(Count);
+  end;
+  CommandsNextButton.Enabled:=Count>FCommandOffset+FCommandRows.Count;
+  CommandsStatus.Text:=IntToStr(Count)+' matching commands; showing '+IntToStr(FCommandRows.Count)+' from offset '+IntToStr(FCommandOffset)+'. Paths follow serialized parents.';
+  if CommandsList.Count>0 then begin CommandsList.ItemIndex:=0; CommandsSelectionClick(nil); end
+  else CommandsMemo.Text:='No matching captured command. Clear filters or inspect Coverage for missing form inputs.';
+end;
+
+procedure TDPHMainForm.CommandsSelectionClick(Sender: TObject);
+var Row: TJSONObject; Value: TJSONValue;
+begin
+  CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False; CommandsHandlerCombo.Items.Clear;
+  if (CommandsList.ItemIndex<0) or (CommandsList.ItemIndex>=FCommandRows.Count) then Exit;
+  Row:=FCommandRows[CommandsList.ItemIndex]; CommandsMemo.Text:=TDPHCommandInventory.Describe(Row)+sLineBreak+sLineBreak+FCommands.GetValue<string>('qualification');
+  CommandsSourceButton.Enabled:=True; CommandsActionButton.Enabled:=Row.GetValue('action_range')<>nil;
+  for Value in Row.GetValue<TJSONArray>('handlers') do CommandsHandlerCombo.Items.Add(Value.GetValue<string>('origin')+'.'+Value.GetValue<string>('event')+' = '+Value.GetValue<string>('declared_handler')+' ['+Value.GetValue<string>('resolution')+']');
+  if CommandsHandlerCombo.Items.Count>0 then CommandsHandlerCombo.ItemIndex:=0;
+  CommandsHandlerChange(nil);
+end;
+
+procedure TDPHMainForm.CommandsHandlerChange(Sender: TObject);
+var Handlers: TJSONArray; Key: string;
+begin
+  CommandsHandlerButton.Enabled:=False;
+  if (FView=nil) or (CommandsList.ItemIndex<0) or (CommandsList.ItemIndex>=FCommandRows.Count) then Exit;
+  Handlers:=FCommandRows[CommandsList.ItemIndex].GetValue<TJSONArray>('handlers');
+  if (CommandsHandlerCombo.ItemIndex<0) or (CommandsHandlerCombo.ItemIndex>=Handlers.Count) then Exit;
+  Key:=Handlers.Items[CommandsHandlerCombo.ItemIndex].GetValue<string>('target_key');
+  CommandsHandlerButton.Enabled:=(Key<>'') and (FView.Symbol(Key)<>nil);
+end;
+
+procedure TDPHMainForm.CommandsHandlerClick(Sender: TObject);
+var Handlers: TJSONArray; Key: string;
+begin
+  CommandsHandlerChange(nil); if not CommandsHandlerButton.Enabled then Exit;
+  Handlers:=FCommandRows[CommandsList.ItemIndex].GetValue<TJSONArray>('handlers');
+  Key:=Handlers.Items[CommandsHandlerCombo.ItemIndex].GetValue<string>('target_key');
+  SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+
+procedure TDPHMainForm.CommandsSourceClick(Sender: TObject);
+var Row,Range: TJSONObject;
+begin
+  if (FView=nil) or (CommandsList.ItemIndex<0) or (CommandsList.ItemIndex>=FCommandRows.Count) then Exit;
+  Row:=FCommandRows[CommandsList.ItemIndex];
+  if Sender=CommandsActionButton then begin if not Row.TryGetValue<TJSONObject>('action_range',Range) then Exit; end
+  else Range:=Row.GetValue<TJSONObject>('range');
+  if FDetached then begin CommandsMemo.Lines.Add('Source is detached. Captured command evidence remains readable. Attach unchanged source to navigate.'); Exit; end;
+  try
+    SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);
+    SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
+    WorkspaceTabs.ActiveTab:=SourceTab;
+  except on E: Exception do CommandsMemo.Lines.Add('Source unavailable: '+E.Message); end;
+end;
+
 procedure TDPHMainForm.ComparisonClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Baseline: Int64;
 begin

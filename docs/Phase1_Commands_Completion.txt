@@ -1,0 +1,58 @@
+DPH menus context menus and toolbar inventory completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.14 Menus, context menus, and toolbars
+
+The IDE-editable Menus and commands page inventories captured DFM, binary
+DFM and FMX menus, context attachments, toolbar commands/children, actions
+and consumers. It exposes nested serialized paths, captions, shortcut codes,
+check/radio declarations, source hashes/ranges and explicit unknowns.
+Unique local compatible references resolve without guessing external or
+ambiguous targets. Own OnClick, action OnExecute/OnUpdate and OnPopup bindings
+remain separate; confirmed static bindings lead to the captured routine in
+Explain. No runtime dispatch precedence or current state is inferred.
+
+Kind/text filtering, 250-row pagination, independent handler selection,
+verified command/action source navigation and scrolling work in the native
+serialized form. No runtime controls or database migration were introduced.
+
+VALIDATION
+62 focused checks passed using actual parser/semantic fixtures and instantiated
+FMX controls. Covered text/binary forms, paths, references, handler evidence,
+unknowns, independent handler choices, paging, detached/binary navigation,
+replacement captures and compact layout. Selected fixture bytes and the user
+catalog remain unchanged. Fixed fixtures reuse bin/commands-validation.
+55 keyboard regression checks passed; application Win32 Debug and FMX binding
+baseline passed elevated. Existing platform-specific compiler warning and
+worker/catalog hints remain; no new command-inventory compiler warnings.
+Both native PaintTo renders were visually inspected. They render running DPH
+controls, not screenshots of the target application. All 20 User Guide and
+16 Engineering Guide rendered pages were inspected; TOCs contain 38 and 30
+entries respectively. DOCX guides retain editable TOCs and companion PDFs.
+Explicit instructions: docs/guides/Menus_and_Commands_Run_and_Test.txt.
+
+BACKUP
+Full SHA-256 verified pre-change backup: 3372 files / 674178487 bytes.
+H:\DPH Backups\CommandInventory_PreChange_20261011_211546
+No post-change USB backup was made. Git and both GitHub remotes remain enabled.
+
+CURRENT STATUS
+533 requirement identities/text/order preserved. Only 04.14 is promoted in this
+batch. Counts: 174 implemented, 17 manual capture, 240 partial, 102 missing,
+zero unassessed. 342 records remain incomplete. Original planning files and
+historical reconciliation reports are unchanged.
+
+LIMITS
+The inventory describes captured declarations. Custom classes, unsupported
+framework actions, external targets, inherited defaults and runtime commands
+may remain unknown. Class recognition is conservative and not a substitute
+for complete framework inheritance analysis. Separators are not executable.
+Binary locations retain byte evidence but cannot be opened as text lines.
+Keyboard and focus supplies common readable key labels and conflict candidates.
+Runtime placement, state, dispatch and actual shortcuts require observed tests.
+
+NEXT BOUNDED REQUIREMENT
+04.15 Dynamic and runtime-created controls: resolve dynamic parent, ownership
+and event relationships and distinguish creation sites from runtime instances.
+The command inventory does not complete that separate requirement.

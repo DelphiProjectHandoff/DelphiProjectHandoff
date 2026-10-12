@@ -41,6 +41,7 @@ Items.Strings = (
 'Knowledge'
 'Business glossary'
 'Keyboard and focus'
+'Menus and commands'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1322,6 +1323,121 @@ object KnowledgeBodyMemo: TMemo
 Align = Client
 OnChange = KnowledgeEdited
 end
+end
+end
+object CommandsTab: TTabItem
+Text = 'Menus and commands'
+object CommandsPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Captured menu paths, context attachments, toolbar commands and actions. Select a command, then a handler to explain. Runtime dispatch is unobserved.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object CommandsToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object CommandsKindCombo: TComboBox
+Position.X = 8
+Position.Y = 4
+Width = 160
+Height = 30
+Items.Strings = ('All command kinds' 'main menu' 'context menu' 'menu item' 'menu separator' 'toolbar' 'toolbar command' 'toolbar child' 'action' 'action container' 'action consumer' 'menu attachment')
+ItemIndex = 0
+OnChange = CommandsFilterChange
+end
+object CommandsFilterEdit: TEdit
+Position.X = 176
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find command, caption, action or handler'
+OnChange = CommandsFilterChange
+end
+object CommandsFirstButton: TButton
+Position.X = 434
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = CommandsFilterChange
+end
+object CommandsNextButton: TButton
+Position.X = 532
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = CommandsFilterChange
+end
+object CommandsSourceButton: TButton
+Position.X = 630
+Position.Y = 4
+Width = 140
+Height = 30
+Enabled = False
+Text = 'Command source'
+OnClick = CommandsSourceClick
+end
+object CommandsActionButton: TButton
+Position.X = 778
+Position.Y = 4
+Width = 120
+Height = 30
+Enabled = False
+Text = 'Action source'
+OnClick = CommandsSourceClick
+end
+object CommandsHandlerCombo: TComboBox
+Position.X = 906
+Position.Y = 4
+Width = 340
+Height = 30
+OnChange = CommandsHandlerChange
+end
+object CommandsHandlerButton: TButton
+Position.X = 1254
+Position.Y = 4
+Width = 140
+Height = 30
+Enabled = False
+Text = 'Explain handler'
+OnClick = CommandsHandlerClick
+end
+end
+object CommandsStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object CommandsList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnClick = CommandsSelectionClick
+end
+object CommandsSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object CommandsMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object KeyboardTab: TTabItem

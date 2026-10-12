@@ -1,0 +1,70 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+13829 lines, 1.12 seconds, 9992196 bytes code, 344536 bytes data.
+PASS 1: Actual text DFM command parsed
+PASS 2: Actual FMX command parsed
+PASS 3: Binary DFM command parsed
+PASS 4: Unrelated component excluded
+PASS 5: Main menu classified
+PASS 6: FMX menu bar classified
+PASS 7: Context menu classified
+PASS 8: Separators distinguished from commands
+PASS 9: Nested serialized menu path retained
+PASS 10: Toolbar command classified
+PASS 11: Nested toolbar child captured
+PASS 12: Action classified
+PASS 13: Action list classified
+PASS 14: Context attachment captured
+PASS 15: Unique local context reference resolved
+PASS 16: Form menu attachment resolved
+PASS 17: External action stays unresolved
+PASS 18: Duplicate local names stay unresolved
+PASS 19: Incompatible menu class stays unresolved
+PASS 20: Absent routine stays unresolved
+PASS 21: Uncaptured inheritance qualified
+PASS 22: FMX Text preserved
+PASS 23: Check and radio state preserved
+PASS 24: Unserialized state remains unknown
+PASS 25: Action shortcut shown separately
+PASS 26: Action caption preserved
+PASS 27: Own click and action execute/update remain separate
+PASS 28: Own handler linked to captured routine
+PASS 29: Action execute linked to captured routine
+PASS 30: Action update linked to captured routine
+PASS 31: Popup handler linked
+PASS 32: Separator gets no invented executable binding
+PASS 33: Captured command source fingerprint retained
+PASS 34: Handler source and fingerprints exposed
+PASS 35: Runtime limits explicit
+PASS 36: Command navigation verifies current text source
+PASS 37: Action navigation verifies current text source
+PASS 38: Binary offsets refused as text lines
+PASS 39: Native page bounded to 250 rows
+PASS 40: More rows enable pagination
+PASS 41: Next page reaches remaining commands
+PASS 42: First page resets pagination
+PASS 43: Page available in workspace selector
+PASS 44: Kind filter finds both text and binary context menus
+PASS 45: Native text filter finds command
+PASS 46: Resolved action enables source button
+PASS 47: Native UI offers each handler independently
+PASS 48: Each confirmed handler independently enables Explain
+PASS 49: Each confirmed handler independently enables Explain
+PASS 50: Each confirmed handler independently enables Explain
+PASS 51: Confirmed handler enables Explain
+PASS 52: Explain opens captured handler
+PASS 53: Detached navigation refused explicitly
+PASS 54: Unresolved handler disables Explain
+PASS 55: Unresolved action disables source button
+PASS 56: Empty filter clears rows
+PASS 57: Empty results disable all navigation
+PASS 58: Compact layout retains detail area
+PASS 59: Compact toolbar scrolls
+PASS 60: New capture clears old commands
+PASS 61: User project catalog unchanged
+PASS 62: Inspection leaves selected source unchanged
+Command validation passed: 62 checks.

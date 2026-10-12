@@ -415,13 +415,28 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('After the glossary implementation, 344 requirement records remain incomplete', 'After the glossary and keyboard inspector implementations, 343 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Inspect menus context menus and toolbars', [
+'Open the intended project and choose Menus and commands in the upper-right page selector. Select a command to read its serialized menu path, caption or Text, action reference, shortcut codes, check flags, source location and diagnostics. The page inventories main and context menus, menu items and separators, toolbar commands and children, action containers, action consumers and menu attachments.',
+'Choose a command kind or enter a name, caption, property, handler or diagnostic in the filter. Next page advances through 250-row pages; First page resets. Scroll the command bar horizontally to reach Command source, Action source, the handler selector and Explain handler. The detail box below the list scrolls vertically. Drag the divider below the list to resize it.',
+'Command source opens unchanged attached form text. Action source opens a uniquely resolved local action declaration. Select the specific component OnClick, action OnExecute or OnUpdate, or context OnPopup in the handler selector, then click Explain handler to follow its confirmed captured routine. An unresolved handler disables that button. The separate bindings do not establish dispatch precedence. Source navigation refuses changed, detached, historical, binary or out-of-project text locations.',
+'Menu paths follow serialized parents, not observed screen positions. An ampersand in a caption declares an accelerator marker; a separator is not executable. Missing properties remain unknown. OnUpdate and OnPopup can change state and contents at runtime. Readable Windows shortcut names and possible conflicts are on Keyboard and focus. Use docs/guides/Menus_and_Commands_Run_and_Test.txt for explicit run and test steps. DPH does not execute the target application.'
+]))
+ENGINEERING.append(('Command inventory implementation and validation', [
+'DPH.Workspace.Commands builds command records from captured component properties in DPH.Workspace.Keyboard. It indexes parent paths and form-local names, distinguishes duplicate or incompatible references, and joins event properties by exact source and byte location to confirmed static semantic binds relationships. Every handler retains its own identity, relation, target symbol, range and source fingerprint. Action handlers and shortcuts remain separate from component declarations. Uncaptured inheritance, custom classes, external names and runtime dispatch remain qualified.',
+'DPH.UI.Main.fmx serializes the Menus and commands controls for IDE editing. The page provides kind and text filters, 250-row pagination, independent handler selection and Explain navigation. Command and action source commands reuse the keyboard inspector generation, hash and containment checks. Loading a replacement capture clears stale command rows. No database migration or target execution is required.',
+'Run tools\\build-commands.cmd elevated for 62 focused checks using actual text DFM, binary DFM, FMX and semantic fixtures, including action execute/update, own click and popup handlers, unresolved references, pagination and native control bindings. Fixtures reuse bin/commands-validation. Source bytes and the user catalog are checked unchanged. PaintTo renders in docs/phase1-commands-workspace.png and phase1-commands-compact.png show running DPH controls, not screenshots of the target app. The keyboard suite remains a required regression because both inspectors share captured properties.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('After the glossary and keyboard inspector implementations, 343 requirement records remain incomplete', 'After the glossary, keyboard and command inventory implementations, 342 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -546,5 +561,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 8, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 9, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

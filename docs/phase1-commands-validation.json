@@ -1,0 +1,1 @@
+﻿{"result":"PASS","checks":62,"fixture":"C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\commands-validation","qualification":"Real parser/model and instantiated FMX form. PaintTo renders show running DPH controls, not target-runtime screenshots."}

@@ -1,0 +1,104 @@
+DPH menus context menus and toolbars
+Last changed 11 October 2026
+Requirement 04.14
+
+RUN THE APPLICATION
+1. In File Explorer open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. It opens maximized.
+3. Click Attach project and select the intended application's .dproj or
+   .dpr, not DPH itself. Select the correct configuration and platform.
+   Save its .dphdb outside selected source, normally in DPH's Databases
+   folder, if prompted. Wait for the bottom activity line to finish.
+   Alternatively, click Open cache and choose an existing .dphdb.
+4. In the page selector at the upper right, choose Menus and commands.
+
+READ THE RESULTS
+5. Select one row in the command list. Its kind distinguishes main menus,
+   context menus, menu items, separators, toolbars, toolbar commands and
+   children, action containers, actions, action consumers and menu attachments.
+6. The detail box below the list explains the serialized parent path,
+   component class, caption or Text, own and action shortcut codes, action
+   caption, check/radio flags, menu references, captured handler bindings,
+   generation, source fingerprint, source location and diagnostics.
+   Scroll vertically inside this box to read HOW TO READ THIS.
+7. Paths describe serialized parents, not observed screen positions.
+   A caption's & character declares an accelerator marker. It does not
+   prove that a shortcut works. A '-' caption identifies a menu separator.
+   Absent properties remain unknown rather than assumed defaults.
+8. Action, Menu and PopupMenu references resolve only to unique compatible
+   local declarations. Ambiguous, external, custom and inherited targets
+   can remain unresolved. Captured OnClick and action OnExecute/OnUpdate
+   are separate bindings. DPH does not guess which one runs first.
+
+FILTER AND NAVIGATE
+9. Choose a kind in All command kinds or enter a component name, caption,
+   handler, property or diagnostic in the adjacent filter. Clear the text
+   and choose All command kinds to restore all rows. Filters reset paging.
+10. Each page contains at most 250 rows. Next page advances; First page
+    resets. The status line gives the matching count and current offset.
+11. The command bar has a horizontal scrollbar immediately below it.
+    Drag its thumb to the right to reach Command source, Action source,
+    the handler dropdown and Explain handler. This may be necessary even
+    in a maximized window depending on display size and scaling.
+12. Click Command source to open the attached form at its captured location.
+    Click Action source to open the uniquely resolved local action. Action
+    source is disabled when no such declaration was captured.
+13. Choose the exact handler in the handler dropdown, then click Explain
+    handler. The dropdown identifies its origin, event, declared routine
+    and resolution. For example, component.OnClick and action SaveAction.
+    OnExecute can lead to different routines. Explain opens captured routine
+    evidence. Use the upper-right page selector to return to Menus and commands.
+14. Explain handler is disabled for unresolved bindings. No handlers in the
+    dropdown means no supported event binding was captured for that row;
+    it does not prove the command does nothing at runtime.
+15. Source navigation checks generation, path containment and SHA-256.
+    Detached, changed, historical and binary text locations are refused
+    with an explanation in the detail box. Relocate verified source attaches
+    unchanged source to a cache; reassess changed source before navigating.
+16. Drag the divider below the list to enlarge the list or detail area.
+    Choose Keyboard and focus for readable Windows key labels and possible
+    shortcut conflicts. Menus and commands preserves the original codes.
+
+MANUAL CHECKS
+17. Attach a project with a known main menu, context menu and toolbar.
+    Compare a nested menu path and separator with its form in RAD Studio.
+18. Find a control with PopupMenu assigned. Confirm the named local menu
+    appears in its references. Find an action-backed command and compare
+    the action caption and shortcut with the Object Inspector.
+19. Select a command with both OnClick and action OnExecute or OnUpdate.
+    Select each handler independently and click Explain handler. Confirm
+    that each opens the correct captured routine. An unresolvable name must
+    stay labeled unresolved and must not enable Explain.
+20. Run the target yourself to check actual placement, shortcuts, enabled
+    state, check state and popup contents. OnUpdate, OnPopup, inherited
+    defaults and runtime code can change them. DPH does not run the target
+    or establish actual dispatch precedence. Runtime-created controls are
+    the separate next requirement, 04.15.
+
+AUTOMATED CHECKS FOR THE DEVELOPER
+21. Open Windows Start, type Command Prompt, right-click it and choose
+    Run as administrator. RAD Studio requires the elevated environment.
+22. Enter each command and press Enter:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-commands.cmd
+    Expect exit code zero and Command validation passed: 62 checks.
+23. Run the shared-property regression and application baseline:
+    tools\build-keyboard.cmd
+    tools\build-wp0.cmd
+    Expect 55 keyboard checks and PASS WP0-TEST.
+24. Controlled fixtures reuse bin\commands-validation. The suite parses real
+    text DFM, binary DFM, FMX and Pascal handlers; instantiates DPH's native
+    form; tests references, handler choices, pagination and navigation;
+    and verifies selected source and the user catalog remain unchanged.
+25. Open DPH.UI.Main.fmx in RAD Studio's form designer. Every command-page
+    control and its properties are serialized for Object Inspector editing.
+
+EVIDENCE AND LIMITS
+The JSON and log at docs\phase1-commands-validation.* record these checks.
+phase1-commands-workspace.png and phase1-commands-compact.png in docs are
+PaintTo renders of running DPH controls, not target application screenshots.
+Only confirmed static bindings are followed. Framework commands, custom
+classes, external declarations and uncaptured inheritance can remain unknown.
+The fixed validation folders stay under ignored bin; no test project is
+registered in the user's project catalog.

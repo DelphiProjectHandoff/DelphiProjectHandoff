@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09 and keyboard/focus 04.13 implemented; 343 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09, keyboard/focus 04.13 and command inventory 04.14 implemented; 342 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1442,16 +1442,29 @@
       "id": "04.14",
       "domain": "DPH-04",
       "requirement": "Menus, context menus, and toolbars",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Parse.Forms.pas",
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Workspace.Screen.pas",
+        "DPH.Workspace.Commands.pas",
+        "DPH.Workspace.Keyboard.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Semantics.dpr"
+        "tests/DPH.Tests.Commands.dpr",
+        "tools/build-commands.cmd",
+        "docs/phase1-commands-validation.json",
+        "docs/phase1-commands-validation.log",
+        "docs/guides/Menus_and_Commands_Run_and_Test.txt"
       ],
-      "limitation": "Add menu/action command inventories and action-to-handler/shortcut relationships beyond generic properties.",
+      "limitation": "Static captured declarations, not runtime menu ordering, dispatch precedence or state. External, ambiguous, unsupported framework/custom and uncaptured inherited references remain unresolved. Binary ranges are byte evidence, not navigable text lines. Runtime-created controls remain separate requirement 04.15.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 2,
+        "finding": "Dedicated IDE-editable command inventory: text/binary DFM and FMX menu paths, separators, context attachments, toolbar commands/children, action consumers, independent click/execute/update/popup bindings, shortcut and source evidence, unknown diagnostics, kind/text filtering, 250-row paging, confirmed-handler Explain and verified source navigation.",
+        "remaining_work": "",
+        "purpose": "Menus, context menus, and toolbars",
+        "evidence_group": "forms",
+        "verification": "62 focused checks, 55 keyboard regression checks and application/FMX binding baseline passed; native normal/compact renders and all 36 guide pages inspected."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 2,
         "finding": "Menu/action/toolbar components are retained in the generic component hierarchy.",
@@ -1459,6 +1472,12 @@
         "purpose": "Menus, context menus, and toolbars",
         "evidence_group": "forms",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Menus context menus and toolbar inventory",
+        "validation": "docs/phase1-commands-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12339,23 +12358,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Keyboard and focus inspector",
+    "completed_batch": "Menus context menus and toolbar inventory",
     "completed_requirement_ids": [
-      "04.13"
+      "04.14"
     ],
     "counts": {
       "implemented_manual_capture": 17,
-      "partial": 241,
-      "implemented": 173,
+      "partial": 240,
+      "implemented": 174,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 343,
-    "completion_record": "docs/Phase1_Keyboard_Completion.txt",
+    "incomplete_requirement_records": 342,
+    "completion_record": "docs/Phase1_Commands_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.14",
-      "title": "Menus, context menus, and toolbars",
-      "scope": "Dedicated command inventory and captured action-to-handler/shortcut relationships, source evidence, unresolved states, native views, acceptance checks and directions."
+      "requirement": "04.15",
+      "title": "Dynamic and runtime-created controls",
+      "scope": "Resolve dynamic parent, ownership and event relationships; distinguish captured creation sites from runtime instances, with native views, evidence, acceptance checks and explicit directions."
     }
   }
 }
