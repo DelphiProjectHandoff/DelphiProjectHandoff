@@ -1,9 +1,10 @@
-unit DPH.Workspace.DatabaseConnections;
+﻿unit DPH.Workspace.DatabaseConnections;
 interface
 uses System.JSON, DPH.Workspace.Model;
 type
   TDPHDatabaseConnections = class
   private
+    class procedure AppendOperations(AView:TDPHWorkspaceView;AInventory:TJSONObject); static;
     class procedure EvaluateEngines(AInventory:TJSONObject); static;
     class procedure ResolveFields(AInventory:TJSONObject); static;
   public
@@ -36,7 +37,7 @@ var Rows,Nodes,Properties,Links,Configuration:TJSONArray; FileValue,Value,Other:
   begin
     ShortName:=Copy(AClass,LastDelimiter('.',AClass)+1,MaxInt);Result:='';
     if MatchText(ShortName,['TFDConnection','TADOConnection','TSQLConnection','TDatabase','TIBDatabase','TSQLConnector','TZConnection','TUniConnection','TMyConnection','TPgConnection','TOraSession']) then Exit('connection');
-    if MatchText(ShortName,['TFDQuery','TFDTable','TFDStoredProc','TFDCommand','TADOQuery','TADOTable','TADOStoredProc','TADODataSet','TSQLQuery','TSQLDataSet','TSQLTable','TSQLStoredProc','TQuery','TTable','TStoredProc','TIBQuery','TIBDataSet','TIBTable','TIBSQL','TZQuery','TZTable','TClientDataSet','TFDMemTable','TUniQuery','TMyQuery','TPgQuery']) then Exit('dataset');
+    if MatchText(ShortName,['TDataSet','TFDQuery','TFDTable','TFDStoredProc','TFDCommand','TADOQuery','TADOTable','TADOStoredProc','TADODataSet','TSQLQuery','TSQLDataSet','TSQLTable','TSQLStoredProc','TQuery','TTable','TStoredProc','TIBQuery','TIBDataSet','TIBTable','TIBSQL','TZQuery','TZTable','TClientDataSet','TFDMemTable','TUniQuery','TMyQuery','TPgQuery']) then Exit('dataset');
     if MatchText(ShortName,['TDataSource','TBindSourceDB']) then Exit('data source');
     if MatchText(ShortName,['TField','TStringField','TWideStringField','TIntegerField','TLargeintField','TSmallintField','TWordField','TBooleanField','TFloatField','TCurrencyField','TBCDField','TFMTBCDField','TDateField','TTimeField','TDateTimeField','TSQLTimeStampField','TBlobField','TMemoField','TWideMemoField','TBytesField','TVarBytesField','TAutoIncField','TGuidField','TGraphicField']) then Exit('persistent field');
     if MatchText(ShortName,['TIBTransaction','TFDTransaction','TZTransaction','TSQLTransaction']) then Exit('transaction');
@@ -196,11 +197,94 @@ begin
         end;
       end;
       ResolveFields(Result);
+      AppendOperations(AView,Result);
       EvaluateEngines(Result);
       Result.AddPair('total',TJSONNumber.Create(Rows.Count)).AddPair('component_and_declaration_rows',TJSONNumber.Create(OriginalCount));
     except Result.Free;raise;end;
   finally VisualReferences.Free;Ordered.Free;Declarations.Free;Definitions.Free;Names.Free;Groups.Free;end;
 end;
+class procedure TDPHDatabaseConnections.AppendOperations(AView:TDPHWorkspaceView;AInventory:TJSONObject);
+var Rows,Relations:TJSONArray;V,W:TJSONValue;Row,Target,Symbol,Relation,Link:TJSONObject;
+    Symbols,Receivers,Locations:TDictionary<string,TJSONObject>;
+    ID,Key,Kind,Method,Effect,Basis,SQL,Owner,Reference:string;Count:Integer;Match:TMatch;
+  function LocationKey(AValue:TJSONObject):string;
+  begin Result:=AValue.GetValue<string>('range.source')+'|'+AValue.GetValue<TJSONValue>('range.start').Value;end;
+  procedure Remember(AIndex:TDictionary<string,TJSONObject>;const AKey:string;AValue:TJSONObject);
+  begin if AIndex.ContainsKey(AKey) then AIndex[AKey]:=nil else AIndex.Add(AKey,AValue);end;
+begin
+ Rows:=AInventory.GetValue<TJSONArray>('rows');Relations:=AView.Document.GetValue<TJSONArray>('semantics.relationships');
+ Symbols:=TDictionary<string,TJSONObject>.Create;Receivers:=TDictionary<string,TJSONObject>.Create;Locations:=TDictionary<string,TJSONObject>.Create;
+ try
+  for V in AView.Document.GetValue<TJSONArray>('semantics.symbols') do begin Symbol:=V as TJSONObject;Symbols.Add(Symbol.GetValue<string>('key'),Symbol);end;
+  for V in Rows do begin Row:=V as TJSONObject;Remember(Receivers,Row.GetValue<string>('id'),Row);Remember(Locations,LocationKey(Row),Row);end;
+  for V in Relations do if V.GetValue<string>('kind')='component_field' then
+    if Symbols.TryGetValue(V.GetValue<string>('from'),Symbol) and Locations.TryGetValue(LocationKey(Symbol),Target) and (Target<>nil) then
+      Remember(Receivers,V.GetValue<string>('to'),Target);
+  Count:=0;
+  for V in Relations do begin
+   Relation:=V as TJSONObject;Basis:=Relation.GetValue<string>('kind');
+   if not MatchText(Basis,['database_operation','static_sql','dynamic_sql']) then Continue;
+   Kind:='unknown';Method:=Relation.GetValue<string>('label');Effect:='Operation type and affected objects require approved source review.';
+   if Basis='database_operation' then begin
+    if MatchText(Method,['Open','Refresh','First','Last','Next','Prior','MoveBy','Locate','Lookup','FindFirst','FindLast','FindNext','FindPrior']) then begin Kind:='read';Effect:='Requests opening, refreshing, navigating or searching dataset records. Opening or refreshing may run configured SQL. Returned records, implicit posts and side effects are unobserved.';end
+    else if MatchText(Method,['Append','Insert']) then begin Kind:='insert preparation';Effect:='Starts a new record buffer. This is not proof of an inserted database row; follow Post or cancellation and cached-update handling.';end
+    else if MatchText(Method,['AppendRecord','InsertRecord']) then begin Kind:='insert';Effect:='Requests insertion of supplied record values. Success, cached updates, validation, triggers and transaction outcome are unobserved.';end
+    else if SameText(Method,'Edit') then begin Kind:='update preparation';Effect:='Starts editing the current record buffer. Follow Post or cancellation; changed live rows are unobserved.';end
+    else if SameText(Method,'Post') then begin Kind:='insert or update';Effect:='Requests posting the pending record buffer. Insert versus update depends on dataset state. Cached updates may defer persistence. Post does not prove transaction commit.';end
+    else if SameText(Method,'Delete') then begin Kind:='delete';Effect:='Requests deletion of the current record. Cached updates, cascade effects, affected rows and transaction outcome are unobserved.';end
+    else if MatchText(Method,['Cancel','CancelUpdates']) then begin Kind:='cancel pending changes';Effect:='Requests cancellation of a record edit or cached changes. This does not establish rollback of a database transaction.';end
+    else if SameText(Method,'ApplyUpdates') then begin Kind:='mixed pending writes';Effect:='Requests applying cached record changes, potentially inserts, updates and deletes. Errors and commit behavior depend on the provider and calling source.';end
+    else begin Kind:='SQL execution request';Effect:='Requests execution through a declared dataset API. Inspect configured SQL and its parameters; read/write kind, execution success and commit are unobserved.';end;
+    Basis:='Source call on a declared framework dataset or captured descendant; dispatch and runtime state unverified.';
+   end else begin
+    SQL:=Trim(Method);Method:='configured SQL';
+    if ContainsText(Relation.GetValue<string>('rule'),'literal_argument_to_execsql') then Method:='ExecSQL literal argument';
+    if Relation.GetValue<string>('kind')='static_sql' then begin
+     if (Length(SQL)>=2) and (SQL[1]='''') and (SQL[Length(SQL)]='''') then SQL:=Copy(SQL,2,Length(SQL)-2).Replace('''''','''');
+     // Mask quoted values before inspecting statement separators; never display SQL contents here.
+     SQL:=TRegEx.Replace(SQL,'''(?:''''|[^''])*''','?');
+     SQL:=TRegEx.Replace(SQL,'(?s)/\*.*?\*/',' ');SQL:=TRegEx.Replace(SQL,'--[^\r\n]*',' ');SQL:=Trim(SQL);
+     if SQL.EndsWith(';') then SQL:=Trim(Copy(SQL,1,Length(SQL)-1));
+     Match:=TRegEx.Match(SQL,'(?i)^\s*(SELECT|INSERT|UPDATE|DELETE)\b');
+     if Match.Success and not SQL.Contains(';') then begin
+      Key:=UpperCase(Match.Groups[1].Value);
+      if Key='SELECT' then Kind:='read' else Kind:=LowerCase(Key);
+     end;
+     Effect:='Captured '+Kind+' SQL candidate. Configuring SQL does not execute it. Complex SQL may have unresolved tables, columns, nested operations, triggers or provider-specific effects. Use Database schema and Source for evidence.';
+     Basis:='Literal SQL captured from source or a serialized resource; statement family is lexical, not server validation.';
+    end else begin Method:='dynamic SQL';Basis:='SQL text depends on expressions or runtime values; operation kind remains unknown.';end;
+   end;
+   if Rows.Count>=10000 then raise ERangeError.Create('Database inventory exceeds 10000 rows including operations');
+   Inc(Count);ID:='database-operation:'+IntToStr(Count);Owner:=Relation.GetValue<string>('from');
+   if Symbols.TryGetValue(Owner,Symbol) then Owner:=Symbol.GetValue<string>('name');
+   Row:=TJSONObject.Create;Rows.AddElement(Row);
+   Row.AddPair('id',ID).AddPair('name',Method).AddPair('path',Owner+' / '+Method+' / '+Kind).AddPair('class',Method).AddPair('role','database operation');
+   Row.AddPair('operation_kind',Kind).AddPair('effect',Effect).AddPair('basis',Basis).AddPair('condition',Relation.GetValue<string>('condition'));
+   Row.AddPair('source',Relation.GetValue<string>('range.source')).AddPair('source_hash',Relation.GetValue<string>('source_hash')).AddPair('range',Relation.GetValue('range').Clone as TJSONValue).AddPair('generation_id',AView.Document.GetValue('generation_id').Clone as TJSONValue);
+   Row.AddPair('availability','captured operation candidate').AddPair('declaration','source evidence, not execution evidence').AddPair('configuration',TJSONArray.Create).AddPair('links',TJSONArray.Create).AddPair('used_by',TJSONArray.Create);
+   Row.AddPair('unknowns','No SQL or target application was executed. Values, current record, affected row counts, access permissions, triggers, commit and rollback are unobserved. Review the calling routine and provider configuration.');
+   Target:=nil;Reference:='unresolved receiver';
+   if Relation.TryGetValue<string>('to',Key) and Symbols.TryGetValue(Key,Symbol) then begin
+    Reference:=Symbol.GetValue<string>('name');
+    if not Receivers.TryGetValue(Key,Target) and (Relation.GetValue<string>('kind')='database_operation') then begin
+     if Rows.Count>=10000 then raise ERangeError.Create('Database inventory exceeds 10000 rows including operation receivers');
+     Target:=TJSONObject.Create;Rows.AddElement(Target);Receivers.Add(Key,Target);
+     Target.AddPair('id',Key).AddPair('name',Reference).AddPair('path',Reference).AddPair('class',Symbol.GetValue<string>('type')).AddPair('role','dataset');
+     Target.AddPair('source',Symbol.GetValue<string>('range.source')).AddPair('source_hash',Symbol.GetValue<string>('source_hash')).AddPair('range',Symbol.GetValue('range').Clone as TJSONValue).AddPair('generation_id',AView.Document.GetValue('generation_id').Clone as TJSONValue);
+     Target.AddPair('availability','captured descendant dataset declaration').AddPair('declaration',Symbol.GetValue<string>('kind')).AddPair('configuration',TJSONArray.Create).AddPair('links',TJSONArray.Create).AddPair('used_by',TJSONArray.Create);
+     Target.AddPair('unknowns','Receiver has a captured dataset ancestry. Runtime instance, inherited/custom API overrides, connection and configuration are unobserved.');
+    end;
+   end;
+   Link:=TJSONObject.Create.AddPair('property','DataSet').AddPair('reference',Reference);Row.GetValue<TJSONArray>('links').AddElement(Link);
+   if (Target<>nil) and MatchText(Target.GetValue<string>('role'),['dataset','connection']) then begin
+    Link.AddPair('target_id',Target.GetValue<string>('id')).AddPair('resolution','unique captured semantic receiver');
+    Target.GetValue<TJSONArray>('used_by').AddElement(TJSONObject.Create.AddPair('id',ID).AddPair('name',Row.GetValue<string>('path')).AddPair('property','operation receiver'));
+   end else Link.AddPair('resolution','receiver unavailable, ambiguous or outside recognized database inventory');
+  end;
+  AInventory.AddPair('operation_count',TJSONNumber.Create(Count));
+ finally Locations.Free;Receivers.Free;Symbols.Free;end;
+end;
+
 class procedure TDPHDatabaseConnections.ResolveFields(AInventory:TJSONObject);
 var Rows:TJSONArray;V,L,C,D:TJSONValue;Row,Link,Source,Dataset,Target:TJSONObject;
     ByID:TDictionary<string,TJSONObject>;Fields:TObjectDictionary<string,TList<TJSONObject>>;
@@ -278,7 +362,7 @@ begin
   // At most three resolved hops cover ordinary data-source/dataset/connection paths.
   // Conflicting references are never collapsed to whichever target was visited last.
   for Pass:=1 to 3 do for Value in Rows do begin
-   Row:=Value as TJSONObject;if not MatchText(Row.GetValue<string>('role'),['dataset','data source','transaction','database candidate']) then Continue;
+   Row:=Value as TJSONObject;if not MatchText(Row.GetValue<string>('role'),['dataset','data source','transaction','database candidate','database operation']) then Continue;
    Targets.Clear;Selected:=nil;UnresolvedLink:=False;
    for LinkValue in Row.GetValue<TJSONArray>('links') do
     if MatchText(LinkValue.GetValue<string>('property'),['Connection','SQLConnection','ADOConnection','Database','DefaultDatabase','DataSet']) then begin
@@ -320,6 +404,7 @@ begin
     for Value in ARow.GetValue<TJSONArray>('configuration') do if MatchText(Value.GetValue<string>('name'),['FieldName','FieldKind','Required','ReadOnly','Size','Precision']) then BindingText:=BindingText+Value.GetValue<string>('name')+' = '+Value.GetValue<string>('value')+sLineBreak;
     Result:=BindingText+'Follow reference opens the exact captured target. Field names identify serialized persistent fields, not verified live columns. Missing/runtime/inherited bindings remain unknown.'+sLineBreak+sLineBreak+Result;
   end;
+  if ARow.GetValue<string>('role')='database operation' then Result:='DATABASE OPERATION: '+UpperCase(ARow.GetValue<string>('operation_kind'))+sLineBreak+ARow.GetValue<string>('path')+sLineBreak+ARow.GetValue<string>('effect')+sLineBreak+ARow.GetValue<string>('basis')+sLineBreak+'Conditional context: '+ARow.GetValue<string>('condition')+sLineBreak+'Follow reference opens the captured receiver. Source opens the hash-checked source location.'+sLineBreak+sLineBreak+Result;
   Result:=Result+sLineBreak+'UNKNOWNS AND NEXT INVESTIGATION'+sLineBreak+ARow.GetValue<string>('unknowns')+sLineBreak+
     'Ask the maintainer which named definition and environment are intended; inspect approved configuration locally. Do not enter credentials into authored explanations. Serialized Connected=True is a declaration, not evidence of a successful connection. This inventory never opens a target database.';
 end;

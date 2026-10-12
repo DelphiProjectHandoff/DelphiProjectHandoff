@@ -90,7 +90,11 @@ Dataset components and bindings completed (05.11): captured dataset/source/contr
 chains, persistent fields, FMX bindings, reverse references and exact navigation.
 92 focused and 132 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Dataset_Bindings_Completion.txt.
-Current live backlog: 326 incomplete requirement records; 0 unassessed.
+Database operation inventory completed (05.12): recognized dataset CRUD and
+SQL candidates, requested effects, exact receiver and source navigation.
+232 focused and 292 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Operations_Completion.txt.
+Current live backlog: 325 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

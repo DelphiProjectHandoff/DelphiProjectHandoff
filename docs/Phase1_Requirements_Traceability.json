@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Dataset components and bindings 05.11 implemented with captured field/control chains; 326 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Database operation inventory 05.12 implemented with qualified source effects and receiver/source navigation; 325 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2179,13 +2179,30 @@
       "id": "05.12",
       "domain": "DPH-05",
       "requirement": "Read, insert, update, and delete operations",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Analysis.Model.pas",
+        "DPH.Analysis.Symbols.pas",
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseOperations.dpr",
+        "tools/build-database-operations.cmd",
+        "docs/phase1-database-operations-validation.json",
+        "docs/phase1-database-operations-validation.log",
+        "docs/guides/Database_Operations_Run_and_Test.txt"
       ],
-      "limitation": "Expand operation records and dataset API recognition beyond the supported single-table SQL subset.",
+      "limitation": "Qualified source operation candidates only, not database execution or success evidence. Runtime dispatch, aliases, within-with and factory/indexed receivers, unsupported providers and SQL prefixes, dynamic/mixed SQL, implicit posts, cached updates, triggers, affected row counts and transaction outcome remain unobserved. SQL family recognition does not invent schema bindings. SQL values are omitted from the operation inventory. Existing 10000-row bound applies. No target application, SQL, driver or database server runs.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database operation inventory captures recognized framework/descendant dataset read, insert, edit, post, delete, cancel and cached-update API requests plus static/dynamic SQL. Effects distinguish buffer preparation, configured SQL, execution requests and unverified persistence. Receiver/source identity, generation, conditional context, reverse references and engine evidence remain inspectable. IDE-editable operation filter and Source command support native navigation. Complex single SQL CRUD families are retained without inventing schema bindings; mixed/dynamic SQL stays unknown. Local framework-name shadows and ordinary Delete calls are excluded.",
+        "remaining_work": "",
+        "purpose": "Read, insert, update, and delete operations",
+        "evidence_group": "sql",
+        "verification": "232 focused checks and 292 regressions pass (92 bindings, 66 engine, 134 semantics). Actual app and FMX baseline pass. Persisted/reopened captures, CRUD families, SQL joins/mixed/dynamic SQL, descendant receivers, name-shadow exclusion, source identity, effects, redaction, native controls, detached-source refusal, normal/compact renders and source/catalog immutability verified. Final guide page images visually reviewed; 58 source hashes and 102 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Simple SELECT/INSERT/UPDATE/DELETE text yields qualified read/write table and column links.",
@@ -2193,6 +2210,12 @@
         "purpose": "Read, insert, update, and delete operations",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Database operation inventory",
+        "validation": "docs/phase1-database-operations-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12697,23 +12720,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Dataset components and bindings",
+    "completed_batch": "Database operation inventory",
     "completed_requirement_ids": [
-      "05.11"
+      "05.12"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 230,
-      "implemented": 189,
+      "partial": 229,
+      "implemented": 190,
       "missing": 96
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 326,
-    "completion_record": "docs/Phase1_Dataset_Bindings_Completion.txt",
+    "incomplete_requirement_records": 325,
+    "completion_record": "docs/Phase1_Database_Operations_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.12",
-      "title": "Read, insert, update, and delete operations",
-      "scope": "Expand operation records and dataset API recognition beyond the supported single-table SQL subset."
+      "requirement": "05.13",
+      "title": "Transaction boundaries and rollback behavior",
+      "scope": "Recognize selected-program begin/commit/rollback APIs and connect success/error/cleanup paths."
     }
   }
 }

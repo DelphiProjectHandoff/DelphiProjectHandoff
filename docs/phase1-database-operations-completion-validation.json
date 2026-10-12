@@ -1,0 +1,85 @@
+{
+  "result": "PASS",
+  "requirement": "05.12",
+  "status": "implemented",
+  "checks": 232,
+  "regression_checks": 292,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.12",
+  "incomplete_requirement_records": 325,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 229,
+    "implemented": 190,
+    "missing": 96
+  },
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 32,
+        "toc_entries": 55,
+        "new_chapter_pages": [
+          3,
+          22
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 28,
+        "toc_entries": 47,
+        "new_chapter_pages": [
+          2,
+          26
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 60 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseOperations_PreChange_20261012_145836",
+    "files": 5253,
+    "bytes": 1810651908,
+    "sha256_verified": true
+  },
+  "qualification": "Qualified source operation candidates only, not database execution or success evidence. Runtime dispatch, aliases, within-with and factory/indexed receivers, unsupported providers and SQL prefixes, dynamic/mixed SQL, implicit posts, cached updates, triggers, affected row counts and transaction outcome remain unobserved. SQL family recognition does not invent schema bindings. SQL values are omitted from the operation inventory. Existing 10000-row bound applies. No target application, SQL, driver or database server runs.",
+  "evidence_hashes": {
+    "DPH.Analysis.Model.pas": "a37176e806b6270c88879df9e80c7a0108aeede8a2138428fca4dd07724a01a7",
+    "DPH.Analysis.Symbols.pas": "7d6e617e3459b5846c711cd93a37d516116b73e5b76695404f83ec0ac1874447",
+    "DPH.Workspace.DatabaseConnections.pas": "d318d45a13775018ea583c4f6067728c2c4f52f076bb243afd995c5702ecfb24",
+    "DPH.UI.Main.pas": "54a2cbd7b10571e67676a2ef06b13996801b13f5f42e7fce7825f8522a9488bd",
+    "DPH.UI.Main.fmx": "938875db260dbc71005b2a57c5ef75b625d1781df304e71acecb9f7d99489c68",
+    "tests/DPH.Tests.DatabaseOperations.dpr": "09ec390e540ddb8d3c8936739fa66a2a6485f77fad44aeb66e79640b147a5594",
+    "tools/build-database-operations.cmd": "fba825fbd0634a0eb2cf99690ba6ed5e8aa5363d588308820337f37ac9bbf46f",
+    "docs/phase1-database-operations-validation.json": "480a874323c456c3b2cb77bfb86dad618fcf41770c538a602e97138686113fc6",
+    "docs/phase1-database-operations-validation.log": "f2f7d62eb48f17d055f93c309c086b80f046642a57537441db114b948bf89b1a",
+    "docs/guides/Database_Operations_Run_and_Test.txt": "b7319a493f9d8d196ce629d669094f888fcbf6f248f19d3caf063c28c8495fb4",
+    "tools/build-guides.py": "b7f7954e8286db068f4b1d83146ff392f5ff56664634fc62cc28f70b88a6ecb6",
+    "README.md": "78693f0fbda557d36f5134e447919899d6fd64ac75039732ce3d7b3126426a3c",
+    "help/index.html": "026f46d0288ce971f70e5c2b81abb0f1ba399524ab73aac27f432627c30baf16",
+    "docs/guide-source-validation.json": "87a0ca4cafd8e331c8139c87667c866d4a5cf5f117f1e743b81bf94da9417278",
+    "docs/guides/DPH_User_Guide.docx": "47714448881ade2543f76b74a7f9ed7504a44de06620f0e9abe3cb53ee387a1e",
+    "docs/guides/DPH_Engineering_Guide.docx": "6699f525fb23f5247266fd0f0c9d0e774df141f99e27f69762cdccf626cecc9c",
+    "docs/pdf/DPH_User_Guide.pdf": "6fd95d50ebf1a668f906abeb8fcda425f3f371ce875b4b0ab3c38c5db45b57c2",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "dffac124a311b367c08c9b811bb82c3a287b0a17306aff98733fff7680970aa9",
+    "docs/phase1-database-operations-build.log": "80b6e7ea55e2de86e524f85bd642d3150b3613f098cbb895a9a5709993d845dd",
+    "docs/Phase1_Database_Operations_Completion.txt": "0549a7f32515282088868fdfe5dbd9e20184e104067be937dc2ddaadecdb9d7f",
+    "docs/Phase1_Requirements_Traceability.json": "097e62d9faecbf3164df956d994f4e5ef6162d131b7cbfb5773c92677be18266",
+    "docs/Phase1_Implementation_Backlog.csv": "47c509669fb7c91d20a356e57558836dc393b11ae1deecd4a913511a4095ce13",
+    "docs/Implementation_Completion_Tracker.txt": "48450c458d4974b7306229de3755178bd1bcdd115a062e43eb6fd6a3e1b73aa6",
+    "docs/phase1-database-operations-workspace.png": "741fc250b484b53521c56c3c6eabb7355407b2780e6771ac5dc059612fbdb7bf",
+    "docs/phase1-database-operations-compact.png": "eec3bd3bd167edc44a8eb06e5b1b5fc595b7d6e017bc4ab3be6ab913d64f9cdf",
+    "docs/phase1-database-operations-bindings-regression.json": "7f0dccfaa38f7415a49623292722f627011c6a98c0038ce9fb3746432822de17",
+    "docs/phase1-database-operations-bindings-regression.log": "f6fe09d912e0118b04ababfb18a907d4843e1e661fc4a716129061c1f76f33e4",
+    "docs/phase1-database-operations-engines-regression.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-database-operations-engines-regression.log": "2f0d9e5b7dd4b93f69553494bd052bf8cc6e1cfcad476601347e994fca5aaf8e",
+    "docs/phase1-database-operations-semantics-regression.json": "16cd3a0f9f8d397eb208418526c9f61de93bea45fac428a83c415c4909b2e31b",
+    "docs/phase1-database-operations-semantics-regression.log": "f9263026746332c5a4d06dd8d070f42b027ea0a48492eb369152fd4569ed0167"
+  }
+}

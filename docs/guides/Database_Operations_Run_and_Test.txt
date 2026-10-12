@@ -1,0 +1,58 @@
+﻿DATABASE OPERATIONS RUN AND TEST
+Last changed: 12 October 2026
+
+1. In File Explorer open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+   Double-click DelphiProjectHandoff.exe. The app opens maximized.
+2. Click Attach project. Select the application's .dproj, .dpr or .groupproj.
+   Save its proposed .dphdb in DPH's Databases folder. DPH rejects itself.
+   Alternatively click Open cache and select an existing .dphdb. For old
+   captures, attach unchanged source and click Full reassessment to refresh
+   operation evidence. Source code and SQL are not executed by DPH.
+3. Choose Database connections from the upper-right page selector.
+   In the page's first dropdown choose database operation. Clear the adjacent
+   text filter. Select a row in the list below the filter toolbar.
+4. Read the DATABASE OPERATION section at the start of the evidence memo.
+   Enter Delete, Post, read, insert, update or a routine name in the filter
+   to find related requests. Next page shows more than 250 matching rows;
+   First page returns to the beginning. An empty filter result is not proof
+   that no database behavior exists.
+5. In the reference dropdown choose Target via DataSet, then click Follow
+   reference. The receiver's reverse references return to operation rows.
+   Use the horizontal scrollbar beneath the page toolbar to reach commands
+   outside the visible area. The evidence memo scrolls separately.
+6. Select an operation and click Source at the right end of that toolbar.
+   Attach unchanged source first. Detached, changed, out-of-root, historical
+   and binary evidence does not permit text navigation. Read the refusal
+   message in the evidence memo. Never apply old ranges to changed source.
+
+READ THE EFFECT CORRECTLY
+Append/Insert prepare insertion; Edit prepares an update. Post requests
+submission of the buffer, which may still be cached. Delete requests deletion
+of the current record. ApplyUpdates may submit mixed changes. Cancel and
+CancelUpdates do not prove database rollback. No call proves commit, success
+or affected row count. Configured SQL is not execution evidence. Dynamic and
+mixed SQL remain unknown. SQL families do not prove server validity or all
+nested effects. Custom dispatch, runtime receivers and unsupported APIs need
+approved source review. This page never displays SQL values or credentials.
+
+REPEATABLE CONTROLLED CHECK
+Open Windows Terminal as administrator. Choose a Command Prompt tab and run:
+cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+tools\build-database-operations.cmd
+Expected final result: Database operations validation passed: 232 checks.
+This compiles only DPH's test harness and runs controlled local fixtures,
+not the analyzed application or SQL. Evidence is saved to:
+docs\phase1-database-operations-validation.json
+The controlled fixture folder is bin\database-operations-validation.
+Do not select its synthetic source as a real project.
+
+REGRESSIONS
+tools\build-dataset-bindings.cmd             expected 92 checks
+tools\build-database-engines.cmd             expected 66 checks
+tools\build-wp3.cmd
+bin\Win32\Debug\DPH.Tests.Semantics.exe "%CD%"  expected 134 checks
+tools\build-wp0.cmd                          expected PASS WP0-TEST
+
+Guides: docs\guides\DPH_User_Guide.docx and DPH_Engineering_Guide.docx.
+Companion PDFs: docs\pdf\DPH_User_Guide.pdf and DPH_Engineering_Guide.pdf.

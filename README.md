@@ -120,3 +120,5 @@ Requirement 05.08: Database ER diagram now draws captured tables, ordered column
 Requirement 05.09: Database schema > Edit dictionary records attributed table/column business definitions, owners, sensitivity and evidence with exact captured source/schema links. Apply prepares a Knowledge draft; Save and named review remain explicit. Schema search includes current definitions, and source-excluded or mismatched definitions are omitted from publication. See docs/guides/Database_Dictionary_Run_and_Test.txt.
 
 Requirement 05.11: Database connections follows captured dataset/data-source/control/persistent-field chains, including serialized FMX DataSource/FieldName/Control references. Duplicate, missing and runtime-only fields remain unresolved. See docs/guides/Dataset_Bindings_Run_and_Test.txt.
+
+Requirement 05.12: Database connections now inventories source dataset CRUD requests and captured SQL families, with effects, exact receiver references and hash-checked Source navigation. Preparation, posting, cached writes and configured SQL are distinguished from execution and commit. See docs/guides/Database_Operations_Run_and_Test.txt.

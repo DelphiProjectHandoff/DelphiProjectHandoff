@@ -634,13 +634,19 @@ for chapters in (USER, ENGINEERING):
  for index, (heading, paragraphs) in enumerate(chapters):
   chapters[index]=(heading,[p.replace("327 requirement records remain incomplete","326 requirement records remain incomplete") for p in paragraphs])
 
+USER.append(('Inspect database read and write operations', ['Choose Database connections in the upper-right page selector, then choose database operation in its kind filter. Clear the text filter to see all captured requests; enter Post, Delete, read, insert or a calling routine name to narrow the list. Select a row. The evidence memo begins with its operation kind, requested effect and evidence basis. Operation requests are source candidates; DPH does not run the selected application or connect to its database.', 'Open, Refresh, navigation and search methods are read candidates. Append and Insert prepare a new record buffer; Edit prepares an update. AppendRecord and InsertRecord request insertion. Post submits a pending insert or edit, depending on the dataset state; cached updates can defer persistence. Delete requests deletion of the current record. ApplyUpdates can submit mixed pending writes. Cancel and CancelUpdates concern pending edits or cached changes. None of these calls proves transaction commit or rollback.', 'Literal SELECT, INSERT, UPDATE and DELETE text is classified separately from calls. Configuring SQL does not execute it. Joined statements retain their lexical family even when table and column binding is unsupported. Dynamic SQL, mixed batches and unsupported prefixes remain unknown. SQL values are omitted from this inventory. Inspect approved source locally to understand parameters and context.', 'Select Target via DataSet in the reference selector and click Follow reference to inspect the exact captured receiver. A dataset lists reverse operation references in the same selector. Click Source to open the original location only after attaching unchanged source; detached, changed and historical evidence refuses navigation. Use the horizontal toolbar scrollbar to reach Follow reference and Source when they are outside the visible area. Scroll within the evidence memo for engine evidence and unknowns. Full reassessment upgrades an older capture to the new analyzer. Explicit run and test directions are in docs/guides/Database_Operations_Run_and_Test.txt.']))
+ENGINEERING.append(('Recognize captured database operation requests', ['TDPHSemanticAnalyzer.RoutineFacts emits database_operation relations for recognized methods on declared framework datasets or captured descendants. Receiver resolution and imported framework identity are checked; a local class shadowing TFDQuery and ordinary Delete methods are excluded. Captured inheritance is bounded to 32 steps. Within-with calls, factories, aliases, indexed receivers, unsupported providers and runtime dispatch remain unproved. DPHSemanticVersion DPH-WP3-13 invalidates older semantic caches.', 'TDPHDatabaseConnections.AppendOperations projects API calls, static_sql and dynamic_sql relations into existing database inventory rows. It preserves generation, condition, source SHA256 and line/byte range. Semantic component_field relationships connect operation receivers to serialized components by exact source location; ambiguous locations never choose an arbitrary target. Recognized custom dataset declarations receive their own navigable receiver row. SQL literal values are omitted. Single lexical CRUD families can be retained for complex SQL without inventing table or column bindings; dynamic or mixed batches remain unknown.', 'Effects distinguish record-buffer preparation, posting, cached-update application, deletion requests, SQL configuration and execution requests. Engine evidence follows captured receiver references. The database operation kind filter and Source button are serialized in DPH.UI.Main.fmx. Existing pagination, reverse references and source hash guards are reused. No helper unit, runtime control, storage migration, target execution or driver loading is introduced.', 'Run tools/build-database-operations.cmd elevated for 232 checks using the actual analyzer, persisted/reopened SQLite workspace and native FMX form. Fixtures cover CRUD requests, local/custom datasets, framework-name shadowing, SQL joins and mixed/dynamic SQL, operation effects, exact receiver/source identity, redaction, reverse navigation, detached-source refusal, compact layout and unchanged source/catalog. Binding regression passes 92, engine regression 66 and semantic regression 134 checks. tools/build-wp0.cmd builds the real application and verifies its FMX resource. Fixtures stay in fixed ignored bin/database-operations-validation.']))
+for chapters in (USER, ENGINEERING):
+ for index, (heading, paragraphs) in enumerate(chapters):
+  chapters[index]=(heading,[p.replace('326 requirement records remain incomplete','325 requirement records remain incomplete').replace('DPH-WP3-12','DPH-WP3-13') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence', 'Inspect database connections and datasets', 'Inspect database engines and versions', 'Inspect tables views and schemas', 'Inspect column types defaults and constraints', 'Inspect primary foreign and unique keys', 'Inspect indexes and performance evidence', 'Inspect stored procedures functions and triggers', 'Inspect entity relationship diagrams', 'Define table and column business meanings', 'Follow dataset and screen field bindings', 'Compare screen history and visual changes',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence', 'Inspect database connections and datasets', 'Inspect database engines and versions', 'Inspect tables views and schemas', 'Inspect column types defaults and constraints', 'Inspect primary foreign and unique keys', 'Inspect indexes and performance evidence', 'Inspect stored procedures functions and triggers', 'Inspect entity relationship diagrams', 'Define table and column business meanings', 'Follow dataset and screen field bindings', 'Inspect database read and write operations', 'Compare screen history and visual changes',
     'Record user actions and business purposes', 'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -695,17 +701,19 @@ def build(filename, title, audience, sections):
     field(toc_begin.add_run(), 'begin', ' TOC \\o "1-1" \\h \\z \\u ')
     toc_separate = doc.add_paragraph()
     field(toc_separate.add_run(), 'separate')
-    for heading, _ in sections:
+    for toc_index, (heading, _) in enumerate(sections):
         entry = doc.add_paragraph(heading)
+        if len(sections) > 50 and toc_index == 28:
+            entry.paragraph_format.page_break_before = True
         entry.paragraph_format.space_after = Pt(0)
         entry.paragraph_format.line_spacing = 1.0
         for run in entry.runs:
-            run.font.size = Pt(9.5)
+            run.font.size = Pt(11 if len(sections) > 50 else 9.5)
     entry = doc.add_paragraph('Source and revision evidence')
     entry.paragraph_format.space_after = Pt(0)
     entry.paragraph_format.line_spacing = 1.0
     for run in entry.runs:
-        run.font.size = Pt(9.5)
+        run.font.size = Pt(11 if len(sections) > 50 else 9.5)
     toc_end = doc.add_paragraph()
     field(toc_end.add_run(), 'end')
     for marker in (toc_begin, toc_separate, toc_end):
@@ -781,5 +789,8 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 25, 'sources': evidence, 'last_changed': '2026-10-12'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 26, 'sources': evidence, 'last_changed': '2026-10-12'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')
+
+
+

@@ -1,4 +1,4 @@
-unit DPH.UI.Main;
+﻿unit DPH.UI.Main;
 interface
 uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
@@ -187,7 +187,7 @@ type
     DatabaseInventoryToolbar:THorzScrollBox;
     DatabaseInventoryFilter:TEdit;
     DatabaseInventoryKind,DatabaseInventoryLinks:TComboBox;
-    DatabaseInventoryFirst,DatabaseInventoryNext,DatabaseInventoryFollow:TButton;
+    DatabaseInventoryFirst,DatabaseInventoryNext,DatabaseInventoryFollow,DatabaseInventorySource:TButton;
     DatabaseInventoryList:TListBox;
     DatabaseInventoryMemo:TMemo;
     HistoryTab:TTabItem;
@@ -383,6 +383,7 @@ type
     procedure DatabaseInventoryFilterChange(Sender:TObject);
     procedure DatabaseInventorySelectionChange(Sender:TObject);
     procedure DatabaseInventoryFollowClick(Sender:TObject);
+    procedure DatabaseInventorySourceClick(Sender:TObject);
     procedure HistorySelectionChange(Sender:TObject);
     procedure HistoryCompareClick(Sender:TObject);
     procedure HistoryModeChange(Sender:TObject);
@@ -2233,6 +2234,15 @@ begin
  except on E:Exception do DatabaseSchemaMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
 
+procedure TDPHMainForm.DatabaseInventorySourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
+ Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do DatabaseInventoryMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+
 procedure TDPHMainForm.DatabaseInventoryFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Kind:string;
 begin
@@ -2254,10 +2264,10 @@ end;
 procedure TDPHMainForm.DatabaseInventorySelectionChange(Sender:TObject);
 var Row:TJSONObject;Value:TJSONValue;ID:string;
 begin
- if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;
+ if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;DatabaseInventorySource.Enabled:=False;
  DatabaseInventoryMemo.Text:='Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.';
  if (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
- Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
+ Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventorySource.Enabled:=True;DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
  for Value in Row.GetValue<TJSONArray>('links') do if Value.TryGetValue<string>('target_id',ID) then begin FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Target via '+Value.GetValue<string>('property')+': '+Value.GetValue<string>('reference'));end;
  for Value in Row.GetValue<TJSONArray>('used_by') do begin FDatabaseInventoryTargets.Add(Value.GetValue<string>('id'));DatabaseInventoryLinks.Items.Add('Used by '+Value.GetValue<string>('name')+' via '+Value.GetValue<string>('property'));end;
  DatabaseInventoryFollow.Enabled:=FDatabaseInventoryTargets.Count>0;if DatabaseInventoryFollow.Enabled then DatabaseInventoryLinks.ItemIndex:=0;

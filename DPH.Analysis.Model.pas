@@ -1,8 +1,8 @@
-unit DPH.Analysis.Model;
+﻿unit DPH.Analysis.Model;
 
 interface
 uses System.SysUtils, System.JSON, System.Generics.Collections, DPH.Parse.Model;
-const DPHSemanticVersion = 'DPH-WP3-12';
+const DPHSemanticVersion = 'DPH-WP3-13';
       DPHSemanticSchema = 1;
 type
   TDPHSymbol = class

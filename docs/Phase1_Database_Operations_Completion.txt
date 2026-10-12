@@ -1,0 +1,29 @@
+DPH REQUIREMENT 05.12 COMPLETION DATABASE OPERATIONS
+Last changed: 12 October 2026
+
+Database connections now inventories recognized dataset read, insert, update
+and delete requests with plain effects, exact source/generation evidence and
+receiver links. Append/Insert/Edit preparation, Post, cached writes, cancellation,
+SQL configuration and execution requests remain distinct. Literal CRUD SQL
+families extend beyond the old single-table subset without inventing table or
+column binding. Mixed batches and dynamic SQL remain unknown. Custom dataset
+descendants retain receiver declarations; local name shadows are excluded.
+Native kind/text filters, pagination, reverse references, Follow reference and
+hash-checked Source are implemented using IDE-editable controls.
+
+Validation PASS: 232 focused + 92 bindings + 66 engine + 134 semantic = 524 checks.
+Actual application and FMX baseline PASS. Normal and compact native renders
+reviewed; these show running DPH controls, not selected-application screenshots.
+All 60 final guide pages visually reviewed. 58 source hashes and 102 TOC
+destinations verified. User contents balanced across two readable pages.
+Run/test directions: docs/guides/Database_Operations_Run_and_Test.txt.
+
+Pre-change backup: H:\DPH Backups\DatabaseOperations_PreChange_20261012_145836
+5253 files, 1810651908 bytes; every SHA256 verified. No post-change backup.
+
+Qualified source operation candidates only, not database execution or success evidence. Runtime dispatch, aliases, within-with and factory/indexed receivers, unsupported providers and SQL prefixes, dynamic/mixed SQL, implicit posts, cached updates, triggers, affected row counts and transaction outcome remain unobserved. SQL family recognition does not invent schema bindings. SQL values are omitted from the operation inventory. Existing 10000-row bound applies. No target application, SQL, driver or database server runs.
+
+Only 05.12 promoted. All 533 original requirement IDs and texts preserved.
+190 implemented; 18 implemented_manual_capture; 229 partial; 96 missing.
+325 incomplete; zero unassessed. The entire product is not complete.
+Next: 05.13 Transaction boundaries and rollback behavior.
