@@ -1,0 +1,184 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseKeys.dpr(222) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseKeys.dpr(229) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.DatabaseKeys.dpr(250) Hint: H2077 Value assigned to 'Other' never used
+16405 lines, 1.33 seconds, 10469128 bytes code, 348844 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: CREATE SCHEMA declaration captured
+PASS 3: Qualified table captured
+PASS 4: CREATE OR REPLACE VIEW distinguished from table
+PASS 5: Schema qualifier retained
+PASS 6: Qualifier references distinct from explicit schemas
+PASS 7: Duplicate declarations counted without selecting winner
+PASS 8: Duplicate deployment uncertainty explained
+PASS 9: Dots inside quoted identifiers preserved
+PASS 10: Bracket identifiers captured
+PASS 11: Backtick identifiers captured
+PASS 12: Temporary table header captured
+PASS 13: Conditional table header captured
+PASS 14: Conditional schema header captured
+PASS 15: Nested comments and quoted semicolons do not split declaration
+PASS 16: Comment and string SQL do not invent objects
+PASS 17: Nested comment SQL ignored
+PASS 18: Malformed lexical source not partially promoted
+PASS 19: Unbalanced body remains unsupported
+PASS 20: Incomplete qualified name not promoted
+PASS 21: Unsupported replace-table header refused
+PASS 22: Unsupported temporary schema refused
+PASS 23: Unsupported conditional view refused
+PASS 24: Unsupported view column-list header not guessed
+PASS 25: Existing SQL reference retained without inventing a definition
+PASS 26: Inferred reference has no invented definition
+PASS 27: Inferred reference never promoted to declaration
+PASS 28: Actual CREATE column declaration captured
+PASS 29: First duplicate retains its own declared type
+PASS 30: Type precision and comma retained without splitting a column
+PASS 31: Signed numeric default retained
+PASS 32: Nullability after DEFAULT parsed separately
+PASS 33: Column retains qualified table
+PASS 34: Column retains original source file
+PASS 35: Column declaration start line retained
+PASS 36: Column retains actual source hash
+PASS 37: Column retains captured generation
+PASS 38: Column retains unique parent declaration identity
+PASS 39: Multiword type retained
+PASS 40: Explicit NULL distinguished from unspecified
+PASS 41: Literal default masked with explicit marker
+PASS 42: Timestamp qualifier retained
+PASS 43: Symbolic default retained without evaluating
+PASS 44: Absent nullability not invented
+PASS 45: Absent default not invented
+PASS 46: DEFAULT NULL remains a default expression
+PASS 47: DEFAULT NULL does not become an explicit nullability clause
+PASS 48: Named CHECK text retained
+PASS 49: Inline reference clause retained as text only
+PASS 50: Named NOT NULL clause captured
+PASS 51: Function default commas and literals handled
+PASS 52: Parenthesized default expression retained
+PASS 53: Default and CHECK stay separate
+PASS 54: Primary key does not invent explicit NOT NULL declaration
+PASS 55: Quoted name and qualified custom type preserved
+PASS 56: Array type suffix retained
+PASS 57: Table constraint not misclassified as column
+PASS 58: Table CHECK commas remain in one entry
+PASS 59: Unsupported column not promoted: bad
+PASS 60: Unsupported column entry explained: bad
+PASS 61: Unsupported column not promoted: conflict
+PASS 62: Unsupported column entry explained: conflict
+PASS 63: Unsupported column not promoted: missing
+PASS 64: Unsupported column entry explained: missing
+PASS 65: Unsupported column not promoted: repeated
+PASS 66: Unsupported column entry explained: repeated
+PASS 67: Unsupported column not promoted: expression
+PASS 68: Unsupported column entry explained: expression
+PASS 69: Unsupported column not promoted: absenttype
+PASS 70: Unsupported column entry explained: absenttype
+PASS 71: Unsupported column not promoted: badname
+PASS 72: Unsupported column entry explained: badname
+PASS 73: Unsupported column not promoted: namedbad
+PASS 74: Unsupported column entry explained: namedbad
+PASS 75: Unsupported column not promoted: malformeddefault
+PASS 76: Unsupported column entry explained: malformeddefault
+PASS 77: Unsupported column not promoted: missingtype
+PASS 78: Unsupported column entry explained: missingtype
+PASS 79: Unsupported column not promoted: typeless
+PASS 80: Unsupported column entry explained: typeless
+PASS 81: Supported following column survives earlier entry gaps
+PASS 82: Trailing empty column entry explicitly reported
+PASS 83: All column literal canaries absent from projection
+PASS 84: Column explanation displays type before long qualifications
+PASS 85: Column explanation teaches absent-declaration meaning
+PASS 86: Other duplicate column retains distinct type
+PASS 87: Duplicate table declarations never merge column ownership
+PASS 88: Composite named primary key captured
+PASS 89: Primary type retained
+PASS 90: Composite primary membership order retained
+PASS 91: Primary members resolve inside exact table declaration
+PASS 92: Owner and ordered primary member links present
+PASS 93: Unique member order distinct from primary order
+PASS 94: Composite foreign key captured
+PASS 95: Foreign local order retained
+PASS 96: Foreign referenced order retained
+PASS 97: Foreign target exact name retained
+PASS 98: Declared delete action captured
+PASS 99: Declared update action captured
+PASS 100: Unique foreign targets resolved
+PASS 101: Owner local target table and referenced column links present
+PASS 102: Referenced first member points to exact captured column
+PASS 103: Named inline primary key becomes single member
+PASS 104: Named inline unique key captured
+PASS 105: Named inline reference captured
+PASS 106: Self reference resolves after full capture
+PASS 107: Absent target remains explicit relationship gap
+PASS 108: Duplicate table targets do not choose a winner
+PASS 109: Ambiguous referenced table has no invented link
+PASS 110: Omitted reference columns remain unknown
+PASS 111: Arity mismatch explicitly qualified
+PASS 112: Missing local key column reported
+PASS 113: Duplicate local column remains ambiguous
+PASS 114: Conflicting primary declarations retained without winner
+PASS 115: Conflicting primary declarations retained without winner
+PASS 116: Malformed or unsupported key not promoted: Repeated_UQ
+PASS 117: Malformed or unsupported key not promoted: Expression_UQ
+PASS 118: Malformed or unsupported key not promoted: Tail_UQ
+PASS 119: Malformed or unsupported key not promoted: Empty_PK
+PASS 120: Malformed or unsupported key not promoted: BadAction_FK
+PASS 121: Unsupported key grammar has explicit explanation
+PASS 122: Unsupported column tail cannot leak partial key
+PASS 123: Quoted dotted identifier remains exact single member
+PASS 124: Dialect case folding is not guessed
+PASS 125: Missing referenced column reported
+PASS 126: Duplicate constraint names remain distinct and flagged
+PASS 127: Key-like string content omitted
+PASS 128: Default and CHECK do not invent keys
+PASS 129: Key retains capture generation
+PASS 130: Key retains original SQL hash
+PASS 131: Key explanation leads with structured facts
+PASS 132: Guarded key source navigation works
+PASS 133: Detached key source refused
+PASS 134: String literal omitted from projected definitions
+PASS 135: Quoted semicolon content omitted
+PASS 136: Malformed lexical resources explain gaps
+PASS 137: Oversize resource explicitly reported
+PASS 138: Migration and unsupported statements retained as gaps
+PASS 139: Definition retains captured SHA256
+PASS 140: Definition retains generation
+PASS 141: Statement start line retained
+PASS 142: Details qualify definition validation
+PASS 143: Unchanged attached source opens
+PASS 144: Detached source navigation refused
+PASS 145: Outside-project navigation refused
+PASS 146: Historical generation navigation refused
+PASS 147: Changed source navigation refused
+PASS 148: Inspector leaves captured workspace unchanged
+PASS 149: Persisted reopening yields identical schema evidence
+PASS 150: Native list bounds first page to 250 rows
+PASS 151: Next page enabled for remaining declarations
+PASS 152: Native next page exposes remainder
+PASS 153: Kind, state and name filters combine
+PASS 154: Native memo explains selected definition
+PASS 155: Native details expose source hash
+PASS 156: Native navigation explains detached attachment
+PASS 157: Empty result teaches missing-evidence interpretation
+PASS 158: Native declared-type filter finds captured column
+PASS 159: Native column nullability explained
+PASS 160: Native default evidence displayed
+PASS 161: Native column empty filter handled
+PASS 162: Native key kind state and constraint name filters combine
+PASS 163: Native key details explain composite membership
+PASS 164: Native relationship selector exposes exact targets
+PASS 165: Follow relationship selects exact captured target across pages
+PASS 166: Foreign target on later inventory page selected by exact ID
+PASS 167: Relationship command reachable at minimum width
+PASS 168: Compact memo has readable area
+PASS 169: Long schema details scroll
+PASS 170: Compact commands can scroll horizontally
+PASS 171: Capture replacement rebuilds projection under current filters
+PASS 172: Owner catalog unchanged
+PASS 173: Target source restored unchanged after navigation refusal test
+Database keys validation passed: 173 checks.

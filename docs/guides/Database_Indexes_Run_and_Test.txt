@@ -1,0 +1,90 @@
+DPH DATABASE INDEXES RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.06 Indexes and performance-related structures
+
+RUN AND OPEN THE INDEX VIEW
+1. Save any Knowledge draft, then close the existing DPH instance.
+2. In File Explorer open C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug.
+3. Double-click DelphiProjectHandoff.exe. It opens maximized.
+4. Click Attach project to choose the application's .dproj or .dpr, or Open cache
+   to choose its existing .dphdb. DPH rejects its own project and caches of itself.
+5. For attachment/reassessment, select the intended Debug/Release and Win32/Win64
+   configuration and required defines. Save the proposed cache in Databases.
+   Wait for capture to finish. Approved SQL resources must be referenced by the
+   selected project; DPH does not read a live database to discover indexes.
+6. Choose Database schema in the upper-right page selector.
+7. Choose index in the leftmost kind selector and declared index in the state
+   selector. Select an index in the list immediately below the status message.
+8. Read the labeled memo below the divider. It starts with the target table,
+   uniqueness, method, storage kind and ordered members. Scroll for includes,
+   predicate, storage declarations, relationships, usage counts and provenance.
+
+FOLLOW CAPTURED EVIDENCE
+9. Scroll the page's command strip sideways to the relationship selector,
+   immediately after Open source. Choose indexed table, indexed column,
+   included column or SQL table reference, then click Follow relationship.
+   DPH clears the filters and selects the exact evidence row on its required page.
+10. To return, choose index and declared index again, then search its name.
+    Search also accepts target table, method, predicate text, storage kind,
+    storage options and relationship status. First page resets pagination;
+    Next page shows the next group of up to 250 matching rows.
+11. Open source requires an attached project, matching current capture generation
+    and unchanged source hash. Detached caches cannot open live source; a refusal
+    is explained in the memo. Original SQL can contain sensitive data.
+
+UNDERSTAND THE EVIDENCE
+An index is a declared access structure that can affect reads, writes and storage.
+Member order and explicit ASC/DESC and NULLS FIRST/LAST are retained. Included
+columns are separate from key members. A predicate records a partial/filtered
+index's captured condition. Expressions, predicates and storage options are text,
+not evaluated or validated SQL semantics. Literal values are omitted. Not declared
+means absent from the entry, not a guessed default for an unknown database engine.
+Missing or ambiguous table/column evidence has no invented navigation target.
+Duplicate index definitions remain separate with effective migration unresolved.
+Expression dependencies remain unverified. Unsupported grammar remains a gap.
+A SQL table reference means supported captured SQL names the same exact table.
+It does not establish column coverage, optimizer selection or actual index use.
+Zero references means no supported captured match, not an unused index. Total
+and shown counts are separate; navigation is capped at 250 references per index
+and 10000 across the projection. No target SQL or server is executed.
+DPH does not infer physical size, timings, selectivity or performance benefit.
+Ask the maintainer for approved execution plans and measured workload evidence.
+Record supplied observations through Runtime observations with contributor and
+run context rather than treating a source declaration as a performance result.
+
+CONTROLLED PRACTICE
+Developer validation creates fixed ignored practice files under:
+C:\New Delphi Projects\Delphi Project Handoff\bin\database-indexes-validation
+After running the validation command below, attach source\Schema.dpr in that
+folder using Debug/Win32. Save the proposed cache in the application's Databases
+folder. Choose Database schema, index, declared index and search IX_Composite.
+Expected: unique Data.Target index, ordered a DESC NULLS LAST and b ASC, included
+note, declared btree method, predicate, fillfactor=80 and fastdisk tablespace.
+Its relationship selector should offer the table, a, b, note and an SQL table
+reference in index-use.sql. Follow the SQL reference and read its qualification.
+Return to indexes and inspect IX_Expression for unresolved expression dependencies,
+IX_Ambiguous for duplicate target tables, IX_Missing for absent table evidence,
+and IX_Duplicate for retained duplicate definitions. These are deliberate fixtures.
+The fixture is captured and inspected; neither it nor its SQL is executed.
+
+DEVELOPER BUILD AND VALIDATION
+Open Windows Command Prompt as Administrator. Enter:
+cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+tools\build-database-indexes.cmd
+Expected: all focused checks PASS. The exact count and result are saved in
+docs\phase1-database-indexes-validation.json, with evidence under the fixed bin
+practice folder. The suite covers captured structure, relationships, persistence,
+source guards and native filtering/navigation/normal/compact rendering.
+Run each of these separately:
+tools\build-database-keys.cmd
+tools\build-database-schema.cmd
+tools\build-wp0.cmd
+Expected: 173 key checks, 57 schema checks and PASS WP0-TEST, respectively.
+The last command builds the actual app and checks its serialized FMX bindings.
+Build elevation lets RAD Studio 37 read its environment file. These tests refresh
+their own evidence artifacts, leave the owner catalog unchanged and never execute
+the selected target project or connect to its database server.
+
+MANUALS
+docs\guides\DPH_User_Guide.docx and docs\pdf\DPH_User_Guide.pdf
+docs\guides\DPH_Engineering_Guide.docx and docs\pdf\DPH_Engineering_Guide.pdf

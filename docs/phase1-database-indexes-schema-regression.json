@@ -1,0 +1,5 @@
+{
+  "result": "PASS",
+  "checks": 57,
+  "qualification": "Controlled source SQL capture, supported declaration headers, explicit gaps, SQLite persistence and actual native FMX controls. Body grammar and deployed object existence unverified; no SQL executed."
+}

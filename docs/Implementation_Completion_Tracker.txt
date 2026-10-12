@@ -65,7 +65,12 @@ membership, exact evidence relationships, unresolved/conflicting target notes
 and native Follow relationship navigation across pages.
 173 focused and 178 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Keys_Completion.txt.
-Current live backlog: 331 incomplete requirement records; 0 unassessed.
+Indexes and performance-related structures completed (05.06): captured ordered
+index structures, exact table/column and SQL reference evidence links, bounded
+usage navigation and explicit unsupported/ambiguous evidence gaps.
+273 focused and 230 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Indexes_Completion.txt.
+Current live backlog: 330 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

@@ -1,0 +1,72 @@
+{
+  "result": "PASS",
+  "requirement": "05.06",
+  "status": "implemented",
+  "checks": 273,
+  "regression_checks": 230,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.06",
+  "incomplete_requirement_records": 330,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 185,
+    "missing": 99
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 27,
+        "toc_entries": 50,
+        "new_chapter_pages": [
+          2,
+          17
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 24,
+        "toc_entries": 42,
+        "new_chapter_pages": [
+          2,
+          21
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseIndexes_PreChange_20261012_123320",
+    "files": 4523,
+    "bytes": 1323473847,
+    "sha256_verified": true
+  },
+  "qualification": "Supported captured CREATE INDEX declarations only: ordered plain/expression members, includes, predicates and options with exact captured table/column/SQL reference links. Unsupported grammar and missing/ambiguous evidence remain explicit gaps. Expressions and predicates are unevaluated text. SQL references do not prove index use; optimizer plans, timing, storage, benefit, dialect validity, effective migration order and deployed enforcement remain unverified. No target SQL, application or server is executed. Usage links are bounded to 250 per index and 10000 per projection, with total and shown counts retained.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "cea9b79f37b3e02f77c2b20b869d7d463708c91a7d4f6045da981397cc6b60af",
+    "DPH.UI.Main.pas": "71af5c311ba8a82ef70108338f094999fdd45d41ffc810cb1712f8395c3a4e81",
+    "DPH.UI.Main.fmx": "f365aa4db7923cf457d66ec56cd298b0b41871f21163787cef12321b4115be6b",
+    "tests/DPH.Tests.DatabaseIndexes.dpr": "4c6b3861048096a49f418cfb6f1c0d6460fdf0c318e9c36b2770f28c1616dd99",
+    "tools/build-database-indexes.cmd": "3cb8531c807f48ba12f439f5a25a88df46f924c84ce427384df69c321660081a",
+    "docs/phase1-database-indexes-validation.json": "5ee923e581c8dc8b071d56ce854dbad9ed31a2e10c077132766c18196861678c",
+    "docs/phase1-database-indexes-validation.log": "7c26cc6a28feebceecf48b2cbc502cbdba1da54b97896494916f3395a3c80e7b",
+    "docs/guides/Database_Indexes_Run_and_Test.txt": "db0d056b3e0f4fe8b55bdcb2323c53003266ae8e7081c75d909330935f0b8148",
+    "docs/guide-source-validation.json": "295adb195dd1429d8425da6ce085e089635f1524ea7e93a2a8d59bd313e260d3",
+    "docs/guides/DPH_User_Guide.docx": "d7fc26cfd6bbeef273823425c5b28ba06badef71dd4c4f22bca1a7bdfb2c7431",
+    "docs/guides/DPH_Engineering_Guide.docx": "d86d3bea3df8ab0f5394c1e8029cc02ec70b75da60bfe6b51eae0b450b2e554d",
+    "docs/pdf/DPH_User_Guide.pdf": "018b1822e6e5e52f945643488abf3e791b6f5984a70faa76464759d132ead580",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "01d7ebde5278937e33bd2719bab5bbc626533a665bd6d7db70136598b337e780",
+    "docs/phase1-database-indexes-build.log": "a28586a89bc131d666c25d35736e07c1577bc4cd3c3794473bbb8f8832b13b24",
+    "docs/phase1-database-indexes-keys-regression.json": "ca5fa2c6c9a414ba32f60b0548f26bb2ecb1643cbc7508db5b11079f0a4164ec",
+    "docs/phase1-database-indexes-schema-regression.json": "36682a3a2a3ff2f74c515acead1dc7cfb7c429471ff415aa21331d92cba4df0f",
+    "docs/phase1-database-indexes-workspace.png": "b7a60c30d5949be1d7930613a8d1a687623ff1153a54ab6c116116cf04cb1f06",
+    "docs/phase1-database-indexes-compact.png": "5fff15ac14b91cd3de4903e1d4bc4be9b4b0a510551c63dbb9394ec1a55a1726",
+    "docs/phase1-database-indexes-relationships.png": "1c78aa370705e745265576c3e5bbec248e1c6bff032eb5df4c2294ae916c7be7"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "guide_version": 20,
+  "guide_version": 21,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -127,7 +127,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "c54761ca8b275df0b2964bedd17fd56daa4de5c15e2e78ef3065a19e5236d06f"
+      "sha256": "71af5c311ba8a82ef70108338f094999fdd45d41ffc810cb1712f8395c3a4e81"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -159,7 +159,7 @@
     },
     {
       "path": "DPH.Workspace.DatabaseSchema.pas",
-      "sha256": "54581b1b1ecd8978415c364ad69b4b649e3fa4feb6923dec4c00090c06aed519"
+      "sha256": "cea9b79f37b3e02f77c2b20b869d7d463708c91a7d4f6045da981397cc6b60af"
     },
     {
       "path": "DPH.Workspace.DynamicControls.pas",
@@ -199,7 +199,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "d73674b33701baf1cb4a16716876d117446dc554963a724590d4391638cd1759"
+      "sha256": "f365aa4db7923cf457d66ec56cd298b0b41871f21163787cef12321b4115be6b"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",

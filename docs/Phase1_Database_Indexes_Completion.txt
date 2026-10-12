@@ -1,0 +1,63 @@
+INDEXES AND PERFORMANCE-RELATED STRUCTURES COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.06 Indexes and performance-related structures
+
+DELIVERED
+Database schema now exposes supported captured CREATE INDEX declarations with
+explicit names, indexed table, uniqueness, storage kind, access method and
+ordered members. Sort direction, null ordering, included columns, predicates,
+storage options, tablespace and supported creation flags are preserved.
+Plain columns resolve only to unique captured parent-owned declarations.
+Expression members retain sanitized text and explicitly unverified dependencies.
+Missing/ambiguous targets and duplicate declarations remain explained evidence
+gaps. Unsupported or malformed grammar remains a gap rather than a declaration.
+Each record retains source line, resource byte extent, hash and generation.
+Captured SQL table references link to the same exact indexed table spelling.
+Usage lists retain total/shown counts, at most 250 links per index and 10000 per
+projection. Structural relationships remain available when usage links truncate.
+The IDE-editable FMX page adds index/declared index filters. Existing relationship
+selection and Follow relationship open exact targets, including later pages.
+Existing labeled scrolling details, source guards and replacement remain.
+
+LIMITS
+These are captured declarations and evidence relationships. A SQL table reference
+does not prove index use. Expressions/predicates are unevaluated text. No optimizer
+plan, timing, size, performance benefit or recommendation is inferred. Dialect
+validity, effective migration order and deployed enforcement are unverified.
+No target SQL, database server or target application is executed.
+
+VALIDATION
+273 focused checks PASS: actual resource capture, ordered plain/expression members,
+includes/options/predicates, exact relationships, missing/ambiguous evidence,
+duplicate declarations, unsupported grammar, literal omission, persistence,
+source guards, unchanged sources/catalog/workspace, bounded usage navigation,
+and native FMX filters/follow/replacement/normal/compact rendering.
+173 key and 57 schema regression checks PASS: 503 checks total.
+Actual application build and serialized FMX binding baseline PASS.
+User Guide: 27 pages, 50 TOC entries. Engineering Guide: 24 pages, 42 TOC entries.
+Both editable DOCX and companion PDFs rendered and visually inspected.
+56 current source hashes and all 92 cached TOC destinations verified.
+HTML help and explicit run/test directions updated. Original planning documents,
+533 requirement identities, reconciliation history and historical validation
+artifacts preserved. Controlled fixtures use fixed ignored bin folders.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseIndexes_PreChange_20261012_123320
+4523 files / 1323473847 bytes; every copied file SHA256 verified before editing.
+H: is the owner's explicitly selected current USB backup drive.
+
+RUN AND TEST
+Save any Knowledge draft, then close and restart the rebuilt application:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project/cache. Choose Database schema in the upper-right page
+selector, choose index and declared index, then select an index. Scroll the command
+strip sideways to the relationship selector and Follow relationship.
+Full launch, practice and validation directions:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Indexes_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.06 promoted in this execution.
+185 implemented; 18 implemented_manual_capture; 231 partial; 99 missing.
+330 incomplete requirement records remain; zero unassessed.
+Next: 05.07 Stored procedures, functions, and triggers. Parse/import stored-object
+definitions, parameters and dependencies with source references.

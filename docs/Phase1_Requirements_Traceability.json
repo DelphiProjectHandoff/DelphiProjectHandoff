@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Primary, foreign, and unique keys 05.05 implemented as captured declarations and evidence-backed relationships; 331 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Indexes and performance-related structures 05.06 implemented as captured declarations and evidence-backed relationships; 330 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1950,13 +1950,28 @@
       "id": "05.06",
       "domain": "DPH-05",
       "requirement": "Indexes and performance-related structures",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseSchema.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseIndexes.dpr",
+        "tools/build-database-indexes.cmd",
+        "docs/phase1-database-indexes-validation.json",
+        "docs/phase1-database-indexes-validation.log",
+        "docs/guides/Database_Indexes_Run_and_Test.txt"
       ],
-      "limitation": "Parse/import index definitions and link them to tables, columns and usage evidence.",
+      "limitation": "Supported captured CREATE INDEX declarations only: ordered plain/expression members, includes, predicates and options with exact captured table/column/SQL reference links. Unsupported grammar and missing/ambiguous evidence remain explicit gaps. Expressions and predicates are unevaluated text. SQL references do not prove index use; optimizer plans, timing, storage, benefit, dialect validity, effective migration order and deployed enforcement remain unverified. No target SQL, application or server is executed. Usage links are bounded to 250 per index and 10000 per projection, with total and shown counts retained.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database schema exposes supported CREATE INDEX declarations with explicit names, table ownership, uniqueness/storage/method flags, ordered members and sort/null ordering, included columns, predicates, options and tablespace. Exact unique table/parent-owned column targets and captured SQL table references are navigable evidence. Expressions, missing/ambiguous targets, duplicate declarations and unsupported grammar remain qualified gaps. IDE-editable kind/state filters and Follow relationship support exact targets across pages. Total SQL reference counts survive bounded navigation lists; structural links are retained.",
+        "remaining_work": "",
+        "purpose": "Indexes and performance-related structures",
+        "evidence_group": "sql",
+        "verification": "273 focused checks pass for actual captured resources, index structures/options, exact target IDs, unresolved/conflicting evidence, unsupported syntax, literal omission, persistence, source guards, unchanged catalog/source/workspace, usage navigation limits and native filtering/navigation/replacement/normal/compact renders. 173 key and 57 schema regression checks pass. Actual app build and FMX baseline pass. Both DOCX guides and PDFs rendered and visually reviewed; 56 source hashes and 92 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "No selected-database index model or index inspection page exists.",
@@ -1964,6 +1979,12 @@
         "purpose": "Indexes and performance-related structures",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Indexes and performance-related structures",
+        "validation": "docs/phase1-database-indexes-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12590,23 +12611,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Primary foreign and unique keys",
+    "completed_batch": "Indexes and performance-related structures",
     "completed_requirement_ids": [
-      "05.05"
+      "05.06"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 231,
-      "implemented": 184,
-      "missing": 100
+      "implemented": 185,
+      "missing": 99
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 331,
-    "completion_record": "docs/Phase1_Database_Keys_Completion.txt",
+    "incomplete_requirement_records": 330,
+    "completion_record": "docs/Phase1_Database_Indexes_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.06",
-      "title": "Indexes and performance-related structures",
-      "scope": "Parse/import index definitions and link them to tables, columns and usage evidence."
+      "requirement": "05.07",
+      "title": "Stored procedures, functions, and triggers",
+      "scope": "Parse/import stored-object definitions, parameters and dependencies with source references."
     }
   }
 }

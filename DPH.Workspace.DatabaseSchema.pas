@@ -178,8 +178,101 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
   end;
   if Tokens[ALast-2].Text=',' then begin AddRow('gap',ATable+' | empty entry',ASchema,'unsupported','Trailing comma leaves an empty column/constraint entry; no facts inferred.','',Tokens[ALast-2].Line,ARange);Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration);end;
  end;
+ function InspectIndex(AFirst,AEnd:Integer;ARange:TJSONObject):Boolean;
+ var P,BeginTerm,EndTerm,Balance,Part,Order:Integer;
+     IndexName,TableName,TableQualifier,IndexQualifier,UnusedQualifier,Method,StorageKind,Predicate,Options,Tablespace,NullTreatment,Problem,Column,SortOrder,NullOrder:string;
+     IsUnique,Concurrent,Conditional,OnlyTable:Boolean;Members,Included:TJSONArray;MemberRow:TJSONObject;Seen:TDictionary<string,Boolean>;
+  function Span(AStart,AStop:Integer):string;
+  var T:Integer;
+  begin Result:='';for T:=AStart to AStop-1 do begin if Length(Result)>8000 then Exit(Result+' [display truncated]');if Result<>'' then Result:=Result+' ';Result:=Result+Tokens[T].Text;end;end;
+  function QualifiedName(out Qualifier:string):string;
+  var Parts:Integer;
+  begin
+   Result:='';Qualifier:='unknown';Parts:=0;
+   repeat
+    if (P>=AEnd) or not Tokens[P].Identifier then begin Problem:='Missing identifier in qualified name';Exit;end;
+    if Result<>'' then begin Qualifier:=Result;Result:=Result+'.';end;Result:=Result+Tokens[P].Text;Inc(P);Inc(Parts);
+    if (P<AEnd) and (Tokens[P].Text='.') then Inc(P) else Break;
+   until False;
+   if Parts>3 then Problem:='Name has more than three parts';
+  end;
+  procedure Parentheses;
+  begin
+   Balance:=0;if (P>=AEnd) or (Tokens[P].Text<>'(') then begin Problem:='Expected parenthesized structure';Exit;end;
+   repeat
+    if Tokens[P].Text='(' then Inc(Balance) else if Tokens[P].Text=')' then Dec(Balance);
+    if Balance>128 then begin Problem:='Index expression nesting exceeds 128';Exit;end;
+    Inc(P);
+   until (P>=AEnd) or (Balance=0);
+   if Balance<>0 then Problem:='Incomplete parenthesized index structure';
+  end;
+ begin
+  Result:=False;P:=AFirst+1;IsUnique:=False;Concurrent:=False;Conditional:=False;OnlyTable:=False;StorageKind:='not declared';
+  if (P<AEnd) and SameText(Tokens[P].Text,'UNIQUE') then begin IsUnique:=True;Inc(P);end;
+  if (P<AEnd) and MatchText(Tokens[P].Text,['CLUSTERED','NONCLUSTERED']) then begin StorageKind:=UpperCase(Tokens[P].Text);Inc(P);end;
+  if (P>=AEnd) or not SameText(Tokens[P].Text,'INDEX') then Exit;
+  Result:=True;Inc(P);Problem:='';IndexName:='';TableName:='';TableQualifier:='unknown';Method:='not declared';Predicate:='not declared';Options:='not declared';Tablespace:='not declared';NullTreatment:='not declared';
+  Members:=TJSONArray.Create;Included:=TJSONArray.Create;Seen:=TDictionary<string,Boolean>.Create;
+  try
+   if (P<AEnd) and SameText(Tokens[P].Text,'CONCURRENTLY') then begin Concurrent:=True;Inc(P);end;
+   if (P+2<AEnd) and SameText(Tokens[P].Text,'IF') and SameText(Tokens[P+1].Text,'NOT') and SameText(Tokens[P+2].Text,'EXISTS') then begin Conditional:=True;Inc(P,3);end;
+   IndexName:=QualifiedName(IndexQualifier);
+   if (Problem='') and ((P>=AEnd) or not SameText(Tokens[P].Text,'ON')) then Problem:='Expected ON after an explicit index name';
+   if Problem='' then begin Inc(P);if (P<AEnd) and SameText(Tokens[P].Text,'ONLY') then begin OnlyTable:=True;Inc(P);end;TableName:=QualifiedName(TableQualifier);end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'USING') then begin Inc(P);if (P<AEnd) and Tokens[P].Identifier then begin Method:=Tokens[P].Text;Inc(P);end else Problem:='Missing declared index method';end;
+   if (Problem='') and ((P>=AEnd) or (Tokens[P].Text<>'(')) then Problem:='Expected nonempty index member list';
+   if Problem='' then begin
+    Inc(P);Order:=0;
+    repeat
+     BeginTerm:=P;Column:='';SortOrder:='not declared';NullOrder:='not declared';
+     if (P<AEnd) and (Tokens[P].Text='(') then begin Parentheses;if (Problem='') and (P=BeginTerm+2) then Problem:='Empty index expression';end
+     else if (P<AEnd) and Tokens[P].Identifier then begin
+      Column:=Tokens[P].Text;Inc(P);
+      if (P<AEnd) and (Tokens[P].Text='(') then begin Column:='';Parentheses;end;
+     end else Problem:='Missing index column or supported expression';
+     EndTerm:=P;
+     if (Problem='') and (P<AEnd) and MatchText(Tokens[P].Text,['ASC','DESC']) then begin SortOrder:=UpperCase(Tokens[P].Text);Inc(P);end;
+     if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'NULLS') then begin Inc(P);if (P<AEnd) and MatchText(Tokens[P].Text,['FIRST','LAST']) then begin NullOrder:=UpperCase(Tokens[P].Text);Inc(P);end else Problem:='Expected NULLS FIRST or LAST';end;
+     if Problem<>'' then Break;
+     Inc(Order);MemberRow:=TJSONObject.Create.AddPair('position',TJSONNumber.Create(Order)).AddPair('column',Column).AddPair('expression',Span(BeginTerm,EndTerm)).AddPair('sort',SortOrder).AddPair('nulls',NullOrder);Members.AddElement(MemberRow);
+     if (P<AEnd) and (Tokens[P].Text=',') then Inc(P) else Break;
+    until False;
+    if (Problem='') and ((P>=AEnd) or (Tokens[P].Text<>')')) then Problem:='Incomplete member list or unsupported member option';if Problem='' then Inc(P);
+   end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'INCLUDE') then begin
+    Inc(P);if (P>=AEnd) or (Tokens[P].Text<>'(') then Problem:='Expected included column list' else begin
+     Inc(P);repeat
+      if (P>=AEnd) or not Tokens[P].Identifier then begin Problem:='Missing included column identifier';Break;end;
+      if Seen.ContainsKey(Tokens[P].Text) then begin Problem:='Repeated included column';Break;end;Seen.Add(Tokens[P].Text,True);Included.Add(Tokens[P].Text);Inc(P);
+      if (P<AEnd) and (Tokens[P].Text=',') then Inc(P) else Break;
+     until False;
+     if (Problem='') and ((P>=AEnd) or (Tokens[P].Text<>')')) then Problem:='Incomplete or unsupported included column list';if Problem='' then Inc(P);
+    end;
+   end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'NULLS') then begin
+    BeginTerm:=P;Inc(P);if (P<AEnd) and SameText(Tokens[P].Text,'NOT') then Inc(P);
+    if (P<AEnd) and SameText(Tokens[P].Text,'DISTINCT') then begin Inc(P);NullTreatment:=Span(BeginTerm,P);end else Problem:='Expected NULLS DISTINCT or NOT DISTINCT';
+   end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'WITH') then begin Inc(P);BeginTerm:=P;Parentheses;if (Problem='') and (P=BeginTerm+2) then Problem:='Empty storage options';if Problem='' then Options:=Span(BeginTerm,P);end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'TABLESPACE') then begin Inc(P);Tablespace:=QualifiedName(UnusedQualifier);end;
+   if (Problem='') and (P<AEnd) and SameText(Tokens[P].Text,'WHERE') then begin
+    Inc(P);BeginTerm:=P;Balance:=0;
+    for Part:=P to AEnd-1 do begin
+     if Tokens[Part].Text='(' then Inc(Balance) else if Tokens[Part].Text=')' then Dec(Balance);
+     if (Balance<0) or (Balance>128) or MatchText(Tokens[Part].Text,['CREATE','ALTER','DROP','SELECT','INSERT','UPDATE','DELETE','WITH','TABLESPACE','$']) then Problem:='Unsupported or unbalanced index predicate';
+    end;
+    if (Balance<>0) or (BeginTerm=AEnd) then Problem:='Empty or incomplete index predicate';Predicate:=Span(BeginTerm,AEnd);P:=AEnd;
+   end;
+   if (Problem='') and (P<>AEnd) then Problem:='Unsupported index clause tail: '+Tokens[P].Text;
+   if Problem<>'' then begin AddRow('gap','index '+IndexName,TableQualifier,'unsupported','Index extraction gap: '+Problem+'. No structured index promoted.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);Exit;end;
+   AddRow('index',IndexName,TableQualifier,'declared index','Captured index declaration only. Dialect validity, effective migration, physical existence, optimizer use and performance benefit are unverified.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);
+   Row.AddPair('table',TableName).AddPair('index_qualifier',IndexQualifier).AddPair('unique',TJSONBool.Create(IsUnique)).AddPair('concurrently',TJSONBool.Create(Concurrent)).AddPair('conditional',TJSONBool.Create(Conditional)).AddPair('only_table',TJSONBool.Create(OnlyTable)).AddPair('storage_kind',StorageKind).AddPair('method',Method).AddPair('members',Members).AddPair('included_columns',Included).AddPair('null_treatment',NullTreatment).AddPair('predicate',Predicate).AddPair('storage_options',Options).AddPair('tablespace',Tablespace);
+   Members:=nil;Included:=nil;
+  finally Seen.Free;Members.Free;Included.Free;end;
+ end;
  procedure ResolveKeys;
  var Index:TDictionary<string,TJSONObject>;Multiplicity:TDictionary<string,Integer>;
+     UsageIndex:TObjectDictionary<string,TList<TJSONObject>>;UsageRows:TList<TJSONObject>;UsageRow:TJSONObject;UsageShown,UsageLinks:Integer;
      Item,Link,TargetRow:TJSONObject;ItemValue,Member:TJSONValue;Links:TJSONArray;
      Identity,Owner,TargetOwner,TargetName,StateText:string;N,Order:Integer;Complete:Boolean;
   procedure LinkTo(const ARole,AName,AIdentity:string;APosition:Integer);
@@ -190,18 +283,44 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
    else begin Complete:=False;if N=0 then StateText:='missing captured declaration' else StateText:='ambiguous captured declarations';Link.AddPair('state',StateText);end;
   end;
  begin
-  Index:=TDictionary<string,TJSONObject>.Create;Multiplicity:=TDictionary<string,Integer>.Create;
+  Index:=TDictionary<string,TJSONObject>.Create;Multiplicity:=TDictionary<string,Integer>.Create;UsageIndex:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);UsageLinks:=0;
   try
    for ItemValue in Rows do begin
     Item:=ItemValue as TJSONObject;Identity:='';
     if (Item.GetValue<string>('kind')='table') and (Item.GetValue<string>('status')='declared header') then Identity:='table|'+Item.GetValue<string>('name');
     if Item.GetValue<string>('kind')='column' then Identity:='column|'+Item.GetValue<string>('declaration_id')+'|'+Item.GetValue<string>('column');
+    if Item.GetValue<string>('kind')='index' then Identity:='index|'+Item.GetValue<string>('table')+'|'+Item.GetValue<string>('name');
+    if Item.GetValue<string>('status')='inferred reference' then begin
+     TargetName:=Item.GetValue<string>('name');if not UsageIndex.TryGetValue(TargetName,UsageRows) then begin UsageRows:=TList<TJSONObject>.Create;UsageIndex.Add(TargetName,UsageRows);end;UsageRows.Add(Item);
+    end;
     if Item.GetValue<string>('kind')='key' then begin Identity:='constraint|'+Item.GetValue<string>('declaration_id')+'|'+Item.GetValue<string>('constraint_name');N:=0;Multiplicity.TryGetValue(Identity,N);Multiplicity.AddOrSetValue(Identity,N+1);Identity:='';end;
     if (Item.GetValue<string>('kind')='key') and (Item.GetValue<string>('key_kind')='primary') then Identity:='primary|'+Item.GetValue<string>('declaration_id');
     if Identity='' then Continue;N:=0;Multiplicity.TryGetValue(Identity,N);Multiplicity.AddOrSetValue(Identity,N+1);Index.AddOrSetValue(Identity,Item);
    end;
    for ItemValue in Rows do begin
-    Item:=ItemValue as TJSONObject;if Item.GetValue<string>('kind')<>'key' then Continue;
+    Item:=ItemValue as TJSONObject;
+    if Item.GetValue<string>('kind')='index' then begin
+     Links:=TJSONArray.Create;Item.AddPair('links',Links);Complete:=True;Owner:='';TargetName:=Item.GetValue<string>('table');LinkTo('indexed table',TargetName,'table|'+TargetName,0);Link.TryGetValue<string>('target_id',Owner);
+     for Member in Item.GetValue<TJSONArray>('members') do begin
+      Order:=Member.GetValue<Integer>('position');Identity:=Member.GetValue<string>('column');
+      if Identity='' then begin Complete:=False;Link:=TJSONObject.Create.AddPair('role','index expression').AddPair('reference',Member.GetValue<string>('expression')).AddPair('position',TJSONNumber.Create(Order)).AddPair('state','expression dependencies unverified');Links.AddElement(Link);end
+      else if Owner<>'' then LinkTo('indexed column',Identity,'column|'+Owner+'|'+Identity,Order)
+      else begin Complete:=False;Link:=TJSONObject.Create.AddPair('role','indexed column').AddPair('reference',Identity).AddPair('position',TJSONNumber.Create(Order)).AddPair('state','indexed table unresolved');Links.AddElement(Link);end;
+     end;
+     Order:=0;for Member in Item.GetValue<TJSONArray>('included_columns') do begin Inc(Order);
+      if Owner<>'' then LinkTo('included column',Member.Value,'column|'+Owner+'|'+Member.Value,Order)
+      else begin Complete:=False;Link:=TJSONObject.Create.AddPair('role','included column').AddPair('reference',Member.Value).AddPair('position',TJSONNumber.Create(Order)).AddPair('state','indexed table unresolved');Links.AddElement(Link);end;
+     end;
+     N:=Multiplicity['index|'+TargetName+'|'+Item.GetValue<string>('name')];Item.RemovePair('definition_count').Free;Item.AddPair('definition_count',TJSONNumber.Create(N));if N>1 then begin Complete:=False;Item.AddPair('conflict','Multiple captured index declarations with this exact table/name; effective migration unresolved.');end;
+     UsageShown:=0;N:=0;
+     if UsageIndex.TryGetValue(TargetName,UsageRows) then begin N:=UsageRows.Count;for UsageRow in UsageRows do begin
+      if (UsageShown>=250) or (UsageLinks>=10000) then Break;Inc(UsageShown);Inc(UsageLinks);
+      Link:=TJSONObject.Create.AddPair('role','SQL table reference (index use unobserved)').AddPair('reference',UsageRow.GetValue<string>('source')+':'+UsageRow.GetValue<Integer>('range.line').ToString).AddPair('position',TJSONNumber.Create(UsageShown)).AddPair('state','captured table reference only').AddPair('target_id',UsageRow.GetValue<string>('id'));Links.AddElement(Link);
+     end;end;
+     Item.AddPair('usage_reference_count',TJSONNumber.Create(N)).AddPair('usage_shown_count',TJSONNumber.Create(UsageShown)).AddPair('usage_note','Exact-spelling supported SQL table references only; no column coverage, optimizer selection or measured benefit is established. Zero references means no supported captured match, not an unused index. Navigation shows up to 250 references per index and 10000 across the projection.');
+     if Complete then StateText:='captured links complete' else StateText:='relationship gaps';Item.AddPair('relationship_status',StateText);Continue;
+    end;
+    if Item.GetValue<string>('kind')<>'key' then Continue;
     Links:=TJSONArray.Create;Item.AddPair('links',Links);Complete:=True;Owner:=Item.GetValue<string>('declaration_id');Order:=0;
     Link:=TJSONObject.Create.AddPair('role','owning table').AddPair('reference',Item.GetValue<string>('table')).AddPair('position',TJSONNumber.Create(0)).AddPair('state','exact captured owner').AddPair('target_id',Owner);Links.AddElement(Link);
     for Member in Item.GetValue<TJSONArray>('members') do begin Inc(Order);LinkTo('local column',Member.Value,'column|'+Owner+'|'+Member.Value,Order);end;
@@ -219,7 +338,7 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
     N:=0;Multiplicity.TryGetValue('constraint|'+Owner+'|'+Item.GetValue<string>('constraint_name'),N);if N>1 then begin Complete:=False;Item.AddPair('name_conflict','Duplicate constraint name in the same captured table; both records retained.');end;
     if Complete then StateText:='captured links complete' else StateText:='relationship gaps';Item.AddPair('relationship_status',StateText);
    end;
-  finally Multiplicity.Free;Index.Free;end;
+  finally UsageIndex.Free;Multiplicity.Free;Index.Free;end;
  end;
 begin
  Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
@@ -276,6 +395,7 @@ begin
       if Last=First then begin Inc(First);Continue;end;
       Kind:='gap';Name:='statement at line '+IntToStr(Tokens[First].Line);SchemaName:='unknown';Status:='unsupported';Issue:='Unsupported SQL statement; no object definition inferred.';Definition:='';Valid:=True;
       if SameText(Tokens[First].Text,'CREATE') then begin
+       if InspectIndex(First,Last,Node) then begin First:=Last+1;Continue;end;
        J:=First+1;ReplaceHeader:=False;TemporaryHeader:=False;IfHeader:=False;
        if (J+1<Last) and SameText(Tokens[J].Text,'OR') and SameText(Tokens[J+1].Text,'REPLACE') then begin ReplaceHeader:=True;Inc(J,2);end;
        if (J<Last) and MatchText(Tokens[J].Text,['TEMP','TEMPORARY']) then begin TemporaryHeader:=True;Inc(J);end;
@@ -329,9 +449,20 @@ begin
  finally ReferenceNames.Free;Counts.Free;Tokens.Free;end;
 end;
 class function TDPHDatabaseSchema.Describe(ARow:TJSONObject):string;
-var ColumnFacts,CountText:string;Link:TJSONValue;
+var ColumnFacts,CountText:string;Link,Member:TJSONValue;
 begin
  ColumnFacts:='';CountText:='';
+ if ARow.GetValue<string>('kind')='index' then begin
+  ColumnFacts:='Indexed table: '+ARow.GetValue<string>('table')+sLineBreak+'Unique declared: '+ARow.GetValue('unique').Value+' | Method: '+ARow.GetValue<string>('method')+' | Storage kind: '+ARow.GetValue<string>('storage_kind')+sLineBreak+'Ordered index members:'+sLineBreak;
+  for Member in ARow.GetValue<TJSONArray>('members') do ColumnFacts:=ColumnFacts+Member.GetValue<Integer>('position').ToString+': '+Member.GetValue<string>('expression')+' | order '+Member.GetValue<string>('sort')+' | nulls '+Member.GetValue<string>('nulls')+sLineBreak;
+  ColumnFacts:=ColumnFacts+'Included columns: '+ARow.GetValue<TJSONArray>('included_columns').ToJSON+sLineBreak+'Predicate (captured text): '+ARow.GetValue<string>('predicate')+sLineBreak+
+   'Storage options (captured text): '+ARow.GetValue<string>('storage_options')+' | Tablespace: '+ARow.GetValue<string>('tablespace')+sLineBreak+'Unique null treatment: '+ARow.GetValue<string>('null_treatment')+sLineBreak+
+   'CONCURRENTLY: '+ARow.GetValue('concurrently').Value+' | IF NOT EXISTS: '+ARow.GetValue('conditional').Value+' | ONLY: '+ARow.GetValue('only_table').Value+sLineBreak+
+   'Relationships: '+ARow.GetValue<string>('relationship_status')+' | Captured declarations: '+ARow.GetValue<Integer>('definition_count').ToString+sLineBreak+ARow.GetValue<string>('conflict','')+sLineBreak+
+   'Captured SQL table references: '+ARow.GetValue<Integer>('usage_reference_count').ToString+' | shown: '+ARow.GetValue<Integer>('usage_shown_count').ToString+sLineBreak+ARow.GetValue<string>('usage_note')+sLineBreak;
+  for Link in ARow.GetValue<TJSONArray>('links') do ColumnFacts:=ColumnFacts+Link.GetValue<string>('role')+' '+Link.GetValue<Integer>('position').ToString+': '+Link.GetValue<string>('reference')+' | '+Link.GetValue<string>('state')+sLineBreak;
+  ColumnFacts:=ColumnFacts+'An index is a declared access structure that may affect reads, writes and storage. Included columns and a predicate describe additional structure; expressions and storage options are retained without evaluation. No query plan, timing, index use, physical size or performance recommendation is inferred.'+sLineBreak+sLineBreak;
+ end;
  if ARow.GetValue<string>('kind')='key' then begin
   ColumnFacts:='Key type: '+ARow.GetValue<string>('key_kind')+sLineBreak+'Ordered local columns: '+ARow.GetValue<TJSONArray>('members').ToJSON+sLineBreak+
    'Referenced table: '+ARow.GetValue<string>('reference_table')+sLineBreak+'Ordered referenced columns: '+ARow.GetValue<TJSONArray>('reference_columns').ToJSON+sLineBreak+
