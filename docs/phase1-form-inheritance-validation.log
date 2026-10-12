@@ -1,0 +1,66 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.FormInheritance.dpr(50) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.FormInheritance.dpr(50) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.FormInheritance.dpr(69) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.FormInheritance.dpr(71) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.FormInheritance.dpr(72) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+14670 lines, 1.16 seconds, 10100176 bytes code, 344632 bytes data.
+PASS 1: Inherited component path resolves through renamed multi-level roots
+PASS 2: Derived value overrides inherited value
+PASS 3: All three base-to-derived values retained
+PASS 4: First value cites base form
+PASS 5: Middle value cites intermediate form
+PASS 6: Component declaration chain retained
+PASS 7: Unchanged base property survives
+PASS 8: Explicit nil overrides inherited event without inventing dispatch
+PASS 9: Base-only components remain visible
+PASS 10: Root property inherited across root renaming
+PASS 11: Inline frame children expanded
+PASS 12: Instance overlay overrides embedded frame
+PASS 13: Frame and instance property origins retained
+PASS 14: Inherited frame event survives
+PASS 15: Separate frame instances do not leak overrides
+PASS 16: FMX inline frame expansion supported
+PASS 17: Inherited frame resolves before embedding
+PASS 18: Inherited frame property keeps both source origins
+PASS 19: Qualified frame class disambiguates duplicate simple names
+PASS 20: Binary DFM inherited overlay supported
+PASS 21: Uncaptured ancestor reported
+PASS 22: Unresolved inline declaration remains inspectable
+PASS 23: Ambiguous frame remains unresolved
+PASS 24: Recursive frame cycle stops with diagnostic
+PASS 25: Orphan/incompatible overlay reported
+PASS 26: Property provenance fingerprints retained
+PASS 27: Exact text line retained
+PASS 28: Generation retained for each origin
+PASS 29: Inherited source navigation reads actual base source
+PASS 30: Binary property origin refuses text navigation
+PASS 31: Changed origin source refuses captured range
+PASS 32: Source restored byte for byte after mutation check
+PASS 33: Detached source refused
+PASS 34: Fresh and serialized cache produce identical overlays
+PASS 35: Conditional base is not silently selected
+PASS 36: Readable history exposes replaced event
+PASS 37: Target instantiation explicitly excluded
+PASS 38: Inspector discoverable in workspace selector
+PASS 39: Native list bounds first page
+PASS 40: Next page available
+PASS 41: Next page exposes additional records
+PASS 42: First page resets offset
+PASS 43: Filter finds specific inherited component
+PASS 44: Native explanation shows effective property and inherited event history
+PASS 45: All declaration and property origins selectable
+PASS 46: Selected origin enables source action
+PASS 47: Native detached navigation guarded
+PASS 48: Minimum window keeps explanation usable
+PASS 49: Compact origin toolbar scrolls
+PASS 50: Origin source action reachable at minimum width
+PASS 51: Empty filter clears obsolete origins
+PASS 52: Replacement capture clears inherited rows
+PASS 53: User catalog unchanged
+PASS 54: Selected fixture source unchanged

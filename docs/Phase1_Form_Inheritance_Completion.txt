@@ -1,0 +1,76 @@
+DPH form inheritance and embedded frames completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.18 Form inheritance and embedded frames
+
+The Form inheritance workspace page combines captured base-form and frame
+declarations. Multi-level inherited roots can have different names. Base-only
+components remain visible; parent-local inherited children overlay a matching
+name and class. Inline frames expand independently for each instance, including
+the frame's own inherited base. Root, component, property and event origins
+retain source file, SHA256, generation, condition and byte/line locations.
+Property histories preserve base-to-derived values. Explicit nil event values
+clear inherited declarations without claiming runtime dispatch.
+
+The native IDE-editable FMX page includes full-text filtering, 250-row pages,
+scrollable explanations, a resizable list and a scrollable origin command bar.
+Select any declaration or property/event origin and Open origin source.
+Existing source guards require attached unchanged text from the same generation
+and reject changed, detached, binary and outside-root locations. Capture changes
+clear old rows and origin references. No storage migration or target class
+instantiation was introduced. Other inspectors and Form designs retain their
+own captured-evidence qualifications.
+
+VALIDATION
+54 focused checks passed using actual text/binary DFM and FMX parsing:
+multi-level inheritance, renamed roots, base-only components, independent frame
+instances, inherited frames, property/event origin chains, explicit event nil,
+qualified duplicate names, missing and conditional bases, cycles, incompatible
+orphan children, cache equivalence, fingerprints/generations/source guards,
+native pagination/filtering, detached navigation, minimum-window layout,
+reachable origin command, empty/replacement captures and unchanged user catalog.
+70 component dependency, 55 keyboard and 56 layout regression checks passed.
+The final Win32 Debug application and FMX resource/binding checks passed using
+the owner's elevated RAD Studio toolchain. No selected target was compiled/run.
+Current reports have the phase1-form-inheritance prefix. Historical regression
+images were restored from the verified pre-change backup; prior plans and audit
+reports remain unchanged. Fixtures reuse bin/form-inheritance-validation.
+PaintTo images render instantiated DPH controls, not target-runtime screenshots.
+
+DOCUMENTATION
+Explicit executable paths, commands, fixture examples and manual steps:
+docs/guides/Form_Inheritance_Run_and_Test.txt
+HTML help, README, both editable guides and companion PDFs are updated.
+All 22 User Guide and 18 Engineering Guide rendered pages were reviewed;
+new chapters were also inspected individually. Editable TOCs contain 42 and
+34 entries; cached page numbers and current source hashes were verified.
+The appendix spacing was corrected to avoid a nearly empty final evidence page.
+
+BACKUP
+Verified pre-change backup: 3777 files / 905205785 bytes, with SHA256 checks.
+H:\DPH Backups\FormInheritance_PreChange_20261011_222224
+No post-change USB backup. Git and both GitHub remotes remain enabled.
+
+CURRENT STATUS
+All 533 original requirement identities, text and order remain preserved.
+Only 04.18 is promoted in this batch. Counts: 178 implemented, 17 manual
+capture, 236 partial, 102 missing, zero unassessed. 338 remain incomplete.
+Independent human acceptance and selected-project business claims are not
+established by these automated checks.
+
+LIMITS
+This is a static serialized overlay. Framework defaults, collection-item
+merging, actual runtime geometry and event dispatch are not inferred. Missing,
+ambiguous or conditional ancestry, partial forms, incompatible/orphan children
+and cycles stay explicit. Matching Pascal file stems and captured root classes
+identify resource candidates; aliases/custom resource mappings may remain
+unresolved. Collections retain serialized history with an unresolved merge
+diagnostic. Bounds are 64 recursive levels, 200000 component visits, 100000
+output rows and 10000 gap messages per selected form. Exceeded work/output
+bounds explicitly reject the overlay operation. No vendor code is loaded.
+
+NEXT BOUNDED REQUIREMENT
+04.19 User-visible actions and business purposes: structured attributed action
+and task purpose mappings with review workflow. Actual business outcomes must
+come from a knowledgeable contributor rather than be invented from code.

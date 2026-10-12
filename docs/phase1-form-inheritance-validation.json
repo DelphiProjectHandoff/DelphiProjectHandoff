@@ -1,0 +1,1 @@
+﻿{"result":"PASS","checks":54,"qualification":"Actual text/binary DFM and FMX parsing, cached overlays and native DPH controls. No target classes instantiated. PaintTo renders are not target-runtime screenshots."}

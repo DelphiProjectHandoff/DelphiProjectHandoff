@@ -479,13 +479,29 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('After the glossary, keyboard, command inventory, dynamic control and layout rule implementations, 340 requirement records remain incomplete', 'After the glossary, keyboard, command inventory, dynamic control, layout rule and component dependency implementations, 339 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Inspect inherited forms and embedded frames', [
+'Choose Form inheritance in the upper-right page selector after opening the intended project. Select a component to read its declaration origins and base-to-derived property/event history. Captured base-only components remain visible. Inline frames expand independently for each instance, including inherited frame definitions. Root names can differ between ancestor and descendant.',
+'Each property shows its latest serialized value and every captured earlier value with source, line, SHA256 and generation context. An explicit nil event clears an inherited binding; this does not establish actual event dispatch. Read Resolution gaps for missing or ambiguous bases, orphan or incompatible child overlays, conditional ancestors, partial inputs and cycles. Framework defaults, collection-item merging and runtime changes remain unknown.',
+'Scroll the command bar horizontally to reach the origin selector. Select a component declaration or a specific property/event value, then click Open origin source. A base value opens base source; an override opens its overriding source. Navigation requires attached unchanged text from the captured generation. Detached, changed, binary and outside-root origins are refused explicitly. Binary byte provenance remains visible.',
+'Filter by component path, property, value or gap. Next page advances through 250 rows; First page resets. Drag the list divider or scroll the explanation to read more. Full executable paths, exact steps, fixture examples and elevated developer checks are in docs/guides/Form_Inheritance_Run_and_Test.txt. This inspector combines captured declarations; other views retain their own captured-evidence qualifications. No target form/frame/class is instantiated.'
+]))
+ENGINEERING.append(('Resolve form inheritance and frame overlays', [
+'DPH.Workspace.FormInheritance resolves an inherited root through its matching Pascal class and captured ancestor relationship to one captured base form. Class-to-form lookup uses the matching Pascal file stem and serialized root class. Qualified frame names disambiguate duplicate simple names. Custom resource mappings and aliases may remain unresolved. Conditional ancestry is not silently selected.',
+'The resolver copies base trees, matches inherited children by parent-local name and class, appends local property histories and expands inline frames independently. Root renaming preserves base children. Properties and events retain exact source/hash/range, condition and generation origins. Collection bodies retain serialized history but collection-item merging is explicitly unresolved. Missing bases, duplicate matches, partial forms, incompatible/orphan overlays and cycles are diagnosed.',
+'The IDE-editable main FMX page provides filter, 250-row pagination, an origin selector, source navigation and a scrollable explanation. Origin source uses the existing generation/fingerprint/root/text checks. Capture replacement clears borrowed rows and origin pointers. No storage schema changes, target instantiation or runtime UI construction were introduced. Existing form-design and other inspector qualifications remain in effect.',
+'Run tools\\build-form-inheritance.cmd elevated. Controlled fixtures reuse bin/form-inheritance-validation and exercise actual text/binary DFM and FMX parsing, three-level form inheritance, inherited and separately overridden frames, qualified ambiguity, event nil, conditional/missing ancestry, cycles, provenance, cache equivalence, source safeguards and native compact layout. Work is bounded to 64 levels, 200000 component visits and 100000 output rows; gaps are capped at 10000 per selected form. Exceeded work/output bounds reject the overlay operation explicitly. Native PaintTo renders show DPH controls, not target screenshots.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('339 requirement records remain incomplete', '338 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -588,6 +604,8 @@ def build(filename, title, audience, sections):
     for item in evidence:
         paragraph = doc.add_paragraph(item['path'])
         paragraph.paragraph_format.keep_with_next = True
+        paragraph.paragraph_format.space_after = Pt(0)
+        paragraph.runs[0].font.size = Pt(9)
         hash_paragraph = doc.add_paragraph(item['sha256'])
         hash_paragraph.paragraph_format.space_after = Pt(3)
         run = hash_paragraph.runs[0]
@@ -623,5 +641,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 12, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 13, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

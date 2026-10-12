@@ -1,0 +1,63 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+14762 lines, 1.55 seconds, 10098120 bytes code, 344604 bytes data.
+PASS 1: DFM components are read from actual parser IR
+PASS 2: FMX components are read from actual parser IR
+PASS 3: Binary DFM components are read from actual parser IR
+PASS 4: Duplicate sibling focus position is diagnosed
+PASS 5: Equal positions in different parents are not conflicts
+PASS 6: Equal positions in different files are not conflicts
+PASS 7: Negative TabOrder is diagnosed
+PASS 8: Unknown boolean is not silently accepted
+PASS 9: Inherited behavior remains explicitly unknown
+PASS 10: Missing TabOrder is not invented as zero
+PASS 11: Decimal shortcut code preserved
+PASS 12: Hex shortcut code preserved
+PASS 13: Equivalent decimal/hex shortcuts share a conflict group
+PASS 14: Shortcut conflicts are scoped to each form
+PASS 15: Local action reference resolved
+PASS 16: Action shortcut exposed separately
+PASS 17: Common Windows shortcut codes have readable key names
+PASS 18: Action declaration source location retained
+PASS 19: Action consumers do not inflate duplicate count
+PASS 20: External action references remain unresolved
+PASS 21: Absent action shortcut remains unknown
+PASS 22: Competing action/component declarations are qualified
+PASS 23: Out-of-range shortcut rejected for conflict calculation
+PASS 24: Unsupported symbolic shortcut remains captured
+PASS 25: Keyboard event binding visible with source location
+PASS 26: Explicit focus exclusions shown
+PASS 27: Explicit visibility shown
+PASS 28: Absent state is explicit
+PASS 29: Text form line evidence retained
+PASS 30: Captured file fingerprint retained
+PASS 31: Static and runtime evidence distinguished
+PASS 32: Verified source navigation reads matching live form
+PASS 33: Action navigation reads matching live evidence
+PASS 34: Binary offsets are never treated as text lines
+PASS 35: Changed live bytes refuse captured source offsets
+PASS 36: Historical generations refuse navigation
+PASS 37: Navigation refuses paths outside attached project
+PASS 38: Sibling rows sorted by captured TabOrder
+PASS 39: Native inspector bounds each page to 250 components
+PASS 40: Large capture enables the next page
+PASS 41: Next page displays remaining components and disables at end
+PASS 42: First page resets pagination
+PASS 43: Page is discoverable through workspace selector
+PASS 44: Native filter finds component
+PASS 45: Selection explains action and source evidence
+PASS 46: Resolved action enables action navigation
+PASS 47: Detached source navigation safely refuses cached text offsets
+PASS 48: Unresolved action disables action navigation
+PASS 49: No matches clears previous rows
+PASS 50: Empty filter results disable both source commands
+PASS 51: Minimum-size native layout retains readable detail area
+PASS 52: Toolbar scrolls at compact widths
+PASS 53: New capture clears old keyboard rows
+PASS 54: Validation leaves user project catalog unchanged
+PASS 55: Inspection leaves selected source unchanged
+Keyboard validation passed: 55 checks.

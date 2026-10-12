@@ -45,6 +45,7 @@ Items.Strings = (
 'Dynamic controls'
 'Layout rules'
 'Component dependencies'
+'Form inheritance'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1437,6 +1438,94 @@ Align = Top
 Height = 6
 end
 object LayoutMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object InheritanceTab: TTabItem
+Text = 'Form inheritance'
+object InheritancePurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Select a component for inherited property/event history. Scroll this toolbar, choose an origin, then Open origin source.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object InheritanceToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object InheritanceFilterEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find form, component, property or gap'
+OnChange = InheritanceFilterChange
+end
+object InheritanceFirstButton: TButton
+Position.X = 266
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = InheritanceFilterChange
+end
+object InheritanceNextButton: TButton
+Position.X = 364
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = InheritanceFilterChange
+end
+object InheritanceOriginCombo: TComboBox
+Position.X = 462
+Position.Y = 4
+Width = 500
+Height = 30
+OnChange = InheritanceOriginChange
+end
+object InheritanceSourceButton: TButton
+Position.X = 970
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Open origin source'
+Enabled = False
+OnClick = InheritanceSourceClick
+end
+end
+object InheritanceStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object InheritanceList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnChange = InheritanceSelectionClick
+end
+object InheritanceSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object InheritanceMemo: TMemo
 Align = Client
 Margins.Left = 12
 Margins.Right = 12

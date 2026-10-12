@@ -1,0 +1,83 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ComponentDependencies.dpr(44) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ComponentDependencies.dpr(71) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ComponentDependencies.dpr(82) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ComponentDependencies.dpr(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ComponentDependencies.dpr(88) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+14686 lines, 1.16 seconds, 10101772 bytes code, 344720 bytes data.
+PASS 1: Captured class yields qualified candidate
+PASS 2: Candidate declaring unit retained
+PASS 3: Class candidate fingerprint retained
+PASS 4: Missing class remains unresolved
+PASS 5: Duplicate class names remain ambiguous
+PASS 6: Qualified class narrows lexical candidate
+PASS 7: FMX component included
+PASS 8: Binary DFM component included
+PASS 9: Inherited declaration preserved
+PASS 10: Captured package declaration retained
+PASS 11: Unavailable dependencies distinguished
+PASS 12: No component loading qualification explicit
+PASS 13: Unauthored dependency is explicit
+PASS 14: Origin never guessed from class prefix
+PASS 15: Matching source navigation verified
+PASS 16: Binary source does not pretend to be text
+PASS 17: Changed source navigation refused
+PASS 18: Evidence required
+PASS 19: Blank optional fields explicit
+PASS 20: Unknown fields rejected
+PASS 21: Nontext fields rejected
+PASS 22: Oversized fields rejected
+PASS 23: Partial capture remains explicitly incomplete
+PASS 24: Exact fields persist
+PASS 25: Save requires explicit review
+PASS 26: Named author retained
+PASS 27: Class matching ignores case
+PASS 28: Authored vendor shown beside source evidence
+PASS 29: Authored metadata does not resolve source
+PASS 30: Publication carries readable and structured attributed records
+PASS 31: Duplicate class record rejected
+PASS 32: Duplicate class identity ignores case
+PASS 33: Existing record cannot change class identity
+PASS 34: Structured and readable fields cannot diverge
+PASS 35: Ordinary editing cannot discard structured fields
+PASS 36: Review preserves fields and attributes reviewer
+PASS 37: Stale editor cannot overwrite review
+PASS 38: Editing preserves immutable history and reopens review
+PASS 39: Dependency records participate in search
+PASS 40: Database integrity preserved
+PASS 41: Reopen retains dependency fields
+PASS 42: Serialized editor validates attributed record
+PASS 43: Editor round trips every field
+PASS 44: Class identity cannot be casually reassigned
+PASS 45: Editor requires contributor
+PASS 46: Native page bounds 250 rows
+PASS 47: Further rows enable Next
+PASS 48: Next shows remaining rows
+PASS 49: Last page disables Next
+PASS 50: First resets page
+PASS 51: Page discoverable in selector
+PASS 52: Unique candidate enables Explain class
+PASS 53: Explain class navigates captured declaration
+PASS 54: Ambiguous class disables Explain
+PASS 55: Filter finds exact component
+PASS 56: Native details explain missing source
+PASS 57: Unresolved class disables Explain
+PASS 58: Selected component enables editor
+PASS 59: Missing record disables Knowledge navigation
+PASS 60: Detached source refused
+PASS 61: Native view refreshes saved metadata
+PASS 62: Saved record enables Knowledge navigation
+PASS 63: Knowledge command opens saved immutable revision
+PASS 64: Navigation protects unsaved Knowledge draft
+PASS 65: Empty result clears actions
+PASS 66: Compact details remain visible
+PASS 67: Compact toolbar scrolls
+PASS 68: Replacement capture clears stale rows
+PASS 69: User catalog unchanged
+PASS 70: Selected source unchanged
+Component dependency validation passed: 70 checks.

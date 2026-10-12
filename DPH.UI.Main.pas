@@ -71,6 +71,15 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    InheritanceTab:TTabItem;
+    InheritancePurpose,InheritanceStatus:TLabel;
+    InheritanceToolbar:THorzScrollBox;
+    InheritanceFilterEdit:TEdit;
+    InheritanceFirstButton,InheritanceNextButton,InheritanceSourceButton:TButton;
+    InheritanceOriginCombo:TComboBox;
+    InheritanceList:TListBox;
+    InheritanceSplitter:TSplitter;
+    InheritanceMemo:TMemo;
     DependencyTab:TTabItem;
     DependencyPurpose,DependencyStatus:TLabel;
     DependencyToolbar:THorzScrollBox;
@@ -239,6 +248,10 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure InheritanceFilterChange(Sender:TObject);
+    procedure InheritanceSelectionClick(Sender:TObject);
+    procedure InheritanceOriginChange(Sender:TObject);
+    procedure InheritanceSourceClick(Sender:TObject);
     procedure DependencyFilterChange(Sender:TObject);
     procedure DependencySelectionClick(Sender:TObject);
     procedure DependencySourceClick(Sender:TObject);
@@ -395,6 +408,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FInheritance:TJSONObject;
+    FInheritanceRows,FInheritanceOrigins:TList<TJSONObject>;
+    FInheritanceOffset:Integer;
     FDependencies:TJSONObject;
     FDependencyRows:TList<TJSONObject>;
     FDependencyOffset:Integer;
@@ -435,7 +451,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -450,6 +466,7 @@ begin
   FKeyboardRows:=TList<TJSONObject>.Create;
   FCommandRows:=TList<TJSONObject>.Create;
   FDynamicRows:=TList<TJSONObject>.Create;
+  FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
   FDependencyRows:=TList<TJSONObject>.Create;
   FLayoutRows:=TList<TJSONObject>.Create;
   TryStrToInt(LayoutWidthEdit.Text,FLayoutWidthDelta);TryStrToInt(LayoutHeightEdit.Text,FLayoutHeightDelta);
@@ -491,6 +508,7 @@ begin
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
+  FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
   FLayoutRows.Free; FLayout.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
@@ -776,6 +794,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+ FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:='Open a project to inspect inherited forms and frames.';InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
  FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:='Open a project to inspect component dependencies.';DependencyStatus.Text:='No capture loaded.';
  DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
  FLayoutRows.Clear;FreeAndNil(FLayout);LayoutList.Items.Clear;LayoutMemo.Text:='Open a project to inspect layout declarations.';LayoutStatus.Text:='No capture loaded.';
@@ -912,6 +931,7 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
+  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);
   FDependencyRows.Clear;FreeAndNil(FDependencies);FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);
   FLayoutRows.Clear;FreeAndNil(FLayout);FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);
   FDynamicRows.Clear; FreeAndNil(FDynamic); FDynamic:=TDPHDynamicControls.Inspect(FView); DynamicFilterChange(nil);
@@ -1009,6 +1029,46 @@ begin
     SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
+end;
+procedure TDPHMainForm.InheritanceFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
+begin
+ if FInheritanceRows=nil then Exit;
+ if Sender=InheritanceNextButton then Inc(FInheritanceOffset,250) else FInheritanceOffset:=0;
+ InheritanceList.Items.Clear;FInheritanceRows.Clear;FInheritanceOrigins.Clear;InheritanceOriginCombo.Items.Clear;
+ InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
+ InheritanceMemo.Text:='Select a component to inspect base-to-derived property and event declarations.';
+ if FInheritance=nil then Exit;Query:=InheritanceFilterEdit.Text.Trim;Count:=0;
+ for V in FInheritance.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (Query<>'') and not ContainsText(TDPHFormInheritance.Describe(Row),Query) then Continue;
+  if (Count>=FInheritanceOffset) and (FInheritanceRows.Count<250) then begin FInheritanceRows.Add(Row);InheritanceList.Items.Add(Row.GetValue<string>('form_source')+' | '+Row.GetValue<string>('component_path')+' : '+Row.GetValue<string>('class'));end;Inc(Count);
+ end;
+ InheritanceNextButton.Enabled:=Count>FInheritanceOffset+FInheritanceRows.Count;
+ InheritanceStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FInheritanceRows.Count)+' from offset '+IntToStr(FInheritanceOffset)+'. Select an origin to inspect its exact source.';
+ if InheritanceList.Count>0 then begin InheritanceList.ItemIndex:=0;InheritanceSelectionClick(nil);end else InheritanceMemo.Text:='No matching components. Clear the filter or inspect Coverage for missing form source.';
+end;
+procedure TDPHMainForm.InheritanceSelectionClick(Sender:TObject);
+var Row,P:TJSONObject;V,W:TJSONValue;
+begin
+ FInheritanceOrigins.Clear;InheritanceOriginCombo.Items.Clear;InheritanceSourceButton.Enabled:=False;
+ if (InheritanceList.ItemIndex<0) or (InheritanceList.ItemIndex>=FInheritanceRows.Count) then Exit;
+ Row:=FInheritanceRows[InheritanceList.ItemIndex];InheritanceMemo.Text:=TDPHFormInheritance.Describe(Row)+sLineBreak+sLineBreak+FInheritance.GetValue<string>('qualification');
+ for V in Row.GetValue<TJSONArray>('declarations') do begin FInheritanceOrigins.Add(V as TJSONObject);InheritanceOriginCombo.Items.Add('Component declaration | '+V.GetValue<string>('source')+':'+IntToStr(V.GetValue<Integer>('range.line')));end;
+ for V in Row.GetValue<TJSONArray>('properties') do begin P:=V as TJSONObject;
+  for W in P.GetValue<TJSONArray>('history') do begin FInheritanceOrigins.Add(W as TJSONObject);InheritanceOriginCombo.Items.Add(P.GetValue<string>('name')+' = '+W.GetValue<string>('value')+' | '+W.GetValue<string>('source')+':'+IntToStr(W.GetValue<Integer>('range.line')));end;
+ end;
+ if InheritanceOriginCombo.Items.Count>0 then InheritanceOriginCombo.ItemIndex:=0;InheritanceOriginChange(nil);
+end;
+procedure TDPHMainForm.InheritanceOriginChange(Sender:TObject);
+begin InheritanceSourceButton.Enabled:=(InheritanceOriginCombo.ItemIndex>=0) and (InheritanceOriginCombo.ItemIndex<FInheritanceOrigins.Count);end;
+procedure TDPHMainForm.InheritanceSourceClick(Sender:TObject);
+var Origin,Range:TJSONObject;
+begin
+ if (FView=nil) or (InheritanceOriginCombo.ItemIndex<0) or (InheritanceOriginCombo.ItemIndex>=FInheritanceOrigins.Count) then Exit;
+ if FDetached then begin InheritanceMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ Origin:=FInheritanceOrigins[InheritanceOriginCombo.ItemIndex];Range:=Origin.GetValue<TJSONObject>('range');
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Origin,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do InheritanceMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
 procedure TDPHMainForm.DependencyFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;

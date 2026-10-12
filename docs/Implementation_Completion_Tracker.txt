@@ -26,7 +26,11 @@ unresolved inputs, attributed unit/package/vendor/version/support records,
 revision/review/search/publication, native editor and 70 focused checks.
 59 Knowledge, 57 glossary and 56 layout regression checks pass.
 See Phase1_Component_Dependencies_Completion.txt.
-Current live backlog: 339 incomplete requirement records; 0 unassessed.
+Form inheritance and embedded frames completed (04.18): multi-level form/frame
+overlays with property/event provenance, guarded origin navigation and native
+inspector; 54 focused and 181 regression checks.
+See Phase1_Form_Inheritance_Completion.txt.
+Current live backlog: 338 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

@@ -56,3 +56,10 @@ Choose **Dynamic controls** to inspect recognized constructor sites and their ow
 Choose **Layout rules** to read captured alignments, anchors, spacing, constraints and resize events. Enter parent size changes and click **Apply example** for qualified basic anchor examples. Scroll the command bar horizontally at narrow widths. Final runtime geometry remains unobserved. [Explicit directions and tests](docs/guides/Layout_Rules_Run_and_Test.txt) explain the page and manual resizing exercises. Run `tools\build-layout-rules.cmd` elevated for 56 focused acceptance checks.
 
 Choose **Component dependencies** to inspect captured class declarations and unresolved dependencies. **Edit dependency** records package, vendor, version, support and evidence with a named contributor. Apply creates a draft; click **Save** on Knowledge, then review explicitly. **Explain class** follows a unique captured candidate. [Full directions and tests](docs/guides/Component_Dependencies_Run_and_Test.txt) cover every command. Run `tools\build-component-dependencies.cmd` elevated for focused checks.
+
+Form inheritance (04.18): choose **Form inheritance** in the upper-right
+selector to inspect base-to-derived component, property and event origins,
+inline frame instances and unresolved ancestry. Scroll the toolbar to choose
+an origin and **Open origin source**. No target classes are instantiated.
+Explicit run and test directions: `docs/guides/Form_Inheritance_Run_and_Test.txt`.
+Focused checks: `tools\build-form-inheritance.cmd` from an elevated prompt.

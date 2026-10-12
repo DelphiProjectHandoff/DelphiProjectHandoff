@@ -1,0 +1,1 @@
+﻿{"result":"PASS","checks":70,"qualification":"Real parser, SQLite persistence/review/search/publication and instantiated native DPH forms. No vendor classes are loaded. PaintTo renders are not target-runtime screenshots."}

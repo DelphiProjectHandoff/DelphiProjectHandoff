@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09, keyboard/focus 04.13, command inventory 04.14, dynamic controls 04.15, layout rules 04.16 and component dependencies 04.17 implemented; 339 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Form inheritance and embedded frames 04.18 implemented; 338 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1616,16 +1616,28 @@
       "id": "04.18",
       "domain": "DPH-04",
       "requirement": "Form inheritance and embedded frames",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Parse.Forms.pas",
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Workspace.Screen.pas",
+        "DPH.Workspace.FormInheritance.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Semantics.dpr"
+        "tests/DPH.Tests.FormInheritance.dpr",
+        "tools/build-form-inheritance.cmd",
+        "docs/phase1-form-inheritance-validation.json",
+        "docs/phase1-form-inheritance-validation.log",
+        "docs/guides/Form_Inheritance_Run_and_Test.txt"
       ],
-      "limitation": "Resolve base-form/frame overlays and inherited property/event provenance.",
+      "limitation": "Static serialized overlays only. Missing, ambiguous and conditional ancestors, partial forms, orphan/incompatible children and cycles remain explicit. Class-to-form lookup uses matching Pascal file stems; aliases/custom resource mappings can remain unresolved. Framework defaults, collection-item merging and runtime dispatch/layout are unobserved. Work/output bounds reject excessive operations explicitly. Other inspectors retain their own captured-evidence qualifications.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Dedicated IDE-editable Form inheritance inspector resolves multi-level inherited forms and inherited inline frames, independent instance overlays, base-only components and renamed roots. Component/property/event origins retain exact source, fingerprint, range, condition and generation with base-to-derived histories, explicit nil event clearing, unresolved diagnostics, filter/pagination and guarded origin source navigation.",
+        "remaining_work": "",
+        "purpose": "Form inheritance and embedded frames",
+        "evidence_group": "forms",
+        "verification": "54 focused checks; 70 component dependency, 55 keyboard and 56 layout regression checks. Actual application and native FMX baseline pass; normal/compact/origin toolbar renders inspected."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Inherited/inline/frame syntax is retained without instantiating classes.",
@@ -1633,6 +1645,12 @@
         "purpose": "Form inheritance and embedded frames",
         "evidence_group": "forms",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Form inheritance and embedded frame overlays",
+        "validation": "docs/phase1-form-inheritance-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12421,23 +12439,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Component dependency inspector and attributed supplier records",
+    "completed_batch": "Form inheritance and embedded frame overlays",
     "completed_requirement_ids": [
-      "04.17"
+      "04.18"
     ],
     "counts": {
       "implemented_manual_capture": 17,
-      "partial": 237,
-      "implemented": 177,
+      "partial": 236,
+      "implemented": 178,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 339,
-    "completion_record": "docs/Phase1_Component_Dependencies_Completion.txt",
+    "incomplete_requirement_records": 338,
+    "completion_record": "docs/Phase1_Form_Inheritance_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.18",
-      "title": "Form inheritance and embedded frames",
-      "scope": "Resolve base-form/frame overlays and inherited property/event provenance without instantiating target classes."
+      "requirement": "04.19",
+      "title": "User-visible actions and business purposes",
+      "scope": "Structured attributed action/task purpose mappings and review workflow; actual business outcomes require a knowledgeable contributor."
     }
   }
 }

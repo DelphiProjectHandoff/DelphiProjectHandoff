@@ -1,0 +1,64 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+14678 lines, 1.44 seconds, 10098668 bytes code, 344620 bytes data.
+PASS 1: Actual text DFM component captured
+PASS 2: Actual FMX component captured
+PASS 3: Binary DFM layout captured
+PASS 4: Original anchor set retained
+PASS 5: Opposing anchor example explains size change
+PASS 6: Trailing anchor example explains position change
+PASS 7: Leading anchors explained
+PASS 8: No-anchor behavior remains framework dependent
+PASS 9: Client allocation explained
+PASS 10: Active alignment suppresses anchor-only arithmetic
+PASS 11: Edge docking explained
+PASS 12: Custom layout requires code review
+PASS 13: Unknown enum retained without invented semantics
+PASS 14: Unknown anchor token rejected
+PASS 15: Substring anchor name never activates arithmetic
+PASS 16: Missing defaults remain unknown
+PASS 17: Inherited layout never claims numeric behavior
+PASS 18: Root gets no invented parent example
+PASS 19: Serialized parent spacing context retained
+PASS 20: Spacing and constraints preserved
+PASS 21: Resize event source evidence retained
+PASS 22: Content layout declarations preserved
+PASS 23: Conflicting dimension constraints flagged as review candidate
+PASS 24: VCL DPI declarations preserved
+PASS 25: FMX contents distinct from remaining client
+PASS 26: FMX center explained
+PASS 27: FMX horizontal fill explained
+PASS 28: FMX scale explained
+PASS 29: FMX Fit distinguished from Scale
+PASS 30: FMX corner placement explained
+PASS 31: FMX position, size and scale preserved
+PASS 32: Shrinking example supports negative changes
+PASS 33: Engine and runtime limits explicit
+PASS 34: Captured fingerprint retained
+PASS 35: Matching form source navigation verified
+PASS 36: Binary byte locations never used as text lines
+PASS 37: Native pagination bounded to 250
+PASS 38: Further components enable Next
+PASS 39: Next page shows remaining components
+PASS 40: Last page disables Next
+PASS 41: First page resets offset
+PASS 42: Page discoverable in workspace selector
+PASS 43: Filter finds component
+PASS 44: Native selection explains default example
+PASS 45: Native example applies chosen changes
+PASS 46: Invalid example input explained
+PASS 47: Invalid input preserves previous valid example
+PASS 48: Large integer rejected without overflow
+PASS 49: Detached navigation refused explicitly
+PASS 50: Empty filter clears previous components
+PASS 51: Empty filter disables source navigation
+PASS 52: Compact layout retains detail area
+PASS 53: Compact toolbar scrolls
+PASS 54: Replacement capture clears stale layout rows
+PASS 55: User catalog unchanged
+PASS 56: Selected fixture source unchanged
+Layout rules validation passed: 56 checks.

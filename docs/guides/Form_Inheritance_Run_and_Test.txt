@@ -1,0 +1,87 @@
+DPH form inheritance and embedded frames
+Last changed: 11 October 2026
+
+RUN AND INSPECT
+1. Close DPH, then open this newly built executable:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+2. Click Attach project and select the target application's .dproj or .dpr.
+   Select the intended configuration/platform and approved dependency roots.
+   Save its proposed database and wait for analysis to finish. Existing saved
+   databases can be opened with Open cache; no database conversion is required.
+3. In the upper-right page selector choose Form inheritance.
+4. Select a component in the middle list. Rows identify the selected form file
+   and the component's path through its containers. Inherited components that
+   have no local declaration are included when their base source is captured.
+5. Read the explanation below the list. Declaration origins list the captured
+   component definitions. Property/event history lists base values first and
+   later overrides after them. The latest serialized value is shown beside the
+   property name. An explicit nil event clears its inherited binding.
+6. Read RESOLUTION GAPS before relying on the result. Missing/ambiguous bases,
+   incompatible/orphan overlays, partial input and cycles remain explicit.
+   Missing framework defaults are unknown. Collection-item merging and actual
+   runtime layout/event dispatch are not established by these records.
+7. Scroll the command bar horizontally above the list to reach the origin
+   selector. Choose a component declaration or a specific property/event value.
+   Click Open origin source. DPH checks the selected origin's generation,
+   fingerprint and location before opening Source at its recorded line.
+   Base values open base source; overrides open the overriding source.
+   Detached, changed, binary or outside-root source is refused with an
+   explanation. Binary origins still show their captured byte locations.
+8. Enter text in the filter to search form paths, components, properties,
+   values, provenance and gaps. Next page advances through 250 results;
+   First page returns to the start. Clear the filter to show all components.
+   Drag the divider below the list or scroll the explanation to read more.
+
+WHAT THE RESOLVER DOES
+An inherited form uses the captured Pascal class's ancestor relationship to
+find one captured base form. Base components and values are copied before
+local inherited children and properties are applied. Inline frames expand
+their captured frame source independently for each instance, including a
+frame's own inherited base. Root names may differ between ancestor/descendant.
+Matching child name and class are required for an inherited child overlay.
+Qualified frame names can disambiguate duplicate simple names. Missing or
+conditional ancestry, duplicate classes and cycles are not guessed.
+The Form inheritance inspector combines these declarations. Other inspectors
+and Form designs retain their own captured-evidence qualifications. No target
+form, frame, vendor class, package or DLL is instantiated by this analysis.
+
+DEVELOPER ACCEPTANCE CHECK
+1. Open Command Prompt as administrator. This follows the owner's RAD Studio
+   build requirement; it lets MSBuild read its RAD Studio environment file.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-form-inheritance.cmd
+4. Expect PASS lines and process exit code zero. The suite uses only controlled
+   fixtures in bin\form-inheritance-validation. It exercises real text/binary
+   DFM and FMX, three-level inheritance, inherited frames, independent instances,
+   event clearing, qualified ambiguity, missing/conditional bases, cycles,
+   provenance, source guards, cache equivalence and native UI pagination/layout.
+5. Optional manual fixture exercise: attach
+   C:\New Delphi Projects\Delphi Project Handoff\bin\form-inheritance-validation\source\Inheritance.dpr
+   Save the database to the normal Databases folder. The fixture is parser input,
+   not a complete target application to compile or run. On Form inheritance,
+   filter for /DerivedForm/Panel/Button. Expect Caption history Base button,
+   Mid button, Final button, and OnClick history BaseClick then nil.
+   Choose the base Caption origin and Open origin source; expect base.dfm.
+   Choose the final Caption origin; expect derived.dfm. Inspect LeftFrame/Field
+   and RightFrame/Field: only LeftFrame has Instance text. Inspect Missing,
+   Ambiguous and CycleA for explicit resolution gaps. Inspect BinaryForm for
+   retained byte provenance and refusal to apply a text caret location.
+6. Regression commands, from the same elevated prompt:
+   tools\build-component-dependencies.cmd
+   tools\build-keyboard.cmd
+   tools\build-layout-rules.cmd
+   tools\build-wp0.cmd
+
+EVIDENCE AND LIMITS
+Current acceptance: docs\phase1-form-inheritance-validation.json and .log.
+Images are FMX PaintTo renders of actual instantiated DPH controls, not
+screenshots of the target application. Matching serialized source does not
+establish runtime execution, actual business intent or human acceptance.
+Bounds: 64 recursive levels, 200000 component visits, 100000 output rows,
+10000 gap messages per selected form. An exceeded work/output bound rejects
+the overlay operation explicitly. Class-to-form lookup uses a matching .pas
+file stem and one captured class/root; custom resource mappings and aliases
+can remain unresolved. Serialized collection bodies retain value history but
+are not expanded into an effective collection item set.
