@@ -80,3 +80,12 @@ Scroll the command bar sideways and the page down for commands and evidence.
 [Explicit run and test directions](docs/guides/Screen_History_Run_and_Test.txt)
 cover import generations, pixel colors, retention and limitations. Run
 `tools\build-screen-history.cmd` elevated for 73 focused checks.
+
+Choose **Database connections** to inspect captured connections, datasets, data
+sources, transactions, sessions and named definition references. Select a row
+for masked configuration, source evidence and unresolved links. Choose a Target
+or Used by entry, then **Follow reference**. Scroll the toolbar horizontally and
+drag the list divider to adjust the evidence area. DPH opens no target database.
+[Explicit run and test directions](docs/guides/Database_Connections_Run_and_Test.txt)
+include a controlled practice. Run `tools\build-database-connections.cmd` elevated
+for 66 checks. Original source/cache files can still contain secrets.

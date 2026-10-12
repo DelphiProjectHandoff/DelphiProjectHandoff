@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Screen history and visual change comparisons 04.20 implemented; 336 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Database connection inventory 05.01 implemented; 335 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1744,13 +1744,29 @@
       "id": "05.01",
       "domain": "DPH-05",
       "requirement": "Database connection inventory",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "DelphiProjectHandoff.dproj",
+        "tests/DPH.Tests.DatabaseConnections.dpr",
+        "tools/build-database-connections.cmd",
+        "docs/phase1-database-connections-validation.json",
+        "docs/phase1-database-connections-validation.log",
+        "docs/guides/Database_Connections_Run_and_Test.txt"
       ],
-      "limitation": "Build an explicit connection inventory linking datasets, connection definitions and safe redacted configuration.",
+      "limitation": "Inventory is captured static evidence, not proof of successful connections or runtime binding. External definition contents, inherited defaults, custom factories and runtime assignments can remain unknown. Configuration uses a strict display allowlist; source/cache originals may contain secrets. No target database, driver or component class is opened. Inventory is bounded to 10000 rows; native views page 250 matches.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Dedicated IDE-editable Database connections page inventories captured connections, datasets, data sources, transactions, sessions and shared named definitions from text/binary DFM, FMX and unmatched supported Pascal declarations. Unique local/nested/Self and explicitly qualified cross-module references and BDE aliases resolve with exact outgoing and Used by navigation; duplicate, missing, wrong-role and unsupported references remain explicit gaps. Sensitive and unknown configuration values are masked. Filtering, pagination, selection attribution and compact evidence memo are implemented.",
+        "remaining_work": "",
+        "purpose": "Database connection inventory",
+        "evidence_group": "sql",
+        "verification": "66 focused parser, persistence, redaction and native UI checks; 134 semantic/SQL/pinned-reference and 73 screen-history regression checks pass. Actual app build and FMX baseline pass. Native normal/compact layouts inspected. Editable DOCX and companion PDFs rendered and visually reviewed; 55 source hashes and all 82 TOC entries verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Captured database component properties and SQL receiver candidates are visible.",
@@ -1758,6 +1774,12 @@
         "purpose": "Database connection inventory",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Database connection inventory",
+        "validation": "docs/phase1-database-connections-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12483,24 +12505,24 @@
     "counts_describe": "Historical counts at the completed reconciliation baseline. Current implementation counts are recorded in current_implementation; the audit report and batch register remain historical evidence."
   },
   "current_implementation": {
-    "date": "2026-10-11",
-    "completed_batch": "Screen history and visual change comparisons",
+    "date": "2026-10-12",
+    "completed_batch": "Database connection inventory",
     "completed_requirement_ids": [
-      "04.20"
+      "05.01"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 234,
-      "implemented": 179,
+      "partial": 233,
+      "implemented": 180,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 336,
-    "completion_record": "docs/Phase1_Screen_History_Completion.txt",
+    "incomplete_requirement_records": 335,
+    "completion_record": "docs/Phase1_Database_Connections_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.01",
-      "title": "Database connection inventory",
-      "scope": "Explicit connection inventory linking datasets, connection definitions and safely redacted captured configuration without connecting to production."
+      "requirement": "05.02",
+      "title": "Database engines and versions",
+      "scope": "Identify selected-project engine/version evidence from configuration or approved imports without connecting to production."
     }
   }
 }

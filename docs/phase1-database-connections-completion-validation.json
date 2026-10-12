@@ -1,0 +1,73 @@
+{
+  "result": "PASS",
+  "requirement": "05.01",
+  "status": "implemented",
+  "checks": 66,
+  "regression_checks": 207,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.01",
+  "incomplete_requirement_records": 335,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 233,
+    "implemented": 180,
+    "missing": 102
+  },
+  "guides": {
+    "guide_sources_verified": 55,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 24,
+        "toc_entries": 45,
+        "new_chapter_pages": [
+          2,
+          14
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 20,
+        "toc_entries": 37,
+        "new_chapter_pages": [
+          2,
+          17
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseConnections_PreChange_20261011_234753",
+    "files": 4133,
+    "bytes": 964579383,
+    "sha256_verified": true
+  },
+  "qualification": "Captured static connection inventory only; no target database is opened. Native PaintTo renders show DPH controls. Unknown external definitions and runtime assignments remain explicit. Original sources/cache are not scrubbed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseConnections.pas": "f625da53905b2baa35d1fdd3e70dda27e5cea31592c8d4041ba3c23497bf07fb",
+    "DPH.UI.Main.pas": "3cf661d541014c2361d70c3deb1bac114e9497e4c17cc7067ab645f35c828657",
+    "DPH.UI.Main.fmx": "0e1775bdc525d84c3634eef68822d2d063007928adbede094fe9c9a1ee4435e4",
+    "DelphiProjectHandoff.dproj": "3fb8ad4686fdda0b48d22e81b8eb8e5affde8abfd465181e15f881d476293660",
+    "tests/DPH.Tests.DatabaseConnections.dpr": "a7a2d59d87caa105e5740c32016c1dff8b59cb44f318267082ce0eca6b950967",
+    "tools/build-database-connections.cmd": "25ab69181483351a0b5ae10e67ca5e7f830b361e779a53ceafeab20843c19de8",
+    "docs/phase1-database-connections-validation.json": "3e142e32078b98a31883ee1c352225aa1b02c64ef78b658fa4f9cefd737a6c2a",
+    "docs/phase1-database-connections-validation.log": "c2b58c7c174124bacbea2f67acb5da5b5bd7215b646728c18757db04dc881810",
+    "docs/guides/Database_Connections_Run_and_Test.txt": "64ba8dd2fc2f6f60a6303047fb67aea76a7fb679d6246158c14dbe7414a10a70",
+    "docs/guide-source-validation.json": "b0b6f411cb7e25227e8d50646cff4c67c56236eeff1095d619ad034e933a302a",
+    "docs/guides/DPH_User_Guide.docx": "0b3468c0ff7be1e9230afd7c1be6e8e562be55fa2582804fc9c28e7d4299415d",
+    "docs/guides/DPH_Engineering_Guide.docx": "49d95d31d0ae9e6509ee218976fc213ef26325e2d0872eba44bdaa860d3bd16f",
+    "docs/pdf/DPH_User_Guide.pdf": "1d710826a31f54ab6b4b561abf9010b11727418367e46277f182e30c142b4f9b",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "b725277748fcda5f47eaa716803c3a63bed65aa139adf8f404d84566a875f581",
+    "docs/phase1-database-connections-build.log": "0b97909498022b14888e93ebf8c01f6922bdeb55852ced4a8493886eb7406e47",
+    "docs/phase1-database-connections-screen-history-regression.json": "936bb87924efb0ec47697f64d7c19e4eb3282d2a160cb154da0ec472ecde0ae2",
+    "docs/phase1-database-connections-semantics-regression.json": "d93d9f8b4f30bddd33a17c787a4646295deed3ec9a265bfad1eb0b25789c2271",
+    "docs/phase1-database-connections-reference-regression.json": "88d55d1a4a86976c1e0002686dc8cc9941344ba6fe732751a863d77c415e81d1",
+    "docs/phase1-database-connections-workspace.png": "6add407964d5f169c673aea2aae3b5370d68abb66e6b0dabf9aefffce81401b7",
+    "docs/phase1-database-connections-compact.png": "5b32abddb26f9a479b8d919e2894fa42d46d0667b51e2e738ea5bef9b8a29a79"
+  }
+}

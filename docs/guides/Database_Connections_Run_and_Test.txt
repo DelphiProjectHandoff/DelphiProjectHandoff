@@ -1,0 +1,97 @@
+DPH DATABASE CONNECTION INVENTORY — RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.01 Database connection inventory
+
+START THE UPDATED APPLICATION
+1. Save or discard any Knowledge draft, then close the existing DPH window.
+2. Open File Explorer. Paste this complete path into its address bar and press Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Attach project and select the application's .dproj, .dpr or .groupproj,
+   or click Open cache and select its .dphdb. Wait for capture/open to finish.
+4. In the upper-right page selector choose Database connections.
+
+READ THE INVENTORY
+5. Select a row. The labeled evidence memo below the list shows its role, class,
+   captured generation, source path/line and SHA256, masked configuration,
+   captured references, Used by dependents and remaining unknowns.
+6. Use the left kind selector to choose connection, dataset, data source,
+   transaction, session, connection definition or database candidate. All shows
+   every candidate. The text filter also searches references and Used by names;
+   a connection may match the name of a dataset using it.
+7. Click First page or Next page to navigate 250 matching rows at a time.
+   Drag the horizontal scrollbar below the toolbar to reach hidden commands.
+   Drag the divider immediately below the list upward to give the memo more
+   space, or downward to show more list rows. Scroll inside the memo to read it.
+
+FOLLOW CONNECTION AND DATASET LINKS
+8. On the right of the toolbar choose a Target or Used by entry in the reference
+   selector, then click Follow reference. This clears the filters and opens the
+   exact target's page and row. The selector includes only unique captured links.
+9. Read each reference's resolution. Local and nested paths and explicitly
+   qualified cross-module paths can resolve. Unqualified names are not guessed
+   across unrelated forms. Duplicate names, missing targets, wrong component
+   roles and unsupported expressions stay unresolved; explicit nil stays explicit.
+   Resolution is a lexical candidate, not proof of executed runtime binding.
+10. A ConnectionDefName reference creates a shared named-definition row. Follow
+    it to read its referencing connections. Definition contents, credentials,
+    engine/version and environment overrides remain unavailable. DPH reads no
+    external INI/registry definition and makes no production connection.
+11. BDE DatabaseName and SessionName aliases can link to matching captured
+    declarations. Pascal-only fields/variables/locals retain source evidence,
+    with construction/configuration and runtime assignments explicitly unknown.
+    Known class names and property signals identify candidates; custom factories
+    or inherited defaults may remain unobserved. An empty inventory does not
+    establish that the application never uses a database.
+
+UNDERSTAND MASKED CONFIGURATION
+12. Server names, endpoints, database paths, users, passwords, entire connection
+    strings and unknown parameter values remain [REDACTED configuration value].
+    Unknown parameter keys use a generic label. Validated DriverID, protocol,
+    dialect, charset/SSL identifiers, valid ports and explicit booleans can show.
+13. Connected=True is a serialized design declaration. It does not establish a
+    successful connection, current availability or permission to use production.
+    Source/cache files retain original evidence and may contain secrets; the
+    masked inventory is not a scrubbed backup or a claim about every DPH view.
+14. Ask the maintainer which approved environment/definition is intended.
+    Record approved facts and unknowns with attribution in Knowledge. Do not
+    copy credentials into explanations. Reassess after attaching approved missing
+    source. Database engine/version investigation is the next separate record.
+
+CONTROLLED PRACTICE AFTER DEVELOPER VALIDATION
+15. Click Open cache and select:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\database-connections-validation\connections.dphdb
+16. Choose Database connections. Set kind to dataset and filter to Query. Select
+    MainModule.Query. Choose Target via Connection: MainConnection in the
+    reference selector, then click Follow reference. Read DriverID = FB,
+    Port = 3050 and masked database/password values in the evidence memo.
+17. Choose Target via ConnectionDefName: PrimaryDef, then Follow reference.
+    Definition contents are unavailable; its Used by list has two connections.
+18. Set kind to dataset and filter Ambiguous. Its Duplicate reference must remain
+    ambiguous and must not enable Follow reference. Filter Broken to inspect a
+    missing target. Clear the text filter, then choose connection definition to
+    inspect the shared definition.
+    These are controlled declarations, not successful real database connections.
+    Validation recreates this one ignored fixture folder. Keep real work elsewhere.
+
+DEVELOPER BUILD AND CHECKS
+19. Close DPH after saving work. Open Start, type Command Prompt, select Run as
+    administrator and accept elevation. Run these commands separately:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-database-connections.cmd
+    tools\build-wp0.cmd
+20. Expect "Database connections validation passed: 66 checks." and
+    "PASS WP0-TEST: FMX resource instantiation and component binding".
+    Checks cover real text/binary DFM, FMX and Pascal declarations, stored/reopened
+    captures, references/aliases/ambiguity, sensitive test canaries, native filtering,
+    pagination/follow/empty states, compact layout and unchanged source/catalog.
+21. Further regressions used for this delivery:
+    tools\build-screen-history.cmd
+    tools\build-wp3.cmd
+    bin\Win32\Debug\DPH.Tests.Semantics.exe "C:\New Delphi Projects\Delphi Project Handoff"
+    Expect 73 screen-history and 134 semantic/SQL/reference checks. The WP3 command
+    creates a disposable GUID fixture and updates its historical evidence outputs;
+    retain current results separately before restoring historical evidence.
+22. The inventory is bounded to 10000 rows, including named definitions. All new
+    controls remain editable in DPH.UI.Main.fmx through the IDE/Object Inspector.
+    Native PaintTo images under docs show actual DPH controls; they do not show
+    the analyzed application running or establish a live database connection.

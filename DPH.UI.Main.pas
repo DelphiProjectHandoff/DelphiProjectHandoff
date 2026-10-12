@@ -161,6 +161,14 @@ type
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotDialog: TOpenDialog;
+    DatabaseInventoryTab:TTabItem;
+    DatabaseInventoryPurpose,DatabaseInventoryStatus:TLabel;
+    DatabaseInventoryToolbar:THorzScrollBox;
+    DatabaseInventoryFilter:TEdit;
+    DatabaseInventoryKind,DatabaseInventoryLinks:TComboBox;
+    DatabaseInventoryFirst,DatabaseInventoryNext,DatabaseInventoryFollow:TButton;
+    DatabaseInventoryList:TListBox;
+    DatabaseInventoryMemo:TMemo;
     HistoryTab:TTabItem;
     HistoryPurpose,HistoryStatus,HistoryBeforeTitle,HistoryAfterTitle,HistoryDifferenceTitle:TLabel;
     HistoryToolbar:THorzScrollBox;
@@ -338,6 +346,9 @@ type
     procedure ScreenshotClick(Sender: TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
+    procedure DatabaseInventoryFilterChange(Sender:TObject);
+    procedure DatabaseInventorySelectionChange(Sender:TObject);
+    procedure DatabaseInventoryFollowClick(Sender:TObject);
     procedure HistorySelectionChange(Sender:TObject);
     procedure HistoryCompareClick(Sender:TObject);
     procedure HistoryModeChange(Sender:TObject);
@@ -438,6 +449,10 @@ type
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
     FComparison: TJSONObject;
+    FDatabaseInventory:TJSONObject;
+    FDatabaseInventoryRows:TList<TJSONObject>;
+    FDatabaseInventoryTargets:TList<string>;
+    FDatabaseInventoryOffset:Integer;
     FScreenHistory:TJSONObject;
     FScreenToken:Int64;
     FHistoryRows:TList<TJSONObject>;
@@ -494,7 +509,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -511,6 +526,8 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
+  FDatabaseInventoryRows:=TList<TJSONObject>.Create;
+  FDatabaseInventoryTargets:=TList<string>.Create;
   FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
   FDependencyRows:=TList<TJSONObject>.Create;
   FLayoutRows:=TList<TJSONObject>.Create;
@@ -555,6 +572,7 @@ begin
   FDynamicRows.Free; FDynamic.Free;
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
+  FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
   FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
   FLayoutRows.Free; FLayout.Free;
@@ -841,6 +859,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:='Open a project to inspect inherited forms and frames.';InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
@@ -981,6 +1000,7 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
   FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);
@@ -1938,6 +1958,46 @@ begin
       Format('Image: %d x %d pixels',[ScreenshotImage.Bitmap.Width,ScreenshotImage.Bitmap.Height])+sLineBreak+
       'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.DatabaseInventoryFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Kind:string;
+begin
+ if FDatabaseInventoryRows=nil then Exit;
+ if Sender=DatabaseInventoryNext then Inc(FDatabaseInventoryOffset,250) else FDatabaseInventoryOffset:=0;
+ FDatabaseInventoryRows.Clear;DatabaseInventoryList.Items.Clear;DatabaseInventoryNext.Enabled:=False;DatabaseInventorySelectionChange(nil);
+ if FDatabaseInventory=nil then begin DatabaseInventoryStatus.Text:='Open a captured project to inspect its database declarations.';Exit;end;
+ Kind:='';if DatabaseInventoryKind.ItemIndex>0 then Kind:=DatabaseInventoryKind.Selected.Text;Count:=0;
+ for V in FDatabaseInventory.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (Kind<>'') and (Row.GetValue<string>('role')<>Kind) then Continue;
+  if (DatabaseInventoryFilter.Text.Trim<>'') and not ContainsText(Row.ToJSON,DatabaseInventoryFilter.Text.Trim) then Continue;
+  if (Count>=FDatabaseInventoryOffset) and (FDatabaseInventoryRows.Count<250) then begin FDatabaseInventoryRows.Add(Row);DatabaseInventoryList.Items.Add(Row.GetValue<string>('role')+' | '+Row.GetValue<string>('path')+' : '+Row.GetValue<string>('class'));end;Inc(Count);
+ end;
+ DatabaseInventoryNext.Enabled:=Count>FDatabaseInventoryOffset+FDatabaseInventoryRows.Count;
+ DatabaseInventoryStatus.Text:=Format('%d matches; %d shown from %d. Configuration is masked; no target database is opened.',[Count,FDatabaseInventoryRows.Count,FDatabaseInventoryOffset]);
+ if DatabaseInventoryList.Count>0 then begin DatabaseInventoryList.ItemIndex:=0;DatabaseInventorySelectionChange(nil);end
+ else DatabaseInventoryMemo.Text:=FDatabaseInventory.GetValue<string>('qualification')+sLineBreak+sLineBreak+'No matching captured database declarations. Clear the filters or reassess with approved missing source. Runtime-only factories and configuration are not established by an empty inventory.';
+end;
+procedure TDPHMainForm.DatabaseInventorySelectionChange(Sender:TObject);
+var Row:TJSONObject;Value:TJSONValue;ID:string;
+begin
+ if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;
+ DatabaseInventoryMemo.Text:='Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.';
+ if (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
+ Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventoryMemo.Text:=FDatabaseInventory.GetValue<string>('qualification')+sLineBreak+sLineBreak+TDPHDatabaseConnections.Describe(Row);
+ for Value in Row.GetValue<TJSONArray>('links') do if Value.TryGetValue<string>('target_id',ID) then begin FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Target via '+Value.GetValue<string>('property')+': '+Value.GetValue<string>('reference'));end;
+ for Value in Row.GetValue<TJSONArray>('used_by') do begin FDatabaseInventoryTargets.Add(Value.GetValue<string>('id'));DatabaseInventoryLinks.Items.Add('Used by '+Value.GetValue<string>('name')+' via '+Value.GetValue<string>('property'));end;
+ DatabaseInventoryFollow.Enabled:=FDatabaseInventoryTargets.Count>0;if DatabaseInventoryFollow.Enabled then DatabaseInventoryLinks.ItemIndex:=0;
+end;
+procedure TDPHMainForm.DatabaseInventoryFollowClick(Sender:TObject);
+var ID:string;Value:TJSONValue;Index:Integer;
+begin
+ if (FDatabaseInventory=nil) or (DatabaseInventoryLinks.ItemIndex<0) or (DatabaseInventoryLinks.ItemIndex>=FDatabaseInventoryTargets.Count) then Exit;
+ ID:=FDatabaseInventoryTargets[DatabaseInventoryLinks.ItemIndex];DatabaseInventoryFilter.Text:='';DatabaseInventoryKind.ItemIndex:=0;
+ Index:=0;for Value in FDatabaseInventory.GetValue<TJSONArray>('rows') do begin if Value.GetValue<string>('id')=ID then Break;Inc(Index);end;
+ FDatabaseInventoryOffset:=(Index div 250)*250;
+ // Reuse pagination while keeping the exact target page.
+ Dec(FDatabaseInventoryOffset,250);DatabaseInventoryFilterChange(DatabaseInventoryNext);
+ DatabaseInventoryList.ItemIndex:=Index mod 250;DatabaseInventorySelectionChange(nil);
 end;
 procedure TDPHMainForm.HistorySelectionChange(Sender:TObject);
 begin

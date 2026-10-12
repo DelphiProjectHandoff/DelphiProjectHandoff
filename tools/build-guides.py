@@ -529,13 +529,31 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('337 requirement records remain incomplete', '336 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Inspect database connections and datasets', [
+'Open the intended project or saved database and choose Database connections in the upper-right page selector. The inventory lists captured connections, datasets, data sources, transactions, sessions and named connection-definition references. Known component class names and database property signals identify candidates. Pascal-only declarations are also listed when an existing semantic component-field binding does not already represent them. This is captured evidence; DPH never opens the selected application database or loads its drivers.',
+'Select a row to read its role, class, generation, source line and SHA256, masked configuration, captured references and Used by dependents. Scroll the evidence memo vertically. Drag the divider below the list to give the list or memo more space. The kind selector and text filter narrow the inventory; text also searches references and reverse dependencies. First page and Next page show 250 rows at a time. Scroll the toolbar horizontally in a narrow window.',
+'Use the reference selector on the right of the toolbar to choose a Target or Used by entry, then click Follow reference. DPH clears the filters and opens the exact referenced row and page. Unique local, nested and explicitly qualified cross-module references are lexical candidates, not proof of runtime binding. Duplicate names, wrong component roles, missing targets and unsupported expressions remain unresolved. Unqualified references are not guessed across unrelated forms. Explicit nil stays explicit.',
+'ConnectionDefName creates a named definition-reference row with reverse references to its connections. Definition contents, engine/version and environment overrides remain unavailable; no INI, registry or external configuration file is silently read. BDE DatabaseName and session aliases can link to captured declarations. Pascal-only declarations and inherited components do not establish runtime construction, assignments or defaults. An empty result does not prove that the program never uses a database.',
+'Configuration is deliberately masked, including endpoints, database paths, users, passwords, connection strings and unknown parameter values. Only validated driver/protocol/dialect/charset/SSL identifiers, ports and booleans are displayed. Connected=True is a serialized declaration, not evidence of successful connection. Source and cache files still contain original evidence and may contain secrets; the inventory is not a scrubbed database backup. Ask the maintainer for approved environment and definition facts without putting credentials into authored explanations. Full paths, practice steps and developer checks are in docs/guides/Database_Connections_Run_and_Test.txt.'
+]))
+ENGINEERING.append(('Build a safe captured database connection inventory', [
+'DPH.Workspace.DatabaseConnections projects captured text/binary DFM and FMX IR directly. A parent-property index joins database configuration and references to each candidate. An explicit class list covers common connection, dataset, data-source, transaction and session declarations; recognized property signals retain custom-class candidates without claiming vendor or runtime behavior. Existing component_field semantic relationships prevent duplicate Pascal field rows. Unmatched supported Pascal fields, variables and locals retain declaration evidence and unknown construction/configuration.',
+'Resolution uses source-local root and parent paths, explicitly qualified cross-form paths, expected target roles and captured logical aliases. There is no global short-name guess. Duplicate targets remain ambiguous. Named ConnectionDefName references share a definition row with explicit unavailable contents. Each row retains generation, source hash and range; exact outgoing and reverse IDs drive native Follow reference navigation. Missing inherited values, runtime assignments, factories and external definitions remain unknown. A 10000-row bound prevents an unbounded inventory.',
+'The projection never copies raw properties or source text into its configuration. Known parameter keys are retained with masked values; unknown keys use a generic label. Endpoints, credentials and entire connection strings remain masked. Only bounded identifiers for driver/protocol/dialect/charset/SSL, valid ports and explicit booleans are visible. Unsupported reference expressions are masked. Original captured source and caches are unchanged and may contain secrets; this feature is not a comprehensive secret-removal claim for the rest of DPH. No target driver, component class or database connection is created.',
+'DPH.UI.Main.fmx serializes every page control for the IDE and Object Inspector: purpose, horizontally scrolling toolbar, kind/text filters, paging, link selector, Follow reference, resizable list, labeled memo and status. LoadView rebuilds the projection for the accepted generation; ClearWorkspace discards borrowed rows before releasing their owner. Follow selects the exact target page after clearing filters. Compact validation requires a visible evidence area. Existing storage schema and analyzer contracts suffice.',
+'Run tools/build-database-connections.cmd elevated for 66 checks using real text/binary DFM, FMX and Pascal declarations, persisted/reopened captures, local/nested/cross-module links, aliases, duplicate and missing targets, sensitive canaries, validated settings, native paging/filtering/follow/empty states, capture replacement, compact layout and unchanged source/owner catalog. Fixtures reuse bin/database-connections-validation. Native PaintTo renders show DPH controls, not screenshots of an analyzed application. Regression evidence also covers 134 semantic/SQL and pinned-reference checks and 73 screen-history checks.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('336 requirement records remain incomplete', '335 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence', 'Compare screen history and visual changes',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence', 'Inspect database connections and datasets', 'Compare screen history and visual changes',
     'Record user actions and business purposes', 'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -581,7 +599,7 @@ def build(filename, title, audience, sections):
     doc.add_paragraph(title, 'Title')
     doc.add_paragraph('Delphi Project Handoff', 'Subtitle')
     doc.add_paragraph('Windows desktop experimental software')
-    doc.add_paragraph('Last changed 11 October 2026')
+    doc.add_paragraph('Last changed 12 October 2026')
     doc.add_paragraph(audience)
     doc.add_paragraph('This guide describes the implemented application and its evidence limits. Use the phase acceptance records for exact measured results and unresolved release gates.')
     doc.add_page_break()
@@ -675,5 +693,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 15, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 16, 'sources': evidence, 'last_changed': '2026-10-12'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 73,
+    "qualification": "Actual parser, two persisted generations, managed attributed PNGs, exact pixel comparisons, retained-cache worker and native FMX controls. Synthetic images are controlled test data, not observed target-runtime screenshots."
+}

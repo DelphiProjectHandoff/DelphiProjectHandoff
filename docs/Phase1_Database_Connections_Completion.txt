@@ -1,0 +1,49 @@
+DATABASE CONNECTION INVENTORY — COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement completed: 05.01 Database connection inventory
+
+DELIVERED
+Database connections is a new IDE-editable workspace page. It inventories
+captured connections, datasets, data sources, transactions, sessions and shared
+named connection definitions. Text/binary DFM, FMX and supported unmatched Pascal
+declarations retain source, generation, range and SHA256 attribution.
+Unique local/nested/Self, qualified cross-module references and logical BDE aliases
+resolve to exact targets. Follow reference navigates outgoing and Used by links.
+Duplicates, missing targets, wrong roles, nil and unsupported expressions remain
+explicit. Kind/text filtering and 250-row pagination support a 10000-row bound.
+Sensitive/unknown configuration values are masked; validated safe settings show.
+External definition contents, inherited defaults and runtime assignments can remain
+unknown. DPH opens no target database or driver. Source/cache originals may contain
+secrets; this inventory is not a scrubbed backup or runtime connection test.
+
+VALIDATION
+66 focused checks PASS: actual parser, persisted/reopened captures, links, aliases,
+ambiguity, redaction canaries, pagination, native follow, replacement and compact UI.
+207 regression checks PASS: 134 semantic/SQL/pinned-reference + 73 screen history.
+Actual application build and FMX baseline PASS. Normal/compact renders inspected.
+User guide: 24 pages, 45 TOC entries. Engineering guide: 20 pages, 37 TOC entries.
+Both editable DOCX and PDF versions rendered and visually reviewed; all 82 TOC
+entries and 55 implementation-source hashes verified. HTML help updated.
+Historical reconciliation and source plans remain unchanged. Test fixture uses one
+fixed ignored folder. Disposable semantic regression GUID folder removed.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseConnections_PreChange_20261011_234753
+4133 files / 964579383 bytes; SHA256 verified before changes.
+
+RUN AND TEST
+Close DPH after saving any Knowledge draft. Start:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Attach the intended project or Open cache, then choose Database connections from
+the upper-right page selector. Select a row and read the evidence memo below it.
+Full explicit directions, controlled practice and elevated developer commands:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Connections_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved. Only 05.01 promoted in this execution.
+180 implemented; 18 implemented_manual_capture; 233 partial; 102 missing.
+335 incomplete requirement records remain. Zero unassessed records.
+This completes the bounded inventory record, not the entire product backlog.
+Next record: 05.02 Database engines and versions — identify selected-project
+engine/version evidence from configuration or approved imports without connecting
+to production.

@@ -1,0 +1,74 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+15619 lines, 1.30 seconds, 10349684 bytes code, 348628 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: Text DFM connection captured
+PASS 3: Known connection class classified
+PASS 4: Dataset classified
+PASS 5: Data source classified
+PASS 6: Transaction classified
+PASS 7: Session classified
+PASS 8: Custom class property signal remains candidate
+PASS 9: Pascal-only declaration retained
+PASS 10: Confirmed component-field binding avoids duplicate declaration row
+PASS 11: Dataset connection links uniquely
+PASS 12: Data source links to dataset
+PASS 13: Qualified cross-module reference links
+PASS 14: Missing target explicitly unresolved
+PASS 15: Missing target not fabricated
+PASS 16: Unqualified external target is not guessed
+PASS 17: Unrelated visual component excluded
+PASS 18: Nil stays explicit
+PASS 19: Wrong-role target not linked
+PASS 20: Unsupported expression masked
+PASS 21: IB database reference links
+PASS 22: Transaction reference links
+PASS 23: Transaction default database links
+PASS 24: BDE logical database alias links
+PASS 25: Session alias links
+PASS 26: Parent-local nested path links
+PASS 27: Self-qualified reference links
+PASS 28: Duplicate paths remain ambiguous
+PASS 29: Ambiguous target not followed
+PASS 30: Named definition inventoried
+PASS 31: Shared definition has both referencing connections
+PASS 32: External definition contents not invented
+PASS 33: Reverse dataset dependencies retained
+PASS 34: Binary DFM connection captured
+PASS 35: Binary reference resolved
+PASS 36: FMX connection reference resolved
+PASS 37: Inherited declaration preserved
+PASS 38: Missing configuration not invented
+PASS 39: All sensitive configuration canaries absent from projection
+PASS 40: Validated driver metadata shown
+PASS 41: Valid port shown
+PASS 42: Invalid driver and port masked
+PASS 43: Connected flag qualified
+PASS 44: Exact source hash retained
+PASS 45: Reopened captured database gives identical inventory
+PASS 46: Inventory page discoverable
+PASS 47: Native page paginates at 250
+PASS 48: Next enabled for remaining rows
+PASS 49: Next shows bounded remaining rows
+PASS 50: Native text and kind filters find dataset
+PASS 51: Unique reference enables follow
+PASS 52: Follow navigates exact target
+PASS 53: Reverse references navigable
+PASS 54: Named definition kind filter
+PASS 55: Native details explain unknown definition contents
+PASS 56: Native details omit sensitive values
+PASS 57: Empty filter has no invented rows
+PASS 58: Empty filter disables reference navigation
+PASS 59: Empty inventory explains coverage limits
+PASS 60: Compact commands scroll horizontally
+PASS 61: Evidence memo scrolls
+PASS 62: Compact evidence stays in workspace pane
+PASS 63: Compact evidence retains usable visible height
+PASS 64: Capture replacement retains redaction
+PASS 65: Owner catalog unchanged
+PASS 66: Analyzed source unchanged
+Database connections validation passed: 66 checks.
