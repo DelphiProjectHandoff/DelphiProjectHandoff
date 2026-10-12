@@ -1,0 +1,130 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\tests\DPH.Tests.DatabaseColumns.dpr(183) Hint: H2077 Value assigned to 'Other' never used
+16055 lines, 1.33 seconds, 10412624 bytes code, 348760 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: CREATE SCHEMA declaration captured
+PASS 3: Qualified table captured
+PASS 4: CREATE OR REPLACE VIEW distinguished from table
+PASS 5: Schema qualifier retained
+PASS 6: Qualifier references distinct from explicit schemas
+PASS 7: Duplicate declarations counted without selecting winner
+PASS 8: Duplicate deployment uncertainty explained
+PASS 9: Dots inside quoted identifiers preserved
+PASS 10: Bracket identifiers captured
+PASS 11: Backtick identifiers captured
+PASS 12: Temporary table header captured
+PASS 13: Conditional table header captured
+PASS 14: Conditional schema header captured
+PASS 15: Nested comments and quoted semicolons do not split declaration
+PASS 16: Comment and string SQL do not invent objects
+PASS 17: Nested comment SQL ignored
+PASS 18: Malformed lexical source not partially promoted
+PASS 19: Unbalanced body remains unsupported
+PASS 20: Incomplete qualified name not promoted
+PASS 21: Unsupported replace-table header refused
+PASS 22: Unsupported temporary schema refused
+PASS 23: Unsupported conditional view refused
+PASS 24: Unsupported view column-list header not guessed
+PASS 25: Existing SQL reference retained without inventing a definition
+PASS 26: Inferred reference has no invented definition
+PASS 27: Inferred reference never promoted to declaration
+PASS 28: Actual CREATE column declaration captured
+PASS 29: First duplicate retains its own declared type
+PASS 30: Type precision and comma retained without splitting a column
+PASS 31: Signed numeric default retained
+PASS 32: Nullability after DEFAULT parsed separately
+PASS 33: Column retains qualified table
+PASS 34: Column retains original source file
+PASS 35: Column declaration start line retained
+PASS 36: Column retains actual source hash
+PASS 37: Column retains captured generation
+PASS 38: Column retains unique parent declaration identity
+PASS 39: Multiword type retained
+PASS 40: Explicit NULL distinguished from unspecified
+PASS 41: Literal default masked with explicit marker
+PASS 42: Timestamp qualifier retained
+PASS 43: Symbolic default retained without evaluating
+PASS 44: Absent nullability not invented
+PASS 45: Absent default not invented
+PASS 46: DEFAULT NULL remains a default expression
+PASS 47: DEFAULT NULL does not become an explicit nullability clause
+PASS 48: Named CHECK text retained
+PASS 49: Inline reference clause retained as text only
+PASS 50: Named NOT NULL clause captured
+PASS 51: Function default commas and literals handled
+PASS 52: Parenthesized default expression retained
+PASS 53: Default and CHECK stay separate
+PASS 54: Primary key does not invent explicit NOT NULL declaration
+PASS 55: Quoted name and qualified custom type preserved
+PASS 56: Array type suffix retained
+PASS 57: Table constraint not misclassified as column
+PASS 58: Table CHECK commas remain in one entry
+PASS 59: Unsupported column not promoted: bad
+PASS 60: Unsupported column entry explained: bad
+PASS 61: Unsupported column not promoted: conflict
+PASS 62: Unsupported column entry explained: conflict
+PASS 63: Unsupported column not promoted: missing
+PASS 64: Unsupported column entry explained: missing
+PASS 65: Unsupported column not promoted: repeated
+PASS 66: Unsupported column entry explained: repeated
+PASS 67: Unsupported column not promoted: expression
+PASS 68: Unsupported column entry explained: expression
+PASS 69: Unsupported column not promoted: absenttype
+PASS 70: Unsupported column entry explained: absenttype
+PASS 71: Unsupported column not promoted: badname
+PASS 72: Unsupported column entry explained: badname
+PASS 73: Unsupported column not promoted: namedbad
+PASS 74: Unsupported column entry explained: namedbad
+PASS 75: Unsupported column not promoted: malformeddefault
+PASS 76: Unsupported column entry explained: malformeddefault
+PASS 77: Unsupported column not promoted: missingtype
+PASS 78: Unsupported column entry explained: missingtype
+PASS 79: Unsupported column not promoted: typeless
+PASS 80: Unsupported column entry explained: typeless
+PASS 81: Supported following column survives earlier entry gaps
+PASS 82: Trailing empty column entry explicitly reported
+PASS 83: All column literal canaries absent from projection
+PASS 84: Column explanation displays type before long qualifications
+PASS 85: Column explanation teaches absent-declaration meaning
+PASS 86: Other duplicate column retains distinct type
+PASS 87: Duplicate table declarations never merge column ownership
+PASS 88: String literal omitted from projected definitions
+PASS 89: Quoted semicolon content omitted
+PASS 90: Malformed lexical resources explain gaps
+PASS 91: Oversize resource explicitly reported
+PASS 92: Migration and unsupported statements retained as gaps
+PASS 93: Definition retains captured SHA256
+PASS 94: Definition retains generation
+PASS 95: Statement start line retained
+PASS 96: Details qualify definition validation
+PASS 97: Unchanged attached source opens
+PASS 98: Detached source navigation refused
+PASS 99: Outside-project navigation refused
+PASS 100: Historical generation navigation refused
+PASS 101: Changed source navigation refused
+PASS 102: Inspector leaves captured workspace unchanged
+PASS 103: Persisted reopening yields identical schema evidence
+PASS 104: Native list bounds first page to 250 rows
+PASS 105: Next page enabled for remaining declarations
+PASS 106: Native next page exposes remainder
+PASS 107: Kind, state and name filters combine
+PASS 108: Native memo explains selected definition
+PASS 109: Native details expose source hash
+PASS 110: Native navigation explains detached attachment
+PASS 111: Empty result teaches missing-evidence interpretation
+PASS 112: Native declared-type filter finds captured column
+PASS 113: Native column nullability explained
+PASS 114: Native default evidence displayed
+PASS 115: Native column empty filter handled
+PASS 116: Compact memo has readable area
+PASS 117: Long schema details scroll
+PASS 118: Compact commands can scroll horizontally
+PASS 119: Capture replacement rebuilds projection under current filters
+PASS 120: Owner catalog unchanged
+PASS 121: Target source restored unchanged after navigation refusal test
+Database columns validation passed: 121 checks.

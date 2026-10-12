@@ -1,0 +1,57 @@
+COLUMNS DATA TYPES AND CONSTRAINTS COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.04 Columns, data types, and constraints
+
+DELIVERED
+The existing IDE-editable Database schema page now shows captured columns,
+declared types, explicit NULL/NOT NULL, default expressions, inline constraint
+text and separate captured table constraint entries. Nested commas remain inside
+type parameters, default functions and CHECK expressions. Token-aware formatting
+preserves quoted identifiers and presents readable numbers/types. Column details
+lead with type, nullability and default for compact-window use. Kind/state/text
+filters include types, explicit nullability and inline constraints; existing
+250-row pagination, labeled scrolling memo and guarded Open source remain.
+Each column retains source file/entry-start line, resource byte extent, SHA256,
+generation and unique parent table declaration ID. Duplicate table declarations
+retain separate columns, without an effective migration winner.
+Unsupported clauses, missing types/defaults, repeated defaults, conflicting
+NULL/NOT NULL and trailing empty entries stay gaps with sanitized source text.
+Supported later entries remain inspectable. DEFAULT NULL does not become explicit
+nullability. Not declared means absent from the entry, not an effective default.
+Literal contents are omitted and expressions are not evaluated. Type validity,
+constraint semantics, inherited/domain/key rules, key relationships and deployed
+enforcement remain unverified. No target SQL, driver or application is executed.
+Original source/cache can contain sensitive data; this is not a scrubbed backup.
+
+VALIDATION
+121 focused checks PASS: actual SQL resource capture, types/precision/multiword
+and qualified/quoted names, defaults, NULL separation, named/inline/table
+constraint text, nested commas, duplicate ownership, malformed/unsupported entries,
+literal canaries, SQLite persistence, source guards, unchanged source/catalog/
+workspace, native filtering/paging/details/replacement and normal/compact FMX
+PaintTo renders. 57 schema + 66 engine regression checks PASS.
+Actual application build and serialized FMX binding baseline PASS.
+Both editable DOCX guides and PDFs rendered and visually reviewed. User: 26 pages,
+48 TOC entries. Engineering: 22 pages, 40 TOC entries. All 56 source hashes and
+88 TOC destinations verified. HTML help and explicit run/test directions updated.
+Original requirements, plans, reconciliation history and prior schema/engine
+acceptance artifacts preserved. Fixed ignored validation folders reused.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseColumns_PreChange_20261012_104811
+4366 files / 1085671145 bytes; SHA256 verified before changes.
+
+RUN AND TEST
+Save Knowledge drafts, close DPH, then start:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project/cache, choose Database schema, kind column and state
+declared column. Select a row. Complete directions and controlled practice:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Columns_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.04 promoted in this execution.
+183 implemented; 18 implemented_manual_capture; 231 partial; 101 missing.
+332 incomplete requirement records remain; zero unassessed.
+Next: 05.05 Primary, foreign, and unique keys. Implement structured schema key
+records and evidence-backed membership/reference relationships. Captured constraint
+text from this batch does not by itself complete those relationship records.

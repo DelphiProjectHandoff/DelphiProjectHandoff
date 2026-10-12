@@ -55,7 +55,12 @@ qualified names, distinct reference/declaration/gap states, duplicate declaratio
 source provenance, native filtering/paging and guarded source navigation.
 57 focused and 66 engine regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Schema_Completion.txt.
-Current live backlog: 333 incomplete requirement records; 0 unassessed.
+Columns, data types, and constraints completed (05.04): captured column types,
+explicit nullability, defaults and constraint text with exact declaration
+ownership, source provenance, explicit gaps and native filters/details.
+121 focused and 123 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Columns_Completion.txt.
+Current live backlog: 332 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

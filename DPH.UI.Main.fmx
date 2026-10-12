@@ -1569,7 +1569,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Inspect captured tables, views and schemas. Declared headers, inferred SQL references and unsupported statements remain distinct. Select evidence below; scroll commands sideways. No SQL is executed.'
+Text = 'Inspect captured tables, views, schemas, columns and constraints. Select a column for declared type, nullability and default evidence. Unsupported entries remain gaps. Scroll commands sideways. No SQL is executed.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1588,7 +1588,9 @@ Items.Strings = (
 'table'
 'view'
 'schema'
-'gap')
+'gap'
+'column'
+'constraint')
 ItemIndex = 0
 end
 object DatabaseSchemaFilter: TEdit
@@ -1627,7 +1629,9 @@ Items.Strings = (
 'declared header'
 'inferred reference'
 'qualifier reference'
-'unsupported')
+'unsupported'
+'declared column'
+'captured constraint')
 ItemIndex = 0
 end
 object DatabaseSchemaSource: TButton

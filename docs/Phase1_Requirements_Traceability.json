@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Tables, views, and schemas 05.03 implemented as captured static evidence; 333 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Columns, data types, and constraints 05.04 implemented as captured static declarations; 332 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1868,13 +1868,28 @@
       "id": "05.04",
       "domain": "DPH-05",
       "requirement": "Columns, data types, and constraints",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseSchema.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseColumns.dpr",
+        "tools/build-database-columns.cmd",
+        "docs/phase1-database-columns-validation.json",
+        "docs/phase1-database-columns-validation.log",
+        "docs/guides/Database_Columns_Run_and_Test.txt"
       ],
-      "limitation": "Add actual column types/nullability/defaults/constraints from schema evidence.",
+      "limitation": "Captured static CREATE TABLE entry extraction only. Types, explicit NULL/NOT NULL, default expressions and inline/table constraint text retain source evidence. Absent clauses remain not declared; effective key/domain/inheritance rules and migration order are not inferred. Literal contents are omitted and expressions are not evaluated. Unsupported clauses and malformed entries remain gaps. Duplicate table declarations retain separate column ownership. Dialect validity, constraint semantics, key relationships and deployed enforcement remain unverified. No target SQL or server is executed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database schema now exposes column rows with declared type, explicit nullability, default and inline constraint text, plus separate captured table constraint entries. Nested commas remain inside types, defaults and CHECK expressions. Every entry retains file/line, resource extent, SHA256, generation and unique parent table declaration ID. Missing types/defaults, unsupported clauses, repeated defaults, conflicting NULL/NOT NULL and trailing empty entries are explicit gaps. Native kind/state/type/nullability/constraint filters, paging and guarded source navigation use existing IDE-editable controls; compact details lead with column facts.",
+        "remaining_work": "",
+        "purpose": "Columns, data types, and constraints",
+        "evidence_group": "sql",
+        "verification": "121 focused checks pass for actual project/resource capture, column/type/default/nullability/constraint extraction, nested commas, duplicate ownership, malformed/unsupported entries, literal omission, SQLite reopening, source guards, unchanged source/catalog/workspace and native FMX filtering/paging/details/replacement/normal/compact rendering. 57 schema and 66 engine regression checks pass. Actual app build and FMX baseline pass. Both editable guides and PDFs rendered and visually reviewed; 56 source hashes and all 88 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Explicit simple-SQL projection/assignment column names are retained.",
@@ -1882,6 +1897,12 @@
         "purpose": "Columns, data types, and constraints",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Columns data types and constraints",
+        "validation": "docs/phase1-database-columns-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12548,23 +12569,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Tables views and schemas",
+    "completed_batch": "Columns data types and constraints",
     "completed_requirement_ids": [
-      "05.03"
+      "05.04"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 232,
-      "implemented": 182,
+      "partial": 231,
+      "implemented": 183,
       "missing": 101
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 333,
-    "completion_record": "docs/Phase1_Database_Schema_Completion.txt",
+    "incomplete_requirement_records": 332,
+    "completion_record": "docs/Phase1_Database_Columns_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.04",
-      "title": "Columns, data types, and constraints",
-      "scope": "Add actual column types/nullability/defaults/constraints from schema evidence."
+      "requirement": "05.05",
+      "title": "Primary, foreign, and unique keys",
+      "scope": "Implement schema key records and evidence-backed relationships."
     }
   }
 }

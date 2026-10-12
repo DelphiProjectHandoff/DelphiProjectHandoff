@@ -1,0 +1,75 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseEngines.dpr(82) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+15944 lines, 1.31 seconds, 10397408 bytes code, 348808 bytes data.
+PASS 1: Persisted fixture integrity valid
+PASS 2: Recognized DriverID ADS
+PASS 3: DriverID does not imply server version ADS
+PASS 4: Recognized DriverID ASA
+PASS 5: DriverID does not imply server version ASA
+PASS 6: Recognized DriverID DB2
+PASS 7: DriverID does not imply server version DB2
+PASS 8: Recognized DriverID FB
+PASS 9: DriverID does not imply server version FB
+PASS 10: Recognized DriverID IB
+PASS 11: DriverID does not imply server version IB
+PASS 12: Recognized DriverID IBLite
+PASS 13: DriverID does not imply server version IBLite
+PASS 14: Recognized DriverID Infx
+PASS 15: DriverID does not imply server version Infx
+PASS 16: Recognized DriverID MSAcc
+PASS 17: DriverID does not imply server version MSAcc
+PASS 18: Recognized DriverID MSSQL
+PASS 19: DriverID does not imply server version MSSQL
+PASS 20: Recognized DriverID MySQL
+PASS 21: DriverID does not imply server version MySQL
+PASS 22: Recognized DriverID Ora
+PASS 23: DriverID does not imply server version Ora
+PASS 24: Recognized DriverID PG
+PASS 25: DriverID does not imply server version PG
+PASS 26: Recognized DriverID SQLite
+PASS 27: DriverID does not imply server version SQLite
+PASS 28: Recognized DriverID Mongo
+PASS 29: DriverID does not imply server version Mongo
+PASS 30: Matching explicit version declarations retained
+PASS 31: Version is declared not observed
+PASS 32: Driver and all version evidence retained
+PASS 33: Dataset follows unique captured connection
+PASS 34: Data source follows dataset to connection
+PASS 35: Three-hop evidence path retained
+PASS 36: Fourth hop remains unknown
+PASS 37: Derived engine retains reference path
+PASS 38: Derived evidence retains origin hash
+PASS 39: Different driver families conflict
+PASS 40: Known plus virtual driver remains conflicting
+PASS 41: ODBC port and dialect do not identify engine
+PASS 42: Client version not confused with server
+PASS 43: Virtual driver not guessed from name
+PASS 44: Different version declarations conflict
+PASS 45: Invalid version not displayed or inferred
+PASS 46: ADO string and unrelated DriverID do not identify engine
+PASS 47: Different captured connections not collapsed
+PASS 48: Missing reference engine unknown
+PASS 49: Partially unresolved connection paths do not imply one engine
+PASS 50: Ambiguous reference engine unknown
+PASS 51: External definition engine unavailable
+PASS 52: FMX DriverID captured
+PASS 53: Binary DFM version captured
+PASS 54: Secrets absent from engine and configuration projection
+PASS 55: Details qualify declared version
+PASS 56: Reopened capture produces identical engine evidence
+PASS 57: Engine-name filter ignores explanatory boilerplate
+PASS 58: List exposes engine summary
+PASS 59: Native details display version
+PASS 60: Client evidence distinctly labeled
+PASS 61: Native engine evidence remains masked
+PASS 62: Compact engine evidence has visible area
+PASS 63: Long engine explanations scroll
+PASS 64: Reopened native capture rebuilds evidence
+PASS 65: Owner catalog unchanged
+PASS 66: Target source unchanged
+Database engine validation passed: 66 checks.

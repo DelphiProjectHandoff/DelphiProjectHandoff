@@ -1,0 +1,102 @@
+DPH DATABASE COLUMNS RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.04 Columns, data types, and constraints
+
+START AND FIND THE FEATURE
+1. Save or discard any Knowledge draft and close the existing DPH window.
+2. In File Explorer, paste this full path into the address bar and press Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Attach project and choose the intended .dproj, .dpr or .groupproj, or
+   Open cache and choose its .dphdb. Wait for the project to finish loading.
+4. In the upper-right page selector, choose Database schema.
+5. In the first selector on that page, choose column. In the evidence-state
+   selector farther right, choose declared column. If it is outside the visible
+   area, use the horizontal scrollbar under that command strip to move right.
+6. Select a row. The labeled memo begins with Declared type, Nullability
+   declaration and Default declaration. Scroll down for inline constraints,
+   parent table declaration identity, source file/line, SHA256 and generation.
+   Drag the divider below the list to resize the memo.
+7. A column is a named table field. Its type describes its declared representation.
+   Defaults are expressions captured from the script, and constraints state rules.
+   Explicit NULL or NOT NULL means that clause occurs in the column entry.
+   Not declared means absent from that entry; it does not establish effective
+   nullability or an implicit default. Keys, domains, inheritance and later
+   migrations may affect effective rules. DEFAULT NULL stays a default expression.
+8. String default contents appear as [literal omitted]. Numeric, symbolic, simple
+   function and parenthesized defaults retain captured text; nothing is evaluated.
+   Original source/cache can contain sensitive data. Display omission does not
+   scrub a backup or the original file.
+9. Inline constraints show captured NOT NULL, NULL, PRIMARY KEY, UNIQUE,
+   REFERENCES and CHECK text, with supported named clauses. For table-level
+   constraints, select kind constraint and state captured constraint. Clear the
+   text filter. These are captured clauses; key membership, referenced-column
+   relationships, expression correctness and deployed enforcement are unverified.
+10. Filter by table/column name, source file, declared type such as DECIMAL,
+    explicit nullability or inline constraint text. Kind/state/text filters
+    combine. Choose All in both selectors and clear text to reset. First page
+    and Next page display up to 250 matches. Each duplicate table declaration
+    retains its own columns; DPH never merges their definitions into a winner.
+11. Choose kind gap and state unsupported to inspect extraction failures.
+    Unsupported clauses, missing types/defaults, repeated defaults, conflicting
+    NULL/NOT NULL and trailing empty entries retain sanitized source text and an
+    explanation. Supported later entries can still be inspected. Empty results
+    do not prove that the live table has no columns. Clear filters, check whether
+    approved schema scripts were captured, and reassess when source is added.
+12. Click Open source to read the original attached unchanged file. Detached,
+    changed, historical or outside-project locations are refused in the memo.
+    Attach the original project to its existing database, or Full reassessment
+    after source changes, before using a captured source location.
+
+CONTROLLED PRACTICE AFTER DEVELOPER VALIDATION
+13. Open cache and select:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\database-columns-validation\schema.dphdb
+14. Choose Database schema, kind column, state declared column, filter DECIMAL.
+    Select Sales.Details.amount. Expect DECIMAL(12, 2), explicit NOT NULL and
+    default -42.5, from columns.sql line 3. No database expression was executed.
+15. Filter Sales.Details.flag. Expect default NULL and nullability not declared.
+    Filter Sales.Details.title. Expect CHARACTER VARYING(80), explicit NULL and
+    [literal omitted]. Filter Sales.Details.maybe: both nullability and default
+    are not declared. Filter Sales.Details.noInfer: PRIMARY KEY text is present,
+    but DPH does not fabricate an explicit NOT NULL clause.
+16. Filter Sales.Details.id. Two captured table declarations have different
+    types: BIGINT in columns.sql and VARCHAR(10) in columns-duplicate.sql.
+    Read their distinct parent declaration IDs and hashes. No migration winner
+    is selected. Choose constraint/captured constraint to inspect table CHECK
+    and named primary-key text. Their commas remain in the same captured entry.
+17. Choose gap/unsupported; filter Sales.Details. Inspect the generated-clause,
+    missing-type/default and conflicting-nullability gaps. Choose column/declared
+    column and filter Sales.Details.afterbad: it remains available after gaps.
+    These are synthetic scripts for practice, not observed production behavior.
+
+DEVELOPER BUILD AND VALIDATION
+18. Save work and close DPH. Open Start, type Command Prompt, choose Run as
+    administrator and accept elevation. Run these commands separately:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-database-columns.cmd
+    tools\build-database-schema.cmd
+    tools\build-database-engines.cmd
+    tools\build-wp0.cmd
+19. Expect PASS and zero exit status: 121 focused, 57 schema and 66 engine
+    regression checks; then PASS WP0-TEST from the actual application/FMX build.
+    Read any diagnostic before proceeding if a command fails. Fixed ignored
+    validation folders are reused; keep real project work elsewhere. No target
+    SQL, driver connection or target application is executed.
+20. Evidence under docs uses the phase1-database-columns prefix: validation
+    JSON/log, schema-regression JSON/log, engines-regression JSON/log, build.log
+    and workspace/compact PNGs. Images show actual DPH controls with controlled
+    captured declarations. Original plans and prior acceptance evidence remain.
+
+SUPPORTED STATIC INSPECTION
+Column/type/nullability/default/constraint facts come from supported CREATE TABLE
+entries in captured referenced SQL resources. Entries split at outer commas.
+Type identifiers, qualified types, supported multiword/time-zone/array/unsigned
+suffixes and parenthesized parameters retain captured spelling. Default support
+covers simple literals/numbers/symbols/functions and parenthesized expressions.
+Complex unparenthesized expressions, generated columns, named DEFAULT constraints,
+collation clauses and unsupported reference actions remain extraction gaps.
+Type validity, expression semantics, inherited/domain rules and live enforcement
+are not established. Table constraint text is retained without key relationships.
+Existing resource/token/row bounds and source navigation guards still apply.
+
+Syntax reference (does not establish the selected project's dialect):
+https://www.postgresql.org/docs/18/sql-createtable.html

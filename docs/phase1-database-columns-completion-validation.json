@@ -1,0 +1,71 @@
+{
+  "result": "PASS",
+  "requirement": "05.04",
+  "status": "implemented",
+  "checks": 121,
+  "regression_checks": 123,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.04",
+  "incomplete_requirement_records": 332,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 183,
+    "missing": 101
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 26,
+        "toc_entries": 48,
+        "new_chapter_pages": [
+          2,
+          16
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 22,
+        "toc_entries": 40,
+        "new_chapter_pages": [
+          2,
+          19
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseColumns_PreChange_20261012_104811",
+    "files": 4366,
+    "bytes": 1085671145,
+    "sha256_verified": true
+  },
+  "qualification": "Captured column/type/explicit nullability/default/constraint declarations only. Expression semantics, effective inherited/domain/key rules, key relationships and deployed enforcement unverified; no SQL executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "8e8e02ab9df85218f1664a13d90ffe189f18cb0d0365df3d253d1e9d4b6ff9cc",
+    "DPH.UI.Main.pas": "ee53e145dce65e0d58a8e4061547dcbb84f979ccb9f5723a8d243acb334d17f7",
+    "DPH.UI.Main.fmx": "a18895ef7fe86fa7bc3df2b15c7c8cb8f1930455b09a118ad99b9ddf943a7075",
+    "tests/DPH.Tests.DatabaseColumns.dpr": "d7389cd0fc5f406b8cdaa931b9f9c4ee08713f9f2e7e472028296a7061b17f02",
+    "tools/build-database-columns.cmd": "40fe478ab7e56508cb62ccc0bbc8a958c5b10bdb2f9a67b0e21aafe1b66791f9",
+    "docs/phase1-database-columns-validation.json": "51da5f2c03aa510f811c20d445c8cf413354f95d5d05c9c158d3071d93131564",
+    "docs/phase1-database-columns-validation.log": "2d9a3e8167037d6cea904c25fd723400e9b4a01fef1476107ad1e664a0fc164c",
+    "docs/guides/Database_Columns_Run_and_Test.txt": "606b4db37d42b4324e1cac91433c920e75168341fb3a44d8e84cb6ad9ca21487",
+    "docs/guide-source-validation.json": "f13777598480e90ba391be2d1432303977a37d48d8149d207c97fbff823e4f66",
+    "docs/guides/DPH_User_Guide.docx": "6ba13399b498213e583a83c36a48d3db515d34dcecd26d45565995aec3ba5944",
+    "docs/guides/DPH_Engineering_Guide.docx": "6c69ce5284aa0eb95538e1b64865a251a0922dc1f2e4a95e7c9a60fbc6c9ae44",
+    "docs/pdf/DPH_User_Guide.pdf": "03b85aaa88f216d9aedfe4b0b64570eb6ea579af80ae5bc5bee1d1fe40cd1f9e",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "f70d9549ee60f1ef89c5268e405fb69dc6b5b02aed1af4155c61377ea9e26721",
+    "docs/phase1-database-columns-build.log": "bb53d91999d1b6212ab2ccae891bd1ca895f72abbc7f1ca85ce5aa378ced5f5d",
+    "docs/phase1-database-columns-schema-regression.json": "36682a3a2a3ff2f74c515acead1dc7cfb7c429471ff415aa21331d92cba4df0f",
+    "docs/phase1-database-columns-engines-regression.json": "180e8e9bea82185157d670b65e1468bd3bf55b690e53db2fff26ae308f7b9bfc",
+    "docs/phase1-database-columns-workspace.png": "759b8379fc9a29d1cd0119b4e0b775e9c836141afba9cc85974be7d32a859843",
+    "docs/phase1-database-columns-compact.png": "e5bf5bf50de87822d57619fc243cd8e54e5c1b3ef5e0ea5149d9de8387516ea6"
+  }
+}

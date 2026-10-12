@@ -102,3 +102,9 @@ line/hash/generation, duplicate declarations, filtering, paging and guarded sour
 navigation help investigate the schema. Captured definitions do not establish a
 valid dialect or deployed database. See
 [Database schema run and test](docs/guides/Database_Schema_Run_and_Test.txt).
+
+Database schema now includes **columns, declared types, explicit nullability,
+defaults and constraint text** (05.04), with source attribution and separate
+ownership for duplicate table declarations. Unsupported entries remain gaps;
+expressions and deployed enforcement are unverified. See
+[Database columns run and test](docs/guides/Database_Columns_Run_and_Test.txt).

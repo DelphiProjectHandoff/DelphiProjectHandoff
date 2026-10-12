@@ -25,6 +25,100 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
   Row.AddPair('range',Range).AddPair('range_precision','Byte extent covers the captured SQL resource; line identifies the statement start. Inferred references retain their captured semantic range.');
   Row.AddPair('definition_count',TJSONNumber.Create(0));
  end;
+ procedure InspectColumns(ABody,ALast:Integer;const ATable,ASchema,ADeclaration:string;ARange:TJSONObject);
+ var EntryFirst,EntryLast,Cursor,TypeFirst,TypeLast,ClauseFirst,ExpressionFirst,ExpressionLast,Nesting,Part,Number:Integer;
+     ColumnName,DeclaredType,Nullability,DefaultText,ConstraintText,Problem,ColumnDefinition:string;SawNull,SawNotNull,SawDefault:Boolean;
+     ColumnRow:TJSONObject;
+  function Span(AFirst,AEnd:Integer):string;
+  var Index:Integer;
+  begin
+   Result:='';for Index:=AFirst to AEnd-1 do begin
+    if Length(Result)>8000 then Exit(Result+' [display truncated]');
+    if (Result<>'') and not MatchText(Tokens[Index].Text,['.','(',')',',','[]']) and not MatchText(Tokens[Index-1].Text,['.','(']) and not ((Index=AFirst+1) and MatchText(Tokens[AFirst].Text,['+','-'])) then Result:=Result+' ';
+    Result:=Result+Tokens[Index].Text;
+   end;
+  end;
+  procedure Parentheses;
+  var Balance:Integer;
+  begin
+   Balance:=0;
+   if (Cursor>=EntryLast) or (Tokens[Cursor].Text<>'(') then begin Problem:='Expected parenthesized expression';Exit;end;
+   repeat
+    if Tokens[Cursor].Text='(' then Inc(Balance) else if Tokens[Cursor].Text=')' then Dec(Balance);
+    Inc(Cursor);
+   until (Cursor>=EntryLast) or (Balance=0);
+   if Balance<>0 then Problem:='Incomplete parenthesized expression';
+  end;
+ begin
+  EntryFirst:=ABody+1;
+  while EntryFirst<ALast-1 do begin
+   EntryLast:=EntryFirst;Nesting:=0;
+   while EntryLast<ALast-1 do begin
+    if Tokens[EntryLast].Text='(' then Inc(Nesting) else if Tokens[EntryLast].Text=')' then Dec(Nesting);
+    if (Nesting=0) and (Tokens[EntryLast].Text=',') then Break;Inc(EntryLast);
+   end;
+   ColumnDefinition:=Span(EntryFirst,EntryLast);Problem:='';ColumnName:=Tokens[EntryFirst].Text;
+   if MatchText(ColumnName,['CONSTRAINT','PRIMARY','FOREIGN','UNIQUE','CHECK']) then begin
+    AddRow('constraint',ATable+' | '+ColumnName,ASchema,'captured constraint','Table-level constraint text only; membership, key relationships and enforcement are unverified.',ColumnDefinition,Tokens[EntryFirst].Line,ARange);
+    Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration).AddPair('scope','table');
+    EntryFirst:=EntryLast+1;Continue;
+   end;
+   Cursor:=EntryFirst+1;TypeFirst:=Cursor;SawNull:=False;SawNotNull:=False;SawDefault:=False;DefaultText:='not declared';ConstraintText:='';
+   if not Tokens[EntryFirst].Identifier or (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then Problem:='Missing column name or declared data type';
+   if (Cursor<EntryLast) and MatchText(Tokens[Cursor].Text,['DEFAULT','NOT','NULL','CONSTRAINT','PRIMARY','UNIQUE','CHECK','REFERENCES','GENERATED','COLLATE']) then Problem:='Missing data type before column clause';
+   if Problem='' then begin
+    Inc(Cursor);
+    if (Cursor<EntryLast) and (Tokens[Cursor].Text='.') then begin Inc(Cursor);if (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then Problem:='Incomplete qualified data type' else Inc(Cursor);end;
+    if (Cursor<EntryLast) and MatchText(Tokens[Cursor].Text,['PRECISION','VARYING']) then Inc(Cursor);
+    if (Cursor<EntryLast) and (Tokens[Cursor].Text='(') then Parentheses;
+    if (Cursor+2<EntryLast) and MatchText(Tokens[Cursor].Text,['WITH','WITHOUT']) and SameText(Tokens[Cursor+1].Text,'TIME') and SameText(Tokens[Cursor+2].Text,'ZONE') then Inc(Cursor,3);
+    while (Cursor<EntryLast) and ((Tokens[Cursor].Text='[]') or MatchText(Tokens[Cursor].Text,['UNSIGNED','ZEROFILL'])) do Inc(Cursor);
+   end;
+   TypeLast:=Cursor;DeclaredType:=Span(TypeFirst,TypeLast);
+   while (Cursor<EntryLast) and (Problem='') do begin
+    ClauseFirst:=Cursor;
+    if SameText(Tokens[Cursor].Text,'DEFAULT') then begin
+     if SawDefault then begin Problem:='Repeated DEFAULT clauses';Break;end;SawDefault:=True;Inc(Cursor);ExpressionFirst:=Cursor;
+     if Cursor>=EntryLast then begin Problem:='DEFAULT has no expression';Break;end;
+     if Tokens[Cursor].Text='(' then Parentheses
+     else begin
+      if MatchText(Tokens[Cursor].Text,['+','-']) then Inc(Cursor);
+      if Cursor>=EntryLast then begin Problem:='Incomplete DEFAULT expression';Break;end;
+      if TryStrToInt(Tokens[Cursor].Text,Number) then begin
+       repeat Inc(Cursor) until (Cursor>=EntryLast) or not TryStrToInt(Tokens[Cursor].Text,Number);
+       if (Cursor<EntryLast) and (Tokens[Cursor].Text='.') then begin Inc(Cursor);Part:=Cursor;while (Cursor<EntryLast) and TryStrToInt(Tokens[Cursor].Text,Number) do Inc(Cursor);if Cursor=Part then Problem:='Incomplete numeric default';end;
+      end else if Tokens[Cursor].Identifier or (Tokens[Cursor].Text='[literal omitted]') then begin
+       if MatchText(Tokens[Cursor].Text,['CASE','SELECT','NOT','CONSTRAINT','CHECK','REFERENCES','PRIMARY','UNIQUE']) then Problem:='Unsupported DEFAULT expression';
+       Inc(Cursor);
+       if (Cursor<EntryLast) and (Tokens[Cursor].Text='(') then Parentheses;
+      end else Problem:='Unsupported DEFAULT expression';
+     end;
+     ExpressionLast:=Cursor;DefaultText:=Span(ExpressionFirst,ExpressionLast);Continue;
+    end;
+    if SameText(Tokens[Cursor].Text,'CONSTRAINT') then begin Inc(Cursor);if (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then begin Problem:='Missing constraint name';Break;end;Inc(Cursor);if Cursor>=EntryLast then begin Problem:='Missing named constraint clause';Break;end;end;
+    if (Cursor+1<EntryLast) and SameText(Tokens[Cursor].Text,'NOT') and SameText(Tokens[Cursor+1].Text,'NULL') then begin SawNotNull:=True;Inc(Cursor,2);end
+    else if SameText(Tokens[Cursor].Text,'NULL') then begin SawNull:=True;Inc(Cursor);end
+    else if (Cursor+1<EntryLast) and SameText(Tokens[Cursor].Text,'PRIMARY') and SameText(Tokens[Cursor+1].Text,'KEY') then Inc(Cursor,2)
+    else if SameText(Tokens[Cursor].Text,'UNIQUE') then Inc(Cursor)
+    else if SameText(Tokens[Cursor].Text,'CHECK') then begin Inc(Cursor);Parentheses;end
+    else if SameText(Tokens[Cursor].Text,'REFERENCES') then begin
+     Inc(Cursor);if (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then Problem:='Missing referenced object' else begin Inc(Cursor);while (Cursor+1<EntryLast) and (Tokens[Cursor].Text='.') and Tokens[Cursor+1].Identifier do Inc(Cursor,2);if (Cursor<EntryLast) and (Tokens[Cursor].Text='(') then Parentheses;end;
+    end else Problem:='Unsupported column clause: '+Tokens[Cursor].Text;
+    if ConstraintText<>'' then ConstraintText:=ConstraintText+sLineBreak;ConstraintText:=ConstraintText+Span(ClauseFirst,Cursor);
+   end;
+   if SawNull and SawNotNull then Problem:='Conflicting NULL and NOT NULL declarations';
+   Nullability:='not declared';if SawNull then Nullability:='explicit NULL';if SawNotNull then Nullability:='explicit NOT NULL';
+   if Problem<>'' then begin
+    AddRow('gap',ATable+'.'+ColumnName,ASchema,'unsupported','Column extraction gap: '+Problem+'. Full captured entry retained; no structured column facts promoted.',ColumnDefinition,Tokens[EntryFirst].Line,ARange);
+    Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration);
+   end else begin
+    AddRow('column',ATable+'.'+ColumnName,ASchema,'declared column','Captured column declaration only. Type validity, expression semantics, effective nullability, inherited/domain defaults and deployed enforcement are unverified.',ColumnDefinition,Tokens[EntryFirst].Line,ARange);
+    ColumnRow:=Row;ColumnRow.AddPair('table',ATable).AddPair('declaration_id',ADeclaration).AddPair('column',ColumnName).AddPair('declared_type',DeclaredType).AddPair('nullability',Nullability).AddPair('default',DefaultText).AddPair('constraints',ConstraintText);
+   end;
+   EntryFirst:=EntryLast+1;
+  end;
+  if Tokens[ALast-2].Text=',' then begin AddRow('gap',ATable+' | empty entry',ASchema,'unsupported','Trailing comma leaves an empty column/constraint entry; no facts inferred.','',Tokens[ALast-2].Line,ARange);Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration);end;
+ end;
 begin
  Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
  Result.AddPair('qualification','Captured schema evidence only. CREATE headers declare intended objects; body grammar, column/constraint semantics, deployment order, dialect, existence and current production schema are unverified. SQL references do not prove object definitions. No SQL or target application is executed. Comments and string literals are omitted from displayed definitions; original source/cache remains unchanged. Unsupported statements are explicit gaps. Quoted identifier spelling is preserved; cross-dialect identity is not guessed.');
@@ -65,6 +159,8 @@ begin
        end;
        if not Closed then begin Issue:='Unterminated string or quoted identifier';Break;end;
        Token.Identifier:=Quoted and (Position-Start>2);if Quoted then Token.Text:=Copy(SQL,Start,Position-Start) else Token.Text:='[literal omitted]';
+      end else if CharInSet(C,['0'..'9']) then begin
+       Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['0'..'9']) do Inc(Position);Token.Text:=Copy(SQL,Start,Position-Start);
       end else if CharInSet(C,['A'..'Z','a'..'z','_']) then begin
        Inc(Position);while (Position<=Length(SQL)) and CharInSet(SQL[Position],['A'..'Z','a'..'z','0'..'9','_','$']) do Inc(Position);
        Token.Text:=Copy(SQL,Start,Position-Start);Token.Identifier:=True;
@@ -108,6 +204,7 @@ begin
        end;
       end;
       AddRow(Kind,Name,SchemaName,Status,Issue,Trim(Definition),Tokens[First].Line,Node);
+      if (Status='declared header') and (Kind='table') then InspectColumns(BodyAt,Last,Name,SchemaName,Row.GetValue<string>('id'),Node);
       if (Status='declared header') and (Kind<>'schema') and (SchemaName<>'unknown') then AddRow('schema',SchemaName,SchemaName,'qualifier reference','Schema qualifier in an object name; not a CREATE SCHEMA declaration.','',Tokens[First].Line,Node);
       First:=Last+1;
      end;
@@ -129,10 +226,18 @@ begin
  finally ReferenceNames.Free;Counts.Free;Tokens.Free;end;
 end;
 class function TDPHDatabaseSchema.Describe(ARow:TJSONObject):string;
+var ColumnFacts,CountText:string;
 begin
+ ColumnFacts:='';CountText:='';
+ if ARow.GetValue<string>('status')='declared header' then CountText:='Captured declarations with exact kind/spelling: '+ARow.GetValue('definition_count').Value+sLineBreak;
+ if ARow.GetValue<string>('kind')='column' then ColumnFacts:='Declared type: '+ARow.GetValue<string>('declared_type')+sLineBreak+'Nullability declaration: '+ARow.GetValue<string>('nullability')+sLineBreak+
+  'Default declaration: '+ARow.GetValue<string>('default')+sLineBreak+'Inline constraints (captured text):'+sLineBreak+ARow.GetValue<string>('constraints')+sLineBreak+
+  'Table: '+ARow.GetValue<string>('table')+' | Captured table declaration: '+ARow.GetValue<string>('declaration_id')+sLineBreak+
+  'Not declared means absent from this entry, not an effective database default. Key implications, referenced membership and enforcement require separate verification.'+sLineBreak+sLineBreak;
  Result:=UpperCase(ARow.GetValue<string>('kind'))+' '+ARow.GetValue<string>('name')+sLineBreak+
+  ColumnFacts+
   'Evidence: '+ARow.GetValue<string>('status')+' | Schema: '+ARow.GetValue<string>('schema')+sLineBreak+
-  ARow.GetValue<string>('reason')+sLineBreak+'Captured declarations with exact kind/spelling: '+ARow.GetValue('definition_count').Value+sLineBreak+
+  ARow.GetValue<string>('reason')+sLineBreak+CountText+
   'Generation '+ARow.GetValue('generation_id').Value+' | '+ARow.GetValue<string>('source')+':'+ARow.GetValue<TJSONObject>('range').GetValue('line').Value+sLineBreak+
   'SHA256 '+ARow.GetValue<string>('source_hash')+sLineBreak+ARow.GetValue<string>('range_precision')+sLineBreak+sLineBreak+
   'CAPTURED DEFINITION WITH COMMENTS AND LITERALS OMITTED'+sLineBreak+ARow.GetValue<string>('definition')+sLineBreak+sLineBreak+

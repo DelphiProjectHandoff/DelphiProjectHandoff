@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 121,
+    "qualification": "Controlled SQL column/type/nullability/default/constraint capture, unsupported-entry gaps, duplicate ownership, literal omission, persistence and native FMX controls. Expressions and deployed enforcement unverified; no SQL executed."
+}
