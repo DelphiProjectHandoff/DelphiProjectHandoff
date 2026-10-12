@@ -28,7 +28,7 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
  procedure InspectColumns(ABody,ALast:Integer;const ATable,ASchema,ADeclaration:string;ARange:TJSONObject);
  var EntryFirst,EntryLast,Cursor,TypeFirst,TypeLast,ClauseFirst,ExpressionFirst,ExpressionLast,Nesting,Part,Number:Integer;
      ColumnName,DeclaredType,Nullability,DefaultText,ConstraintText,Problem,ColumnDefinition:string;SawNull,SawNotNull,SawDefault:Boolean;
-     ColumnRow:TJSONObject;
+     ColumnRow:TJSONObject;KeySpans:TArray<TPair<Integer,Integer>>;KeySpan:TPair<Integer,Integer>;KeyAt:Integer;
   function Span(AFirst,AEnd:Integer):string;
   var Index:Integer;
   begin
@@ -49,6 +49,61 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
    until (Cursor>=EntryLast) or (Balance=0);
    if Balance<>0 then Problem:='Incomplete parenthesized expression';
   end;
+  procedure InspectKey(AFirst,AEnd:Integer;const AColumn:string);
+  var P,N:Integer;KeyKind,ConstraintName,Target,ErrorText,Action,ActionKind:string;
+      Members,References:TJSONArray;Seen:TDictionary<string,Boolean>;
+   procedure Names(AList:TJSONArray);
+   begin
+    Seen.Clear;
+    if (P>=AEnd) or (Tokens[P].Text<>'(') then begin ErrorText:='Expected key column list';Exit;end;Inc(P);
+    repeat
+     if (P>=AEnd) or not Tokens[P].Identifier then begin ErrorText:='Missing key column identifier';Exit;end;
+     if Seen.ContainsKey(Tokens[P].Text) then begin ErrorText:='Repeated key column identifier';Exit;end;
+     Seen.Add(Tokens[P].Text,True);AList.Add(Tokens[P].Text);Inc(P);
+     if (P<AEnd) and (Tokens[P].Text=',') then Inc(P) else Break;
+    until False;
+    if (P>=AEnd) or (Tokens[P].Text<>')') then ErrorText:='Incomplete or unsupported key column list' else Inc(P);
+   end;
+  begin
+   P:=AFirst;ConstraintName:='';KeyKind:='';Target:='';ErrorText:='';Action:='';
+   Members:=TJSONArray.Create;References:=TJSONArray.Create;Seen:=TDictionary<string,Boolean>.Create;
+   try
+    if (P<AEnd) and SameText(Tokens[P].Text,'CONSTRAINT') then begin Inc(P);if (P<AEnd) and Tokens[P].Identifier then begin ConstraintName:=Tokens[P].Text;Inc(P);end else ErrorText:='Missing constraint name';end;
+    if P>=AEnd then Exit;
+    if SameText(Tokens[P].Text,'PRIMARY') then begin KeyKind:='primary';Inc(P);if (P<AEnd) and SameText(Tokens[P].Text,'KEY') then Inc(P) else ErrorText:='Expected PRIMARY KEY';end
+    else if SameText(Tokens[P].Text,'UNIQUE') then begin KeyKind:='unique';Inc(P);end
+    else if SameText(Tokens[P].Text,'FOREIGN') then begin KeyKind:='foreign';Inc(P);if (P<AEnd) and SameText(Tokens[P].Text,'KEY') then Inc(P) else ErrorText:='Expected FOREIGN KEY';end
+    else if SameText(Tokens[P].Text,'REFERENCES') and (AColumn<>'') then KeyKind:='foreign'
+    else Exit;
+    if ErrorText='' then begin if AColumn<>'' then Members.Add(AColumn) else Names(Members);end;
+    if (KeyKind='foreign') and (ErrorText='') then begin
+     if (P>=AEnd) or not SameText(Tokens[P].Text,'REFERENCES') then ErrorText:='Expected REFERENCES' else begin
+      Inc(P);N:=0;
+      repeat
+       if (P>=AEnd) or not Tokens[P].Identifier then begin ErrorText:='Missing referenced table identifier';Break;end;
+       if Target<>'' then Target:=Target+'.';Target:=Target+Tokens[P].Text;Inc(P);Inc(N);
+       if (P<AEnd) and (Tokens[P].Text='.') then Inc(P) else Break;
+      until False;
+      if N>3 then ErrorText:='Referenced table has more than three name parts';
+      if (ErrorText='') and (P<AEnd) and (Tokens[P].Text='(') then Names(References);
+     end;
+     while (ErrorText='') and (P<AEnd) and SameText(Tokens[P].Text,'ON') do begin
+      Inc(P);if (P>=AEnd) or not MatchText(Tokens[P].Text,['DELETE','UPDATE']) then begin ErrorText:='Unsupported referential action';Break;end;
+      ActionKind:=UpperCase(Tokens[P].Text);if ContainsText(Action,'ON '+ActionKind+' ') then begin ErrorText:='Repeated referential action';Break;end;
+      Action:=Action+'ON '+ActionKind+' ';Inc(P);
+      if (P<AEnd) and MatchText(Tokens[P].Text,['CASCADE','RESTRICT']) then begin Action:=Action+UpperCase(Tokens[P].Text)+'; ';Inc(P);end
+      else if (P+1<AEnd) and ((SameText(Tokens[P].Text,'NO') and SameText(Tokens[P+1].Text,'ACTION')) or (SameText(Tokens[P].Text,'SET') and MatchText(Tokens[P+1].Text,['NULL','DEFAULT']))) then begin Action:=Action+UpperCase(Tokens[P].Text+' '+Tokens[P+1].Text)+'; ';Inc(P,2);end
+      else ErrorText:='Unsupported referential action';
+     end;
+    end;
+    if (ErrorText='') and (P<>AEnd) then ErrorText:='Unsupported key clause tail: '+Tokens[P].Text;
+    if ErrorText<>'' then begin AddRow('gap',ATable+' | key at line '+IntToStr(Tokens[AFirst].Line),ASchema,'unsupported','Key extraction gap: '+ErrorText+'. No structured key promoted.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration);Exit;end;
+    if ConstraintName='' then ConstraintName:='anonymous '+KeyKind+' at line '+IntToStr(Tokens[AFirst].Line)+' token '+IntToStr(AFirst);
+    AddRow('key',ATable+' | '+ConstraintName,ASchema,'declared key','Captured key declaration; relationships use exact spelling and unique captured ownership. Dialect validity, target eligibility, migration order and enforcement remain unverified.',Span(AFirst,AEnd),Tokens[AFirst].Line,ARange);
+    Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration).AddPair('constraint_name',ConstraintName).AddPair('key_kind',KeyKind).AddPair('members',Members).AddPair('reference_table',Target).AddPair('reference_columns',References).AddPair('referential_actions',Action);
+    Members:=nil;References:=nil;
+   finally Seen.Free;Members.Free;References.Free;end;
+  end;
  begin
   EntryFirst:=ABody+1;
   while EntryFirst<ALast-1 do begin
@@ -61,9 +116,10 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
    if MatchText(ColumnName,['CONSTRAINT','PRIMARY','FOREIGN','UNIQUE','CHECK']) then begin
     AddRow('constraint',ATable+' | '+ColumnName,ASchema,'captured constraint','Table-level constraint text only; membership, key relationships and enforcement are unverified.',ColumnDefinition,Tokens[EntryFirst].Line,ARange);
     Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration).AddPair('scope','table');
+    InspectKey(EntryFirst,EntryLast,'');
     EntryFirst:=EntryLast+1;Continue;
    end;
-   Cursor:=EntryFirst+1;TypeFirst:=Cursor;SawNull:=False;SawNotNull:=False;SawDefault:=False;DefaultText:='not declared';ConstraintText:='';
+   SetLength(KeySpans,0);Cursor:=EntryFirst+1;TypeFirst:=Cursor;SawNull:=False;SawNotNull:=False;SawDefault:=False;DefaultText:='not declared';ConstraintText:='';
    if not Tokens[EntryFirst].Identifier or (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then Problem:='Missing column name or declared data type';
    if (Cursor<EntryLast) and MatchText(Tokens[Cursor].Text,['DEFAULT','NOT','NULL','CONSTRAINT','PRIMARY','UNIQUE','CHECK','REFERENCES','GENERATED','COLLATE']) then Problem:='Missing data type before column clause';
    if Problem='' then begin
@@ -96,6 +152,7 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
      ExpressionLast:=Cursor;DefaultText:=Span(ExpressionFirst,ExpressionLast);Continue;
     end;
     if SameText(Tokens[Cursor].Text,'CONSTRAINT') then begin Inc(Cursor);if (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then begin Problem:='Missing constraint name';Break;end;Inc(Cursor);if Cursor>=EntryLast then begin Problem:='Missing named constraint clause';Break;end;end;
+    KeyAt:=Cursor;
     if (Cursor+1<EntryLast) and SameText(Tokens[Cursor].Text,'NOT') and SameText(Tokens[Cursor+1].Text,'NULL') then begin SawNotNull:=True;Inc(Cursor,2);end
     else if SameText(Tokens[Cursor].Text,'NULL') then begin SawNull:=True;Inc(Cursor);end
     else if (Cursor+1<EntryLast) and SameText(Tokens[Cursor].Text,'PRIMARY') and SameText(Tokens[Cursor+1].Text,'KEY') then Inc(Cursor,2)
@@ -105,6 +162,7 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
      Inc(Cursor);if (Cursor>=EntryLast) or not Tokens[Cursor].Identifier then Problem:='Missing referenced object' else begin Inc(Cursor);while (Cursor+1<EntryLast) and (Tokens[Cursor].Text='.') and Tokens[Cursor+1].Identifier do Inc(Cursor,2);if (Cursor<EntryLast) and (Tokens[Cursor].Text='(') then Parentheses;end;
     end else Problem:='Unsupported column clause: '+Tokens[Cursor].Text;
     if ConstraintText<>'' then ConstraintText:=ConstraintText+sLineBreak;ConstraintText:=ConstraintText+Span(ClauseFirst,Cursor);
+    if (Problem='') and MatchText(Tokens[KeyAt].Text,['PRIMARY','UNIQUE','REFERENCES']) then begin SetLength(KeySpans,Length(KeySpans)+1);KeySpans[High(KeySpans)]:=TPair<Integer,Integer>.Create(ClauseFirst,Cursor);end;
    end;
    if SawNull and SawNotNull then Problem:='Conflicting NULL and NOT NULL declarations';
    Nullability:='not declared';if SawNull then Nullability:='explicit NULL';if SawNotNull then Nullability:='explicit NOT NULL';
@@ -114,10 +172,54 @@ var Rows,Nodes:TJSONArray;FileValue,NodeValue,Value:TJSONValue;FileRow,Node,Row:
    end else begin
     AddRow('column',ATable+'.'+ColumnName,ASchema,'declared column','Captured column declaration only. Type validity, expression semantics, effective nullability, inherited/domain defaults and deployed enforcement are unverified.',ColumnDefinition,Tokens[EntryFirst].Line,ARange);
     ColumnRow:=Row;ColumnRow.AddPair('table',ATable).AddPair('declaration_id',ADeclaration).AddPair('column',ColumnName).AddPair('declared_type',DeclaredType).AddPair('nullability',Nullability).AddPair('default',DefaultText).AddPair('constraints',ConstraintText);
+    for KeySpan in KeySpans do InspectKey(KeySpan.Key,KeySpan.Value,ColumnName);
    end;
    EntryFirst:=EntryLast+1;
   end;
   if Tokens[ALast-2].Text=',' then begin AddRow('gap',ATable+' | empty entry',ASchema,'unsupported','Trailing comma leaves an empty column/constraint entry; no facts inferred.','',Tokens[ALast-2].Line,ARange);Row.AddPair('table',ATable).AddPair('declaration_id',ADeclaration);end;
+ end;
+ procedure ResolveKeys;
+ var Index:TDictionary<string,TJSONObject>;Multiplicity:TDictionary<string,Integer>;
+     Item,Link,TargetRow:TJSONObject;ItemValue,Member:TJSONValue;Links:TJSONArray;
+     Identity,Owner,TargetOwner,TargetName,StateText:string;N,Order:Integer;Complete:Boolean;
+  procedure LinkTo(const ARole,AName,AIdentity:string;APosition:Integer);
+  begin
+   Link:=TJSONObject.Create.AddPair('role',ARole).AddPair('reference',AName).AddPair('position',TJSONNumber.Create(APosition));Links.AddElement(Link);
+   N:=0;Multiplicity.TryGetValue(AIdentity,N);
+   if N=1 then begin TargetRow:=Index[AIdentity];Link.AddPair('state','unique captured match').AddPair('target_id',TargetRow.GetValue<string>('id'));end
+   else begin Complete:=False;if N=0 then StateText:='missing captured declaration' else StateText:='ambiguous captured declarations';Link.AddPair('state',StateText);end;
+  end;
+ begin
+  Index:=TDictionary<string,TJSONObject>.Create;Multiplicity:=TDictionary<string,Integer>.Create;
+  try
+   for ItemValue in Rows do begin
+    Item:=ItemValue as TJSONObject;Identity:='';
+    if (Item.GetValue<string>('kind')='table') and (Item.GetValue<string>('status')='declared header') then Identity:='table|'+Item.GetValue<string>('name');
+    if Item.GetValue<string>('kind')='column' then Identity:='column|'+Item.GetValue<string>('declaration_id')+'|'+Item.GetValue<string>('column');
+    if Item.GetValue<string>('kind')='key' then begin Identity:='constraint|'+Item.GetValue<string>('declaration_id')+'|'+Item.GetValue<string>('constraint_name');N:=0;Multiplicity.TryGetValue(Identity,N);Multiplicity.AddOrSetValue(Identity,N+1);Identity:='';end;
+    if (Item.GetValue<string>('kind')='key') and (Item.GetValue<string>('key_kind')='primary') then Identity:='primary|'+Item.GetValue<string>('declaration_id');
+    if Identity='' then Continue;N:=0;Multiplicity.TryGetValue(Identity,N);Multiplicity.AddOrSetValue(Identity,N+1);Index.AddOrSetValue(Identity,Item);
+   end;
+   for ItemValue in Rows do begin
+    Item:=ItemValue as TJSONObject;if Item.GetValue<string>('kind')<>'key' then Continue;
+    Links:=TJSONArray.Create;Item.AddPair('links',Links);Complete:=True;Owner:=Item.GetValue<string>('declaration_id');Order:=0;
+    Link:=TJSONObject.Create.AddPair('role','owning table').AddPair('reference',Item.GetValue<string>('table')).AddPair('position',TJSONNumber.Create(0)).AddPair('state','exact captured owner').AddPair('target_id',Owner);Links.AddElement(Link);
+    for Member in Item.GetValue<TJSONArray>('members') do begin Inc(Order);LinkTo('local column',Member.Value,'column|'+Owner+'|'+Member.Value,Order);end;
+    if Item.GetValue<string>('key_kind')='foreign' then begin
+     TargetName:=Item.GetValue<string>('reference_table');TargetOwner:='';LinkTo('referenced table',TargetName,'table|'+TargetName,0);
+     if Link.TryGetValue<string>('target_id',TargetOwner) then begin
+      Order:=0;for Member in Item.GetValue<TJSONArray>('reference_columns') do begin Inc(Order);LinkTo('referenced column',Member.Value,'column|'+TargetOwner+'|'+Member.Value,Order);end;
+     end else begin
+      Order:=0;for Member in Item.GetValue<TJSONArray>('reference_columns') do begin Inc(Order);Link:=TJSONObject.Create.AddPair('role','referenced column').AddPair('reference',Member.Value).AddPair('position',TJSONNumber.Create(Order)).AddPair('state','referenced table unresolved');Links.AddElement(Link);end;
+     end;
+     if Item.GetValue<TJSONArray>('reference_columns').Count=0 then begin Complete:=False;Item.AddPair('reference_note','Referenced columns omitted; no default primary-key target guessed.');end
+     else if Item.GetValue<TJSONArray>('reference_columns').Count<>Item.GetValue<TJSONArray>('members').Count then begin Complete:=False;Item.AddPair('reference_note','Local and referenced column counts differ; no valid pairing asserted.');end;
+    end;
+    N:=0;Multiplicity.TryGetValue('primary|'+Owner,N);if N>1 then begin Complete:=False;Item.AddPair('conflict','Multiple primary-key declarations in the same captured table; no effective key selected.');end;
+    N:=0;Multiplicity.TryGetValue('constraint|'+Owner+'|'+Item.GetValue<string>('constraint_name'),N);if N>1 then begin Complete:=False;Item.AddPair('name_conflict','Duplicate constraint name in the same captured table; both records retained.');end;
+    if Complete then StateText:='captured links complete' else StateText:='relationship gaps';Item.AddPair('relationship_status',StateText);
+   end;
+  finally Multiplicity.Free;Index.Free;end;
  end;
 begin
  Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
@@ -222,13 +324,22 @@ begin
    end;
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=0;Counts.TryGetValue(Key,Count);Counts.AddOrSetValue(Key,Count+1);end;
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=Counts[Key];Row.RemovePair('definition_count').Free;Row.AddPair('definition_count',TJSONNumber.Create(Count));if Count>1 then begin Row.RemovePair('reason').Free;Row.AddPair('reason','Multiple captured declarations have this exact kind/spelling. Migration order and effective definition are unresolved; no last-definition winner is selected.');end;end;
+   ResolveKeys;
   except Result.Free;raise;end;
  finally ReferenceNames.Free;Counts.Free;Tokens.Free;end;
 end;
 class function TDPHDatabaseSchema.Describe(ARow:TJSONObject):string;
-var ColumnFacts,CountText:string;
+var ColumnFacts,CountText:string;Link:TJSONValue;
 begin
  ColumnFacts:='';CountText:='';
+ if ARow.GetValue<string>('kind')='key' then begin
+  ColumnFacts:='Key type: '+ARow.GetValue<string>('key_kind')+sLineBreak+'Ordered local columns: '+ARow.GetValue<TJSONArray>('members').ToJSON+sLineBreak+
+   'Referenced table: '+ARow.GetValue<string>('reference_table')+sLineBreak+'Ordered referenced columns: '+ARow.GetValue<TJSONArray>('reference_columns').ToJSON+sLineBreak+
+   'Relationships: '+ARow.GetValue<string>('relationship_status')+sLineBreak+ARow.GetValue<string>('reference_note','')+sLineBreak+ARow.GetValue<string>('conflict','')+sLineBreak+ARow.GetValue<string>('name_conflict','')+sLineBreak+
+   'Referential actions: '+ARow.GetValue<string>('referential_actions')+sLineBreak;
+  for Link in ARow.GetValue<TJSONArray>('links') do ColumnFacts:=ColumnFacts+Link.GetValue<string>('role')+' '+Link.GetValue<Integer>('position').ToString+': '+Link.GetValue<string>('reference')+' | '+Link.GetValue<string>('state')+' | '+Link.GetValue<string>('target_id','no link')+sLineBreak;
+  ColumnFacts:=ColumnFacts+'Primary identifies a row; unique declares a distinct column combination; foreign declares a reference to another table. Links identify captured evidence only; target uniqueness, compatibility and deployed enforcement are unverified.'+sLineBreak+sLineBreak;
+ end;
  if ARow.GetValue<string>('status')='declared header' then CountText:='Captured declarations with exact kind/spelling: '+ARow.GetValue('definition_count').Value+sLineBreak;
  if ARow.GetValue<string>('kind')='column' then ColumnFacts:='Declared type: '+ARow.GetValue<string>('declared_type')+sLineBreak+'Nullability declaration: '+ARow.GetValue<string>('nullability')+sLineBreak+
   'Default declaration: '+ARow.GetValue<string>('default')+sLineBreak+'Inline constraints (captured text):'+sLineBreak+ARow.GetValue<string>('constraints')+sLineBreak+

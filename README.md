@@ -108,3 +108,5 @@ defaults and constraint text** (05.04), with source attribution and separate
 ownership for duplicate table declarations. Unsupported entries remain gaps;
 expressions and deployed enforcement are unverified. See
 [Database columns run and test](docs/guides/Database_Columns_Run_and_Test.txt).
+
+Requirement 05.05: Database schema now exposes captured primary, foreign and unique keys with ordered columns, exact declaration ownership, evidence relationships and Follow relationship navigation. Missing, ambiguous and unsupported evidence is explained. No SQL is executed. See docs/guides/Database_Keys_Run_and_Test.txt.

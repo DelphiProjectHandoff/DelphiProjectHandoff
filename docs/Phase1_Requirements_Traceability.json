@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Columns, data types, and constraints 05.04 implemented as captured static declarations; 332 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Primary, foreign, and unique keys 05.05 implemented as captured declarations and evidence-backed relationships; 331 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1909,13 +1909,28 @@
       "id": "05.05",
       "domain": "DPH-05",
       "requirement": "Primary, foreign, and unique keys",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseSchema.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseKeys.dpr",
+        "tools/build-database-keys.cmd",
+        "docs/phase1-database-keys-validation.json",
+        "docs/phase1-database-keys-validation.log",
+        "docs/guides/Database_Keys_Run_and_Test.txt"
       ],
-      "limitation": "Implement schema key records and evidence-backed relationships.",
+      "limitation": "Captured CREATE TABLE key declarations and exact-spelling evidence links only. Missing/ambiguous targets, omitted reference columns, arity differences, duplicate names and primary-key conflicts remain explained. Unsupported key grammar, expressions, ALTER statements and unsupported inline action tails remain gaps. Dialect validity, referenced uniqueness, type compatibility, effective migration order and deployed enforcement are unverified. No target SQL, application or server is executed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database schema exposes named and anonymous inline/table primary, foreign and unique keys with ordered members, reference table/columns, supported table referential actions and exact parent ownership. Indexed relationships link only unique captured tables/columns and explain missing/ambiguous evidence, omitted reference columns, arity mismatch, duplicate names and multiple primary keys. Unsupported key syntax remains explicit gaps. IDE-editable kind/state filters, relationship selector and Follow relationship support exact targets across 250-row pages; guarded source navigation and provenance remain.",
+        "remaining_work": "",
+        "purpose": "Primary, foreign, and unique keys",
+        "evidence_group": "sql",
+        "verification": "173 focused checks pass for actual captured resources, composite/inline/self-referencing keys, ordered membership, exact target IDs, unresolved/conflicting evidence, unsupported syntax, literal omission, SQLite reopening, source guards, unchanged catalog/source/workspace and native filtering/navigation/replacement/normal/compact renders. 121 column and 57 schema regression checks pass. Actual app build and FMX baseline pass. Both DOCX guides and PDFs rendered and visually reviewed, 56 source hashes and 90 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "SQL name inference does not model selected-project primary/foreign/unique constraints.",
@@ -1923,6 +1938,12 @@
         "purpose": "Primary, foreign, and unique keys",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Primary foreign and unique keys",
+        "validation": "docs/phase1-database-keys-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12569,23 +12590,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Columns data types and constraints",
+    "completed_batch": "Primary foreign and unique keys",
     "completed_requirement_ids": [
-      "05.04"
+      "05.05"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 231,
-      "implemented": 183,
-      "missing": 101
+      "implemented": 184,
+      "missing": 100
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 332,
-    "completion_record": "docs/Phase1_Database_Columns_Completion.txt",
+    "incomplete_requirement_records": 331,
+    "completion_record": "docs/Phase1_Database_Keys_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.05",
-      "title": "Primary, foreign, and unique keys",
-      "scope": "Implement schema key records and evidence-backed relationships."
+      "requirement": "05.06",
+      "title": "Indexes and performance-related structures",
+      "scope": "Parse/import index definitions and link them to tables, columns and usage evidence."
     }
   }
 }

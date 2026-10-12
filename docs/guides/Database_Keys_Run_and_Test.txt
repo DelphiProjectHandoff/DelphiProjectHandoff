@@ -1,0 +1,81 @@
+DPH DATABASE KEYS RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.05 Primary, foreign, and unique keys
+
+RUN THE APPLICATION
+1. In File Explorer open C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug.
+2. Double-click DelphiProjectHandoff.exe. The application opens maximized.
+3. Click Attach project and select the application's .dproj or .dpr, or click
+   Open cache and select its existing .dphdb. DPH rejects its own project.
+4. For a project attachment choose the appropriate Debug/Release and Win32/Win64
+   configuration and required defines before reassessment. Save the cache in
+   the proposed Databases folder. Wait until capture finishes.
+5. In the upper-right page selector choose Database schema.
+
+INSPECT KEYS
+6. In the leftmost kind selector choose key. In the evidence-state selector
+   choose declared key. These selectors are in the page's command strip.
+7. Select a key in the list immediately below the status text. Read the labeled
+   memo below the divider. It begins with key type and ordered column lists.
+   A primary key identifies a row; a unique key declares a distinct combination;
+   a foreign key declares a reference to another table. These are source facts.
+8. To reach relationship commands in a narrow window, scroll the command strip
+   horizontally. Choose a target in the relationship selector immediately after
+   Open source, then click Follow relationship. The exact table or column opens;
+   filters are cleared and the required page is selected automatically.
+9. To return to key evidence, select key and declared key again and enter its
+   constraint name in the search box. You can also search foreign, primary,
+   unique, referenced table name or relationship gaps. Next page advances up to
+   250 matches; First page resets pagination. Scroll the memo for full evidence.
+10. Open source requires the source project to be attached, the current capture
+    generation, and the unchanged file hash. A detached cache alone cannot open
+    live source. A refusal is explained in the memo.
+
+INTERPRET THE RESULTS
+Captured links complete means requested evidence targets were uniquely found.
+It does not establish database validity, deployed enforcement, compatible data
+types, referenced uniqueness or effective migration order. Column nullability
+remains the explicit declaration and is not rewritten from a key implication.
+Missing/ambiguous tables and columns, omitted reference lists, arity differences,
+duplicate constraint names and multiple primary keys remain explained. DPH
+does not infer a schema, fold identifier case or guess an omitted target key.
+Malformed/unsupported key grammar remains a gap. Supported table foreign keys
+capture ON DELETE/UPDATE CASCADE, RESTRICT, NO ACTION, SET NULL and SET DEFAULT.
+Inline reference action tails and other unsupported column syntax remain gaps.
+String literal values are omitted from projected evidence. Original source can
+contain sensitive data. DPH does not execute SQL or connect to a target server.
+
+CONTROLLED PRACTICE
+The focused validation creates fixed, ignored practice files under:
+C:\New Delphi Projects\Delphi Project Handoff\bin\database-keys-validation
+After running validation, attach its source\Schema.dpr in DPH. Use Debug/Win32.
+Save the proposed cache under the application's Databases folder.
+Choose Database schema, key, declared key, and search Child_FK.
+Expected: local columns x,y reference Parent columns a,b, with declared delete
+CASCADE and update NO ACTION. Choose referenced column a and Follow relationship;
+the details should show COLUMN Parent.a. This fixture is captured, never run.
+Search Missing_FK for a missing target and Ambiguous_FK for duplicate target
+declarations. Neither should offer an invented referenced-table link.
+Search Omitted_FK for an explicit explanation that target columns were omitted.
+
+RUN DEVELOPER VALIDATION
+Open a Windows Command Prompt as Administrator. Enter:
+cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+tools\build-database-keys.cmd
+Expected: all focused checks pass, including schema/column regressions retained
+inside this suite, SQLite reopening, source guards and native relationship UI.
+The exact result and count are saved in docs\phase1-database-keys-validation.json.
+Then run each command separately and confirm its exit/result:
+tools\build-database-columns.cmd
+tools\build-database-schema.cmd
+tools\build-wp0.cmd
+Expected: 121 column checks, 57 schema checks and PASS WP0-TEST, respectively.
+The last command rebuilds the application and checks its serialized FMX form.
+Builds use the existing RAD Studio 37 toolchain and require elevation for its
+environment file. Test runs refresh their own evidence files; they do not alter
+the owner's project catalog or execute the selected target project or SQL.
+
+MAINTAINED MANUALS
+docs\guides\DPH_User_Guide.docx and docs\pdf\DPH_User_Guide.pdf
+docs\guides\DPH_Engineering_Guide.docx and docs\pdf\DPH_Engineering_Guide.pdf
+The new chapters explain key inspection and how captured relationships resolve.

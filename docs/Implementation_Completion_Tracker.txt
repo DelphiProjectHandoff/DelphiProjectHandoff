@@ -60,7 +60,12 @@ explicit nullability, defaults and constraint text with exact declaration
 ownership, source provenance, explicit gaps and native filters/details.
 121 focused and 123 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Columns_Completion.txt.
-Current live backlog: 332 incomplete requirement records; 0 unassessed.
+Primary, foreign, and unique keys completed (05.05): captured ordered key
+membership, exact evidence relationships, unresolved/conflicting target notes
+and native Follow relationship navigation across pages.
+173 focused and 178 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Keys_Completion.txt.
+Current live backlog: 331 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

@@ -1,0 +1,65 @@
+PRIMARY FOREIGN AND UNIQUE KEYS COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.05 Primary, foreign, and unique keys
+
+DELIVERED
+Database schema now exposes structured captured key records from supported inline
+and table CREATE TABLE declarations. Named constraints retain their name;
+anonymous constraints receive a source-local identity. Ordered local and referenced
+column lists, reference table and supported table ON DELETE/UPDATE actions are
+preserved. Each key retains source line, resource byte extent, SHA256, generation
+and exact parent declaration identity. Primary-key implications do not rewrite
+the separate explicit column nullability record.
+Exact-spelling indexes resolve only uniquely captured tables and parent-owned
+columns. Missing/ambiguous evidence, omitted target columns, differing list sizes,
+multiple primary keys and duplicate names remain explicit relationship notes.
+Duplicate declarations remain independent; no effective migration is selected.
+Malformed/unsupported key lists, expressions and tails remain key gaps. Inline
+key records are promoted only after the complete column entry is supported.
+The existing IDE-editable FMX page adds key/declared key filters and serialized
+relationship selector/Follow relationship controls. Follow opens the exact table
+or column and its required page. Filters also search key type, referenced table
+and relationship status. Existing labeled scrolling memo, 250-row paging,
+capture replacement and guarded source opening remain in use.
+These are static evidence relationships. Dialect validity, referenced uniqueness,
+type compatibility, deployed enforcement and effective migration order remain
+unverified. ALTER statements, unsupported key options and inline action tails
+remain explicit gaps. No target SQL, database server or target app is executed.
+
+VALIDATION
+173 focused checks PASS: actual resource capture, ordered composite and inline
+keys, self references, exact membership/reference targets, missing/ambiguous
+targets, omitted reference columns, mismatched counts, repeated columns,
+duplicate primary keys and names, quoted identifiers, unsupported syntax,
+literal canaries, SQLite reopening, unchanged source/catalog/workspace, guarded
+source navigation and native filters/follow/replacement/normal/compact rendering.
+Relationship navigation to a target beyond page one and compact command
+reachability are explicitly checked. 121 column + 57 schema regressions PASS.
+Actual application build and serialized FMX component binding baseline PASS.
+User Guide: 26 pages, 49 TOC entries. Engineering Guide: 23 pages, 41 TOC entries.
+Both editable DOCX and companion PDF files rendered and visually inspected;
+56 current source hashes and all 90 cached TOC destinations verified.
+HTML help and explicit run/test directions updated. Planning documents,
+requirement identities, reconciliation history and historical validation
+artifacts preserved. Controlled fixtures use fixed ignored bin folders.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseKeys_PreChange_20261012_121444
+4442 files / 1181999167 bytes; every copied file SHA256 verified before editing.
+The owner explicitly reconfirmed H: for this backup after the D:/H: conflict.
+
+RUN AND TEST
+Save any Knowledge draft, then close and restart the rebuilt application:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project/cache. Choose Database schema in the upper-right page
+selector, choose key and declared key, then select a key. Scroll the command strip
+sideways to the relationship selector and Follow relationship.
+Full launch, practice and validation directions:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Keys_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.05 promoted in this execution.
+184 implemented; 18 implemented_manual_capture; 231 partial; 100 missing.
+331 incomplete requirement records remain; zero unassessed.
+Next: 05.06 Indexes and performance-related structures. Parse/import index
+definitions and link them to tables, columns and usage evidence.

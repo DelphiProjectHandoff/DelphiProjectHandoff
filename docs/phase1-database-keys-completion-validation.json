@@ -1,0 +1,73 @@
+{
+  "result": "PASS",
+  "requirement": "05.05",
+  "status": "implemented",
+  "checks": 173,
+  "regression_checks": 178,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.05",
+  "incomplete_requirement_records": 331,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 184,
+    "missing": 100
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 26,
+        "toc_entries": 49,
+        "new_chapter_pages": [
+          2,
+          16,
+          17
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 23,
+        "toc_entries": 41,
+        "new_chapter_pages": [
+          2,
+          20
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseKeys_PreChange_20261012_121444",
+    "files": 4442,
+    "bytes": 1181999167,
+    "sha256_verified": true
+  },
+  "qualification": "Captured CREATE TABLE key declarations and exact-spelling evidence links only. Missing/ambiguous targets, omitted reference columns, arity differences, duplicate names and primary-key conflicts remain explained. Unsupported key grammar, expressions, ALTER statements and unsupported inline action tails remain gaps. Dialect validity, referenced uniqueness, type compatibility, effective migration order and deployed enforcement are unverified. No target SQL, application or server is executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "54581b1b1ecd8978415c364ad69b4b649e3fa4feb6923dec4c00090c06aed519",
+    "DPH.UI.Main.pas": "c54761ca8b275df0b2964bedd17fd56daa4de5c15e2e78ef3065a19e5236d06f",
+    "DPH.UI.Main.fmx": "d73674b33701baf1cb4a16716876d117446dc554963a724590d4391638cd1759",
+    "tests/DPH.Tests.DatabaseKeys.dpr": "650c0e11c384971cd3fa8a6d4967fc1d0c70e6c2a30dd7aa4ba503dfce729e0f",
+    "tools/build-database-keys.cmd": "a8286e86d16110d3017e69bfdaff1a5438f2c25e65b6713805585f071cf5db54",
+    "docs/phase1-database-keys-validation.json": "65a2c79b7ed4b545940436fd4b38df0be30d0679aad6f88920b893fd4d4b87d0",
+    "docs/phase1-database-keys-validation.log": "76ba8ec8ad07885d4821c3fb9f7fcf033d2dc85fccfec1cd187071baea9adc67",
+    "docs/guides/Database_Keys_Run_and_Test.txt": "433a9f5f5da479e1e118cfaee3e2cf419d3467b5c0ddfc323c4cdc42bcd9dfb2",
+    "docs/guide-source-validation.json": "13960b84298b2ca85a9714f33844e01ed1e49668dc84c1062e263fd8c4cb023a",
+    "docs/guides/DPH_User_Guide.docx": "7367a5e7d9983c611cab994ac27c0ce7e8a869b28e737904307e267b590394a4",
+    "docs/guides/DPH_Engineering_Guide.docx": "26031200a33fb26d2cda819640a74973530dcdb69e96651bec36d2bf2a6476d6",
+    "docs/pdf/DPH_User_Guide.pdf": "634e0e39a411d2ace0c1f1fac862606c99606afa429c2f0b4fadea3c89784671",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "7657ff143553ed61bd8d96ae6847c8d9417693cb70a5d11682a5d0d397090c9e",
+    "docs/phase1-database-keys-build.log": "fc998ad10dfda8c1d65319261da0d08a1e52407ce58e2aba316a57a1fa28c669",
+    "docs/phase1-database-keys-columns-regression.json": "e22c01debe0d700439278e63948efc76edc944e892c572b2c258d895fce56e5b",
+    "docs/phase1-database-keys-schema-regression.json": "36682a3a2a3ff2f74c515acead1dc7cfb7c429471ff415aa21331d92cba4df0f",
+    "docs/phase1-database-keys-workspace.png": "c0e4e746491e8d45d0b40257875b8276cdea830647ff77dbbc9b0498628a974c",
+    "docs/phase1-database-keys-compact.png": "51966838067cbacf4f23b080a7e1829b27e02523ff5ac1dde4eb12438721f8b4",
+    "docs/phase1-database-keys-relationships.png": "8a7dd5b4802554dfeff339c99ef2ce8803916d26644ac42b8f416655861eaff7"
+  }
+}

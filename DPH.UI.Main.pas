@@ -166,6 +166,8 @@ type
     DatabaseSchemaToolbar:THorzScrollBox;
     DatabaseSchemaFilter:TEdit;
     DatabaseSchemaKind,DatabaseSchemaState:TComboBox;
+    DatabaseSchemaLinks:TComboBox;
+    DatabaseSchemaFollow:TButton;
     DatabaseSchemaFirst,DatabaseSchemaNext,DatabaseSchemaSource:TButton;
     DatabaseSchemaList:TListBox;
     DatabaseSchemaMemo:TMemo;
@@ -357,6 +359,7 @@ type
     procedure DatabaseSchemaFilterChange(Sender:TObject);
     procedure DatabaseSchemaSelectionChange(Sender:TObject);
     procedure DatabaseSchemaSourceClick(Sender:TObject);
+    procedure DatabaseSchemaFollowClick(Sender:TObject);
     procedure DatabaseInventoryFilterChange(Sender:TObject);
     procedure DatabaseInventorySelectionChange(Sender:TObject);
     procedure DatabaseInventoryFollowClick(Sender:TObject);
@@ -463,6 +466,7 @@ type
     FDatabaseSchema:TJSONObject;
     FDatabaseSchemaRows:TList<TJSONObject>;
     FDatabaseSchemaOffset:Integer;
+    FDatabaseSchemaTargets:TList<string>;
     FDatabaseInventory:TJSONObject;
     FDatabaseInventoryRows:TList<TJSONObject>;
     FDatabaseInventoryTargets:TList<string>;
@@ -541,6 +545,7 @@ begin
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
+  FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
   FDatabaseInventoryTargets:=TList<string>.Create;
   FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
@@ -588,6 +593,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
+  FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
   FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
@@ -1988,7 +1994,7 @@ begin
  for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (DatabaseSchemaKind.ItemIndex>0) and (Row.GetValue<string>('kind')<>DatabaseSchemaKind.Selected.Text) then Continue;
   if (DatabaseSchemaState.ItemIndex>0) and (Row.GetValue<string>('status')<>DatabaseSchemaState.Selected.Text) then Continue;
-  if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints',''),DatabaseSchemaFilter.Text.Trim) then Continue;
+  if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints','')+' '+Row.GetValue<string>('key_kind','')+' '+Row.GetValue<string>('reference_table','')+' '+Row.GetValue<string>('relationship_status',''),DatabaseSchemaFilter.Text.Trim) then Continue;
   if (Count>=FDatabaseSchemaOffset) and (FDatabaseSchemaRows.Count<250) then begin FDatabaseSchemaRows.Add(Row);DatabaseSchemaList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('status')+' | '+Row.GetValue<string>('source')+':'+Row.GetValue<TJSONObject>('range').GetValue('line').Value);end;Inc(Count);
  end;
  DatabaseSchemaNext.Enabled:=Count>FDatabaseSchemaOffset+FDatabaseSchemaRows.Count;
@@ -1997,11 +2003,31 @@ begin
  else DatabaseSchemaMemo.Text:=FDatabaseSchema.GetValue<string>('qualification')+sLineBreak+sLineBreak+'No matching captured evidence. Clear filters or attach approved SQL scripts referenced by the project and reassess. Empty results do not prove the application has no schema.';
 end;
 procedure TDPHMainForm.DatabaseSchemaSelectionChange(Sender:TObject);
+var Link:TJSONValue;ID:string;
 begin
+ if FDatabaseSchemaTargets=nil then Exit;FDatabaseSchemaTargets.Clear;DatabaseSchemaLinks.Items.Clear;DatabaseSchemaFollow.Enabled:=False;
  DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a table, view, schema or unsupported statement to read its captured evidence and next investigation.';
  if (FDatabaseSchemaRows=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
  DatabaseSchemaMemo.Text:=TDPHDatabaseSchema.Describe(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex])+sLineBreak+sLineBreak+FDatabaseSchema.GetValue<string>('qualification');
  DatabaseSchemaSource.Enabled:=True;
+ if FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind')='key' then
+  for Link in FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<TJSONArray>('links') do
+   if Link.TryGetValue<string>('target_id',ID) then begin FDatabaseSchemaTargets.Add(ID);DatabaseSchemaLinks.Items.Add(Link.GetValue<string>('role')+': '+Link.GetValue<string>('reference'));end;
+ DatabaseSchemaFollow.Enabled:=FDatabaseSchemaTargets.Count>0;if DatabaseSchemaFollow.Enabled then DatabaseSchemaLinks.ItemIndex:=0;
+end;
+procedure TDPHMainForm.DatabaseSchemaFollowClick(Sender:TObject);
+var ID:string;V:TJSONValue;Index:Integer;
+begin
+ if (FDatabaseSchema=nil) or (DatabaseSchemaLinks.ItemIndex<0) or (DatabaseSchemaLinks.ItemIndex>=FDatabaseSchemaTargets.Count) then Exit;
+ ID:=FDatabaseSchemaTargets[DatabaseSchemaLinks.ItemIndex];Index:=0;
+ for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin
+  if V.GetValue<string>('id')=ID then begin
+   DatabaseSchemaKind.ItemIndex:=0;DatabaseSchemaState.ItemIndex:=0;DatabaseSchemaFilter.Text:='';DatabaseSchemaFilterChange(nil);
+   if Index>=250 then begin FDatabaseSchemaOffset:=(Index div 250)*250-250;DatabaseSchemaFilterChange(DatabaseSchemaNext);end;
+   DatabaseSchemaList.ItemIndex:=Index mod 250;DatabaseSchemaSelectionChange(nil);Exit;
+  end;Inc(Index);
+ end;
+ DatabaseSchemaMemo.Lines.Add('Relationship target is no longer present in this captured projection.');
 end;
 procedure TDPHMainForm.DatabaseSchemaSourceClick(Sender:TObject);
 var Row,Range:TJSONObject;
