@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09, keyboard/focus 04.13, command inventory 04.14, dynamic controls 04.15 and layout rules 04.16 implemented; 340 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Glossary 06.12/12.09, keyboard/focus 04.13, command inventory 04.14, dynamic controls 04.15, layout rules 04.16 and component dependencies 04.17 implemented; 339 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1571,16 +1571,32 @@
       "id": "04.17",
       "domain": "DPH-04",
       "requirement": "Third-party UI components",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Parse.Forms.pas",
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Workspace.Screen.pas",
+        "DPH.Workspace.ComponentDependencies.pas",
+        "DPH.Knowledge.ComponentDependency.pas",
+        "DPH.UI.ComponentDependency.pas",
+        "DPH.UI.ComponentDependency.fmx",
+        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Semantics.dpr"
+        "tests/DPH.Tests.ComponentDependencies.dpr",
+        "tools/build-component-dependencies.cmd",
+        "docs/phase1-component-dependencies-validation.json",
+        "docs/phase1-component-dependencies-validation.log",
+        "docs/guides/Component_Dependencies_Run_and_Test.txt"
       ],
-      "limitation": "Add component-to-package/vendor/version/support records and distinguish unresolved third-party dependencies.",
+      "limitation": "Captured class declarations are lexical candidates, not compiler binding or vendor-origin proof. Package declarations/unavailable inputs are project-wide context, not installed binaries or proven containment. Package/vendor/version/support fields require attributed knowledge; they do not resolve missing source. Aliases, conditional variants, inherited values, licensing and runtime compatibility remain qualified.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 2,
+        "finding": "Dedicated IDE-editable Component dependencies inspector and structured dependency editor. Captured classes expose unique inferred, ambiguous and unresolved source candidates, package declarations and unavailable input context. Attributed class-to-unit/package/vendor/version/support/evidence records persist through Knowledge revision, review, links, search and publication. Identity/duplicate/stale guards, pagination, source and unique-class Explain navigation included.",
+        "remaining_work": "",
+        "purpose": "Third-party UI components",
+        "evidence_group": "forms",
+        "verification": "70 focused checks, 59 Knowledge, 57 glossary and 56 layout regression checks; actual app/FMX baseline pass. Native normal/compact/editor renders and all 40 guide pages reviewed."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 2,
         "finding": "Third-party component class names appear without class loading.",
@@ -1588,6 +1604,12 @@
         "purpose": "Third-party UI components",
         "evidence_group": "forms",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Component dependency inspector and attributed supplier records",
+        "validation": "docs/phase1-component-dependencies-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12399,23 +12421,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Responsive layout rules and educational resize examples",
+    "completed_batch": "Component dependency inspector and attributed supplier records",
     "completed_requirement_ids": [
-      "04.16"
+      "04.17"
     ],
     "counts": {
       "implemented_manual_capture": 17,
-      "partial": 238,
-      "implemented": 176,
+      "partial": 237,
+      "implemented": 177,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 340,
-    "completion_record": "docs/Phase1_Layout_Rules_Completion.txt",
+    "incomplete_requirement_records": 339,
+    "completion_record": "docs/Phase1_Component_Dependencies_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.17",
-      "title": "Third-party UI components",
-      "scope": "Add component-to-package/vendor/version/support records and distinguish unresolved third-party dependencies."
+      "requirement": "04.18",
+      "title": "Form inheritance and embedded frames",
+      "scope": "Resolve base-form/frame overlays and inherited property/event provenance without instantiating target classes."
     }
   }
 }

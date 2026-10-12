@@ -44,6 +44,7 @@ Items.Strings = (
 'Menus and commands'
 'Dynamic controls'
 'Layout rules'
+'Component dependencies'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1435,6 +1436,114 @@ Align = Top
 Height = 6
 end
 object LayoutMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object DependencyTab: TTabItem
+Text = 'Component dependencies'
+object DependencyPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Captured component classes and unresolved dependencies, with attributed package, vendor, version and support records. No vendor classes are loaded.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object DependencyToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object DependencyFilterEdit: TEdit
+Position.X = 8
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find class, resolution, vendor or support'
+OnChange = DependencyFilterChange
+end
+object DependencyFirstButton: TButton
+Position.X = 266
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = DependencyFilterChange
+end
+object DependencyNextButton: TButton
+Position.X = 364
+Position.Y = 4
+Width = 90
+Height = 30
+Enabled = False
+Text = 'Next page'
+OnClick = DependencyFilterChange
+end
+object DependencySourceButton: TButton
+Position.X = 462
+Position.Y = 4
+Width = 150
+Height = 30
+Enabled = False
+Text = 'Component source'
+OnClick = DependencySourceClick
+end
+object DependencyEditButton: TButton
+Position.X = 620
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Edit dependency'
+Enabled = False
+OnClick = DependencyEditClick
+end
+object DependencyKnowledgeButton: TButton
+Position.X = 778
+Position.Y = 4
+Width = 160
+Height = 30
+Text = 'Open in Knowledge'
+Enabled = False
+OnClick = DependencyKnowledgeClick
+end
+object DependencyClassButton: TButton
+Position.X = 946
+Position.Y = 4
+Width = 130
+Height = 30
+Text = 'Explain class'
+Enabled = False
+OnClick = DependencyClassClick
+end
+end
+object DependencyStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object DependencyList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnChange = DependencySelectionClick
+end
+object DependencySplitter: TSplitter
+Align = Top
+Height = 6
+end
+object DependencyMemo: TMemo
 Align = Client
 Margins.Left = 12
 Margins.Right = 12

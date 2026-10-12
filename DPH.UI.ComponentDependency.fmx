@@ -1,0 +1,211 @@
+object DPHComponentDependencyForm: TDPHComponentDependencyForm
+  Caption = 'Component dependency record'
+  ClientWidth = 820
+  ClientHeight = 740
+  Constraints.MinWidth = 620
+  Constraints.MinHeight = 480
+  Position = ScreenCenter
+  object ProfilePurpose: TLabel
+    Align = Top
+    Height = 100
+    Margins.Left = 12
+    Margins.Right = 12
+    WordWrap = True
+    Text = 'Document this component class for the selected application. Evidence and a named contributor are required. Blank package, vendor, version and support fields remain unknown. Apply creates a Knowledge draft; click Save there, then review explicitly. Do not enter credentials.'
+    StyledSettings = []
+    TextSettings.Font.Size = 16
+    TextSettings.FontColor = xFF146CB4
+  end
+  object ProfileToolbar: TLayout
+    Align = Top
+    Height = 92
+    object ProfileAuthorLabel: TLabel
+      Position.X = 12
+      Position.Y = 0
+      Width = 180
+      Height = 24
+      Text = 'Named contributor'
+    end
+    object ProfileAuthorEdit: TEdit
+      Position.X = 12
+      Position.Y = 26
+      Width = 270
+      Height = 30
+    end
+    object ApplyProfileButton: TButton
+      Position.X = 292
+      Position.Y = 26
+      Width = 210
+      Height = 30
+      Text = 'Apply to Knowledge draft'
+      OnClick = ApplyProfileClick
+    end
+    object CancelProfileButton: TButton
+      Position.X = 512
+      Position.Y = 26
+      Width = 86
+      Height = 30
+      Text = 'Cancel'
+      ModalResult = 2
+    end
+  end
+  object ProfileScroll: TVertScrollBox
+    Align = Client
+    ShowScrollBars = True
+    object Profile_class_name_Row: TLayout
+      Position.Y = 0
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_class_name_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Component class identity'
+      end
+      object Profile_class_name: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_unit_name_Row: TLayout
+      Position.Y = 122
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_unit_name_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Declaring unit'
+      end
+      object Profile_unit_name: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_package_name_Row: TLayout
+      Position.Y = 244
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_package_name_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Package or product'
+      end
+      object Profile_package_name: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_vendor_Row: TLayout
+      Position.Y = 366
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_vendor_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Vendor or maintainer'
+      end
+      object Profile_vendor: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_version_Row: TLayout
+      Position.Y = 488
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_version_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Version and configuration'
+      end
+      object Profile_version: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_support_Row: TLayout
+      Position.Y = 610
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_support_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Support and replacement considerations'
+      end
+      object Profile_support: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_evidence_Row: TLayout
+      Position.Y = 732
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_evidence_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Evidence references and remaining unknowns'
+      end
+      object Profile_evidence: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+  end
+end

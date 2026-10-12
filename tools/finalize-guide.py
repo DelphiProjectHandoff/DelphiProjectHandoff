@@ -2,6 +2,7 @@
 from pathlib import Path
 import argparse
 import re
+from copy import deepcopy
 from zipfile import ZipFile, ZIP_DEFLATED
 from xml.etree import ElementTree as ET
 from pypdf import PdfReader
@@ -56,6 +57,8 @@ for paragraph in root.iter(W+'p'):
     # Keep the authored spacing when replacing the field result. Dropping pPr
     # can move the TOC onto another page and invalidate every cached page number.
     props = paragraph.find(W+'pPr')
+    run_props = paragraph.find('.//'+W+'rPr')
+    run_props = deepcopy(run_props) if run_props is not None else None
     for child in list(paragraph):
         if child is not props:
             paragraph.remove(child)
@@ -66,8 +69,12 @@ for paragraph in root.iter(W+'p'):
     tabs = ET.SubElement(props, W+'tabs')
     ET.SubElement(tabs, W+'tab', {W+'val': 'right', W+'leader': 'dot', W+'pos': '9360'})
     run = ET.SubElement(paragraph, W+'r')
+    if run_props is not None:
+        run.append(deepcopy(run_props))
     ET.SubElement(run, W+'t').text = heading
     run = ET.SubElement(paragraph, W+'r')
+    if run_props is not None:
+        run.append(deepcopy(run_props))
     ET.SubElement(run, W+'tab')
     ET.SubElement(run, W+'t').text = str(page)
     entries.append({'heading': heading, 'page': page})

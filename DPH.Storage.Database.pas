@@ -104,7 +104,7 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary, DPH.Knowledge.ComponentDependency;
 
 const
   CurrentSchemaVersion = 9;
@@ -829,6 +829,15 @@ begin
             GlossaryQuery.Next;
           end;
         finally GlossaryQuery.Free; end;
+      end else if StructuredValue.GetValue<string>('record_type','')='component_dependency' then begin
+        TDPHComponentDependency.Validate(StructuredValue as TJSONObject);
+        if (ATitle<>TDPHComponentDependency.Title(StructuredValue as TJSONObject)) or (AKind<>'engineering_rule') or (DocumentKind<>'engineering') or (Audience<>'engineer') or (AEntityKey<>'') then raise EDPHStorage.Create('Component dependency identity and engineering scope must be preserved');
+        if ABody<>TDPHComponentDependency.Body(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit dependency fields on Component dependencies');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('fields.class_name','')<>StructuredValue.GetValue<string>('fields.class_name','') then raise EDPHStorage.Create('Component class identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''component_dependency'' AND lower(json_extract(r.structured_json,''$.fields.class_name''))=lower(:class)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.class_name')])<>0 then raise EDPHStorage.Create('A dependency record already exists for this class; refresh and edit it. Retired identities remain reserved.');
       end else begin
       TDPHProjectProfile.Validate(StructuredValue as TJSONObject);
       if (ATitle<>'Project profile') or (AKind<>'orientation') or (DocumentKind<>'overview') or (Audience<>'all') or (AEntityKey<>'') then

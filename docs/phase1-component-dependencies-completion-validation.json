@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "baseline_commit": "0d91d95",
+  "completed_requirement_ids": [
+    "04.17"
+  ],
+  "counts": {
+    "implemented_manual_capture": 17,
+    "partial": 237,
+    "implemented": 177,
+    "missing": 102
+  },
+  "incomplete": 339,
+  "unassessed": 0,
+  "requirements_preserved": 533,
+  "focused_checks": 70,
+  "knowledge_regression_checks": 59,
+  "glossary_regression_checks": 57,
+  "layout_regression_checks": 56,
+  "application_and_fmx_baseline": "PASS",
+  "pre_change_backup": "H:\\DPH Backups\\ThirdPartyUI_PreChange_20261011_215632",
+  "backup_files": 3598,
+  "backup_bytes": 882744584,
+  "guide_sources_verified": 48,
+  "guides": [
+    {
+      "name": "DPH_User_Guide",
+      "pages": 22,
+      "toc_entries": 41,
+      "all_pages_visually_reviewed": true,
+      "cached_toc_numbers_verified": true,
+      "blank_pages": 0
+    },
+    {
+      "name": "DPH_Engineering_Guide",
+      "pages": 18,
+      "toc_entries": 33,
+      "all_pages_visually_reviewed": true,
+      "cached_toc_numbers_verified": true,
+      "blank_pages": 0
+    }
+  ],
+  "evidence": [
+    {
+      "path": "DPH.Workspace.ComponentDependencies.pas",
+      "sha256": "7d57eb7884d6e521414379a24ce9e64aa2816beca6de650b86828a16fc33af2b"
+    },
+    {
+      "path": "DPH.Knowledge.ComponentDependency.pas",
+      "sha256": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe"
+    },
+    {
+      "path": "DPH.UI.ComponentDependency.pas",
+      "sha256": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682"
+    },
+    {
+      "path": "DPH.UI.ComponentDependency.fmx",
+      "sha256": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862"
+    },
+    {
+      "path": "DPH.Storage.Database.pas",
+      "sha256": "1904d4f0adae6dc01e76dad3d8e3797613b5e3da49da194587cad68de30ed25e"
+    },
+    {
+      "path": "DPH.UI.Main.pas",
+      "sha256": "5192c72930649deabd242c2dc0ad86479d014d7ec60f5bf0829c91040ef036df"
+    },
+    {
+      "path": "DPH.UI.Main.fmx",
+      "sha256": "e76c41e654e8ab13fc38044808c7d64512d98a441c841a78d5f8ebc2c20c373c"
+    },
+    {
+      "path": "tests/DPH.Tests.ComponentDependencies.dpr",
+      "sha256": "885bf95a797ced4ceca98ff344910722f9b2e05364b5ab50e20508fd864f7d4d"
+    },
+    {
+      "path": "tools/build-component-dependencies.cmd",
+      "sha256": "c54d4ab0664c545b34ffe9cc270edacc53afd19e3ed0df945c6f9f08bc013d68"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-validation.json",
+      "sha256": "03d4f511ab28d510d8e41d1cb95b419a076e87333a6590e81b4c1c39cfb981cc"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-validation.log",
+      "sha256": "9c2a2089a917b30e40fc93e222f92e41cb27120205c86d812b6d2c73f514b34f"
+    },
+    {
+      "path": "docs/guides/Component_Dependencies_Run_and_Test.txt",
+      "sha256": "79a5a73530f7a8227d3c23d6b746996a2e3cf7f6900919e36c5c5d49e62f323c"
+    },
+    {
+      "path": "DelphiProjectHandoff.dproj",
+      "sha256": "0d0bd4c51bac9da250e52a8e9bef4baffb2bd4ab7107ac302337a1a7da673b4d"
+    },
+    {
+      "path": "docs/Phase1_Component_Dependencies_Completion.txt",
+      "sha256": "8cd800a4582cca514e3cc7573c763f9376cd5c39b795396e8750d4b2cb38cbba"
+    },
+    {
+      "path": "docs/Phase1_Requirements_Traceability.json",
+      "sha256": "9a2a1090987eb54c468c5d2eb1e07a09da7ac17da6ec88bd4f894cb0010892a8"
+    },
+    {
+      "path": "docs/Phase1_Implementation_Backlog.csv",
+      "sha256": "6436553ccc57bd1cdca79769ee0817e1bcce8102b549eaeebc2974bf827fac51"
+    },
+    {
+      "path": "docs/guides/DPH_User_Guide.docx",
+      "sha256": "0a5a4203a07f59705e568f21724e243397ba1b9a5b33f2a35e75ee3ebacdbc61"
+    },
+    {
+      "path": "docs/guides/DPH_Engineering_Guide.docx",
+      "sha256": "9cbebfb5a53d3be56bff96f5f4ccd5b60e9a5368db7dd7b62d84e1265fc8bd8c"
+    },
+    {
+      "path": "docs/pdf/DPH_User_Guide.pdf",
+      "sha256": "9aff78a2d7b46e37f17ea71103ec151c52c418edb1e3772f23b731d0c379a3ad"
+    },
+    {
+      "path": "docs/pdf/DPH_Engineering_Guide.pdf",
+      "sha256": "05af9a07600f7971068dcfb030227114b9bcba4e205adac98a4f74945cb55ac4"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-workspace.png",
+      "sha256": "84d0db616e9e18617e702eefd69e084444a0773fbccaa828dc5ee5037fa59488"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-compact.png",
+      "sha256": "bffb28c2dad87afee091842ec5b3eda73babb112eb42c985da027eab8273d1d8"
+    },
+    {
+      "path": "docs/phase1-component-dependency-editor.png",
+      "sha256": "0861368763ba43eaf295d9b3723754204fd189d5fe0563050690940e698bf4ff"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-knowledge-regression.json",
+      "sha256": "2059388f8c57c66cb328262e285d12eb6a374a5b180181bda64bc5dce344326e"
+    },
+    {
+      "path": "docs/phase1-component-dependencies-glossary-regression.json",
+      "sha256": "556b4cacf8c4546ea0412ce4eea7ba0b44e26ba652cde22aba2fb4f91751aa09"
+    }
+  ]
+}

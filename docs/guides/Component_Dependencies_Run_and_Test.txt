@@ -1,0 +1,80 @@
+DPH component dependencies run and test directions
+11 October 2026
+
+RUN AND INSPECT
+1. Run C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe.
+2. Open the intended project database, or attach its source and wait for
+   analysis. Select a capture with DFM or FMX forms. Check Coverage if empty.
+3. Choose Component dependencies in the upper-right page selector.
+4. Select a component in the list. Read the details below it. Drag the divider
+   below the list to resize it; scroll inside the details for the full report.
+5. Read CLASS SOURCE RESOLUTION. A unique captured declaration is an inferred
+   candidate, not compiler binding proof. Multiple candidates remain ambiguous.
+   Unresolved can mean framework, vendor, local, inherited or excluded source.
+   DPH lists all captured classes and never guesses vendor origin from prefixes.
+6. Click Explain class for a unique candidate. It opens Explain for that type;
+   Source there follows existing source-verification rules. Ambiguous or missing
+   candidates disable the command. Component source opens verified form text.
+   Detached, changed and binary source locations are refused explicitly.
+7. Read captured package declarations and unavailable inputs at the bottom.
+   These are project-wide context. They do not prove which package contains
+   this class, installed package versions or third-party origin.
+
+CREATE OR EDIT A DEPENDENCY RECORD
+1. Select the component and click Edit dependency. Scroll the command bar
+   horizontally if the button is outside the visible area.
+2. Enter a named contributor. The class identity is fixed for this record.
+3. Fill in the declaring unit, package or product, vendor or maintainer,
+   exact version and configuration, and support/replacement considerations.
+   Leave unknown optional fields blank. Do not invent missing values.
+4. Scroll down inside the editor to Evidence references and remaining unknowns.
+   This field is required. Identify the supplier document, source location or
+   maintainer confirmation supporting the claims, and what remains unknown.
+   Do not enter passwords, keys or credentials.
+5. Click Apply to Knowledge draft. The editor closes and Knowledge opens with
+   a readable generated body. This step DOES NOT save the record.
+6. Click Save on Knowledge. Wait for the activity line to finish. Return to
+   Component dependencies, select the component and confirm the saved fields,
+   contributor, revision, generation and needs_review state in its details.
+7. Click Open in Knowledge to read immutable history. Use Knowledge links to
+   add exact evidence, then return to Knowledge and Save those links.
+8. Check the evidence, enter a named reviewer and click Verify review only
+   when the claims have been checked. Saving alone does not verify the record.
+9. Use Edit dependency again for changes. Apply and Save create a new revision
+   and reopen review. Earlier revisions remain in Knowledge history.
+10. Save or Discard the current draft before editing or navigating elsewhere.
+    Duplicate class records are rejected ignoring case; retired names remain
+    reserved. One record applies to occurrences of that class in this project.
+    Use the evidence field to explain scope or ambiguous suppliers.
+
+FILTERING AND INTERPRETATION
+Filter by component, class, source resolution or authored vendor/support text.
+Next page advances through 250 rows; First page resets. The toolbar scrolls
+horizontally in narrow windows. Authored metadata never changes unresolved
+source into resolved source. Attach approved missing source roots and reassess
+to capture declarations. No vendor classes, packages or DLLs are loaded.
+Publication includes attributed dependency bodies in engineering sections
+and structured records with revision, review and source-generation evidence.
+Use a new output folder outside source, review exclusions, then Validate bundle.
+
+MANUAL ACCEPTANCE EXERCISE
+Choose a class with known source and compare its candidate with the declaring
+unit. Choose an unavailable component and confirm unresolved. Enter a test
+dependency record with truthful evidence, Apply, Save, close DPH and reopen
+the database. Confirm its fields remain. Review with a named reviewer, change
+support wording through Edit dependency, Apply and Save, then confirm a new
+needs_review revision and preserved history. Confirm source remains unresolved
+if its declaration is still missing. Repeat at a compact window size.
+
+DEVELOPER CHECKS
+1. Open Command Prompt with Run as administrator.
+2. Type: cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Run tools\build-component-dependencies.cmd for focused acceptance checks.
+4. Run tools\build-wp5.cmd, tools\build-glossary.cmd and
+   tools\build-layout-rules.cmd for shared regression checks.
+5. Run tools\build-wp0.cmd for the application build and native FMX baseline.
+Scripts use RAD Studio 37.0. Focused fixtures reuse the ignored fixed directory
+bin/component-dependencies-validation, leaving user source and catalog intact.
+See docs/phase1-component-dependencies-validation.json and .log for measured
+results. PaintTo PNGs show native DPH controls, not target screenshots.
+The page and editor are serialized in FMX and editable in RAD Studio.

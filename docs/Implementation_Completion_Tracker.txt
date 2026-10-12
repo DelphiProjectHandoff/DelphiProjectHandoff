@@ -21,7 +21,12 @@ Layout rules completed (04.16): captured alignments, anchors, parent context,
 spacing, constraints, DPI and qualified resize examples; native view and
 56 focused checks, 55 keyboard and 51 dynamic regression checks pass.
 See Phase1_Layout_Rules_Completion.txt.
-Current live backlog: 340 incomplete requirement records; 0 unassessed.
+Component dependencies completed (04.17): captured class candidates and
+unresolved inputs, attributed unit/package/vendor/version/support records,
+revision/review/search/publication, native editor and 70 focused checks.
+59 Knowledge, 57 glossary and 56 layout regression checks pass.
+See Phase1_Component_Dependencies_Completion.txt.
+Current live backlog: 339 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

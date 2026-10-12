@@ -1,0 +1,67 @@
+DPH component dependencies completion
+11 October 2026
+
+COMPLETED REQUIREMENT
+04.17 Third-party UI components
+
+Component dependencies lists captured DFM/FMX classes with form/source,
+fingerprint and generation context, unique inferred class declarations,
+ambiguous candidates and unresolved dependencies. Explain class follows a
+unique declaration. Component source requires unchanged attached text.
+Captured package declarations and unavailable inputs are project-wide context,
+not proof of class membership, vendor origin or installed binaries.
+
+Edit dependency captures declaring unit, package/product, vendor/maintainer,
+version/configuration, support/replacement information and evidence with a
+named contributor. Blank optional fields stay unknown. Apply prepares a
+Knowledge draft; Save persists it. Records retain immutable history, named
+review, exact evidence links, source generation, search and engineering
+publication. Editing reopens review. Duplicate identities ignore case,
+retired identities remain reserved, and stale editors cannot overwrite review.
+Authored metadata never changes class-source resolution.
+Both native forms are serialized in FMX and editable in the IDE.
+No vendor classes/packages/DLLs are loaded. No schema migration is needed.
+
+VALIDATION
+70 focused checks pass: actual text/binary DFM and FMX parsing, captured
+packages, unavailable inputs, unique/qualified/ambiguous/unresolved classes,
+unchanged/changed/binary source guards, bounded structured fields, persistence,
+duplicate/case/identity guards, stale edits, review/history, reopen/search/
+publication, native editor round trips, filtering, pagination, Explain class,
+saved Knowledge navigation, draft protection, compact layout and cleanup.
+59 Knowledge, 57 glossary and 56 layout regression checks pass.
+Win32 Debug application build and native FMX baseline pass elevated.
+User source/catalog remain unchanged. Focused fixtures use a fixed ignored
+bin directory. This run's disposable WP5 test directory was removed safely.
+Historical reports were preserved; current regression evidence is saved
+separately under phase1-component-dependencies-*.
+Native PaintTo images are DPH controls, not target application screenshots.
+Both guides have editable TOCs and companion PDFs. All 22 User Guide and
+18 Engineering Guide pages were reviewed. TOCs have 41 and 33 entries.
+An extra blank contents page was corrected by preserving compact TOC font
+formatting when populating cached page numbers.
+Directions: docs/guides/Component_Dependencies_Run_and_Test.txt.
+
+BACKUP
+SHA-256 verified pre-change backup: 3598 files / 882744584 bytes.
+H:\DPH Backups\ThirdPartyUI_PreChange_20261011_215632
+No post-change USB backup. Git and both GitHub remotes remain enabled.
+
+CURRENT STATUS
+All 533 original requirement identities, text and order remain preserved.
+Only 04.17 is promoted in this batch. Counts: 177 implemented, 17 manual
+capture, 237 partial, 102 missing, zero unassessed. 339 remain incomplete.
+Original plans and historical reconciliation reports remain unchanged.
+
+LIMITS
+Static name matches are lexical candidates, not compiler binding or proof of
+vendor origin. Aliases, inherited defaults, conditional variants and missing
+framework/vendor source remain qualified. Package declarations are context;
+vendor, version, support and membership need attributed external knowledge.
+One class identity record applies within this selected project; use evidence
+to explain ambiguous supplier/configuration scope. Runtime compatibility,
+licensing, installation and actual behavior are not automatically verified.
+
+NEXT BOUNDED REQUIREMENT
+04.18 Form inheritance and embedded frames: resolve base-form/frame overlays
+and inherited property/event provenance without instantiating target classes.

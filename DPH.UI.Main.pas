@@ -71,6 +71,14 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    DependencyTab:TTabItem;
+    DependencyPurpose,DependencyStatus:TLabel;
+    DependencyToolbar:THorzScrollBox;
+    DependencyFilterEdit:TEdit;
+    DependencyFirstButton,DependencyNextButton,DependencySourceButton,DependencyEditButton,DependencyKnowledgeButton,DependencyClassButton:TButton;
+    DependencyList:TListBox;
+    DependencySplitter:TSplitter;
+    DependencyMemo:TMemo;
     LayoutTab:TTabItem;
     LayoutPurpose,LayoutStatus,LayoutWidthLabel,LayoutHeightLabel:TLabel;
     LayoutToolbar:THorzScrollBox;
@@ -231,6 +239,12 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure DependencyFilterChange(Sender:TObject);
+    procedure DependencySelectionClick(Sender:TObject);
+    procedure DependencySourceClick(Sender:TObject);
+    procedure DependencyClassClick(Sender:TObject);
+    procedure DependencyEditClick(Sender:TObject);
+    procedure DependencyKnowledgeClick(Sender:TObject);
     procedure LayoutFilterChange(Sender:TObject);
     procedure LayoutSelectionClick(Sender:TObject);
     procedure LayoutApplyClick(Sender:TObject);
@@ -381,6 +395,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FDependencies:TJSONObject;
+    FDependencyRows:TList<TJSONObject>;
+    FDependencyOffset:Integer;
     FLayout:TJSONObject;
     FLayoutRows:TList<TJSONObject>;
     FLayoutOffset,FLayoutWidthDelta,FLayoutHeightDelta:Integer;
@@ -418,7 +435,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -433,6 +450,7 @@ begin
   FKeyboardRows:=TList<TJSONObject>.Create;
   FCommandRows:=TList<TJSONObject>.Create;
   FDynamicRows:=TList<TJSONObject>.Create;
+  FDependencyRows:=TList<TJSONObject>.Create;
   FLayoutRows:=TList<TJSONObject>.Create;
   TryStrToInt(LayoutWidthEdit.Text,FLayoutWidthDelta);TryStrToInt(LayoutHeightEdit.Text,FLayoutHeightDelta);
   FCatalogPaths:=TList<string>.Create;
@@ -473,6 +491,7 @@ begin
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
+  FDependencyRows.Free; FDependencies.Free;
   FLayoutRows.Free; FLayout.Free;
   for Directory in FPreviewPages do try if TFile.Exists(Directory) then TFile.Delete(Directory); except end;
   FPreviewPages.Free;
@@ -757,6 +776,8 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+ FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:='Open a project to inspect component dependencies.';DependencyStatus.Text:='No capture loaded.';
+ DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
  FLayoutRows.Clear;FreeAndNil(FLayout);LayoutList.Items.Clear;LayoutMemo.Text:='Open a project to inspect layout declarations.';LayoutStatus.Text:='No capture loaded.';
  LayoutNextButton.Enabled:=False;LayoutSourceButton.Enabled:=False;
   FDynamicRows.Clear; FreeAndNil(FDynamic); DynamicList.Items.Clear; DynamicReferenceCombo.Items.Clear;
@@ -891,6 +912,7 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
+  FDependencyRows.Clear;FreeAndNil(FDependencies);FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);
   FLayoutRows.Clear;FreeAndNil(FLayout);FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);
   FDynamicRows.Clear; FreeAndNil(FDynamic); FDynamic:=TDPHDynamicControls.Inspect(FView); DynamicFilterChange(nil);
   FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
@@ -988,6 +1010,89 @@ begin
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
 end;
+procedure TDPHMainForm.DependencyFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
+begin
+ if FDependencyRows=nil then Exit;
+ if Sender=DependencyNextButton then Inc(FDependencyOffset,250) else FDependencyOffset:=0;
+ DependencyList.Items.Clear;FDependencyRows.Clear;DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
+ DependencyMemo.Text:='Select a component to inspect captured class evidence and authored dependency information.';if FDependencies=nil then Exit;
+ Query:=DependencyFilterEdit.Text.Trim;Count:=0;
+ for V in FDependencies.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (Query<>'') and not ContainsText(TDPHComponentDependencies.Describe(Row,FKnowledge),Query) then Continue;
+  if (Count>=FDependencyOffset) and (FDependencyRows.Count<250) then begin FDependencyRows.Add(Row);DependencyList.Items.Add(Row.GetValue<string>('form')+' / '+Row.GetValue<string>('name')+' : '+Row.GetValue<string>('class')+' | '+Row.GetValue<string>('resolution'));end;Inc(Count);
+ end;
+ DependencyNextButton.Enabled:=Count>FDependencyOffset+FDependencyRows.Count;
+ DependencyStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FDependencyRows.Count)+' from offset '+IntToStr(FDependencyOffset)+'. Vendor and runtime support require attributed evidence.';
+ if DependencyList.Count>0 then begin DependencyList.ItemIndex:=0;DependencySelectionClick(nil);end else DependencyMemo.Text:='No matching components. Clear the filter or inspect Coverage for uncaptured forms.';
+end;
+procedure TDPHMainForm.DependencySelectionClick(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;
+begin
+ DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
+ if (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
+ Row:=FDependencyRows[DependencyList.ItemIndex];DependencyMemo.Text:=TDPHComponentDependencies.Describe(Row,FKnowledge)+sLineBreak+sLineBreak+FDependencies.GetValue<string>('qualification');
+ DependencyMemo.Lines.Add('CAPTURED PACKAGE DECLARATIONS (not component membership)');
+ for V in FDependencies.GetValue<TJSONArray>('packages') do DependencyMemo.Lines.Add(V.GetValue<string>('name')+' | '+V.GetValue<string>('source')+' | SHA-256 '+V.GetValue<string>('source_hash'));
+ DependencyMemo.Lines.Add('UNAVAILABLE INPUTS (project-wide; not automatically attributed to this class)');
+ for V in FDependencies.GetValue<TJSONArray>('unavailable_inputs') do DependencyMemo.Lines.Add(V.GetValue<string>('source')+' | '+V.GetValue<string>('availability'));
+ DependencySourceButton.Enabled:=True;DependencyEditButton.Enabled:=True;DependencyKnowledgeButton.Enabled:=TDPHComponentDependencies.FindRecord(FKnowledge,Row.GetValue<string>('class'))<>nil;
+ DependencyClassButton.Enabled:=Row.GetValue<TJSONArray>('class_candidates').Count=1;
+end;
+procedure TDPHMainForm.DependencyClassClick(Sender:TObject);
+var Candidates:TJSONArray;
+begin
+ if (FView=nil) or (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
+ Candidates:=FDependencyRows[DependencyList.ItemIndex].GetValue<TJSONArray>('class_candidates');if Candidates.Count<>1 then Exit;
+ SelectSymbol(Candidates.Items[0].GetValue<string>('key'));WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.DependencySourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
+ Row:=FDependencyRows[DependencyList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ if FDetached then begin DependencyMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do DependencyMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+procedure TDPHMainForm.DependencyKnowledgeClick(Sender:TObject);
+var Row:TJSONObject;I:Integer;
+begin
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ if (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
+ Row:=TDPHComponentDependencies.FindRecord(FKnowledge,FDependencyRows[DependencyList.ItemIndex].GetValue<string>('class'));if Row=nil then Exit;
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=Row.GetValue<string>('id') then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;Exit;end;
+end;
+procedure TDPHMainForm.DependencyEditClick(Sender:TObject);
+var Editor:TDPHComponentDependencyForm;Row,ComponentRow,RecordValue,Initial:TJSONObject;Links:TJSONArray;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ if (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
+ ComponentRow:=FDependencyRows[DependencyList.ItemIndex];Row:=TDPHComponentDependencies.FindRecord(FKnowledge,ComponentRow.GetValue<string>('class'));
+ if Row<>nil then Initial:=TJSONObject.ParseJSONValue(Row.GetValue<string>('structured_json')) as TJSONObject
+ else Initial:=TJSONObject.Create.AddPair('record_type','component_dependency').AddPair('fields',TJSONObject.Create.AddPair('class_name',ComponentRow.GetValue<string>('class')));
+ Editor:=TDPHComponentDependencyForm.Create(nil);
+ try
+  Editor.LoadRecord(Initial,KnowledgeAuthorEdit.Text);if Editor.ShowModal<>mrOk then Exit;
+  RecordValue:=Editor.RecordJSON;
+  try
+   FBinding:=True;
+   try
+    FKnowledgeID:=0;FKnowledgeRevision:=0;if Row<>nil then begin FKnowledgeID:=StrToInt64(Row.GetValue<string>('id'));FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision'));end;
+    KnowledgeTitleEdit.Text:=TDPHComponentDependency.Title(RecordValue);KnowledgeAuthorEdit.Text:=Editor.ProfileAuthorEdit.Text;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('engineering_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('engineering');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('engineer');
+    KnowledgeBodyMemo.Text:=TDPHComponentDependency.Body(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:='';FreeAndNil(FEditableLinks);
+    if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Component dependency draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit structured fields on Component dependencies. Use Knowledge links for exact evidence. Saving does not resolve class source or verify vendor claims.';
+   finally FBinding:=False;end;
+   WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Dependency draft prepared. Click Save to persist; review requires a named reviewer.';
+  finally RecordValue.Free;end;
+ finally Editor.Free;Initial.Free;end;
+end;
+
 procedure TDPHMainForm.LayoutFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
 begin
@@ -1989,7 +2094,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

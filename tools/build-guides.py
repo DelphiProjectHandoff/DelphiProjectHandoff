@@ -462,13 +462,30 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('After the glossary, keyboard, command inventory and dynamic control implementations, 341 requirement records remain incomplete', 'After the glossary, keyboard, command inventory, dynamic control and layout rule implementations, 340 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Inspect component dependencies and support records', [
+'Open the intended project and choose Component dependencies in the upper-right page selector. Select a component to read its class, form source, generation and fingerprint. DPH lists all captured classes because a name alone cannot establish third-party origin. Unresolved means no class declaration was captured; it can involve framework, vendor, local, inherited or excluded source.',
+'A unique class declaration is an inferred lexical candidate. Multiple declarations remain ambiguous. Explain class opens the unique candidate in Explain; it is disabled when no unique candidate exists. Component source opens attached unchanged form text. Detached, changed and binary source locations are refused explicitly. Captured package declarations and unavailable inputs are shown as project-wide context; they do not establish package membership or installed binaries.',
+'Click Edit dependency for the selected class. Enter a named contributor, declaring unit, package or product, vendor or maintainer, version and configuration, support or replacement considerations, and evidence references with remaining unknowns. Class identity is fixed. Evidence and contributor are required; blank optional fields remain unknown. Scroll the editor vertically to reach every field. Click Apply to Knowledge draft, then click Save on Knowledge and wait for completion. Applying alone does not save.',
+'Open in Knowledge shows the saved revision and immutable history. Use Knowledge links to add exact evidence and save, then enter a named reviewer and click Verify review only after checking the claims. Editing dependency fields creates a new revision and reopens review. Duplicate class records are rejected ignoring case; retired identities remain reserved. Save or discard an existing draft before navigating or editing another record.',
+'Filter by class, resolution or authored vendor/support wording. Next page advances through 250 rows; First page resets. Scroll the command bar horizontally at narrow widths and drag the list divider or scroll inside the details. Authored metadata never changes source-resolution status. Attach approved missing source roots and reassess to obtain declarations. No vendor class, package or DLL is loaded. Full directions: docs/guides/Component_Dependencies_Run_and_Test.txt.'
+]))
+ENGINEERING.append(('Component dependencies and attributed metadata', [
+'DPH.Workspace.ComponentDependencies indexes captured semantic class declarations by qualified and simple name, joins them to serialized component classes, and preserves declaration ranges, source hashes, conditions and generation context. Unique matches are inferred candidates rather than compiler binding proof. Ambiguous or absent matches remain explicit. Captured package declarations and unavailable inputs are context only; membership, installed versions and vendor origin are not inferred.',
+'DPH.Knowledge.ComponentDependency validates bounded text fields for class identity, declaring unit, package/product, vendor, version/configuration, support and evidence. DPH.UI.ComponentDependency.fmx serializes the scrollable editor. The main page controls are serialized in DPH.UI.Main.fmx. Apply prepares a structured Knowledge draft; the existing worker saves it with attributed revision history. Storage enforces identity, canonical readable body, case-insensitive uniqueness, stale-edit protection and retention of structured fields. No schema migration or target component loading was added.',
+'Saved dependency records participate in Knowledge search, engineering publication, evidence links and named review. Editing reopens review; retired class identities stay reserved. The native inspector refreshes saved metadata without changing source resolution, protects unsaved drafts, provides 250-row pagination, filtering, source guards and unique-candidate Explain navigation.',
+'Run tools\\build-component-dependencies.cmd elevated for the focused acceptance suite. It exercises real text/binary DFM and FMX parsing, unique/ambiguous/unresolved class candidates, captured packages and missing dependencies, SQLite reopen/history/review/search/publication, duplicate and stale edits, native editor round trips, navigation, pagination and compact layout. Fixtures reuse bin/component-dependencies-validation. Native PaintTo images show DPH controls rather than target screenshots. Shared Knowledge, glossary and layout regressions and the actual app/FMX baseline are also checked. See the current completion record for measured counts.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('After the glossary, keyboard, command inventory, dynamic control and layout rule implementations, 340 requirement records remain incomplete', 'After the glossary, keyboard, command inventory, dynamic control, layout rule and component dependency implementations, 339 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
     'Learn the selected project', 'Measure coverage before relying on an explanation',
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
-    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Import actual screenshot evidence',
+    'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Import actual screenshot evidence',
     'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
@@ -519,16 +536,29 @@ def build(filename, title, audience, sections):
     doc.add_paragraph('This guide describes the implemented application and its evidence limits. Use the phase acceptance records for exact measured results and unresolved release gates.')
     doc.add_page_break()
     doc.add_paragraph('Contents', 'Title')
-    field(doc.add_paragraph().add_run(), 'begin', ' TOC \\o "1-1" \\h \\z \\u ')
-    field(doc.add_paragraph().add_run(), 'separate')
+    toc_begin = doc.add_paragraph()
+    field(toc_begin.add_run(), 'begin', ' TOC \\o "1-1" \\h \\z \\u ')
+    toc_separate = doc.add_paragraph()
+    field(toc_separate.add_run(), 'separate')
     for heading, _ in sections:
         entry = doc.add_paragraph(heading)
         entry.paragraph_format.space_after = Pt(0)
         entry.paragraph_format.line_spacing = 1.0
+        for run in entry.runs:
+            run.font.size = Pt(10)
     entry = doc.add_paragraph('Source and revision evidence')
     entry.paragraph_format.space_after = Pt(0)
     entry.paragraph_format.line_spacing = 1.0
-    field(doc.add_paragraph().add_run(), 'end')
+    for run in entry.runs:
+        run.font.size = Pt(10)
+    toc_end = doc.add_paragraph()
+    field(toc_end.add_run(), 'end')
+    for marker in (toc_begin, toc_separate, toc_end):
+        marker.paragraph_format.space_before = Pt(0)
+        marker.paragraph_format.space_after = Pt(0)
+        marker.paragraph_format.line_spacing = Pt(1)
+        for run in marker.runs:
+            run.font.size = Pt(1)
     doc.add_page_break()
     for heading, paragraphs in sections:
         doc.add_heading(heading, 1)
@@ -552,7 +582,7 @@ def build(filename, title, audience, sections):
     evidence = []
     for source in sorted(ROOT.glob('DPH.*.pas')):
         evidence.append({'path': source.name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
-    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DPH.UI.Glossary.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
+    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DPH.UI.Glossary.fmx', 'DPH.UI.ComponentDependency.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
         source = ROOT / name
         evidence.append({'path': name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
     for item in evidence:
@@ -593,5 +623,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 11, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 12, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

@@ -1,5 +1,5 @@
 {
-  "guide_version": 11,
+  "guide_version": 12,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -32,6 +32,10 @@
     {
       "path": "DPH.Analysis.Symbols.pas",
       "sha256": "1da99806fa3a71afbfe4c58e8e1bb40041d308e32b42fd06f412723c79f7799b"
+    },
+    {
+      "path": "DPH.Knowledge.ComponentDependency.pas",
+      "sha256": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe"
     },
     {
       "path": "DPH.Knowledge.Glossary.pas",
@@ -99,11 +103,15 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "28e17f8ddf7196406c1ef3ba3ce4e98959764660d90cec0ae7abd249d0043b33"
+      "sha256": "1904d4f0adae6dc01e76dad3d8e3797613b5e3da49da194587cad68de30ed25e"
     },
     {
       "path": "DPH.Storage.Types.pas",
       "sha256": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219"
+    },
+    {
+      "path": "DPH.UI.ComponentDependency.pas",
+      "sha256": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682"
     },
     {
       "path": "DPH.UI.Glossary.pas",
@@ -111,7 +119,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "f947529798b4d22eff8cea2df02aa865e0ebcdff6ff6fb2b09811700ab0a8b90"
+      "sha256": "5192c72930649deabd242c2dc0ad86479d014d7ec60f5bf0829c91040ef036df"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -128,6 +136,10 @@
     {
       "path": "DPH.Workspace.Comparison.pas",
       "sha256": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce"
+    },
+    {
+      "path": "DPH.Workspace.ComponentDependencies.pas",
+      "sha256": "7d57eb7884d6e521414379a24ce9e64aa2816beca6de650b86828a16fc33af2b"
     },
     {
       "path": "DPH.Workspace.DynamicControls.pas",
@@ -159,7 +171,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "c91f72eb5c52378b73abe777e9af9656a1d168a965e7214737aa58d8f0111e49"
+      "sha256": "e76c41e654e8ab13fc38044808c7d64512d98a441c841a78d5f8ebc2c20c373c"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",
@@ -170,12 +182,16 @@
       "sha256": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5"
     },
     {
+      "path": "DPH.UI.ComponentDependency.fmx",
+      "sha256": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862"
+    },
+    {
       "path": "DelphiProjectHandoff.dpr",
       "sha256": "2b922d5561c2ab3e2b65590583f646e29fc12c8b5c36a08fe401a6ebed90d3f9"
     },
     {
       "path": "DelphiProjectHandoff.dproj",
-      "sha256": "42e5ab20a8b11f9764da478d0ea5147c616e75d1a03dd705d7af39c36f917d84"
+      "sha256": "0d0bd4c51bac9da250e52a8e9bef4baffb2bd4ab7107ac302337a1a7da673b4d"
     }
   ],
   "last_changed": "2026-10-11"
