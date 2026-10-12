@@ -1,5 +1,5 @@
 {
-  "guide_version": 28,
+  "guide_version": 29,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -7,7 +7,7 @@
     },
     {
       "path": "DPH.Analysis.Explanations.pas",
-      "sha256": "be976f2199be2c8e86a0cf8be936d008aa83739cf116c3e81ca68bf3692fc8e7"
+      "sha256": "43244ca3544edffabbf8a52af92a5f8081794894db0fd88fdd67fd1dbab560fb"
     },
     {
       "path": "DPH.Analysis.Flow.pas",
@@ -131,7 +131,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "3ae9464703c174d8e35c492b01cdbda6c84986c1921397e5a8a78fb2f5cef5d9"
+      "sha256": "42619d012e2ccaebf90496b7bd09ae76338da444dd5ee23e96b90fb09b19ca00"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -159,7 +159,7 @@
     },
     {
       "path": "DPH.Workspace.DatabaseConnections.pas",
-      "sha256": "7e24e0ef35ce20eed33186704327a075d5087023dc0d4be2790589854c5ebbeb"
+      "sha256": "37fecd28b258661a57eb1ff955a2bf1f22757508b3925b98daedc0d6b789e1ce"
     },
     {
       "path": "DPH.Workspace.DatabaseSchema.pas",
@@ -203,7 +203,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "ca8d6fa10b1e0f6dd8c802e7308ee6479259353d39e1b940e7e2d7f962c55282"
+      "sha256": "92d2b4b10d9bba5cb86fdc67fcc98c0ad269bb3cc94198fb32d235cf7d0c3417"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",

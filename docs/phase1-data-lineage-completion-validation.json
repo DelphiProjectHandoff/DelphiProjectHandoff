@@ -1,0 +1,93 @@
+{
+  "result": "PASS",
+  "requirement": "05.15",
+  "status": "implemented",
+  "checks": 174,
+  "regression_checks": 1144,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.15",
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 227,
+    "implemented": 193,
+    "missing": 95
+  },
+  "incomplete_requirement_records": 322,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 34,
+        "toc_entries": 58,
+        "new_chapter_pages": [
+          3,
+          24
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 30,
+        "toc_entries": 50,
+        "new_chapter_pages": [
+          2,
+          27
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 64 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DataLineage_PreChange_20261012_164236",
+    "files": 5703,
+    "bytes": 2376172510,
+    "sha256_verified": true
+  },
+  "qualification": "Scoped captured source candidates only. Directed lexical dependencies remain distinct from serialized bindings, handler and routine context. No reaching-definition, runtime-value, execution, server-effect or final-success proof. Missing targets, incomplete dataset chains, connection boundaries and traversal limits remain explicit. Bounds: 50000 indexed symbols, 100000 indexed edges, 200 returned nodes, 800 edges and 12 hops. No selected target, SQL, driver or production server executes.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseConnections.pas": "37fecd28b258661a57eb1ff955a2bf1f22757508b3925b98daedc0d6b789e1ce",
+    "DPH.Analysis.Explanations.pas": "43244ca3544edffabbf8a52af92a5f8081794894db0fd88fdd67fd1dbab560fb",
+    "DPH.UI.Main.pas": "42619d012e2ccaebf90496b7bd09ae76338da444dd5ee23e96b90fb09b19ca00",
+    "DPH.UI.Main.fmx": "92d2b4b10d9bba5cb86fdc67fcc98c0ad269bb3cc94198fb32d235cf7d0c3417",
+    "tests/DPH.Tests.DataLineage.dpr": "b1a2da0667aa41ae0d1915de40c07277cb6b47b354a44263a27a4b78bbdd7943",
+    "tools/build-data-lineage.cmd": "9eed785c4f9b991ebabfa849eba8e6063c0ca143009e89efabe0cfeaaca9af44",
+    "docs/phase1-data-lineage-validation.json": "2a56323386a7667597aabceca83a0324135642c3904aabf9a9ea572075285daa",
+    "docs/phase1-data-lineage-validation.log": "b40427a30c51de7fdba9286c0d7814b2a4ae105dbbbbdf9a66a2e559c342bc3f",
+    "docs/guides/Data_Lineage_Run_and_Test.txt": "ae06ff172759986bff5ce9e9991f3e48c4c5ab0db165b20ff1e144b47f810a4f",
+    "tools/build-guides.py": "eb10f95c22f1a3345f04afeef2daca4718efb39a3da2dce6c3f48f8dbc5d51af",
+    "README.md": "ece4b63a89b54b4ea638bd53f1eaccaa0ff36614a397aa6dcb3e30e3189b4fb9",
+    "help/index.html": "08887611c7b1e2de5d53dfe4e4cf0dbd0283da758d22763aac3e655b6b4894b4",
+    "docs/guide-source-validation.json": "5db3e390ed0aa65af9333a4bb7fbd7c30bd9870f06691b8a444e3e87f72a31bf",
+    "docs/guides/DPH_User_Guide.docx": "fcd380d3c83ba355853b260092c24ef444264fcd1929ce6e55e2a767fc3a78ff",
+    "docs/guides/DPH_Engineering_Guide.docx": "fcbab8ef72c036c3a063432b066caaa6369a712387f7cb4f786f99cd690fbf6d",
+    "docs/pdf/DPH_User_Guide.pdf": "245c0005636a9b3da0d03d0296431163f3fa720f33b77b3571dfd0c90adb63c9",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "141a9ff664c8bbf658de5fd895f2836bffa6a5665607f9a4d64ae4657f3b71f5",
+    "docs/phase1-data-lineage-build.log": "5c504b58f6827caac1cb361f2ea699666b1f585b62247bdca01e43b91f231c00",
+    "docs/Phase1_Data_Lineage_Completion.txt": "3e48c735311f34fbbca6a05a3478836159b0814a6e9ca31ea22e57398f792b8a",
+    "docs/Phase1_Requirements_Traceability.json": "dc71b9d4899b6ba2e722779aa288eb36318e4b69e901b19b3aaf9aaf266c6bb5",
+    "docs/Phase1_Implementation_Backlog.csv": "c806d182d439b0e18f1e75780131789907c5685ac00904b9b245f62b3d63091c",
+    "docs/Implementation_Completion_Tracker.txt": "da135c06859c8c327c32c8e27bee036f8b6bb0be73357a938926a5f4194b3af1",
+    "docs/phase1-data-lineage-data-rules-regression.json": "fc466848047f83a7a53e3505b19448c9b133b7f0ea6f146c197d65339dc974b0",
+    "docs/phase1-data-lineage-data-rules-regression.log": "8acfdb1f28e022cb10c3282822adf5593eb73e2bbe92a09cc8efcbeb9f5f0dce",
+    "docs/phase1-data-lineage-database-transactions-regression.json": "5e6c192d6031d9a1214d218350ab9fec9b549d1f96b4a47c6be6a0c84cc08589",
+    "docs/phase1-data-lineage-database-transactions-regression.log": "ce713ee6b73518222466acfd00179a553b72186f0ffbe37837c522d7808eaa03",
+    "docs/phase1-data-lineage-database-operations-regression.json": "480a874323c456c3b2cb77bfb86dad618fcf41770c538a602e97138686113fc6",
+    "docs/phase1-data-lineage-database-operations-regression.log": "4330c0f7445734465aebe3d0b174faf1043041ebbaf1383f5a40a4cce169bc2b",
+    "docs/phase1-data-lineage-dataset-bindings-regression.json": "7f0dccfaa38f7415a49623292722f627011c6a98c0038ce9fb3746432822de17",
+    "docs/phase1-data-lineage-dataset-bindings-regression.log": "e935137dfc4f8ec9734469d4d4626c1a48eba5d788068931757c6799b4b556f1",
+    "docs/phase1-data-lineage-database-engines-regression.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-data-lineage-database-engines-regression.log": "ad8a74c26dce5a3685365b9f957e2971d6882af5708be6bbe371f79cadf83dd9",
+    "docs/phase1-data-lineage-semantics.json": "bebec09d2d00b976468224c9776c33abcaf0cfad27a8e2f89475cb7794675c67",
+    "docs/phase1-data-lineage-semantics.log": "3bcadad860cfaf712a882c276d6c8ababfb388256067963f57d92c4281de41f7",
+    "docs/phase1-data-lineage-parser.json": "f9da2b99733743f2c86032132be8757b053c6a68506f2c993498c77f47b96912",
+    "docs/phase1-data-lineage-parser.log": "7dabf18f6bcce6513b0ca1033c0398d3da8afb3de9d5fb3824afb0003618d783",
+    "docs/phase1-data-lineage-workspace.png": "e2dc2b690f0938b0df65c9daaaeb25501eebd1aa086006a89efa5ee0c9d84523",
+    "docs/phase1-data-lineage-compact.png": "05663944e033dad3752279ba8309d0f0d592d965fd1c5c9a6aaf8a270fa4f0e0",
+    "docs/phase1-data-lineage-diagram.png": "0ecc24161448e119fc4beef10b07ce54483ba310bd8310a31dec9efccd8e4105"
+  }
+}

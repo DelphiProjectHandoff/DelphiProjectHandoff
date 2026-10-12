@@ -102,7 +102,11 @@ Data validation and transformation rules completed (05.14): field constraints,
 validation hooks and input/output candidates with exact source navigation.
 130 focused and 1014 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Data_Rules_Completion.txt.
-Current live backlog: 323 incomplete requirement records; 0 unassessed.
+Data lineage completed (05.15): scoped inputs, fields, procedures and destination
+candidates with explicit unresolved breaks and navigable diagrams.
+174 focused and 1144 regression checks passed; actual app/FMX passed.
+See Phase1_Data_Lineage_Completion.txt.
+Current live backlog: 322 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

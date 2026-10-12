@@ -1,4 +1,4 @@
-﻿object DPHMainForm: TDPHMainForm
+object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
@@ -930,6 +930,7 @@ Items.Strings = (
 'Form navigation'
 'Data flow'
 'Change impact'
+'Data lineage'
 )
 ItemIndex = 0
 OnChange = ViewChange
@@ -1460,7 +1461,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Choose data rule for field constraints, validation conditions and input/output transformations. Follow reference opens the field, handler or lexical declaration; Source opens captured code. Transaction and database operation filters inspect other requests. Scroll commands sideways.'
+Text = 'Select a control, field, rule or operation. Scroll the toolbar right and click Trace lineage to follow captured inputs and destination candidates. Choose a lineage hop and Follow reference for details. Context edges are not value-transfer proof; unresolved breaks stay visible. Source opens the selected inventory row.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1539,6 +1540,35 @@ Width = 90
 Height = 28
 Text = 'Source'
 OnClick = DatabaseInventorySourceClick
+Enabled = False
+end
+object DatabaseInventoryDirection: TComboBox
+Position.X = 1209
+Position.Y = 0
+Width = 155
+Height = 28
+Items.Strings = (
+'Both directions'
+'Inputs'
+'Destinations')
+ItemIndex = 0
+end
+object DatabaseInventoryTrace: TButton
+Position.X = 1372
+Position.Y = 0
+Width = 120
+Height = 28
+Text = 'Trace lineage'
+OnClick = DatabaseInventoryTraceClick
+Enabled = False
+end
+object DatabaseInventoryDiagram: TButton
+Position.X = 1500
+Position.Y = 0
+Width = 130
+Height = 28
+Text = 'Lineage diagram'
+OnClick = DatabaseInventoryTraceClick
 Enabled = False
 end
 end

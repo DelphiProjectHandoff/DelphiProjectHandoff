@@ -1,0 +1,24 @@
+DPH REQUIREMENT 05.15 COMPLETION: DATA LINEAGE
+Last changed: 12 October 2026
+
+Trace lineage and Lineage diagram connect captured source candidates with exact
+source evidence and explicit unresolved breaks. Inputs and Destinations respect
+lexical dependency direction; Both directions includes labeled context.
+Inventory and semantic nodes navigate to their exact evidence.
+No schema migration or new helper unit. Controls remain IDE-editable.
+
+Validation PASS: 174 focused + 1144 regression = 1318 checks.
+Actual app and FMX baseline PASS. Three native renders reviewed.
+All 64 final guide pages visually reviewed; 58 hashes and 108 TOC destinations
+verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/Data_Lineage_Run_and_Test.txt
+
+Scoped captured source candidates only. Directed lexical dependencies remain distinct from serialized bindings, handler and routine context. No reaching-definition, runtime-value, execution, server-effect or final-success proof. Missing targets, incomplete dataset chains, connection boundaries and traversal limits remain explicit. Bounds: 50000 indexed symbols, 100000 indexed edges, 200 returned nodes, 800 edges and 12 hops. No selected target, SQL, driver or production server executes.
+
+Pre-change backup: H:\DPH Backups\DataLineage_PreChange_20261012_164236
+5703 files, 2376172510 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.15 promoted; all 533 original requirement IDs and texts preserved.
+193 implemented; 18 implemented_manual_capture; 227 partial; 95 missing.
+322 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 05.16 Migration and schema-version history.

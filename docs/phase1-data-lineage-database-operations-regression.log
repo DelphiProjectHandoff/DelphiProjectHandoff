@@ -1,0 +1,242 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseOperations.dpr(115) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseOperations.dpr(116) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17746 lines, 1.39 seconds, 10642496 bytes code, 348940 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: Operation inventory includes dataset API, literal SQL and dynamic SQL
+PASS 3: Captured dataset request Open
+PASS 4: Operation source SHA256 Open
+PASS 5: Operation source line Open
+PASS 6: Operation follows exact serialized dataset Open
+PASS 7: Captured dataset request Refresh
+PASS 8: Operation source SHA256 Refresh
+PASS 9: Operation source line Refresh
+PASS 10: Operation follows exact serialized dataset Refresh
+PASS 11: Captured dataset request First
+PASS 12: Operation source SHA256 First
+PASS 13: Operation source line First
+PASS 14: Operation follows exact serialized dataset First
+PASS 15: Captured dataset request Next
+PASS 16: Operation source SHA256 Next
+PASS 17: Operation source line Next
+PASS 18: Operation follows exact serialized dataset Next
+PASS 19: Captured dataset request Locate
+PASS 20: Operation source SHA256 Locate
+PASS 21: Operation source line Locate
+PASS 22: Operation follows exact serialized dataset Locate
+PASS 23: Captured dataset request Append
+PASS 24: Operation source SHA256 Append
+PASS 25: Operation source line Append
+PASS 26: Operation follows exact serialized dataset Append
+PASS 27: Captured dataset request Insert
+PASS 28: Operation source SHA256 Insert
+PASS 29: Operation source line Insert
+PASS 30: Operation follows exact serialized dataset Insert
+PASS 31: Captured dataset request AppendRecord
+PASS 32: Operation source SHA256 AppendRecord
+PASS 33: Operation source line AppendRecord
+PASS 34: Operation follows exact serialized dataset AppendRecord
+PASS 35: Captured dataset request InsertRecord
+PASS 36: Operation source SHA256 InsertRecord
+PASS 37: Operation source line InsertRecord
+PASS 38: Operation follows exact serialized dataset InsertRecord
+PASS 39: Captured dataset request Edit
+PASS 40: Operation source SHA256 Edit
+PASS 41: Operation source line Edit
+PASS 42: Operation follows exact serialized dataset Edit
+PASS 43: Captured dataset request Post
+PASS 44: Operation source SHA256 Post
+PASS 45: Operation source line Post
+PASS 46: Operation follows exact serialized dataset Post
+PASS 47: Captured dataset request Delete
+PASS 48: Operation source SHA256 Delete
+PASS 49: Operation source line Delete
+PASS 50: Operation follows exact serialized dataset Delete
+PASS 51: Captured dataset request Cancel
+PASS 52: Operation source SHA256 Cancel
+PASS 53: Operation source line Cancel
+PASS 54: Operation follows exact serialized dataset Cancel
+PASS 55: Captured dataset request ApplyUpdates
+PASS 56: Operation source SHA256 ApplyUpdates
+PASS 57: Operation source line ApplyUpdates
+PASS 58: Operation follows exact serialized dataset ApplyUpdates
+PASS 59: Captured dataset request CancelUpdates
+PASS 60: Operation source SHA256 CancelUpdates
+PASS 61: Operation source line CancelUpdates
+PASS 62: Operation follows exact serialized dataset CancelUpdates
+PASS 63: Captured dataset request ExecSQL
+PASS 64: Operation source SHA256 ExecSQL
+PASS 65: Operation source line ExecSQL
+PASS 66: Operation follows exact serialized dataset ExecSQL
+PASS 67: Local class shadowing framework name is excluded
+PASS 68: Local class shadowing framework name is excluded
+PASS 69: Local class shadowing framework name is excluded
+PASS 70: Local class shadowing framework name is excluded
+PASS 71: Local class shadowing framework name is excluded
+PASS 72: Local class shadowing framework name is excluded
+PASS 73: Local class shadowing framework name is excluded
+PASS 74: Local class shadowing framework name is excluded
+PASS 75: Local class shadowing framework name is excluded
+PASS 76: Local class shadowing framework name is excluded
+PASS 77: Local class shadowing framework name is excluded
+PASS 78: Local class shadowing framework name is excluded
+PASS 79: Local class shadowing framework name is excluded
+PASS 80: Local class shadowing framework name is excluded
+PASS 81: Local class shadowing framework name is excluded
+PASS 82: Local class shadowing framework name is excluded
+PASS 83: Local class shadowing framework name is excluded
+PASS 84: Local class shadowing framework name is excluded
+PASS 85: Local class shadowing framework name is excluded
+PASS 86: Local class shadowing framework name is excluded
+PASS 87: Local class shadowing framework name is excluded
+PASS 88: Local class shadowing framework name is excluded
+PASS 89: Local class shadowing framework name is excluded
+PASS 90: Local class shadowing framework name is excluded
+PASS 91: Local class shadowing framework name is excluded
+PASS 92: Local class shadowing framework name is excluded
+PASS 93: Delete recognizes framework dataset and custom descendant only
+PASS 94: Joined SELECT remains a lexical read candidate
+PASS 95: INSERT SQL family retained
+PASS 96: UPDATE SQL family retained
+PASS 97: DELETE SQL family retained
+PASS 98: Mixed SQL batch never collapsed to first statement
+PASS 99: Post never claims commit
+PASS 100: Append distinguishes preparation from inserted row
+PASS 101: Edit distinguishes preparation from updated row
+PASS 102: Cancel never claims transaction rollback
+PASS 103: Cached writes remain mixed
+PASS 104: Ordinary Delete is not a database operation
+PASS 105: Ordinary Delete is not a database operation
+PASS 106: Ordinary Delete is not a database operation
+PASS 107: Ordinary Delete is not a database operation
+PASS 108: Ordinary Delete is not a database operation
+PASS 109: Ordinary Delete is not a database operation
+PASS 110: Ordinary Delete is not a database operation
+PASS 111: Ordinary Delete is not a database operation
+PASS 112: Ordinary Delete is not a database operation
+PASS 113: Ordinary Delete is not a database operation
+PASS 114: Ordinary Delete is not a database operation
+PASS 115: Ordinary Delete is not a database operation
+PASS 116: Ordinary Delete is not a database operation
+PASS 117: Ordinary Delete is not a database operation
+PASS 118: Ordinary Delete is not a database operation
+PASS 119: Ordinary Delete is not a database operation
+PASS 120: SQL configuration never claims execution
+PASS 121: Ordinary Delete is not a database operation
+PASS 122: SQL configuration never claims execution
+PASS 123: Ordinary Delete is not a database operation
+PASS 124: SQL configuration never claims execution
+PASS 125: Ordinary Delete is not a database operation
+PASS 126: SQL configuration never claims execution
+PASS 127: Ordinary Delete is not a database operation
+PASS 128: SQL configuration never claims execution
+PASS 129: Ordinary Delete is not a database operation
+PASS 130: Ordinary Delete is not a database operation
+PASS 131: Ordinary Delete is not a database operation
+PASS 132: Ordinary Delete is not a database operation
+PASS 133: Ordinary Delete is not a database operation
+PASS 134: Ordinary Delete is not a database operation
+PASS 135: All five literal SQL configurations retained including joins and mixed batch
+PASS 136: Dynamic SQL does not invent CRUD kind
+PASS 137: Hash checked source navigation reads operation source
+PASS 138: FMX binding links actual control target
+PASS 139: FMX edit has reverse binding link
+PASS 140: Persistent field is explicitly classified
+PASS 141: Data-aware control is classified
+PASS 142: Field parent resolves exact owning dataset
+PASS 143: Control resolves data source
+PASS 144: Control field resolves through dataset chain
+PASS 145: Field binding retains property line
+PASS 146: Field binding retains byte range
+PASS 147: Persistent field retains exact bound control among all dependents
+PASS 148: Duplicate field names remain ambiguous
+PASS 149: Duplicate fields never select arbitrary target
+PASS 150: Runtime field is not invented
+PASS 151: Missing source prevents field link
+PASS 152: Nil source prevents field link
+PASS 153: Lookup dataset reference navigable
+PASS 154: Field with non-dataset parent remains unowned
+PASS 155: FMX BindSource chain resolves captured field
+PASS 156: Binary DFM field chain resolves
+PASS 157: Field metadata shown
+PASS 158: Binding explanation precedes engine guidance
+PASS 159: Text DFM connection captured
+PASS 160: Known connection class classified
+PASS 161: Dataset classified
+PASS 162: Data source classified
+PASS 163: Transaction classified
+PASS 164: Session classified
+PASS 165: Custom class property signal remains candidate
+PASS 166: Pascal-only declaration retained
+PASS 167: Confirmed component-field binding avoids duplicate declaration row
+PASS 168: Dataset connection links uniquely
+PASS 169: Data source links to dataset
+PASS 170: Qualified cross-module reference links
+PASS 171: Missing target explicitly unresolved
+PASS 172: Missing target not fabricated
+PASS 173: Unqualified external target is not guessed
+PASS 174: Unrelated visual component excluded
+PASS 175: Nil stays explicit
+PASS 176: Wrong-role target not linked
+PASS 177: Unsupported expression masked
+PASS 178: IB database reference links
+PASS 179: Transaction reference links
+PASS 180: Transaction default database links
+PASS 181: BDE logical database alias links
+PASS 182: Session alias links
+PASS 183: Parent-local nested path links
+PASS 184: Self-qualified reference links
+PASS 185: Duplicate paths remain ambiguous
+PASS 186: Ambiguous target not followed
+PASS 187: Named definition inventoried
+PASS 188: Shared definition has both referencing connections
+PASS 189: External definition contents not invented
+PASS 190: Reverse dataset dependencies retained
+PASS 191: Binary DFM connection captured
+PASS 192: Binary reference resolved
+PASS 193: FMX connection reference resolved
+PASS 194: Inherited declaration preserved
+PASS 195: Missing configuration not invented
+PASS 196: All sensitive configuration canaries absent from projection
+PASS 197: Validated driver metadata shown
+PASS 198: Valid port shown
+PASS 199: Invalid driver and port masked
+PASS 200: Connected flag qualified
+PASS 201: Exact source hash retained
+PASS 202: Reopened captured database gives identical inventory
+PASS 203: Inventory page discoverable
+PASS 204: Native page paginates at 250
+PASS 205: Next enabled for remaining rows
+PASS 206: Next shows bounded remaining rows
+PASS 207: Native text and kind filters find dataset
+PASS 208: Unique reference enables follow
+PASS 209: Follow navigates exact target
+PASS 210: Reverse references navigable
+PASS 211: Named definition kind filter
+PASS 212: Native details explain unknown definition contents
+PASS 213: Native details omit sensitive values
+PASS 214: Empty filter has no invented rows
+PASS 215: Empty filter disables reference navigation
+PASS 216: Empty inventory explains coverage limits
+PASS 217: Native bound control filter finds control
+PASS 218: Native details show captured field binding
+PASS 219: Native follow opens exact persistent field
+PASS 220: Field has dataset and reverse control links
+PASS 221: Field name search finds persistent field
+PASS 222: Native filter finds both dataset Post sites
+PASS 223: Native operation effect appears first
+PASS 224: Native source command is available
+PASS 225: Detached capture refuses source access
+PASS 226: Compact commands scroll horizontally
+PASS 227: Evidence memo scrolls
+PASS 228: Compact evidence stays in workspace pane
+PASS 229: Compact evidence retains usable visible height
+PASS 230: Capture replacement retains redaction
+PASS 231: Owner catalog unchanged
+PASS 232: Analyzed source unchanged
+Database operations validation passed: 232 checks.

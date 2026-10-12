@@ -1,0 +1,182 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17856 lines, 1.34 seconds, 10658840 bytes code, 349112 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: FMX binding links actual control target
+PASS 3: FMX edit has reverse binding link
+PASS 4: Persistent field is explicitly classified
+PASS 5: Data-aware control is classified
+PASS 6: Field parent resolves exact owning dataset
+PASS 7: Control resolves data source
+PASS 8: Control field resolves through dataset chain
+PASS 9: Field binding retains property line
+PASS 10: Field binding retains byte range
+PASS 11: Persistent field retains exact bound control among all dependents
+PASS 12: Duplicate field names remain ambiguous
+PASS 13: Duplicate fields never select arbitrary target
+PASS 14: Runtime field is not invented
+PASS 15: Missing source prevents field link
+PASS 16: Nil source prevents field link
+PASS 17: Lookup dataset reference navigable
+PASS 18: Field with non-dataset parent remains unowned
+PASS 19: FMX BindSource chain resolves captured field
+PASS 20: Binary DFM field chain resolves
+PASS 21: Field metadata shown
+PASS 22: Binding explanation precedes engine guidance
+PASS 23: Text DFM connection captured
+PASS 24: Known connection class classified
+PASS 25: Dataset classified
+PASS 26: Data source classified
+PASS 27: Transaction classified
+PASS 28: Session classified
+PASS 29: Custom class property signal remains candidate
+PASS 30: Pascal-only declaration retained
+PASS 31: Confirmed component-field binding avoids duplicate declaration row
+PASS 32: Dataset connection links uniquely
+PASS 33: Data source links to dataset
+PASS 34: Qualified cross-module reference links
+PASS 35: Missing target explicitly unresolved
+PASS 36: Missing target not fabricated
+PASS 37: Unqualified external target is not guessed
+PASS 38: Unrelated visual component excluded
+PASS 39: Nil stays explicit
+PASS 40: Wrong-role target not linked
+PASS 41: Unsupported expression masked
+PASS 42: IB database reference links
+PASS 43: Transaction reference links
+PASS 44: Transaction default database links
+PASS 45: BDE logical database alias links
+PASS 46: Session alias links
+PASS 47: Parent-local nested path links
+PASS 48: Self-qualified reference links
+PASS 49: Duplicate paths remain ambiguous
+PASS 50: Ambiguous target not followed
+PASS 51: Named definition inventoried
+PASS 52: Shared definition has both referencing connections
+PASS 53: External definition contents not invented
+PASS 54: Reverse dataset dependencies retained
+PASS 55: Binary DFM connection captured
+PASS 56: Binary reference resolved
+PASS 57: FMX connection reference resolved
+PASS 58: Inherited declaration preserved
+PASS 59: Missing configuration not invented
+PASS 60: All sensitive configuration canaries absent from projection
+PASS 61: Validated driver metadata shown
+PASS 62: Valid port shown
+PASS 63: Invalid driver and port masked
+PASS 64: Connected flag qualified
+PASS 65: Exact source hash retained
+PASS 66: Reopened captured database gives identical inventory
+PASS 67: Inputs follows a captured assignment to its parameter
+PASS 68: Inputs does not invent a downstream route through procedure context
+PASS 69: Destinations follows a captured dependent assignment
+PASS 70: Destinations excludes upstream parameter
+PASS 71: Destination route reaches captured file writer through content dependency
+PASS 72: Mixed complete/incomplete source chains never invent a field target
+PASS 73: Control lineage reaches exact persistent field
+PASS 74: Field lineage reaches validation procedure
+PASS 75: Field lineage reaches captured input declaration
+PASS 76: Field lineage reaches captured output declaration
+PASS 77: Lineage reaches file destination candidate
+PASS 78: Literal destination classification retained without projected literal
+PASS 79: Captured lexical dependency direction retained
+PASS 80: Binding/procedure context distinguished from dependencies
+PASS 81: Each lineage edge retains original evidence hash
+PASS 82: Unknown handlers or scoped boundaries remain visible
+PASS 83: Trace explicitly source evidence only
+PASS 84: Lineage omits literal, SQL and configuration canaries
+PASS 85: Cycles do not create unbounded node expansion
+PASS 86: Lineage memo explains unresolved breaks
+PASS 87: Reopened generation reproduces identical lineage
+PASS 88: Real lineage JSON renders a source relationship diagram
+PASS 89: Diagram includes unresolved breaks
+PASS 90: Diagram nodes retain exact navigation fragments
+PASS 91: Diagram omits source literals and configuration canaries
+PASS 92: Broken field chain explicitly reported
+PASS 93: Empty source is an explicit chain break
+PASS 94: Requested trace limit honored
+PASS 95: Node limit reports truncation
+PASS 96: Omitted routes explicitly unresolved
+PASS 97: Unavailable seed has no invented route
+PASS 98: Unavailable seed gives a break
+PASS 99: Field constraints and hook body rules captured
+PASS 100: Normal fixture rules not truncated
+PASS 101: Declared numeric minimum retained
+PASS 102: Constraint context is exact field
+PASS 103: Constraint source points at property, not field container
+PASS 104: Custom constraint structure retained
+PASS 105: Default expression retained without evaluation
+PASS 106: Validation predicate captured
+PASS 107: Validation exception candidate retained
+PASS 108: Early return remains a visible source candidate
+PASS 109: Numeric transformation captured
+PASS 110: Assignment input expression shown
+PASS 111: Assignment output expression shown
+PASS 112: Input declaration navigable
+PASS 113: Output declaration navigable
+PASS 114: Handler navigable
+PASS 115: Transformation source SHA256 retained
+PASS 116: Text transformation retained
+PASS 117: Semicolon inside call literal never invents assignment
+PASS 118: Dataset BeforePost resolves captured handler
+PASS 119: Dataset BeforePost rule body captured
+PASS 120: Missing hook remains visible
+PASS 121: Missing hook explicitly unresolved
+PASS 122: Missing handler has no invented target
+PASS 123: Constraint and handler literals omitted from rule projection
+PASS 124: Encoded character literal omitted
+PASS 125: Rule explanation appears first
+PASS 126: Reopened capture retains identical rule evidence
+PASS 127: Unavailable handler syntax does not recreate transformation rules
+PASS 128: Full inventory reports omitted data rules explicitly
+PASS 129: Combined inventory never exceeds 10000 rows
+PASS 130: Inventory page discoverable
+PASS 131: Native page paginates at 250
+PASS 132: Next enabled for remaining rows
+PASS 133: Next shows bounded remaining rows
+PASS 134: Native text and kind filters find dataset
+PASS 135: Unique reference enables follow
+PASS 136: Follow navigates exact target
+PASS 137: Reverse references navigable
+PASS 138: Named definition kind filter
+PASS 139: Native details explain unknown definition contents
+PASS 140: Native details omit sensitive values
+PASS 141: Empty filter has no invented rows
+PASS 142: Empty filter disables reference navigation
+PASS 143: Empty inventory explains coverage limits
+PASS 144: Native bound control filter finds control
+PASS 145: Native details show captured field binding
+PASS 146: Native follow opens exact persistent field
+PASS 147: Field has dataset and reverse control links
+PASS 148: Field name search finds persistent field
+PASS 149: Native data rule filter searches transformation expression
+PASS 150: Native memo labels rule purpose
+PASS 151: Native input expression visible
+PASS 152: Native output expression visible
+PASS 153: Rule source command available
+PASS 154: Detached rule source is refused
+PASS 155: Native follow opens exact validation handler
+PASS 156: Selected inventory row enables Trace lineage
+PASS 157: Native lineage purpose appears first
+PASS 158: Native memo shows scoped route nodes
+PASS 159: Native memo shows dependencies and context
+PASS 160: Native memo includes destination candidate
+PASS 161: Every captured route node navigable
+PASS 162: Semantic lineage hop opens real declaration explanation
+PASS 163: Lineage diagram opens the real Graphs page
+PASS 164: Graph selector identifies lineage
+PASS 165: Lineage preserves exact node identity instead of grouping
+PASS 166: Native diagram node opens exact inventory evidence
+PASS 167: Lineage browser rejects foreign local-file navigation
+PASS 168: Compact commands scroll horizontally
+PASS 169: Evidence memo scrolls
+PASS 170: Compact evidence stays in workspace pane
+PASS 171: Compact evidence retains usable visible height
+PASS 172: Capture replacement retains redaction
+PASS 173: Owner catalog unchanged
+PASS 174: Analyzed source unchanged
+Data lineage validation passed: 174 checks.

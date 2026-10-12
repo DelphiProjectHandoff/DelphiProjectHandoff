@@ -12,10 +12,12 @@ type
   public
     class function Inspect(AView:TDPHWorkspaceView):TJSONObject; static;
     class function Describe(ARow:TJSONObject):string; static;
+    class function Lineage(AView:TDPHWorkspaceView;AInventory:TJSONObject;const ASeed,ADirection:string;ALimit:Integer=200):TJSONObject; static;
+    class function DescribeLineage(ATrace:TJSONObject):string; static;
   end;
 implementation
 uses System.SysUtils,System.StrUtils,System.Classes,System.RegularExpressions,
-  System.Generics.Collections;
+  System.Generics.Collections,System.Math;
 
 class function TDPHDatabaseConnections.Inspect(AView:TDPHWorkspaceView):TJSONObject;
 var Rows,Nodes,Properties,Links,Configuration:TJSONArray; FileValue,Value,Other:TJSONValue;
@@ -544,7 +546,7 @@ end;
 class procedure TDPHDatabaseConnections.ResolveFields(AInventory:TJSONObject);
 var Rows:TJSONArray;V,L,C,D:TJSONValue;Row,Link,Source,Dataset,Target:TJSONObject;
     ByID:TDictionary<string,TJSONObject>;Fields:TObjectDictionary<string,TList<TJSONObject>>;
-    Candidates:TList<TJSONObject>;ID,FieldName,Key:string;Count:Integer;Incomplete:Boolean;
+    Candidates:TList<TJSONObject>;ID,FieldName,Key:string;Count:Integer;Incomplete,HasDataset:Boolean;
 begin
  Rows:=AInventory.GetValue<TJSONArray>('rows');ByID:=TDictionary<string,TJSONObject>.Create;
  Fields:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
@@ -562,7 +564,15 @@ begin
     Dataset:=nil;Count:=0;Incomplete:=False;
     for C in Row.GetValue<TJSONArray>('links') do if MatchText(C.GetValue<string>('property'),['DataSource','BindSource']) then begin
      if not C.TryGetValue<string>('target_id',ID) or not ByID.TryGetValue(ID,Source) then Incomplete:=True
-     else for D in Source.GetValue<TJSONArray>('links') do if (D.GetValue<string>('property')='DataSet') and not D.TryGetValue<string>('target_id',ID) then Incomplete:=True;
+     else begin
+      HasDataset:=False;
+      for D in Source.GetValue<TJSONArray>('links') do if D.GetValue<string>('property')='DataSet' then begin
+       HasDataset:=True;
+       if not D.TryGetValue<string>('target_id',ID) or not ByID.TryGetValue(ID,Target) then Incomplete:=True
+       else if Target.GetValue<string>('role')<>'dataset' then Incomplete:=True;
+      end;
+      if not HasDataset then Incomplete:=True;
+     end;
     end;
     for C in Row.GetValue<TJSONArray>('links') do if MatchText(C.GetValue<string>('property'),['DataSource','BindSource']) and C.TryGetValue<string>('target_id',ID) and ByID.TryGetValue(ID,Source) then
      for D in Source.GetValue<TJSONArray>('links') do if (D.GetValue<string>('property')='DataSet') and D.TryGetValue<string>('target_id',ID) and ByID.TryGetValue(ID,Target) then begin Inc(Count);Dataset:=Target;end;
@@ -673,4 +683,170 @@ begin
   Result:=Result+sLineBreak+'UNKNOWNS AND NEXT INVESTIGATION'+sLineBreak+ARow.GetValue<string>('unknowns')+sLineBreak+
     'Ask the maintainer which named definition and environment are intended; inspect approved configuration locally. Do not enter credentials into authored explanations. Serialized Connected=True is a declaration, not evidence of a successful connection. This inventory never opens a target database.';
 end;
+class function TDPHDatabaseConnections.Lineage(AView:TDPHWorkspaceView;AInventory:TJSONObject;const ASeed,ADirection:string;ALimit:Integer):TJSONObject;
+var Index,Symbols,Aliases,Locations:TDictionary<string,TJSONObject>;
+    Adjacency:TObjectDictionary<string,TList<TJSONObject>>;Unresolved:TObjectDictionary<string,TList<string>>;
+    Seen,EdgesSeen:TDictionary<string,Boolean>;Depths:TDictionary<string,Integer>;
+    Queue:TQueue<string>;Edges,Nodes,Breaks,AllEdges:TJSONArray;
+    V,W:TJSONValue;Row,Symbol,Target,Relation,Edge,Node:TJSONObject;List:TList<TJSONObject>;
+    Key,ID,Other,FromID,ToID,PropertyName,Category,Direction,EdgeKey:string;
+    Depth,I:Integer;Truncated,HasDataset:Boolean;Missing:TList<string>;Reason:string;
+  function Canonical(const AKey:string):string;
+  var R:TJSONObject;
+  begin Result:=AKey;if Aliases.TryGetValue(AKey,R) and (R<>nil) then Result:=R.GetValue<string>('id');end;
+  procedure Gap(const AID,AText:string);
+  begin
+   if Breaks.Count>=800 then begin Truncated:=True;Exit;end;
+   Breaks.AddElement(TJSONObject.Create.AddPair('node',AID).AddPair('reason',AText));
+  end;
+  procedure Connect(const AFrom,ATo,AKind,ACategory:string;AEvidence:TJSONObject);
+  var A,B,K:string;E:TJSONObject;L:TList<TJSONObject>;
+  begin
+   A:=Canonical(AFrom);B:=Canonical(ATo);if (A='') or (B='') then Exit;
+   K:=A+'|'+B+'|'+AKind+'|'+AEvidence.GetValue<string>('range.source','')+'|'+AEvidence.GetValue<TJSONValue>('range.start').Value;
+   if EdgesSeen.ContainsKey(K) then Exit;
+   if AllEdges.Count>=100000 then begin Truncated:=True;Exit;end;
+   EdgesSeen.Add(K,True);E:=TJSONObject.Create.AddPair('from',A).AddPair('to',B).AddPair('kind',AKind).AddPair('category',ACategory);
+   E.AddPair('source',AEvidence.GetValue<string>('source',AEvidence.GetValue<string>('range.source',''))).AddPair('source_hash',AEvidence.GetValue<string>('source_hash',''));
+   E.AddPair('range',AEvidence.GetValue('range').Clone as TJSONValue).AddPair('condition',AEvidence.GetValue<string>('condition',''));
+   E.AddPair('qualification',IfThen(ACategory='dependency','Captured lexical dependency candidate; reaching values and execution unverified.','Structural or procedure context; this edge does not establish value transfer.'));
+   E.AddPair('resolution','inferred').AddPair('rule',ACategory+'; '+E.GetValue<string>('qualification'));
+   AllEdges.AddElement(E);
+   if not Adjacency.TryGetValue(A,L) then begin L:=TList<TJSONObject>.Create;Adjacency.Add(A,L);end;L.Add(E);
+   if A<>B then begin if not Adjacency.TryGetValue(B,L) then begin L:=TList<TJSONObject>.Create;Adjacency.Add(B,L);end;L.Add(E);end;
+  end;
+  procedure AddNode(const AID,AParent:string;ADepth:Integer);
+  var R,N:TJSONObject;
+  begin
+   if not Index.TryGetValue(AID,R) then begin Gap(AParent,'Captured target unavailable: '+AID);Exit;end;
+   N:=TJSONObject.Create.AddPair('id',AID).AddPair('parent',AParent).AddPair('depth',TJSONNumber.Create(ADepth));
+   N.AddPair('name',R.GetValue<string>('path',R.GetValue<string>('name','unknown'))).AddPair('kind',R.GetValue<string>('role',R.GetValue<string>('kind','unknown')));
+   N.AddPair('label',N.GetValue<string>('name'));
+   N.AddPair('source',R.GetValue<string>('source',R.GetValue<string>('range.source',''))).AddPair('source_hash',R.GetValue<string>('source_hash',''));
+   N.AddPair('range',R.GetValue('range').Clone as TJSONValue).AddPair('inventory',TJSONBool.Create(R.GetValue('id')<>nil));
+   if R.GetValue<string>('kind','')='output_artifact' then N.AddPair('destination_evidence',R.GetValue<string>('type')+'; inspect exact captured source for destination expression; successful delivery unverified');
+   Nodes.AddElement(N);Seen.Add(AID,True);Depths.Add(AID,ADepth);Queue.Enqueue(AID);
+  end;
+begin
+ if not MatchText(ADirection,['both','inputs','destinations']) then raise EArgumentException.Create('Unknown lineage direction');
+ ALimit:=System.Math.EnsureRange(ALimit,1,200);Direction:=LowerCase(ADirection);Truncated:=False;
+ Result:=TJSONObject.Create;Nodes:=TJSONArray.Create;Edges:=TJSONArray.Create;Breaks:=TJSONArray.Create;
+ Result.AddPair('kind','Data lineage').AddPair('seed',ASeed).AddPair('direction',Direction).AddPair('nodes',Nodes).AddPair('edges',Edges).AddPair('breaks',Breaks);
+ Result.AddPair('generation_id',AView.Document.GetValue('generation_id').Clone as TJSONValue).AddPair('runtime_trace',TJSONBool.Create(False));
+ Result.AddPair('qualification','DATA LINEAGE SOURCE CANDIDATES. Dependency arrows point from captured input toward dependent output. Both directions includes binding and procedure context, which is not value-transfer proof. Inputs and Destinations follow directed dependencies plus serialized binding/rule context; they omit broad procedure read/write/handler context. Branches, aliases, reaching definitions, actual values, dispatch, external services and successful final delivery remain unobserved. Endpoint means no further captured scoped edge, not a verified final destination. Limits: 200 nodes, 800 returned edges, 12 hops, 50000 symbols and 100000 indexed edges. No selected application, SQL, driver or database server executes.');
+ Index:=TDictionary<string,TJSONObject>.Create;Symbols:=TDictionary<string,TJSONObject>.Create;Aliases:=TDictionary<string,TJSONObject>.Create;Locations:=TDictionary<string,TJSONObject>.Create;
+ Adjacency:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);Seen:=TDictionary<string,Boolean>.Create;EdgesSeen:=TDictionary<string,Boolean>.Create;
+ Depths:=TDictionary<string,Integer>.Create;Queue:=TQueue<string>.Create;AllEdges:=TJSONArray.Create;Unresolved:=TObjectDictionary<string,TList<string>>.Create([doOwnsValues]);
+ try
+  try
+   for V in AInventory.GetValue<TJSONArray>('rows') do begin
+    Row:=V as TJSONObject;ID:=Row.GetValue<string>('id');Index.Add(ID,Row);
+    Key:=Row.GetValue<string>('source')+'|'+Row.GetValue<TJSONValue>('range.start').Value;
+    if MatchText(Row.GetValue<string>('role'),['bound control','persistent field','dataset','connection','data source','binding control target','transaction']) then
+     if Locations.ContainsKey(Key) then Locations[Key]:=nil else Locations.Add(Key,Row);
+   end;
+   for V in AView.Document.GetValue<TJSONArray>('semantics.symbols') do begin
+    if Symbols.Count>=50000 then begin Truncated:=True;Break;end;
+    Symbol:=V as TJSONObject;Key:=Symbol.GetValue<string>('key');Symbols.Add(Key,Symbol);
+    if not Index.ContainsKey(Key) then Index.Add(Key,Symbol);
+   end;
+   for V in AView.Document.GetValue<TJSONArray>('semantics.relationships') do if V.GetValue<string>('kind')='component_field' then
+    if Symbols.TryGetValue(V.GetValue<string>('from'),Symbol) and Locations.TryGetValue(Symbol.GetValue<string>('range.source')+'|'+Symbol.GetValue<TJSONValue>('range.start').Value,Target) and (Target<>nil) then begin
+     Key:=V.GetValue<string>('to');if Aliases.ContainsKey(Key) then Aliases[Key]:=nil else Aliases.Add(Key,Target);
+    end;
+   for V in AInventory.GetValue<TJSONArray>('rows') do begin
+    Row:=V as TJSONObject;ID:=Row.GetValue<string>('id');
+    for W in Row.GetValue<TJSONArray>('links') do begin
+     Relation:=W as TJSONObject;PropertyName:=Relation.GetValue<string>('property');
+     if not MatchText(PropertyName,['DataField','FieldName','DataSource','BindSource','DataSet','LookupDataSet','Control','rule context','handler','lexical input','lexical output','Connection','SQLConnection','ADOConnection','Database','Transaction']) then Continue;
+     if not Relation.TryGetValue<string>('target_id',ToID) then Continue;
+     FromID:=ID;Category:='context';
+     if PropertyName='lexical input' then begin FromID:=ToID;ToID:=ID;Category:='dependency';end
+     else if PropertyName='lexical output' then Category:='dependency';
+     Connect(FromID,ToID,PropertyName,Category,Row);
+    end;
+    if Row.TryGetValue<string>('routine_key',Key) then Connect(Key,ID,'operation request','context',Row);
+   end;
+   for V in AView.Document.GetValue<TJSONArray>('semantics.relationships') do begin
+    Relation:=V as TJSONObject;PropertyName:=Relation.GetValue<string>('kind');
+    if not MatchText(PropertyName,['derives_from','reads','writes','renders']) then Continue;
+    FromID:=Relation.GetValue<string>('from');ToID:=Relation.GetValue<string>('to','');
+    if ToID='' then begin
+     Key:=Canonical(FromID);if not Unresolved.TryGetValue(Key,Missing) then begin Missing:=TList<string>.Create;Unresolved.Add(Key,Missing);end;
+     if Missing.Count<100 then Missing.Add(PropertyName+' has an unresolved semantic target; external declaration or dynamic expression requires source review.') else Truncated:=True;Continue;
+    end;
+    Category:='context';if PropertyName='derives_from' then begin Key:=FromID;FromID:=ToID;ToID:=Key;Category:='dependency';end
+    else if PropertyName='reads' then begin Key:=FromID;FromID:=ToID;ToID:=Key;end;
+    Connect(FromID,ToID,PropertyName,Category,Relation);
+   end;
+   EdgesSeen.Clear;Key:=Canonical(ASeed);AddNode(Key,'',0);
+   while Queue.Count>0 do begin
+    ID:=Queue.Dequeue;Depth:=Depths[ID];Row:=Index[ID];
+    if Unresolved.TryGetValue(ID,Missing) then for Reason in Missing do Gap(ID,Reason);
+    if Row.GetValue<string>('kind','')='output_artifact' then Gap(ID,'Captured '+Row.GetValue<string>('type')+' destination candidate; exact expression is in source. Actual path evaluation and successful delivery remain unverified.');
+    if Row.GetValue('id')<>nil then begin
+     for W in Row.GetValue<TJSONArray>('links') do if not W.TryGetValue<string>('target_id',Key) then
+      Gap(ID,W.GetValue<string>('property')+': '+W.GetValue<string>('resolution','target unresolved'));
+     if Row.GetValue<string>('role')='data source' then begin
+      HasDataset:=False;for W in Row.GetValue<TJSONArray>('links') do if W.GetValue<string>('property')='DataSet' then HasDataset:=True;
+      if not HasDataset then Gap(ID,'Data source has no captured dataset reference.');
+     end;
+     if (Row.GetValue<string>('role')='data rule') and ContainsText(Row.GetValue<string>('constraint'),'unresolved') then Gap(ID,'Rule handler or syntax is unresolved; inspect rule evidence.');
+     if (Depth>0) and MatchText(Row.GetValue<string>('role'),['connection','transaction']) then begin Gap(ID,'Connection or transaction context boundary; related clients are outside this scoped route.');Continue;end;
+    end;
+    if not Adjacency.TryGetValue(ID,List) then begin Gap(ID,'No further captured relation; final destination or external effects remain unknown.');Continue;end;
+    I:=0;
+    for Edge in List do begin
+     if (Direction<>'both') and MatchText(Edge.GetValue<string>('kind'),['reads','writes','renders','handler','operation request']) then Continue;
+     FromID:=Edge.GetValue<string>('from');ToID:=Edge.GetValue<string>('to');Other:=IfThen(FromID=ID,ToID,FromID);
+     if Edge.GetValue<string>('category')='dependency' then begin
+      if (Direction='inputs') and (ID<>ToID) then Continue;
+      if (Direction='destinations') and (ID<>FromID) then Continue;
+     end;
+     Inc(I);EdgeKey:=IntToStr(NativeInt(Edge));
+     if (Depth>=12) and not Seen.ContainsKey(Other) then begin Truncated:=True;Continue;end;
+     if not Seen.ContainsKey(Other) then begin
+      if Nodes.Count>=ALimit then begin Truncated:=True;Continue;end;
+      AddNode(Other,ID,Depth+1);
+     end;
+     if not Seen.ContainsKey(Other) then Continue;
+     if not EdgesSeen.ContainsKey(EdgeKey) then begin
+      if Edges.Count>=800 then begin Truncated:=True;Continue;end;
+      EdgesSeen.Add(EdgeKey,True);Edges.AddElement(Edge.Clone as TJSONValue);
+     end;
+    end;
+    if I=0 then Gap(ID,'No further captured edge in the requested direction; final delivery remains unverified.');
+   end;
+   if AInventory.GetValue<Boolean>('data_rules_truncated',False) then Truncated:=True;
+   if Truncated then Gap(ASeed,'Trace or source inventory limit reached; omitted routes remain unresolved.');
+   Result.AddPair('truncated',TJSONBool.Create(Truncated));
+  except Result.Free;raise;end;
+ finally Unresolved.Free;AllEdges.Free;Queue.Free;Depths.Free;EdgesSeen.Free;Seen.Free;Adjacency.Free;Locations.Free;Aliases.Free;Symbols.Free;Index.Free;end;
+end;
+
+class function TDPHDatabaseConnections.DescribeLineage(ATrace:TJSONObject):string;
+var V:TJSONValue;Names:TDictionary<string,string>;Name,Parent:string;
+begin
+ Result:='DATA LINEAGE SOURCE CANDIDATES'+sLineBreak+'Direction: '+ATrace.GetValue<string>('direction')+' | generation '+ATrace.GetValue('generation_id').Value+' | truncated: '+ATrace.GetValue('truncated').Value+sLineBreak+'Dependency arrows follow captured inputs toward dependent outputs. Context edges do not prove value transfer.'+sLineBreak;
+ Names:=TDictionary<string,string>.Create;
+ try
+  for V in ATrace.GetValue<TJSONArray>('nodes') do Names.Add(V.GetValue<string>('id'),V.GetValue<string>('name'));
+  Result:=Result+sLineBreak+'SCOPED ROUTE NODES'+sLineBreak;
+  for V in ATrace.GetValue<TJSONArray>('nodes') do begin
+   Parent:=V.GetValue<string>('parent');if not Names.TryGetValue(Parent,Name) then Name:='selected starting point';
+   Result:=Result+'Hop '+V.GetValue<TJSONValue>('depth').Value+': '+V.GetValue<string>('name')+' ['+V.GetValue<string>('kind')+'] via '+Name+sLineBreak+'  '+V.GetValue<string>('source')+':'+V.GetValue<TJSONValue>('range.line').Value+' | SHA256 '+V.GetValue<string>('source_hash')+sLineBreak;
+   if V.TryGetValue<string>('destination_evidence',Name) then Result:=Result+'  Destination: '+Name+sLineBreak;
+  end;
+  Result:=Result+sLineBreak+'CAPTURED EDGES'+sLineBreak;
+  for V in ATrace.GetValue<TJSONArray>('edges') do begin
+   Names.TryGetValue(V.GetValue<string>('from'),Name);Names.TryGetValue(V.GetValue<string>('to'),Parent);
+   Result:=Result+Name+' -> '+Parent+' | '+V.GetValue<string>('kind')+' ['+V.GetValue<string>('category')+']'+sLineBreak+'  '+V.GetValue<string>('qualification')+' Condition: '+V.GetValue<string>('condition')+sLineBreak;
+  end;
+  Result:=Result+sLineBreak+'UNRESOLVED BREAKS AND BOUNDARIES'+sLineBreak;
+  for V in ATrace.GetValue<TJSONArray>('breaks') do begin if not Names.TryGetValue(V.GetValue<string>('node'),Name) then Name:=V.GetValue<string>('node');Result:=Result+Name+': '+V.GetValue<string>('reason')+sLineBreak;end;
+  if ATrace.GetValue<TJSONArray>('breaks').Count=0 then Result:=Result+'No explicit break captured in this scope. Runtime values and final delivery remain unverified.'+sLineBreak;
+  Result:=Result+sLineBreak+'SCOPE AND LIMITS'+sLineBreak+ATrace.GetValue<string>('qualification');
+ finally Names.Free;end;
+end;
+
 end.

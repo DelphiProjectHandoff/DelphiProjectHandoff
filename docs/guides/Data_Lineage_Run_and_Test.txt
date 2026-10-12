@@ -1,0 +1,87 @@
+DPH DATA LINEAGE RUN AND TEST
+Last changed: 12 October 2026
+
+START DPH
+1. Open File Explorer and navigate to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. It opens maximized.
+3. Click Attach project. Select the OTHER application's .dproj, .dpr or
+   .groupproj. Save the proposed .dphdb under DPH's Databases folder.
+   Wait until analysis finishes. For a saved capture, click Open cache
+   and choose its .dphdb. Attach matching source before using Source.
+   Click Full reassessment to refresh unsupported or older captures.
+
+TRACE A CONTROL OR FIELD
+4. In the upper-right page selector choose Database connections.
+5. In its kind selector choose bound control, persistent field, data rule
+   or database operation. Clear the text filter, then select a row.
+6. Drag the toolbar's horizontal scrollbar fully right. Locate the
+   Both directions selector, Trace lineage and Lineage diagram buttons.
+7. Click Trace lineage. Read the memo headed DATA LINEAGE SOURCE CANDIDATES.
+   Scroll down through SCOPED ROUTE NODES, CAPTURED EDGES, UNRESOLVED BREAKS
+   AND BOUNDARIES and SCOPE AND LIMITS. Drag the divider below the list
+   upward to give the evidence memo more space in a small window.
+8. Both directions includes binding and procedure context. Context edges
+   do not prove value transfer. To narrow the dependency direction,
+   choose Inputs or Destinations, then click Trace lineage again.
+9. Scroll the toolbar left to its reference selector. Choose a Lineage
+   hop, then click Follow reference. Inventory nodes open the exact
+   component/rule; semantic declarations and outputs open Explain.
+10. Source in Database connections opens the originally selected row.
+    To inspect another route node's source, follow that node first,
+    then use its Source command. Detached or changed source is refused.
+    A file-output node's Explain page identifies the captured writer
+    and destination expression. Lineage itself omits literal contents.
+
+VIEW THE DIAGRAM
+11. Select the starting inventory row, scroll right and click Lineage
+    diagram. DPH opens Graphs with Data lineage selected.
+12. Scroll the diagram to inspect nodes and labeled qualified arrows.
+    The HTML view lists unresolved breaks below the diagram. Select a
+    component node to open its inventory evidence; select a declaration
+    or output node to open Explain. A native diagram remains usable if
+    the embedded browser is unavailable. Grouping stays disabled so that
+    each node retains its exact identity.
+13. Return via the upper-right Database connections choice. Select a new
+    starting row before another trace. A saved capture can be traced
+    while detached; original source navigation still requires attachment.
+
+UNDERSTAND LIMITS
+A dependency is a captured lexical candidate, not an observed runtime value.
+Both directions is a relationship neighborhood, not a proven execution path.
+Inputs and Destinations omit broad procedure read/write/handler context.
+Bindings identify serialized candidate links; dynamic/inherited bindings stay
+unknown. Missing handlers, absent dataset links, external targets, connection
+boundaries and omitted routes remain explicit. Trace limits: 200 nodes,
+800 returned edges, 12 hops, 50000 indexed symbols and 100000 indexed edges.
+A final captured endpoint never proves successful file delivery or database
+persistence. DPH does not run the selected application's code, SQL or drivers.
+
+CONTROLLED PRACTICE
+Run the developer test below first. It creates one fixed ignored fixture at:
+C:\New Delphi Projects\Delphi Project Handoff\bin\data-lineage-validation\source
+Attach that folder's Connections.dpr. Choose bound control and search for
+AmountEdit. Trace lineage. Follow the captured Amount field, ValidateAmount,
+InputAmount/OutputAmount and file-output candidate. MixedEdit deliberately
+contains both a valid source and an empty source; its DataField must remain
+unresolved. Do not execute the fixture source. It is analysis evidence only.
+
+DEVELOPER TEST
+1. Open Windows Start, type cmd, and choose Run as administrator.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-data-lineage.cmd
+   Expect Data lineage validation passed and exit code 0.
+   The test writes docs\phase1-data-lineage-validation.json and native
+   workspace/compact/diagram PNGs. To save console output, run:
+   tools\build-data-lineage.cmd > docs\phase1-data-lineage-validation.log 2>&1
+4. Run tools\build-data-rules.cmd, tools\build-database-transactions.cmd,
+   tools\build-database-operations.cmd, tools\build-dataset-bindings.cmd
+   and tools\build-database-engines.cmd.
+5. Run tools\build-wp3.cmd, then:
+   bin\Win32\Debug\DPH.Tests.Semantics.exe "%CD%"
+6. Run tools\build-wp2.cmd for parser/discovery checks.
+7. Run tools\build-wp0.cmd. Expect PASS WP0-TEST for actual app and FMX.
+The tests preserve selected source and the owner catalog. No target app or
+production database is opened. Test fixtures remain under the fixed bin path.

@@ -1,4 +1,4 @@
-﻿unit DPH.UI.Main;
+unit DPH.UI.Main;
 interface
 uses System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
@@ -187,7 +187,8 @@ type
     DatabaseInventoryToolbar:THorzScrollBox;
     DatabaseInventoryFilter:TEdit;
     DatabaseInventoryKind,DatabaseInventoryLinks:TComboBox;
-    DatabaseInventoryFirst,DatabaseInventoryNext,DatabaseInventoryFollow,DatabaseInventorySource:TButton;
+    DatabaseInventoryFirst,DatabaseInventoryNext,DatabaseInventoryFollow,DatabaseInventorySource,DatabaseInventoryTrace,DatabaseInventoryDiagram:TButton;
+    DatabaseInventoryDirection:TComboBox;
     DatabaseInventoryList:TListBox;
     DatabaseInventoryMemo:TMemo;
     HistoryTab:TTabItem;
@@ -383,6 +384,7 @@ type
     procedure DatabaseInventoryFilterChange(Sender:TObject);
     procedure DatabaseInventorySelectionChange(Sender:TObject);
     procedure DatabaseInventoryFollowClick(Sender:TObject);
+    procedure DatabaseInventoryTraceClick(Sender:TObject);
     procedure DatabaseInventorySourceClick(Sender:TObject);
     procedure HistorySelectionChange(Sender:TObject);
     procedure HistoryCompareClick(Sender:TObject);
@@ -470,6 +472,7 @@ type
     FSearchQuery: string;
     FSearchKind: string;
     FWholeGraph: Boolean;
+    FLineageSeed,FLineageDirection:string;
     FPreviewPages: TList<string>;
     FCoverage: TJSONObject;
     FLinkTargets,FEditableLinks: TJSONArray;
@@ -1037,6 +1040,7 @@ procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
 var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
+  FLineageSeed:=''; FLineageDirection:='both';
   HistorySelectionChange(nil);
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
     SameText(FView.Document.GetValue<string>('entry'),ADocument.GetValue<string>('entry'));
@@ -1856,7 +1860,7 @@ begin
   except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
-var Directory,Fragment: string; P: Integer; V: TJSONValue; S: TJSONObject;
+var Directory,Fragment: string; P,I: Integer; V: TJSONValue; S: TJSONObject;
 begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
@@ -1871,6 +1875,11 @@ begin
     Exit;
   end;
   P:=Pos('#s_',AURL); if (P=0) or (FView=nil) then Exit; ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
+  if (Sender=FlowBrowser) and (FGraph<>nil) and (FGraph.GetValue<string>('kind')='Data lineage') then begin
+   for I:=0 to FGraph.GetValue<TJSONArray>('nodes').Count-1 do if SameText(THashSHA2.GetHashString(FGraph.GetValue<TJSONArray>('nodes').Items[I].GetValue<string>('id')),Fragment) then begin
+    GraphMouseDown(GraphPaint,TMouseButton.mbLeft,[],GraphRect(I).CenterPoint.X,GraphRect(I).CenterPoint.Y);Break;
+   end;Exit;
+  end;
   for V in FView.Document.GetValue<TJSONArray>('semantics.symbols') do begin S:=V as TJSONObject;
     if SameText(THashSHA2.GetHashString(S.GetValue<string>('key')),Fragment) then begin SelectSymbol(S.GetValue<string>('key')); WorkspaceTabs.ActiveTab:=ExplainTab; Break; end;
   end;
@@ -2265,10 +2274,10 @@ end;
 procedure TDPHMainForm.DatabaseInventorySelectionChange(Sender:TObject);
 var Row:TJSONObject;Value:TJSONValue;ID:string;
 begin
- if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;DatabaseInventorySource.Enabled:=False;
+ if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;DatabaseInventorySource.Enabled:=False;DatabaseInventoryTrace.Enabled:=False;DatabaseInventoryDiagram.Enabled:=False;
  DatabaseInventoryMemo.Text:='Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.';
  if (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
- Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventorySource.Enabled:=True;DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
+ Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventorySource.Enabled:=True;DatabaseInventoryTrace.Enabled:=True;DatabaseInventoryDiagram.Enabled:=True;DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
  for Value in Row.GetValue<TJSONArray>('links') do if Value.TryGetValue<string>('target_id',ID) then begin FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Target via '+Value.GetValue<string>('property')+': '+Value.GetValue<string>('reference'));end;
  for Value in Row.GetValue<TJSONArray>('used_by') do begin FDatabaseInventoryTargets.Add(Value.GetValue<string>('id'));DatabaseInventoryLinks.Items.Add('Used by '+Value.GetValue<string>('name')+' via '+Value.GetValue<string>('property'));end;
  DatabaseInventoryFollow.Enabled:=FDatabaseInventoryTargets.Count>0;if DatabaseInventoryFollow.Enabled then DatabaseInventoryLinks.ItemIndex:=0;
@@ -2277,12 +2286,32 @@ procedure TDPHMainForm.DatabaseInventoryFollowClick(Sender:TObject);
 var ID:string;Value:TJSONValue;Index:Integer;
 begin
  if (FDatabaseInventory=nil) or (DatabaseInventoryLinks.ItemIndex<0) or (DatabaseInventoryLinks.ItemIndex>=FDatabaseInventoryTargets.Count) then Exit;
- ID:=FDatabaseInventoryTargets[DatabaseInventoryLinks.ItemIndex];DatabaseInventoryFilter.Text:='';DatabaseInventoryKind.ItemIndex:=0;
+ ID:=FDatabaseInventoryTargets[DatabaseInventoryLinks.ItemIndex];
+ if ID.StartsWith('lineage-symbol:') then begin SelectSymbol(Copy(ID,16,MaxInt));WorkspaceTabs.ActiveTab:=ExplainTab;Exit;end;
+ DatabaseInventoryFilter.Text:='';DatabaseInventoryKind.ItemIndex:=0;
  Index:=0;for Value in FDatabaseInventory.GetValue<TJSONArray>('rows') do begin if Value.GetValue<string>('id')=ID then Break;Inc(Index);end;
  FDatabaseInventoryOffset:=(Index div 250)*250;
  // Reuse pagination while keeping the exact target page.
  Dec(FDatabaseInventoryOffset,250);DatabaseInventoryFilterChange(DatabaseInventoryNext);
  DatabaseInventoryList.ItemIndex:=Index mod 250;DatabaseInventorySelectionChange(nil);
+ if (DatabaseInventoryList.ItemIndex>=0) and (DatabaseInventoryList.ItemIndex<DatabaseInventoryList.Count) then DatabaseInventoryList.ScrollToItem(DatabaseInventoryList.ListItems[DatabaseInventoryList.ItemIndex]);
+end;
+procedure TDPHMainForm.DatabaseInventoryTraceClick(Sender:TObject);
+var Trace:TJSONObject;V:TJSONValue;Direction,ID:string;
+begin
+ if (FView=nil) or (FDatabaseInventory=nil) or (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
+ Direction:='both';if DatabaseInventoryDirection.ItemIndex=1 then Direction:='inputs' else if DatabaseInventoryDirection.ItemIndex=2 then Direction:='destinations';
+ FLineageSeed:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex].GetValue<string>('id');FLineageDirection:=Direction;
+ Trace:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex].GetValue<string>('id'),Direction);
+ try
+  DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.DescribeLineage(Trace);FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;
+  for V in Trace.GetValue<TJSONArray>('nodes') do begin
+   ID:=V.GetValue<string>('id');if not V.GetValue<Boolean>('inventory') then ID:='lineage-symbol:'+ID;
+   FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Lineage hop '+V.GetValue<TJSONValue>('depth').Value+': '+V.GetValue<string>('name'));
+  end;
+  DatabaseInventoryFollow.Enabled:=FDatabaseInventoryTargets.Count>0;if DatabaseInventoryFollow.Enabled then DatabaseInventoryLinks.ItemIndex:=0;
+  if Sender=DatabaseInventoryDiagram then begin GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Data lineage');RefreshGraphics;WorkspaceTabs.ActiveTab:=GraphTab;end;
+ finally Trace.Free;end;
 end;
 procedure TDPHMainForm.HistorySelectionChange(Sender:TObject);
 begin
@@ -2471,6 +2500,7 @@ procedure TDPHMainForm.SelectSymbol(const AKey: string; AHistory: Boolean);
 var S,Range,Row: TJSONObject; Rows,Props: TJSONArray; V: TJSONValue; Path,Direction,Target: string; Source: TDPHSource; Diagnostics: TDPHDiagnostics;
 begin
   if FView=nil then Exit; S:=FView.Symbol(AKey); if S=nil then Exit;
+  if FSelected<>AKey then FLineageSeed:='';
   FWholeGraph:=False;
   if AHistory and (FSelected<>'') and (FSelected<>AKey) then FHistory.Add(FSelected); FSelected:=AKey;
   InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+'Kind: '+S.GetValue<string>('kind')+sLineBreak+
@@ -2560,15 +2590,22 @@ begin
 end;
 procedure TDPHMainForm.RefreshGraphics;
 const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data flow');
-var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath: string;
+var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
-  Limit:=120; GraphGroupingCombo.Enabled:=GraphCombo.ItemIndex<>1;
+  IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
+  GraphLegend.Text:='Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence';
+  Limit:=120; GraphGroupingCombo.Enabled:=(GraphCombo.ItemIndex<>1) and not IsLineage;
   if (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then Limit:=1000;
-  if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
+  if IsLineage then begin
+   Seed:=FLineageSeed;if Seed='' then Seed:=FSelected;Direction:=FLineageDirection;if Direction='' then Direction:='both';
+   if FDatabaseInventory<>nil then FGraph:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,Seed,Direction);
+   GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
+  end
+  else if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
-  if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then begin
+  if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
   end;
   if (FGraph<>nil) and (FExplanations<>nil) then begin
@@ -2651,7 +2688,14 @@ var I: Integer; N,Row: TJSONObject; Nodes: TJSONArray;
 begin
   if FGraph=nil then Exit; Nodes:=FGraph.GetValue<TJSONArray>('nodes');
   for I:=0 to Nodes.Count-1 do if GraphRect(I).Contains(TPointF.Create(X,Y)) then begin N:=Nodes.Items[I] as TJSONObject;
-    if N.GetValue<string>('kind','')='group' then GraphGroupDetails(N.GetValue('id').Value)
+    if FGraph.GetValue<string>('kind')='Data lineage' then begin
+     if N.GetValue<Boolean>('inventory') then begin
+      FDatabaseInventoryTargets.Clear;FDatabaseInventoryTargets.Add(N.GetValue<string>('id'));
+      DatabaseInventoryLinks.Items.Clear;DatabaseInventoryLinks.Items.Add(N.GetValue<string>('label'));DatabaseInventoryLinks.ItemIndex:=0;
+      DatabaseInventoryFollowClick(nil);WorkspaceTabs.ActiveTab:=DatabaseInventoryTab;
+     end else begin SelectSymbol(N.GetValue<string>('id'));WorkspaceTabs.ActiveTab:=ExplainTab;end;
+    end
+    else if N.GetValue<string>('kind','')='group' then GraphGroupDetails(N.GetValue('id').Value)
     else if FGraph.GetValue<string>('kind')='Procedure CFG' then begin
       FreeAndNil(FDetails); FDetails:=TJSONArray.Create; Row:=N.Clone as TJSONObject; FDetails.AddElement(Row);
       Row.AddPair('detail_kind','statement'); Row.AddPair('title',N.GetValue<string>('kind')); Row.AddPair('text',N.GetValue<string>('expression'));

@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 402,
+    "qualification": "Actual parser, persisted and reopened captures, redacted configuration and native FMX controls. No target database is opened; fixtures contain only controlled canaries."
+}

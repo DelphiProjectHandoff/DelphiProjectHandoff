@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Data validation and transformation rules 05.14 implemented as qualified field declarations and handler-context candidates; 323 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Data lineage 05.15 implemented as qualified scoped source candidates; 322 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2308,14 +2308,29 @@
       "id": "05.15",
       "domain": "DPH-05",
       "requirement": "Data lineage from input to final destination",
-      "implementation": "partial",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Analysis.Model.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.Analysis.Explanations.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DataLineage.dpr",
+        "tools/build-data-lineage.cmd",
+        "docs/phase1-data-lineage-validation.json",
+        "docs/phase1-data-lineage-validation.log",
+        "docs/guides/Data_Lineage_Run_and_Test.txt"
       ],
-      "limitation": "Connect input controls, database fields, procedures and destinations into scoped lineage chains with unresolved breaks.",
+      "limitation": "Scoped captured source candidates only. Directed lexical dependencies remain distinct from serialized bindings, handler and routine context. No reaching-definition, runtime-value, execution, server-effect or final-success proof. Missing targets, incomplete dataset chains, connection boundaries and traversal limits remain explicit. Bounds: 50000 indexed symbols, 100000 indexed edges, 200 returned nodes, 800 edges and 12 hops. No selected target, SQL, driver or production server executes.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Trace lineage and Data lineage diagrams connect captured controls, persistent fields, validation/transformation candidates, procedures and output artifacts. Directional traversal distinguishes lexical dependencies from labeled context, preserves exact source/hash/generation and exposes unresolved breaks. Nodes navigate to inventory or Explain. Native controls remain IDE-editable; HTML renders the same projection. Incomplete mixed dataset chains cannot invent field targets.",
+        "remaining_work": "",
+        "purpose": "Data lineage from input to final destination",
+        "evidence_group": "semantics",
+        "verification": "174 focused plus 1144 regression checks pass; actual app and FMX baseline pass. Real parsing, persisted/reopened captures, directional and cyclic chains, output writers, redaction, unresolved bindings, limits, native navigation, browser allowlisting and unchanged source/catalog verified. All 64 guide pages and three native renders reviewed; 58 source hashes and 108 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Assignment, argument, SQL and file-output candidate links provide basic lineage.",
@@ -2323,6 +2338,12 @@
         "purpose": "Data lineage from input to final destination",
         "evidence_group": "semantics",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Data lineage",
+        "validation": "docs/phase1-data-lineage-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12765,23 +12786,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Data validation and transformation rules",
+    "completed_batch": "Data lineage",
     "completed_requirement_ids": [
-      "05.14"
+      "05.15"
     ],
     "counts": {
       "implemented_manual_capture": 18,
-      "partial": 228,
-      "implemented": 192,
+      "partial": 227,
+      "implemented": 193,
       "missing": 95
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 323,
-    "completion_record": "docs/Phase1_Data_Rules_Completion.txt",
+    "incomplete_requirement_records": 322,
+    "completion_record": "docs/Phase1_Data_Lineage_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.15",
-      "title": "Data lineage from input to final destination",
-      "scope": "Connect input controls, database fields, procedures and destinations into scoped lineage chains with unresolved breaks."
+      "requirement": "05.16",
+      "title": "Migration and schema-version history",
+      "scope": "Discover referenced migration files and capture ordering, target schema versions and verification evidence."
     }
   }
 }

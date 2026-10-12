@@ -1,0 +1,414 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseTransactions.dpr(171) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseTransactions.dpr(193) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseTransactions.dpr(215) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DatabaseTransactions.dpr(216) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17859 lines, 1.42 seconds, 10660892 bytes code, 348980 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: Transaction requests captured from actual source
+PASS 3: Begin boundary retained for Work
+PASS 4: Transaction source SHA256 Work
+PASS 5: Transaction mapped to captured CFG Work
+PASS 6: Transaction paths not truncated Work
+PASS 7: Begin boundary retained for Cleanup
+PASS 8: Transaction source SHA256 Cleanup
+PASS 9: Transaction mapped to captured CFG Cleanup
+PASS 10: Transaction paths not truncated Cleanup
+PASS 11: Begin boundary retained for Branches
+PASS 12: Transaction source SHA256 Branches
+PASS 13: Transaction mapped to captured CFG Branches
+PASS 14: Transaction paths not truncated Branches
+PASS 15: Begin boundary retained for Missing
+PASS 16: Transaction source SHA256 Missing
+PASS 17: Transaction mapped to captured CFG Missing
+PASS 18: Transaction paths not truncated Missing
+PASS 19: Begin boundary retained for Cross
+PASS 20: Transaction source SHA256 Cross
+PASS 21: Transaction mapped to captured CFG Cross
+PASS 22: Transaction paths not truncated Cross
+PASS 23: Begin boundary retained for Retain
+PASS 24: Transaction source SHA256 Retain
+PASS 25: Transaction mapped to captured CFG Retain
+PASS 26: Transaction paths not truncated Retain
+PASS 27: Begin boundary retained for Derived
+PASS 28: Transaction source SHA256 Derived
+PASS 29: Transaction mapped to captured CFG Derived
+PASS 30: Transaction paths not truncated Derived
+PASS 31: Begin reaches commit through protected normal path
+PASS 32: Begin reaches rollback through protected exception path
+PASS 33: Commit may raise into rollback handler
+PASS 34: Rollback and rethrow preserve exception exit
+PASS 35: Normal path enters cleanup rollback
+PASS 36: Error path enters cleanup rollback
+PASS 37: Finalizer pending transfers remain separate CFG copies
+PASS 38: Conditional commit path retained
+PASS 39: Conditional rollback alternative retained
+PASS 40: Missing local completion remains visible
+PASS 41: Different receiver commit is not an ending for this transaction
+PASS 42: Receiver boundaries never paired across connections
+PASS 43: Commit retaining distinguished
+PASS 44: Rollback retaining distinguished
+PASS 45: Savepoint rollback distinguished
+PASS 46: ADO return-valued BeginTrans without parentheses captured
+PASS 47: ADO CommitTrans recognized
+PASS 48: ADO RollbackTrans recognized
+PASS 49: dbExpress BeginTransaction recognized
+PASS 50: dbExpress handle commit recognized
+PASS 51: dbExpress incomplete rollback recognized
+PASS 52: BDE start recognized
+PASS 53: BDE commit recognized
+PASS 54: BDE rollback recognized
+PASS 55: Calls sharing an expression remain unordered
+PASS 56: Unordered expression cannot invent transaction sequence
+PASS 57: Captured connection descendant retains exact receiver
+PASS 58: Ordinary and locally shadowed transaction-like methods excluded
+PASS 59: Transaction outcome remains qualified
+PASS 60: Ordinary and locally shadowed transaction-like methods excluded
+PASS 61: Transaction outcome remains qualified
+PASS 62: Ordinary and locally shadowed transaction-like methods excluded
+PASS 63: Transaction outcome remains qualified
+PASS 64: Ordinary and locally shadowed transaction-like methods excluded
+PASS 65: Transaction outcome remains qualified
+PASS 66: Ordinary and locally shadowed transaction-like methods excluded
+PASS 67: Transaction outcome remains qualified
+PASS 68: Ordinary and locally shadowed transaction-like methods excluded
+PASS 69: Transaction outcome remains qualified
+PASS 70: Ordinary and locally shadowed transaction-like methods excluded
+PASS 71: Transaction outcome remains qualified
+PASS 72: Ordinary and locally shadowed transaction-like methods excluded
+PASS 73: Transaction outcome remains qualified
+PASS 74: Ordinary and locally shadowed transaction-like methods excluded
+PASS 75: Transaction outcome remains qualified
+PASS 76: Ordinary and locally shadowed transaction-like methods excluded
+PASS 77: Transaction outcome remains qualified
+PASS 78: Ordinary and locally shadowed transaction-like methods excluded
+PASS 79: Transaction outcome remains qualified
+PASS 80: Ordinary and locally shadowed transaction-like methods excluded
+PASS 81: Transaction outcome remains qualified
+PASS 82: Ordinary and locally shadowed transaction-like methods excluded
+PASS 83: Transaction outcome remains qualified
+PASS 84: Ordinary and locally shadowed transaction-like methods excluded
+PASS 85: Transaction outcome remains qualified
+PASS 86: Ordinary and locally shadowed transaction-like methods excluded
+PASS 87: Transaction outcome remains qualified
+PASS 88: Ordinary and locally shadowed transaction-like methods excluded
+PASS 89: Transaction outcome remains qualified
+PASS 90: Ordinary and locally shadowed transaction-like methods excluded
+PASS 91: Transaction outcome remains qualified
+PASS 92: Ordinary and locally shadowed transaction-like methods excluded
+PASS 93: Transaction outcome remains qualified
+PASS 94: Ordinary and locally shadowed transaction-like methods excluded
+PASS 95: Transaction outcome remains qualified
+PASS 96: Ordinary and locally shadowed transaction-like methods excluded
+PASS 97: Transaction outcome remains qualified
+PASS 98: Ordinary and locally shadowed transaction-like methods excluded
+PASS 99: Transaction outcome remains qualified
+PASS 100: Ordinary and locally shadowed transaction-like methods excluded
+PASS 101: Transaction outcome remains qualified
+PASS 102: Ordinary and locally shadowed transaction-like methods excluded
+PASS 103: Transaction outcome remains qualified
+PASS 104: Ordinary and locally shadowed transaction-like methods excluded
+PASS 105: Transaction outcome remains qualified
+PASS 106: Ordinary and locally shadowed transaction-like methods excluded
+PASS 107: Transaction outcome remains qualified
+PASS 108: Ordinary and locally shadowed transaction-like methods excluded
+PASS 109: Transaction outcome remains qualified
+PASS 110: Ordinary and locally shadowed transaction-like methods excluded
+PASS 111: Transaction outcome remains qualified
+PASS 112: Ordinary and locally shadowed transaction-like methods excluded
+PASS 113: Transaction outcome remains qualified
+PASS 114: Ordinary and locally shadowed transaction-like methods excluded
+PASS 115: Transaction outcome remains qualified
+PASS 116: Ordinary and locally shadowed transaction-like methods excluded
+PASS 117: Transaction outcome remains qualified
+PASS 118: Ordinary and locally shadowed transaction-like methods excluded
+PASS 119: Transaction outcome remains qualified
+PASS 120: Ordinary and locally shadowed transaction-like methods excluded
+PASS 121: Transaction outcome remains qualified
+PASS 122: Ordinary and locally shadowed transaction-like methods excluded
+PASS 123: Transaction outcome remains qualified
+PASS 124: Path explanation appears before generic configuration
+PASS 125: Savepoint argument never copied to inventory
+PASS 126: Absent CFG never invents transaction paths
+PASS 127: Absent CFG never invents transaction paths
+PASS 128: Absent CFG never invents transaction paths
+PASS 129: Absent CFG never invents transaction paths
+PASS 130: Absent CFG never invents transaction paths
+PASS 131: Absent CFG never invents transaction paths
+PASS 132: Absent CFG never invents transaction paths
+PASS 133: Absent CFG never invents transaction paths
+PASS 134: Absent CFG never invents transaction paths
+PASS 135: Absent CFG never invents transaction paths
+PASS 136: Absent CFG never invents transaction paths
+PASS 137: Absent CFG never invents transaction paths
+PASS 138: Absent CFG never invents transaction paths
+PASS 139: Absent CFG never invents transaction paths
+PASS 140: Absent CFG never invents transaction paths
+PASS 141: Absent CFG never invents transaction paths
+PASS 142: Absent CFG never invents transaction paths
+PASS 143: Absent CFG never invents transaction paths
+PASS 144: Absent CFG never invents transaction paths
+PASS 145: Absent CFG never invents transaction paths
+PASS 146: Absent CFG never invents transaction paths
+PASS 147: Absent CFG never invents transaction paths
+PASS 148: Absent CFG never invents transaction paths
+PASS 149: Absent CFG never invents transaction paths
+PASS 150: Absent CFG never invents transaction paths
+PASS 151: Absent CFG never invents transaction paths
+PASS 152: Absent CFG never invents transaction paths
+PASS 153: Absent CFG never invents transaction paths
+PASS 154: Absent CFG never invents transaction paths
+PASS 155: Absent CFG never invents transaction paths
+PASS 156: Absent CFG never invents transaction paths
+PASS 157: Absent CFG never invents transaction paths
+PASS 158: Absent CFG never invents transaction paths
+PASS 159: Oversized routine CFG explicitly reports truncation
+PASS 160: Oversized CFG cannot invent completion paths
+PASS 161: Operation inventory includes dataset API, literal SQL and dynamic SQL
+PASS 162: Captured dataset request Open
+PASS 163: Operation source SHA256 Open
+PASS 164: Operation source line Open
+PASS 165: Operation follows exact serialized dataset Open
+PASS 166: Captured dataset request Refresh
+PASS 167: Operation source SHA256 Refresh
+PASS 168: Operation source line Refresh
+PASS 169: Operation follows exact serialized dataset Refresh
+PASS 170: Captured dataset request First
+PASS 171: Operation source SHA256 First
+PASS 172: Operation source line First
+PASS 173: Operation follows exact serialized dataset First
+PASS 174: Captured dataset request Next
+PASS 175: Operation source SHA256 Next
+PASS 176: Operation source line Next
+PASS 177: Operation follows exact serialized dataset Next
+PASS 178: Captured dataset request Locate
+PASS 179: Operation source SHA256 Locate
+PASS 180: Operation source line Locate
+PASS 181: Operation follows exact serialized dataset Locate
+PASS 182: Captured dataset request Append
+PASS 183: Operation source SHA256 Append
+PASS 184: Operation source line Append
+PASS 185: Operation follows exact serialized dataset Append
+PASS 186: Captured dataset request Insert
+PASS 187: Operation source SHA256 Insert
+PASS 188: Operation source line Insert
+PASS 189: Operation follows exact serialized dataset Insert
+PASS 190: Captured dataset request AppendRecord
+PASS 191: Operation source SHA256 AppendRecord
+PASS 192: Operation source line AppendRecord
+PASS 193: Operation follows exact serialized dataset AppendRecord
+PASS 194: Captured dataset request InsertRecord
+PASS 195: Operation source SHA256 InsertRecord
+PASS 196: Operation source line InsertRecord
+PASS 197: Operation follows exact serialized dataset InsertRecord
+PASS 198: Captured dataset request Edit
+PASS 199: Operation source SHA256 Edit
+PASS 200: Operation source line Edit
+PASS 201: Operation follows exact serialized dataset Edit
+PASS 202: Captured dataset request Post
+PASS 203: Operation source SHA256 Post
+PASS 204: Operation source line Post
+PASS 205: Operation follows exact serialized dataset Post
+PASS 206: Captured dataset request Delete
+PASS 207: Operation source SHA256 Delete
+PASS 208: Operation source line Delete
+PASS 209: Operation follows exact serialized dataset Delete
+PASS 210: Captured dataset request Cancel
+PASS 211: Operation source SHA256 Cancel
+PASS 212: Operation source line Cancel
+PASS 213: Operation follows exact serialized dataset Cancel
+PASS 214: Captured dataset request ApplyUpdates
+PASS 215: Operation source SHA256 ApplyUpdates
+PASS 216: Operation source line ApplyUpdates
+PASS 217: Operation follows exact serialized dataset ApplyUpdates
+PASS 218: Captured dataset request CancelUpdates
+PASS 219: Operation source SHA256 CancelUpdates
+PASS 220: Operation source line CancelUpdates
+PASS 221: Operation follows exact serialized dataset CancelUpdates
+PASS 222: Captured dataset request ExecSQL
+PASS 223: Operation source SHA256 ExecSQL
+PASS 224: Operation source line ExecSQL
+PASS 225: Operation follows exact serialized dataset ExecSQL
+PASS 226: Local class shadowing framework name is excluded
+PASS 227: Local class shadowing framework name is excluded
+PASS 228: Local class shadowing framework name is excluded
+PASS 229: Local class shadowing framework name is excluded
+PASS 230: Local class shadowing framework name is excluded
+PASS 231: Local class shadowing framework name is excluded
+PASS 232: Local class shadowing framework name is excluded
+PASS 233: Local class shadowing framework name is excluded
+PASS 234: Local class shadowing framework name is excluded
+PASS 235: Local class shadowing framework name is excluded
+PASS 236: Local class shadowing framework name is excluded
+PASS 237: Local class shadowing framework name is excluded
+PASS 238: Local class shadowing framework name is excluded
+PASS 239: Local class shadowing framework name is excluded
+PASS 240: Local class shadowing framework name is excluded
+PASS 241: Local class shadowing framework name is excluded
+PASS 242: Local class shadowing framework name is excluded
+PASS 243: Local class shadowing framework name is excluded
+PASS 244: Local class shadowing framework name is excluded
+PASS 245: Local class shadowing framework name is excluded
+PASS 246: Local class shadowing framework name is excluded
+PASS 247: Local class shadowing framework name is excluded
+PASS 248: Local class shadowing framework name is excluded
+PASS 249: Local class shadowing framework name is excluded
+PASS 250: Local class shadowing framework name is excluded
+PASS 251: Local class shadowing framework name is excluded
+PASS 252: Local class shadowing framework name is excluded
+PASS 253: Local class shadowing framework name is excluded
+PASS 254: Local class shadowing framework name is excluded
+PASS 255: Delete recognizes framework dataset and custom descendant only
+PASS 256: Joined SELECT remains a lexical read candidate
+PASS 257: INSERT SQL family retained
+PASS 258: UPDATE SQL family retained
+PASS 259: DELETE SQL family retained
+PASS 260: Mixed SQL batch never collapsed to first statement
+PASS 261: Post never claims commit
+PASS 262: Append distinguishes preparation from inserted row
+PASS 263: Edit distinguishes preparation from updated row
+PASS 264: Cancel never claims transaction rollback
+PASS 265: Cached writes remain mixed
+PASS 266: Ordinary Delete is not a database operation
+PASS 267: Ordinary Delete is not a database operation
+PASS 268: Ordinary Delete is not a database operation
+PASS 269: Ordinary Delete is not a database operation
+PASS 270: Ordinary Delete is not a database operation
+PASS 271: Ordinary Delete is not a database operation
+PASS 272: Ordinary Delete is not a database operation
+PASS 273: Ordinary Delete is not a database operation
+PASS 274: Ordinary Delete is not a database operation
+PASS 275: Ordinary Delete is not a database operation
+PASS 276: Ordinary Delete is not a database operation
+PASS 277: Ordinary Delete is not a database operation
+PASS 278: Ordinary Delete is not a database operation
+PASS 279: Ordinary Delete is not a database operation
+PASS 280: Ordinary Delete is not a database operation
+PASS 281: Ordinary Delete is not a database operation
+PASS 282: SQL configuration never claims execution
+PASS 283: Ordinary Delete is not a database operation
+PASS 284: SQL configuration never claims execution
+PASS 285: Ordinary Delete is not a database operation
+PASS 286: SQL configuration never claims execution
+PASS 287: Ordinary Delete is not a database operation
+PASS 288: SQL configuration never claims execution
+PASS 289: Ordinary Delete is not a database operation
+PASS 290: SQL configuration never claims execution
+PASS 291: Ordinary Delete is not a database operation
+PASS 292: Ordinary Delete is not a database operation
+PASS 293: Ordinary Delete is not a database operation
+PASS 294: Ordinary Delete is not a database operation
+PASS 295: Ordinary Delete is not a database operation
+PASS 296: Ordinary Delete is not a database operation
+PASS 297: Ordinary Delete is not a database operation
+PASS 298: Ordinary Delete is not a database operation
+PASS 299: Ordinary Delete is not a database operation
+PASS 300: All five literal SQL configurations retained including joins and mixed batch
+PASS 301: Dynamic SQL does not invent CRUD kind
+PASS 302: Hash checked source navigation reads operation source
+PASS 303: FMX binding links actual control target
+PASS 304: FMX edit has reverse binding link
+PASS 305: Persistent field is explicitly classified
+PASS 306: Data-aware control is classified
+PASS 307: Field parent resolves exact owning dataset
+PASS 308: Control resolves data source
+PASS 309: Control field resolves through dataset chain
+PASS 310: Field binding retains property line
+PASS 311: Field binding retains byte range
+PASS 312: Persistent field retains exact bound control among all dependents
+PASS 313: Duplicate field names remain ambiguous
+PASS 314: Duplicate fields never select arbitrary target
+PASS 315: Runtime field is not invented
+PASS 316: Missing source prevents field link
+PASS 317: Nil source prevents field link
+PASS 318: Lookup dataset reference navigable
+PASS 319: Field with non-dataset parent remains unowned
+PASS 320: FMX BindSource chain resolves captured field
+PASS 321: Binary DFM field chain resolves
+PASS 322: Field metadata shown
+PASS 323: Binding explanation precedes engine guidance
+PASS 324: Text DFM connection captured
+PASS 325: Known connection class classified
+PASS 326: Dataset classified
+PASS 327: Data source classified
+PASS 328: Transaction classified
+PASS 329: Session classified
+PASS 330: Custom class property signal remains candidate
+PASS 331: Pascal-only declaration retained
+PASS 332: Confirmed component-field binding avoids duplicate declaration row
+PASS 333: Dataset connection links uniquely
+PASS 334: Data source links to dataset
+PASS 335: Qualified cross-module reference links
+PASS 336: Missing target explicitly unresolved
+PASS 337: Missing target not fabricated
+PASS 338: Unqualified external target is not guessed
+PASS 339: Unrelated visual component excluded
+PASS 340: Nil stays explicit
+PASS 341: Wrong-role target not linked
+PASS 342: Unsupported expression masked
+PASS 343: IB database reference links
+PASS 344: Transaction reference links
+PASS 345: Transaction default database links
+PASS 346: BDE logical database alias links
+PASS 347: Session alias links
+PASS 348: Parent-local nested path links
+PASS 349: Self-qualified reference links
+PASS 350: Duplicate paths remain ambiguous
+PASS 351: Ambiguous target not followed
+PASS 352: Named definition inventoried
+PASS 353: Shared definition has both referencing connections
+PASS 354: External definition contents not invented
+PASS 355: Reverse dataset dependencies retained
+PASS 356: Binary DFM connection captured
+PASS 357: Binary reference resolved
+PASS 358: FMX connection reference resolved
+PASS 359: Inherited declaration preserved
+PASS 360: Missing configuration not invented
+PASS 361: All sensitive configuration canaries absent from projection
+PASS 362: Validated driver metadata shown
+PASS 363: Valid port shown
+PASS 364: Invalid driver and port masked
+PASS 365: Connected flag qualified
+PASS 366: Exact source hash retained
+PASS 367: Reopened captured database gives identical inventory
+PASS 368: Inventory page discoverable
+PASS 369: Native page paginates at 250
+PASS 370: Next enabled for remaining rows
+PASS 371: Next shows bounded remaining rows
+PASS 372: Native text and kind filters find dataset
+PASS 373: Unique reference enables follow
+PASS 374: Follow navigates exact target
+PASS 375: Reverse references navigable
+PASS 376: Named definition kind filter
+PASS 377: Native details explain unknown definition contents
+PASS 378: Native details omit sensitive values
+PASS 379: Empty filter has no invented rows
+PASS 380: Empty filter disables reference navigation
+PASS 381: Empty inventory explains coverage limits
+PASS 382: Native bound control filter finds control
+PASS 383: Native details show captured field binding
+PASS 384: Native follow opens exact persistent field
+PASS 385: Field has dataset and reverse control links
+PASS 386: Field name search finds persistent field
+PASS 387: Native filter finds both dataset Post sites
+PASS 388: Native operation effect appears first
+PASS 389: Native source command is available
+PASS 390: Detached capture refuses source access
+PASS 391: Native transaction search includes three linked routine boundaries
+PASS 392: Native transaction details explain paths first
+PASS 393: Native details show possible rollback exception path
+PASS 394: Transaction source navigation available
+PASS 395: Native follow opens the next transaction boundary
+PASS 396: Compact commands scroll horizontally
+PASS 397: Evidence memo scrolls
+PASS 398: Compact evidence stays in workspace pane
+PASS 399: Compact evidence retains usable visible height
+PASS 400: Capture replacement retains redaction
+PASS 401: Owner catalog unchanged
+PASS 402: Analyzed source unchanged
+Database transactions validation passed: 402 checks.

@@ -409,6 +409,12 @@ begin
       Text.Append('<text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+87)+'" font-size="11" fill="#52697c">'+Encode(Copy(LabelText,1,42))+'</text></g></a>');
     end;
     Text.Append('</svg></div></section>'); Result:=Page(AGraph.GetValue<string>('kind'),Text.ToString);
+    if AGraph.GetValue<string>('kind')='Data lineage' then begin
+     Text.Append('<section class="card"><h2>Unresolved breaks and boundaries</h2><ul>');
+     for V in AGraph.GetValue<TJSONArray>('breaks') do Text.Append('<li>'+Encode(V.GetValue<string>('reason'))+'</li>');
+     Text.Append('</ul><p>'+Encode(AGraph.GetValue<string>('qualification'))+'</p></section>');
+     Result:=Page('Data lineage source candidates',Text.ToString);
+    end;
   finally Text.Free; Queue.Free; Links.Free; Indices.Free; end;
 end;
 
