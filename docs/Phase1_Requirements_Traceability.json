@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Form inheritance and embedded frames 04.18 implemented; 338 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Action purposes 04.19 implemented through attributed manual capture; 337 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1657,15 +1657,32 @@
       "id": "04.19",
       "domain": "DPH-04",
       "requirement": "User-visible actions and business purposes",
-      "implementation": "partial",
+      "implementation": "implemented_manual_capture",
       "evidence": [
-        "DPH.Analysis.Explanations.pas",
-        "DPH.Workspace.Model.pas",
-        "help/index.html",
-        "tests/DPH.Tests.Learning.dpr"
+        "DPH.Knowledge.ActionPurpose.pas",
+        "DPH.Workspace.ActionPurposes.pas",
+        "DPH.UI.ActionPurpose.pas",
+        "DPH.UI.ActionPurpose.fmx",
+        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.ActionPurposes.dpr",
+        "tools/build-action-purposes.cmd",
+        "docs/phase1-action-purposes-validation.json",
+        "docs/phase1-action-purposes-validation.log",
+        "docs/guides/Action_Purposes_Run_and_Test.txt"
       ],
-      "limitation": "Add complete named action/task purpose mappings and reviewed business outcomes for selected screens.",
+      "limitation": "Business purposes, operating steps, permissions and successful outcomes require a knowledgeable contributor and explicit named review. Captured captions/events are candidates, not inferred intent. Unmatched saved targets remain historical/unresolved; duplicate paths disable mapping. Runtime execution remains unobserved. Identity uses source and parent-local path; renamed/moved targets are not silently relinked.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Dedicated IDE-editable Action purposes page and structured editor map attributed business guidance to captured UI candidates, with independent project tasks. Twelve fields preserve target identity, action name, screen/role, trigger, purpose, prerequisites/permissions, numbered steps, expected outcome, evidence/unknowns and recovery. Apply prepares a Knowledge draft; Save, immutable revisions, named review, search, publication and exact evidence links use the existing Knowledge workflow. Duplicate, stale and ordinary-field-discard edits are refused.",
+        "remaining_work": "",
+        "purpose": "User-visible actions and business purposes",
+        "evidence_group": "onboarding",
+        "verification": "81 focused parser/storage/publication/native-editor checks; 70 component dependency, 57 glossary and 59 Knowledge regression checks. Actual application build and FMX baseline pass. Native normal/compact/editor renders inspected; both DOCX/PDF guides rendered, source hashes and cached editable TOC numbers verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Controls/events have source explanations and can carry attributed user_help knowledge.",
@@ -1673,6 +1690,12 @@
         "purpose": "User-visible actions and business purposes",
         "evidence_group": "onboarding",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-11",
+        "batch": "Attributed user actions and business purposes",
+        "validation": "docs/phase1-action-purposes-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12439,23 +12462,23 @@
   },
   "current_implementation": {
     "date": "2026-10-11",
-    "completed_batch": "Form inheritance and embedded frame overlays",
+    "completed_batch": "Attributed user actions and business purposes",
     "completed_requirement_ids": [
-      "04.18"
+      "04.19"
     ],
     "counts": {
-      "implemented_manual_capture": 17,
-      "partial": 236,
+      "implemented_manual_capture": 18,
+      "partial": 235,
       "implemented": 178,
       "missing": 102
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 338,
-    "completion_record": "docs/Phase1_Form_Inheritance_Completion.txt",
+    "incomplete_requirement_records": 337,
+    "completion_record": "docs/Phase1_Action_Purposes_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "04.19",
-      "title": "User-visible actions and business purposes",
-      "scope": "Structured attributed action/task purpose mappings and review workflow; actual business outcomes require a knowledgeable contributor."
+      "requirement": "04.20",
+      "title": "Screen history and visual change comparisons",
+      "scope": "Paired screen-history selection and visual image/layout difference comparison, with exact attribution and captured generations."
     }
   }
 }

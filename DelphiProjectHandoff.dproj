@@ -31,6 +31,9 @@
       <DCCReference Include="DPH.Workspace.LayoutRules.pas" />
       <DCCReference Include="DPH.Workspace.ComponentDependencies.pas" />
       <DCCReference Include="DPH.Workspace.FormInheritance.pas" />
+      <DCCReference Include="DPH.Workspace.ActionPurposes.pas" />
+      <DCCReference Include="DPH.Knowledge.ActionPurpose.pas" />
+      <DCCReference Include="DPH.UI.ActionPurpose.pas"><Form>DPHActionPurposeForm</Form><FormType>fmx</FormType></DCCReference>
       <DCCReference Include="DPH.Knowledge.ComponentDependency.pas" />
       <DCCReference Include="DPH.UI.ComponentDependency.pas"><Form>DPHComponentDependencyForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.UI.Glossary.pas"><Form>DPHGlossaryForm</Form><FormType>fmx</FormType></DCCReference>

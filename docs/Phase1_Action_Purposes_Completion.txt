@@ -1,0 +1,73 @@
+DPH PHASE 1 REQUIREMENT 04.19 COMPLETION
+Last changed: 11 October 2026
+
+COMPLETED CAPABILITY
+04.19 User-visible actions and business purposes is implemented through
+attributed manual capture. The Action purposes page lists captured UI candidates
+with exact target identities and saved review states. Its structured editor
+records action name, screen/role, trigger, business purpose, prerequisites and
+permissions, numbered steps, expected outcome, evidence/unknowns and recovery.
+Independent project procedures use New task without an automatic UI mapping.
+
+Apply creates a protected Knowledge draft; Save persists it. Named review,
+immutable revisions, stale-edit protection, exact evidence links, project search
+and publication use the existing Knowledge pipeline. Duplicate target identities
+are refused; ambiguous captured component paths disable Edit and Explain.
+Missing saved targets remain historical/unresolved. Saved guidance appears in
+exported HTML, canonical data and the user manual.
+
+All native controls are serialized in FMX resources for editing in the IDE and
+Object Inspector. No runtime UI construction or schema migration was added.
+
+VALIDATION
+- 81 focused checks: real text/binary DFM and FMX parsing, identities/ambiguity,
+  unknowns, required fields and bounds, source safeguards, SQLite save/reopen,
+  immutable identity/history, duplicates, stale edits, named review, search,
+  project tasks, canonical and exported bundle validation, HTML/user DOCX text,
+  actual native modal Apply/Cancel, draft protection, pagination/filtering,
+  historical targets, compact layout and unchanged source/catalog proof.
+- 186 existing regression checks: 70 component dependencies, 57 glossary,
+  59 Knowledge/review/rich-link/backup-restore checks; all passed.
+- Actual DelphiProjectHandoff application build and FMX resource baseline pass.
+- Native normal/compact workspace and editor PaintTo renders inspected. These
+  show actual DPH controls, not screenshots of an analyzed application running.
+- User and Engineering Guides rebuilt as editable DOCX plus companion PDFs.
+  User: 22 pages and 43 TOC entries. Engineering: 18 pages and 35 TOC entries.
+  53 implementation file hashes and exact cached TOC page numbers verified.
+  Rendered pages checked; the nearly empty final appendix page was removed.
+- Only requirement 04.19 was promoted. All 533 IDs and original requirement
+  texts remain unchanged. Reconciliation evidence and the three source plans
+  remain unchanged.
+
+EVIDENCE AND DIRECTIONS
+docs/guides/Action_Purposes_Run_and_Test.txt gives full executable paths,
+explicit operation/review steps, a controlled practice example and elevated
+developer commands. README and HTML help also describe the page.
+docs/phase1-action-purposes-validation.json and its log retain focused results.
+docs/phase1-action-purposes-*-regression.* retain current regression evidence.
+docs/phase1-action-purposes-completion-validation.json retains counts, guide QA
+and evidence hashes. Historical validation outputs were restored after running
+the regression suites. The temporary WP5 GUID folder was removed.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\ActionPurposes_PreChange_20261011_224354
+3,875 files; 929,470,338 bytes; copied bytes verified by SHA256 before edits.
+The USB drive was allowed to wake. No post-change USB backup was requested.
+Validated changes are committed to Git and pushed to public and private remotes.
+
+LIMITS
+Business purposes and actual operating results cannot be inferred from captions
+or event names. A knowledgeable contributor must supply project-specific facts
+and a named reviewer must check them. Saving/reviewing prose is not proof that
+the selected application ran or produced the expected business outcome.
+Target identity uses source and parent-local object paths; renamed or moved
+targets are not silently relinked. Captured inherited/runtime differences retain
+their existing evidence qualifications. Independent human acceptance remains
+separate from automated implementation checks.
+
+CURRENT LEDGER AND NEXT BOUNDED REQUIREMENT
+178 implemented; 18 implemented through attributed manual capture;
+235 partial; 102 missing; 0 unassessed.
+337 incomplete requirement records remain. The whole product is not complete.
+Next: 04.20 Screen history and visual change comparisons — paired screen-history
+selection and visual image/layout differences with attribution and generations.

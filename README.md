@@ -63,3 +63,11 @@ inline frame instances and unresolved ancestry. Scroll the toolbar to choose
 an origin and **Open origin source**. No target classes are instantiated.
 Explicit run and test directions: `docs/guides/Form_Inheritance_Run_and_Test.txt`.
 Focused checks: `tools\build-form-inheritance.cmd` from an elevated prompt.
+
+Choose **Action purposes** to record why users perform an operation, its
+prerequisites, steps, expected outcome, evidence and recovery. **Edit purpose**
+maps guidance to a captured UI candidate; **New task** records a project
+procedure. Enter a named contributor, Apply to Knowledge draft, then **Save**.
+Review explicitly in Knowledge. Captions do not establish business intent.
+[Full directions and tests](docs/guides/Action_Purposes_Run_and_Test.txt) cover
+all commands. Run `tools\build-action-purposes.cmd` elevated for 81 focused checks.

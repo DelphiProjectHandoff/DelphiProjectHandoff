@@ -71,6 +71,15 @@ type
     KeyboardList: TListBox;
     KeyboardMemo: TMemo;
     KeyboardSplitter: TSplitter;
+    ActionPurposeTab:TTabItem;
+    ActionPurposePurpose,ActionPurposeStatus:TLabel;
+    ActionPurposeToolbar:THorzScrollBox;
+    ActionPurposeFilterEdit:TEdit;
+    ActionPurposeStateCombo:TComboBox;
+    ActionPurposeFirstButton,ActionPurposeNextButton,ActionPurposeSourceButton,ActionPurposeEditButton,ActionPurposeNewButton,ActionPurposeKnowledgeButton,ActionPurposeExplainButton:TButton;
+    ActionPurposeList:TListBox;
+    ActionPurposeSplitter:TSplitter;
+    ActionPurposeMemo:TMemo;
     InheritanceTab:TTabItem;
     InheritancePurpose,InheritanceStatus:TLabel;
     InheritanceToolbar:THorzScrollBox;
@@ -248,6 +257,12 @@ type
     ComparisonBeforeMemo,ComparisonAfterMemo: TMemo;
     ComparisonSplitter: TSplitter;
     procedure KeyboardFilterChange(Sender: TObject);
+    procedure ActionPurposeFilterChange(Sender:TObject);
+    procedure ActionPurposeSelectionClick(Sender:TObject);
+    procedure ActionPurposeSourceClick(Sender:TObject);
+    procedure ActionPurposeExplainClick(Sender:TObject);
+    procedure ActionPurposeKnowledgeClick(Sender:TObject);
+    procedure ActionPurposeEditClick(Sender:TObject);
     procedure InheritanceFilterChange(Sender:TObject);
     procedure InheritanceSelectionClick(Sender:TObject);
     procedure InheritanceOriginChange(Sender:TObject);
@@ -408,6 +423,9 @@ type
     FKeyboard: TJSONObject;
     FKeyboardRows: TList<TJSONObject>;
     FKeyboardOffset: Integer;
+    FActionPurposes:TJSONObject;
+    FActionPurposeRows:TList<TJSONObject>;
+    FActionPurposeOffset:Integer;
     FInheritance:TJSONObject;
     FInheritanceRows,FInheritanceOrigins:TList<TJSONObject>;
     FInheritanceOffset:Integer;
@@ -451,7 +469,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -466,6 +484,7 @@ begin
   FKeyboardRows:=TList<TJSONObject>.Create;
   FCommandRows:=TList<TJSONObject>.Create;
   FDynamicRows:=TList<TJSONObject>.Create;
+  FActionPurposeRows:=TList<TJSONObject>.Create;
   FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
   FDependencyRows:=TList<TJSONObject>.Create;
   FLayoutRows:=TList<TJSONObject>.Create;
@@ -508,6 +527,7 @@ begin
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
+  FActionPurposeRows.Free;FActionPurposes.Free;
   FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
   FLayoutRows.Free; FLayout.Free;
@@ -794,6 +814,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+ FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:='Open a project to inspect inherited forms and frames.';InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
  FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:='Open a project to inspect component dependencies.';DependencyStatus.Text:='No capture loaded.';
  DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
@@ -931,6 +952,7 @@ begin
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
+  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);
   FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);
   FDependencyRows.Clear;FreeAndNil(FDependencies);FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);
   FLayoutRows.Clear;FreeAndNil(FLayout);FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);
@@ -1029,6 +1051,91 @@ begin
     SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
     WorkspaceTabs.ActiveTab:=SourceTab;
   except on E: Exception do KeyboardMemo.Lines.Add('Source unavailable: '+E.Message); end;
+end;
+procedure TDPHMainForm.ActionPurposeFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FActionPurposeRows=nil then Exit;
+ if Sender=ActionPurposeNextButton then Inc(FActionPurposeOffset,250) else FActionPurposeOffset:=0;
+ ActionPurposeList.Items.Clear;FActionPurposeRows.Clear;ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;ActionPurposeNewButton.Enabled:=FView<>nil;
+ ActionPurposeMemo.Text:='Select a captured UI candidate or saved project task. Missing business purpose stays unknown.';if FActionPurposes=nil then Exit;
+ Query:=ActionPurposeFilterEdit.Text.Trim;StateFilter:='';if ActionPurposeStateCombo.ItemIndex>0 then StateFilter:=ActionPurposeStateCombo.Selected.Text;Count:=0;
+ for V in FActionPurposes.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (StateFilter<>'') and (StateFilter<>TDPHActionPurposes.State(Row,FKnowledge)) then Continue;
+  if (Query<>'') and not ContainsText(TDPHActionPurposes.Describe(Row,FKnowledge),Query) then Continue;
+  if (Count>=FActionPurposeOffset) and (FActionPurposeRows.Count<250) then begin FActionPurposeRows.Add(Row);ActionPurposeList.Items.Add(Row.GetValue<string>('target')+' | '+Row.GetValue<string>('name')+' | '+TDPHActionPurposes.State(Row,FKnowledge));end;Inc(Count);
+ end;
+ ActionPurposeNextButton.Enabled:=Count>FActionPurposeOffset+FActionPurposeRows.Count;
+ ActionPurposeStatus.Text:=IntToStr(Count)+' matches; '+IntToStr(FActionPurposeRows.Count)+' shown from '+IntToStr(FActionPurposeOffset)+'. Select a row for evidence and review state.';
+ if ActionPurposeList.Count>0 then begin ActionPurposeList.ItemIndex:=0;ActionPurposeSelectionClick(nil);end else ActionPurposeMemo.Text:='No matching actions or tasks. Clear filters or click New task for a project procedure.';
+end;
+procedure TDPHMainForm.ActionPurposeSelectionClick(Sender:TObject);
+var Row:TJSONObject;
+begin
+ ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
+ if (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
+ Row:=FActionPurposeRows[ActionPurposeList.ItemIndex];ActionPurposeMemo.Text:=TDPHActionPurposes.Describe(Row,FKnowledge)+sLineBreak+sLineBreak+FActionPurposes.GetValue<string>('qualification');
+ ActionPurposeEditButton.Enabled:=not Row.GetValue<Boolean>('ambiguous_target',False);ActionPurposeSourceButton.Enabled:=not Row.GetValue<Boolean>('record_only');
+ ActionPurposeKnowledgeButton.Enabled:=TDPHActionPurposes.FindRecord(FKnowledge,Row.GetValue<string>('action_id'))<>nil;
+ ActionPurposeExplainButton.Enabled:=not Row.GetValue<Boolean>('ambiguous_target',False) and not Row.GetValue<Boolean>('record_only') and (Row.GetValue<string>('target_key','')<>'');
+end;
+procedure TDPHMainForm.ActionPurposeSourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
+ Row:=FActionPurposeRows[ActionPurposeList.ItemIndex];if Row.GetValue<Boolean>('record_only') then Exit;
+ if FDetached then begin ActionPurposeMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ Range:=Row.GetValue<TJSONObject>('range');
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do ActionPurposeMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+procedure TDPHMainForm.ActionPurposeExplainClick(Sender:TObject);
+var Row:TJSONObject;
+begin
+ if (FView=nil) or (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
+ Row:=FActionPurposeRows[ActionPurposeList.ItemIndex];if Row.GetValue<Boolean>('ambiguous_target',False) or Row.GetValue<Boolean>('record_only') or (Row.GetValue<string>('target_key','')='') then Exit;
+ SelectSymbol(Row.GetValue<string>('target_key'));WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ActionPurposeKnowledgeClick(Sender:TObject);
+var Row:TJSONObject;I:Integer;
+begin
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ if (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
+ Row:=TDPHActionPurposes.FindRecord(FKnowledge,FActionPurposeRows[ActionPurposeList.ItemIndex].GetValue<string>('action_id'));if Row=nil then Exit;
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=Row.GetValue<string>('id') then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;Exit;end;
+end;
+procedure TDPHMainForm.ActionPurposeEditClick(Sender:TObject);
+var Editor:TDPHActionPurposeForm;Row,ComponentRow,RecordValue,Initial,Fields:TJSONObject;Links:TJSONArray;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft first';Exit;end;
+ Row:=nil;
+ if Sender=ActionPurposeNewButton then Initial:=TJSONObject.Create.AddPair('record_type','action_purpose').AddPair('fields',TJSONObject.Create.AddPair('action_id','task:'+TGUID.NewGuid.ToString).AddPair('target','Project task').AddPair('target_key',''))
+ else begin
+  if (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
+  ComponentRow:=FActionPurposeRows[ActionPurposeList.ItemIndex];if ComponentRow.GetValue<Boolean>('ambiguous_target',False) then Exit;Row:=TDPHActionPurposes.FindRecord(FKnowledge,ComponentRow.GetValue<string>('action_id'));
+  if Row<>nil then Row:=Row.Clone as TJSONObject;
+  if Row<>nil then Initial:=TJSONObject.ParseJSONValue(Row.GetValue<string>('structured_json')) as TJSONObject
+  else Initial:=TJSONObject.Create.AddPair('record_type','action_purpose').AddPair('fields',TJSONObject.Create.AddPair('action_id',ComponentRow.GetValue<string>('action_id')).AddPair('target',ComponentRow.GetValue<string>('target')).AddPair('target_key',ComponentRow.GetValue<string>('target_key','')).AddPair('screen',ComponentRow.GetValue<string>('form')));
+ end;
+ Editor:=TDPHActionPurposeForm.Create(nil);
+ try
+  Editor.LoadRecord(Initial,KnowledgeAuthorEdit.Text);if Editor.ShowModal<>mrOk then Exit;RecordValue:=Editor.RecordJSON;
+  try
+   Fields:=RecordValue.GetValue<TJSONObject>('fields');FBinding:=True;
+   try
+    FKnowledgeID:=0;FKnowledgeRevision:=0;if Row<>nil then begin FKnowledgeID:=StrToInt64(Row.GetValue<string>('id'));FKnowledgeRevision:=StrToInt64(Row.GetValue<string>('revision'));end;
+    KnowledgeTitleEdit.Text:=TDPHActionPurpose.Title(RecordValue);KnowledgeAuthorEdit.Text:=Editor.ProfileAuthorEdit.Text;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('user_help');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('user');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('user');
+    KnowledgeBodyMemo.Text:=TDPHActionPurpose.Body(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:=Fields.GetValue<string>('target_key','');FreeAndNil(FEditableLinks);
+    if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Action purpose draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit structured fields on Action purposes. Add exact evidence on Knowledge links. Saving does not verify business claims or actual outcomes.';
+   finally FBinding:=False;end;
+   WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Action purpose draft prepared. Click Save to persist; review requires a named reviewer.';
+  finally RecordValue.Free;end;
+ finally Editor.Free;Initial.Free;Row.Free;end;
 end;
 procedure TDPHMainForm.InheritanceFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
@@ -2154,7 +2261,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

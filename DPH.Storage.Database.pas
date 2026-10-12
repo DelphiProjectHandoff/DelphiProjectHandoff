@@ -104,7 +104,7 @@ uses
   System.IOUtils, System.Hash, System.StrUtils, System.DateUtils,
   System.Generics.Defaults, Data.DB, FireDAC.Stan.Def, FireDAC.Stan.Async, FireDAC.Stan.Param,
   FireDAC.DApt, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
-  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary, DPH.Knowledge.ComponentDependency;
+  FireDAC.Phys.SQLiteWrapper.Stat, System.RegularExpressions, DPH.Knowledge.ProjectProfile, DPH.Knowledge.Glossary, DPH.Knowledge.ComponentDependency, DPH.Knowledge.ActionPurpose;
 
 const
   CurrentSchemaVersion = 9;
@@ -784,7 +784,7 @@ function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenera
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
   LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;
   StructuredValue,PriorRecord: TJSONValue; GlossaryQuery: TFDQuery; ExistingGlossary: TJSONObject;
-  TermNames,ExistingNames: TArray<string>; GlossaryName,ExistingName: string;
+  TermNames,ExistingNames: TArray<string>; GlossaryName,ExistingName,ActionIdentityField: string;
 begin
   RequireWriter;
   if (ATitle.Trim='') or (ABody.Trim='') or (AEditor.Trim='') then raise EDPHStorage.Create('Title, text and named author are required');
@@ -829,6 +829,15 @@ begin
             GlossaryQuery.Next;
           end;
         finally GlossaryQuery.Free; end;
+      end else if StructuredValue.GetValue<string>('record_type','')='action_purpose' then begin
+        TDPHActionPurpose.Validate(StructuredValue as TJSONObject);
+        if (ATitle<>TDPHActionPurpose.Title(StructuredValue as TJSONObject)) or (AKind<>'user_help') or (DocumentKind<>'user') or (Audience<>'user') or (AEntityKey<>StructuredValue.GetValue<string>('fields.target_key','')) then raise EDPHStorage.Create('Action purpose identity, user scope and captured target must be preserved');
+        if ABody<>TDPHActionPurpose.Body(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit structured action fields on Action purposes');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try for ActionIdentityField in ['action_id','target','target_key'] do if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Action purpose target identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''action_purpose'' AND lower(json_extract(r.structured_json,''$.fields.action_id''))=lower(:identity)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.action_id')])<>0 then raise EDPHStorage.Create('A purpose record already exists for this target; refresh and edit it. Retired identities remain reserved.');
       end else if StructuredValue.GetValue<string>('record_type','')='component_dependency' then begin
         TDPHComponentDependency.Validate(StructuredValue as TJSONObject);
         if (ATitle<>TDPHComponentDependency.Title(StructuredValue as TJSONObject)) or (AKind<>'engineering_rule') or (DocumentKind<>'engineering') or (Audience<>'engineer') or (AEntityKey<>'') then raise EDPHStorage.Create('Component dependency identity and engineering scope must be preserved');

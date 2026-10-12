@@ -1,0 +1,323 @@
+object DPHActionPurposeForm: TDPHActionPurposeForm
+  Caption = 'Action and business purpose record'
+  ClientWidth = 820
+  ClientHeight = 740
+  Constraints.MinWidth = 620
+  Constraints.MinHeight = 480
+  Position = ScreenCenter
+  object ProfilePurpose: TLabel
+    Align = Top
+    Height = 100
+    Margins.Left = 12
+    Margins.Right = 12
+    WordWrap = True
+    Text = 'Document the action or task name, business purpose, steps, expected outcome and evidence with a named contributor. Apply prepares a Knowledge draft; click Save there, then review explicitly. Unknown permissions and outcomes must remain explicit. Do not enter credentials.'
+    StyledSettings = []
+    TextSettings.Font.Size = 16
+    TextSettings.FontColor = xFF146CB4
+  end
+  object ProfileToolbar: TLayout
+    Align = Top
+    Height = 92
+    object ProfileAuthorLabel: TLabel
+      Position.X = 12
+      Position.Y = 0
+      Width = 180
+      Height = 24
+      Text = 'Named contributor'
+    end
+    object ProfileAuthorEdit: TEdit
+      Position.X = 12
+      Position.Y = 26
+      Width = 270
+      Height = 30
+    end
+    object ApplyProfileButton: TButton
+      Position.X = 292
+      Position.Y = 26
+      Width = 210
+      Height = 30
+      Text = 'Apply to Knowledge draft'
+      OnClick = ApplyProfileClick
+    end
+    object CancelProfileButton: TButton
+      Position.X = 512
+      Position.Y = 26
+      Width = 86
+      Height = 30
+      Text = 'Cancel'
+      ModalResult = 2
+    end
+  end
+  object ProfileScroll: TVertScrollBox
+    Align = Client
+    ShowScrollBars = True
+    object Profile_action_id_Row: TLayout
+      Position.Y = 0
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_action_id_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Stable action identity'
+      end
+      object Profile_action_id: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_target_Row: TLayout
+      Position.Y = 122
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_target_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Captured target or project task'
+      end
+      object Profile_target: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_target_key_Row: TLayout
+      Position.Y = 244
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_target_key_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Captured object key'
+      end
+      object Profile_target_key: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ReadOnly = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_action_name_Row: TLayout
+      Position.Y = 366
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_action_name_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Action or task name'
+      end
+      object Profile_action_name: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_screen_Row: TLayout
+      Position.Y = 488
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_screen_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Screen and user role'
+      end
+      object Profile_screen: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_trigger_Row: TLayout
+      Position.Y = 610
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_trigger_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'User trigger'
+      end
+      object Profile_trigger: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_purpose_Row: TLayout
+      Position.Y = 732
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_purpose_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Business purpose'
+      end
+      object Profile_purpose: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_preconditions_Row: TLayout
+      Position.Y = 854
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_preconditions_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Prerequisites and permissions'
+      end
+      object Profile_preconditions: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_steps_Row: TLayout
+      Position.Y = 976
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_steps_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Numbered user steps'
+      end
+      object Profile_steps: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_outcome_Row: TLayout
+      Position.Y = 1098
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_outcome_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Expected business outcome'
+      end
+      object Profile_outcome: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_evidence_Row: TLayout
+      Position.Y = 1220
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_evidence_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Evidence and remaining unknowns'
+      end
+      object Profile_evidence: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+    object Profile_exceptions_Row: TLayout
+      Position.Y = 1342
+      Width = 780
+      Height = 122
+      Anchors = [akLeft, akTop, akRight]
+      object Profile_exceptions_Label: TLabel
+        Align = Top
+        Height = 28
+        Margins.Left = 12
+        Text = 'Failures and recovery'
+      end
+      object Profile_exceptions: TMemo
+        Align = Client
+        Margins.Left = 12
+        Margins.Right = 12
+        Margins.Bottom = 10
+        WordWrap = True
+        ShowScrollBars = True
+        StyledSettings = []
+        TextSettings.Font.Size = 16
+      end
+    end
+  end
+end

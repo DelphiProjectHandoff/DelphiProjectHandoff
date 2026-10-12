@@ -1,0 +1,94 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ActionPurposes.dpr(80) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ActionPurposes.dpr(85) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ActionPurposes.dpr(85) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ActionPurposes.dpr(91) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.ActionPurposes.dpr(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+15047 lines, 1.34 seconds, 10137236 bytes code, 344896 bytes data.
+PASS 1: Text DFM action candidate captured
+PASS 2: FMX candidate captured
+PASS 3: Binary DFM candidate captured
+PASS 4: Parent-local target path preserved: main.dfm|MainForm/ExportButton
+PASS 5: Identity ignores target case
+PASS 6: Missing purpose distinguished
+PASS 7: Captured caption shown as evidence
+PASS 8: Caption does not invent purpose
+PASS 9: Duplicate target names explicitly ambiguous
+PASS 10: Ambiguity explained
+PASS 11: Matching source opens
+PASS 12: Binary source not presented as text
+PASS 13: Changed source refused
+PASS 14: Required field action_name cannot be omitted
+PASS 15: Required field purpose cannot be omitted
+PASS 16: Required field steps cannot be omitted
+PASS 17: Required field outcome cannot be omitted
+PASS 18: Required field evidence cannot be omitted
+PASS 19: Optional unknowns explicit
+PASS 20: Business claims qualified
+PASS 21: Unknown field rejected
+PASS 22: Nontext rejected
+PASS 23: Oversized field rejected
+PASS 24: Identity must match target
+PASS 25: Partial capture remains partial
+PASS 26: Exact structured fields persist
+PASS 27: Save requires review
+PASS 28: Named contributor persists
+PASS 29: Identity lookup ignores case
+PASS 30: Capture mapping displays saved state
+PASS 31: Authored business purpose appears beside capture
+PASS 32: Publication includes structured and readable purpose
+PASS 33: Unmatched saved target retained
+PASS 34: Unmatched mapping qualified
+PASS 35: Duplicate target record refused
+PASS 36: Readable fields cannot contradict structured record
+PASS 37: Ordinary editing cannot discard fields
+PASS 38: Existing target identity immutable
+PASS 39: Explicit named review verifies guidance
+PASS 40: Review preserves fields
+PASS 41: Reviewer attributed
+PASS 42: Stale edit cannot overwrite review
+PASS 43: Rename preserves identity/history and reopens review
+PASS 44: Purpose searchable
+PASS 45: Database integrity
+PASS 46: Exported purpose handoff passes bundle validation
+PASS 47: HTML handoff includes purpose
+PASS 48: Exported user manual contains purpose
+PASS 49: Project procedure saves without UI mapping
+PASS 50: Project task appears alongside UI candidates
+PASS 51: Reopen retains current purpose
+PASS 52: Serialized editor validates action purpose
+PASS 53: Editor round trips all fields and type
+PASS 54: Identity fields are read only
+PASS 55: Editor requires contributor
+PASS 56: Native first page bounds 250 rows
+PASS 57: More rows enable Next
+PASS 58: Next shows remaining rows
+PASS 59: Last page disables Next
+PASS 60: Page discoverable
+PASS 61: Filter selects unique target
+PASS 62: Native page explains missing purpose
+PASS 63: Unique candidate enables editor
+PASS 64: No record disables Knowledge
+PASS 65: Detached source refused
+PASS 66: Native saved text refreshed
+PASS 67: Saved record enables Knowledge
+PASS 68: Cancel retains saved purpose
+PASS 69: Native Apply creates structured Knowledge draft
+PASS 70: New task protects unsaved draft
+PASS 71: New task prepares independent project identity
+PASS 72: Knowledge opens structured saved revision
+PASS 73: Navigation protects draft
+PASS 74: Unrecorded filter excludes saved target
+PASS 75: Ambiguous target disables edit and Explain
+PASS 76: Empty result clears actions
+PASS 77: Compact detail remains visible
+PASS 78: Compact command bar scrolls
+PASS 79: Replacement capture retains saved unresolved mapping
+PASS 80: Owner catalog unchanged
+PASS 81: Fixture source unchanged
+Action purposes validation passed: 81 checks.

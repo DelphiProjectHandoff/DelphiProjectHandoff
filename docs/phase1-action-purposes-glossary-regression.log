@@ -1,0 +1,71 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(254) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Glossary.dpr(98) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Glossary.dpr(146) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+15145 lines, 1.53 seconds, 10137960 bytes code, 344816 bytes data.
+PASS 1: Term names normalize case and repeated spaces
+PASS 2: Empty term/definition cannot be saved
+PASS 3: Duplicate aliases are rejected ignoring case and surrounding spaces
+PASS 4: An alias cannot duplicate its own term
+PASS 5: Unknown structured fields are rejected
+PASS 6: Non-text aliases are rejected
+PASS 7: Every term needs relevance/evidence context
+PASS 8: Controlled source provides exact evidence for a business term
+PASS 9: Saving requires a named contributor
+PASS 10: Save preserves exact structured fields and requires explicit review
+PASS 11: Term retains its exact source link
+PASS 12: Readable definition and structured fields agree
+PASS 13: A new term cannot reuse an existing alias
+PASS 14: A new alias cannot reuse another normalized term
+PASS 15: Typed fields cannot diverge from their generated readable body
+PASS 16: Plain text editing cannot discard glossary fields
+PASS 17: Verification requires a named reviewer
+PASS 18: Review appends an immutable verified revision
+PASS 19: Stale editor cannot overwrite a later review
+PASS 20: Stale reviewer cannot approve an obsolete revision
+PASS 21: Renaming a term preserves its stable knowledge identity
+PASS 22: Definition edit preserves history and reopens review
+PASS 23: Project search retrieves a glossary term through its alias
+PASS 24: Project search indexes the latest definition
+PASS 25: Project search indexes the renamed term
+PASS 26: Another project database cannot see these terms
+PASS 27: The same business name can exist independently in another selected project
+PASS 28: Canonical handoff retains the exact reviewed term revision and definition
+PASS 29: Canonical handoff preserves typed term fields
+PASS 30: Complete glossary handoff passes package validation
+PASS 31: Dedicated glossary JSONL exactly matches canonical knowledge
+PASS 32: Offline HTML exposes a dedicated business glossary index
+PASS 33: Reviewed definition appears in User_Guide.docx
+PASS 34: Reviewed definition appears in Engineering_Guide.docx
+PASS 35: Tampered glossary export is rejected
+PASS 36: Rehashing altered glossary JSONL cannot bypass canonical agreement
+PASS 37: All-reader glossary remains present in engineering-scoped handoffs
+PASS 38: Confidential source exclusion removes dependent glossary evidence/content
+PASS 39: Workspace selector exposes Business glossary
+PASS 40: Native glossary displays saved scoped terms
+PASS 41: Native alias filter finds and explains the current term
+PASS 42: Open in Knowledge exposes history without allowing conflicting plain-text edits
+PASS 43: Glossary definition remains usable at the minimum workspace size (111)
+PASS 44: Cancelling native term editing preserves the loaded record
+PASS 45: Native Edit term prepares updated structured fields
+PASS 46: Native New term creates the correct attributed Knowledge draft
+PASS 47: Unsaved glossary drafts block replacement
+PASS 48: Discard restores ordinary Knowledge editing
+PASS 49: Native validation does not add test databases to the user project catalog
+PASS 50: IDE-designed editor round-trips all glossary fields
+PASS 51: Native editor rejects missing attribution
+PASS 52: Native field validation accepts a complete term
+PASS 53: Glossary capture, review and native inspection do not modify selected source
+PASS 54: A source-evidence change reopens term review independently of the last verified text
+PASS 55: Review cannot approve a glossary term against obsolete source fingerprints
+PASS 56: All glossary revisions and source links preserve SQLite integrity
+PASS 57: Reopened project retains exact term fields and all save/review revisions
+PASS business glossary: 57 checks
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+6672 lines, 0.64 seconds, 3477172 bytes code, 148332 bytes data.

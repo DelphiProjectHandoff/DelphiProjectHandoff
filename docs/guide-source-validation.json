@@ -1,5 +1,5 @@
 {
-  "guide_version": 13,
+  "guide_version": 14,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -32,6 +32,10 @@
     {
       "path": "DPH.Analysis.Symbols.pas",
       "sha256": "1da99806fa3a71afbfe4c58e8e1bb40041d308e32b42fd06f412723c79f7799b"
+    },
+    {
+      "path": "DPH.Knowledge.ActionPurpose.pas",
+      "sha256": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f"
     },
     {
       "path": "DPH.Knowledge.ComponentDependency.pas",
@@ -103,11 +107,15 @@
     },
     {
       "path": "DPH.Storage.Database.pas",
-      "sha256": "1904d4f0adae6dc01e76dad3d8e3797613b5e3da49da194587cad68de30ed25e"
+      "sha256": "62acdcbefdae51057f277c072c7d820798295da4b99f79a0705df25028389118"
     },
     {
       "path": "DPH.Storage.Types.pas",
       "sha256": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219"
+    },
+    {
+      "path": "DPH.UI.ActionPurpose.pas",
+      "sha256": "6016874bdc24964ce2371431d77babc68f03a50f045e8d20e222e4989bcbf79d"
     },
     {
       "path": "DPH.UI.ComponentDependency.pas",
@@ -119,11 +127,15 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "52243ad5ff4b5e2d0f605c22fd3effca369072f3541239c8aad9b1fbccb1362b"
+      "sha256": "4d591bea9ea684acbd96826d0a69363e3700b7c3c414daca8cf59684b74a51a1"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
       "sha256": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59"
+    },
+    {
+      "path": "DPH.Workspace.ActionPurposes.pas",
+      "sha256": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4"
     },
     {
       "path": "DPH.Workspace.Catalog.pas",
@@ -175,7 +187,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "b9d6a25843541b0ae0d359ae40426d6a47b423758759c25a093921294ab18e90"
+      "sha256": "4d7d953c654ca15dc9529e17ca2a1bc6461a79dc972ad062ab7dc22c1f8742f4"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",
@@ -190,12 +202,16 @@
       "sha256": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862"
     },
     {
+      "path": "DPH.UI.ActionPurpose.fmx",
+      "sha256": "9eb57da0310277432db54c9a80d8d03be09aa6163acd8895f04fa21f176f8e15"
+    },
+    {
       "path": "DelphiProjectHandoff.dpr",
       "sha256": "2b922d5561c2ab3e2b65590583f646e29fc12c8b5c36a08fe401a6ebed90d3f9"
     },
     {
       "path": "DelphiProjectHandoff.dproj",
-      "sha256": "cb4511ddd11ddfdec7c99d7442f267eeff1026befab5994fceeecc56deb0bb95"
+      "sha256": "6e5013d9f91305e49f1317918c1b36f91782c85a25352eccd025ea66ecfc7dd8"
     }
   ],
   "last_changed": "2026-10-11"

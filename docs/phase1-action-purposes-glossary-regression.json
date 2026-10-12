@@ -1,0 +1,7 @@
+﻿{
+  "checks_passed": 57,
+  "requirements": "06.12, 12.09",
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\glossary-validation",
+  "native_evidence": "FMX controls instantiated from .fmx and rendered with PaintTo; modal editing and draft flow exercised in the native form. Not a target application screenshot.",
+  "scope": "Structured glossary fields, duplicates, rename, immutable revisions, attribution/review, project isolation, search, canonical/HTML/DOCX/JSONL, exclusions, tamper, native controls and changed source review"
+}

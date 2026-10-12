@@ -1,0 +1,102 @@
+DPH ACTION PURPOSES — RUN AND TEST
+Last changed: 11 October 2026
+Requirement: 04.19 User-visible actions and business purposes
+
+START THE UPDATED APPLICATION
+1. Close the existing Delphi Project Handoff window after saving or discarding
+   any Knowledge draft. Reopening uses the rebuilt executable.
+2. Open File Explorer. Paste this complete path into its address bar and press
+   Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Attach project and select the application's .dproj, .dpr or .groupproj,
+   or click Open cache and select its .dphdb. Do not select DPH itself.
+4. Wait for capture to finish. In the upper-right page selector, choose
+   Action purposes. This is a native workspace page, not a target screenshot.
+
+RECORD A USER ACTION
+5. Select a captured component in the list. Read the explanation below it.
+   Captions and event handlers are source evidence; they do not tell DPH what
+   the business intends. The state initially reads not recorded.
+6. Scroll the command bar horizontally to reach Edit purpose and click it.
+   The three identity fields are read only. Scroll inside the editor to reach
+   all the other fields. Enter:
+   - Named contributor: the person supplying this explanation.
+   - Action or task name: the user-facing name for the operation.
+   - Screen and user role: where the action occurs and who uses it.
+   - User trigger: the button, menu, shortcut or other initiating gesture.
+   - Business purpose: why the user performs the action.
+   - Prerequisites and permissions: required data, selections and access.
+   - Numbered user steps: the complete sequence, including checks.
+   - Expected business outcome: the result and how to recognize success.
+   - Evidence and remaining unknowns: source references, an interview or
+     actual observed evidence, and everything still unconfirmed.
+   - Failures and recovery: known failures and safe recovery steps.
+   Name, purpose, steps, outcome, evidence and contributor are required.
+   State unknown facts explicitly. Do not enter credentials.
+7. Click Apply to Knowledge draft. DPH opens Knowledge with a protected
+   readable body. This is still an unsaved draft. Click Save there and wait
+   for completion. Add exact source citations with Knowledge links as needed.
+8. Read the saved state: needs_review. Read its immutable history and evidence.
+   Enter the named reviewer in Knowledge and click Verify review only after
+   checking the claims. Review does not prove actual runtime execution or
+   successful business outcomes. Actual observations need separate evidence.
+9. Return to Action purposes. Select the target again or filter by its name.
+   The explanation shows saved text, state, revision, generation, original
+   contributor, current editor and reviewer. Open in Knowledge shows history.
+10. Change guidance with Edit purpose, Apply, then Save. The target identity
+    remains stable and the edited guidance returns to needs_review.
+
+PROJECT PROCEDURES WITHOUT A UI TARGET
+11. On Action purposes, click New task. Complete the same attributed fields,
+    Apply, then Save. It has its own task identity and no automatic UI mapping.
+    Use this for procedures such as an end-of-month review spanning screens.
+    Do not use a project task to claim that an ambiguous object was resolved.
+
+FIND AND CHECK RESULTS
+12. Use the review-state selector and text filter. First page and Next page
+    display 250 matching candidates/tasks at a time. Clear the text filter and
+    choose All review states if expected rows are missing. In a narrow window
+    scroll the command bar sideways to reach all commands.
+13. Component source requires attached, unchanged captured text. Detached,
+    changed or binary source is refused explicitly. Explain object is enabled
+    only for a unique captured semantic target. Duplicate paths disable Edit
+    purpose and Explain to prevent attaching text to the wrong component.
+14. Saved UI targets absent from a replacement capture remain historical or
+    unresolved; their authored text is preserved. Renaming or moving source
+    does not silently relink business guidance. Review exact evidence first.
+15. Use project search to find a distinctive phrase from a saved purpose.
+16. Publish to a NEW empty folder outside the selected source. Open index.html
+    and the exported User_Guide.docx. Find the same purpose and inspect its
+    state and source generation. Use Validate bundle to check the export.
+    Partial/historical inspection is explicitly qualified, not release proof.
+
+CONTROLLED PRACTICE AFTER RUNNING THE DEVELOPER SUITE
+Attach:
+C:\New Delphi Projects\Delphi Project Handoff\bin\action-purposes-validation\source\Actions.dpr
+Find MainForm/ExportButton. It has the synthetic caption Export invoices.
+Supply only synthetic practice text, for example:
+  Purpose: Prepare a synthetic invoice handoff for reviewer approval.
+  Steps: 1. Select synthetic invoices. 2. Click Export. 3. Inspect destination.
+  Outcome: Expected export; runtime outcome unobserved.
+  Evidence: Controlled fixture; no actual invoice export was observed.
+The test-created actions.dphdb is a developer fixture, not an owner project.
+Save a separate practice database if attaching this fixture in the application.
+
+DEVELOPER CHECKS
+Open an elevated Command Prompt: Start > type Command Prompt > right-click
+Command Prompt > Run as administrator. Run these commands one at a time:
+  cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+  tools\build-action-purposes.cmd
+Expected: Action purposes validation passed: 81 checks.
+  tools\build-component-dependencies.cmd
+Expected: Component dependency validation passed: 70 checks.
+  tools\build-glossary.cmd
+Expected: PASS business glossary: 57 checks.
+  tools\build-wp5.cmd
+Expected: PASS WP5: 59 checks.
+  tools\build-wp0.cmd
+Expected: successful application build and PASS WP0-TEST FMX bindings.
+The focused suite reuses bin\action-purposes-validation. It creates controlled
+source, database and handoff output. Never use it for production data.
+Native PaintTo images are real DPH form renders, not target-runtime screenshots.
+Forms remain editable in RAD Studio using the FMX designer and Object Inspector.

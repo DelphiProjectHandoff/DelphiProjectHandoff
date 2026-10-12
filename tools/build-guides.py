@@ -495,6 +495,23 @@ for chapters in (USER, ENGINEERING):
     for index, (heading, paragraphs) in enumerate(chapters):
         chapters[index] = (heading, [p.replace('339 requirement records remain incomplete', '338 requirement records remain incomplete') for p in paragraphs])
 
+USER.append(('Record user actions and business purposes', [
+'Open the intended project and choose Action purposes in the upper-right page selector. Each captured UI object is a candidate. Select a row to see its caption or event binding, exact source identity and saved review state. A caption or handler name does not establish a business purpose. Not recorded means a knowledgeable contributor has not supplied it.',
+'Scroll the command bar horizontally to reach Edit purpose. Enter a named contributor and the action name, business purpose, numbered user steps, expected outcome and evidence. Also record the screen and user role, trigger, prerequisites and permissions, and failures or recovery. Unknown answers must remain explicit; never enter credentials. The three target identity fields are read only. Duplicate captured paths disable mapping until the ambiguity is resolved.',
+'Click Apply to Knowledge draft, then click Save on Knowledge. Apply alone does not save. Add exact evidence using Knowledge links if needed. Inspect the immutable history, enter a named reviewer and click Verify review only after checking the claims and current evidence. Editing a purpose reopens review. Saving or approving prose does not prove a runtime outcome.',
+'Choose New task for a project procedure with no UI mapping, then complete the same fields, Apply and Save. Use the review-state selector or text filter to find recorded and unrecorded work. First page and Next page show 250 candidates at a time. Open in Knowledge exposes history; Component source and Explain object follow captured evidence when available. Source navigation requires attached unchanged text. Missing saved targets remain historical or unresolved.',
+'Saved purpose records participate in project search, canonical handoffs, exported HTML and the user manual. Review the generation and state before sharing. Full executable paths, a controlled practice example and developer test commands are in docs/guides/Action_Purposes_Run_and_Test.txt.'
+]))
+ENGINEERING.append(('Store attributed action purpose mappings', [
+'DPH.Workspace.ActionPurposes derives candidate targets from the captured source path and parent-local component path. A case-insensitive SHA256 identity is stable across parser node-number changes. Duplicate paths remain ambiguous and disable Edit and Explain. A unique captured component range supplies its semantic object key; no runtime action or business intent is inferred. Project tasks use a GUID identity and no object link. Unmatched saved UI targets remain historical or unresolved.',
+'DPH.Knowledge.ActionPurpose validates twelve bounded string fields, requires the name, purpose, steps, outcome and evidence, and derives the readable Knowledge body. DPH.Storage.Database preserves the record type, stable target identity, object scope, user_help kind, user document and user audience. Duplicate target records are refused, including retired identities. Ordinary Knowledge editing cannot discard structured fields; stale saves and reviews retain the existing concurrency protections.',
+'DPH.UI.ActionPurpose.fmx and the Action purposes tab in DPH.UI.Main.fmx serialize every native control for IDE editing. Apply prepares the existing Knowledge draft and preserves its exact evidence links; Save persists it. Named review appends a revision; subsequent edits reopen review. Search and publication use the same attributed Knowledge record. Existing storage migrations suffice; no new schema or runtime UI construction is required.',
+'Run tools/build-action-purposes.cmd elevated for parser, binary DFM, FMX, identity and ambiguity checks, database persistence, duplicate and stale protection, named review, history, search, exported bundle validation, HTML and user DOCX text, native editor Apply/Cancel, task drafts, filtering, pagination and compact layout. Fixtures reuse bin/action-purposes-validation. Native PaintTo images show real DPH controls; they are not screenshots of the analyzed application.'
+]))
+for chapters in (USER, ENGINEERING):
+    for index, (heading, paragraphs) in enumerate(chapters):
+        chapters[index] = (heading, [p.replace('338 requirement records remain incomplete', '337 requirement records remain incomplete') for p in paragraphs])
+
 user_order = [
     'Purpose and evidence', 'Start DPH', 'Run the application and its checks',
     'Attach a source project', 'Open cached work', 'Manage the project catalog', 'Record the selected application profile', 'Define and review business terms',
@@ -502,7 +519,7 @@ user_order = [
     'Explore and search', 'Search across the captured project',
     'Read source and graph evidence', 'Investigate source quality candidates', 'Compare captured revisions', 'Choose graph scope and grouping',
     'Read a routine as a beginner', 'Inspect screens', 'Inspect keyboard shortcuts and focus order', 'Inspect menus context menus and toolbars', 'Inspect dynamic and runtime created controls', 'Inspect responsive layouts anchors and alignments', 'Inspect component dependencies and support records', 'Inspect inherited forms and embedded frames', 'Import actual screenshot evidence',
-    'Write attributed knowledge', 'Link authored sections to exact evidence',
+    'Record user actions and business purposes', 'Write attributed knowledge', 'Link authored sections to exact evidence',
     'Review and retire knowledge', 'Review changed knowledge against evidence',
     'Answer focused author questions', 'Preserve saved runtime observations',
     'Retain captures and review rename continuity', 'Back up and restore a complete database',
@@ -598,7 +615,7 @@ def build(filename, title, audience, sections):
     evidence = []
     for source in sorted(ROOT.glob('DPH.*.pas')):
         evidence.append({'path': source.name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
-    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DPH.UI.Glossary.fmx', 'DPH.UI.ComponentDependency.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
+    for name in ['DPH.UI.Main.fmx', 'DPH.UI.ProjectProfile.fmx', 'DPH.UI.Glossary.fmx', 'DPH.UI.ComponentDependency.fmx', 'DPH.UI.ActionPurpose.fmx', 'DelphiProjectHandoff.dpr', 'DelphiProjectHandoff.dproj']:
         source = ROOT / name
         evidence.append({'path': name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
     for item in evidence:
@@ -607,7 +624,7 @@ def build(filename, title, audience, sections):
         paragraph.paragraph_format.space_after = Pt(0)
         paragraph.runs[0].font.size = Pt(9)
         hash_paragraph = doc.add_paragraph(item['sha256'])
-        hash_paragraph.paragraph_format.space_after = Pt(3)
+        hash_paragraph.paragraph_format.space_after = Pt(1)
         run = hash_paragraph.runs[0]
         run.font.name = 'Consolas'
         run.font.size = Pt(8)
@@ -641,5 +658,5 @@ for filename, names in required.items():
 
 evidence = build('DPH_User_Guide.docx', 'DPH User Guide', 'For the person inspecting a Delphi project and recording its handoff knowledge', USER)
 build('DPH_Engineering_Guide.docx', 'DPH Engineering Guide', 'For a Delphi developer building maintaining and validating DPH', ENGINEERING)
-(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 13, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
+(ROOT / 'docs' / 'guide-source-validation.json').write_text(json.dumps({'guide_version': 14, 'sources': evidence, 'last_changed': '2026-10-11'}, indent=2), encoding='utf-8')
 print('Created editable DPH user and engineering guides with source evidence and TOC fields')

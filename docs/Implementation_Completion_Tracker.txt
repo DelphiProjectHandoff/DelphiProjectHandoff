@@ -30,7 +30,12 @@ Form inheritance and embedded frames completed (04.18): multi-level form/frame
 overlays with property/event provenance, guarded origin navigation and native
 inspector; 54 focused and 181 regression checks.
 See Phase1_Form_Inheritance_Completion.txt.
-Current live backlog: 338 incomplete requirement records; 0 unassessed.
+Action purposes completed through attributed manual capture (04.19): structured
+UI mappings and independent project tasks, purpose/steps/outcome/evidence fields,
+Knowledge history/review, search and publication; 81 focused and 186 regression
+checks. Business facts still require a knowledgeable contributor.
+See Phase1_Action_Purposes_Completion.txt.
+Current live backlog: 337 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

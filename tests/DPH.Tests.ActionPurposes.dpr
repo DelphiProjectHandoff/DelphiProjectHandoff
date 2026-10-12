@@ -1,0 +1,131 @@
+program DPH.Tests.ActionPurposes;
+{$APPTYPE CONSOLE}
+uses System.SysUtils,System.Classes,System.IOUtils,System.JSON,System.Hash,System.UITypes,
+ FMX.Forms,FMX.Graphics,DPH.UI.Main,DPH.UI.ActionPurpose,DPH.Project.Analysis,DPH.Analysis.Symbols,DPH.Analysis.Model,
+ DPH.Workspace.Model,DPH.Workspace.Keyboard,DPH.Workspace.ActionPurposes,DPH.Knowledge.ActionPurpose,
+ DPH.Workspace.Catalog,DPH.Storage.Database,DPH.Storage.Types,DPH.Publish.Model,DPH.Publish.Export,System.Zip;
+var Root,Work,Fixture,Text,Hash,Catalog,CatalogHash,DatabasePath,Identity,Target,EntityKey:string;Checks,I:Integer;
+ Analyzer:TDPHAnalyzer;Semantic:TDPHSemanticAnalyzer;Scan:TDPHScan;Graph:TDPHSemanticGraph;View:TDPHWorkspaceView;
+ Keyboard,Report,Row,RecordValue,Fields,Other,CopyDoc:TJSONObject;Rows:TJSONArray;V:TJSONValue;
+ Form:TDPHMainForm;Editor:TDPHActionPurposeForm;Bitmap:TBitmap;Rejected:Boolean;Store:TDPHKnowledgeStore;
+ Manifest:TDPHManifest;Generation,Configuration,Knowledge,Revision,Reviewed:Int64;Model:TDPHDocumentModel;
+ Input:TStringStream;Binary:TMemoryStream;Archive:TZipFile;Bytes:TBytes;Bundle:string;
+procedure Check(OK:Boolean;const S:string);
+begin if not OK then raise Exception.Create('FAIL '+S);Inc(Checks);Writeln('PASS ',Checks,': ',S);Flush(Output);end;
+function Find(const Name:string):TJSONObject;
+var Value:TJSONValue;
+begin Result:=nil;for Value in Report.GetValue<TJSONArray>('rows') do if Value.GetValue<string>('name')=Name then Exit(Value as TJSONObject);end;
+function SameRecord(const JSON:string):Boolean;
+var Parsed:TJSONObject;Key:string;
+begin Parsed:=TJSONObject.ParseJSONValue(JSON) as TJSONObject;try Result:=(Parsed<>nil) and (Parsed.GetValue<string>('record_type','')='action_purpose');if Result then for Key in DPHActionPurposeKeys do if Parsed.GetValue<string>('fields.'+Key,'')<>RecordValue.GetValue<string>('fields.'+Key,'') then Result:=False;finally Parsed.Free;end;end;
+procedure SetField(const Key,Value:string);
+var Pair:TJSONPair;
+begin Pair:=Fields.RemovePair(Key);Pair.Free;Fields.AddPair(Key,Value);end;
+function Save(Expected:Int64;const Body:string=''):Int64;
+var B:string;
+begin B:=Body;if B='' then B:=TDPHActionPurpose.Body(RecordValue);Result:=Store.SaveKnowledge(Knowledge,Expected,Generation,TDPHActionPurpose.Title(RecordValue),B,'Purpose Test Author','user_help',Fields.GetValue<string>('target_key',''),'user','user','','',RecordValue.ToJSON);end;
+procedure Render(const Name:string);
+begin Application.ProcessMessages;Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\'+Name));finally Bitmap.Free;end;end;
+procedure QueueEditor(Cancel:Boolean);
+begin TThread.ForceQueue(nil,procedure
+ var J:Integer;ActiveEditor:TDPHActionPurposeForm;RefreshStore:TDPHKnowledgeStore;
+ begin for J:=0 to Screen.FormCount-1 do if Screen.Forms[J] is TDPHActionPurposeForm then begin
+  ActiveEditor:=Screen.Forms[J] as TDPHActionPurposeForm;
+  RefreshStore:=TDPHKnowledgeStore.Create(DatabasePath,Fixture,TPath.Combine(Root,'migrations'));try Form.LoadKnowledge(RefreshStore.KnowledgeJSON);finally RefreshStore.Free;end;
+  if Cancel then ActiveEditor.ModalResult:=mrCancel else begin ActiveEditor.Profile_action_name.Text:='Native project task';ActiveEditor.Profile_purpose.Text:='Native business purpose';ActiveEditor.Profile_steps.Text:='1. Follow the controlled fixture';ActiveEditor.Profile_outcome.Text:='Unknown runtime outcome';ActiveEditor.Profile_evidence.Text:='Named fixture contributor';ActiveEditor.ProfileAuthorEdit.Text:='Native contributor';ActiveEditor.ApplyProfileClick(nil);end;Break;
+ end;end);end;
+begin
+ Application.Initialize;
+ try
+ Root:=TPath.GetFullPath(ParamStr(1));Work:=TPath.Combine(Root,'bin\action-purposes-validation');Fixture:=TPath.Combine(Work,'source');TDirectory.CreateDirectory(Fixture);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Actions.dpr'),'program Actions; uses Main, Touch, BinaryLayout; begin end.',TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Main.pas'),'unit Main; interface implementation {$R *.dfm} end.',TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Touch.pas'),'unit Touch; interface implementation {$R *.fmx} end.',TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Fixture,'Touch.fmx'),'object TouchForm: TForm'+sLineBreak+' object TouchButton: TButton'+sLineBreak+' end'+sLineBreak+'end',TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Fixture,'BinaryLayout.pas'),'unit BinaryLayout; interface implementation {$R *.dfm} end.',TEncoding.UTF8);
+ Input:=TStringStream.Create('object BinaryForm: TForm'+sLineBreak+' object BinaryButton: TButton'+sLineBreak+' end'+sLineBreak+'end');Binary:=TMemoryStream.Create;
+ try ObjectTextToBinary(Input,Binary);Binary.SaveToFile(TPath.Combine(Fixture,'BinaryLayout.dfm'));finally Binary.Free;Input.Free;end;
+ Text:='object MainForm: TForm'+sLineBreak+' object ExportButton: TButton'+sLineBreak+' Caption = ''Export invoices'''+sLineBreak+' OnClick = ExportClick'+sLineBreak+' end'+sLineBreak+' object Duplicate: TButton'+sLineBreak+' end'+sLineBreak+' object Duplicate: TButton'+sLineBreak+' end'+sLineBreak;
+ for I:=1 to 270 do Text:=Text+' object Extra'+IntToStr(I)+': TButton'+sLineBreak+' end'+sLineBreak;
+ Text:=Text+'end';TFile.WriteAllText(TPath.Combine(Fixture,'Main.dfm'),Text,TEncoding.UTF8);Hash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.dfm'));
+ Analyzer:=TDPHAnalyzer.Create;Semantic:=TDPHSemanticAnalyzer.Create;
+ try Scan:=Analyzer.Scan(TPath.Combine(Fixture,'Actions.dpr'),'Debug','Win32',[],[],False);try Manifest:=Scan.Inventory.Manifest;Graph:=Semantic.Analyze(Scan);try View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,Graph,1,'Actions.dpr','Debug','Win32',[],[]));finally Graph.Free;end;finally Scan.Free;end;finally Semantic.Free;Analyzer.Free;end;
+ try Keyboard:=TDPHKeyboardInspector.Inspect(View);try Report:=TDPHActionPurposes.Inspect(View,Keyboard,nil);
+ try
+ Check(Find('ExportButton')<>nil,'Text DFM action candidate captured');Check(Find('TouchButton')<>nil,'FMX candidate captured');Check(Find('BinaryButton')<>nil,'Binary DFM candidate captured');
+ Row:=Find('ExportButton');Identity:=Row.GetValue<string>('action_id');Target:=Row.GetValue<string>('target');EntityKey:=Row.GetValue<string>('target_key','');
+ Check(SameText(Target,'Main.dfm|MainForm/ExportButton'),'Parent-local target path preserved: '+Target);Check(Identity=TDPHActionPurpose.Identity(LowerCase(Target)),'Identity ignores target case');
+ Check(TDPHActionPurposes.State(Row,nil)='not recorded','Missing purpose distinguished');
+ Check(TDPHActionPurposes.Describe(Row,nil).Contains('Export invoices'),'Captured caption shown as evidence');
+ Check(TDPHActionPurposes.Describe(Row,nil).Contains('Purpose not recorded'),'Caption does not invent purpose');
+ Check(Find('Duplicate').GetValue<Boolean>('ambiguous_target'),'Duplicate target names explicitly ambiguous');
+ Check(TDPHActionPurposes.Describe(Find('Duplicate'),nil).Contains('Ambiguous captured path'),'Ambiguity explained');
+ Check(TDPHKeyboardInspector.ReadSource(View,TPath.Combine(Fixture,'Actions.dpr'),Row,Row.GetValue<TJSONObject>('range')).Contains('ExportButton'),'Matching source opens');
+ Rejected:=False;try TDPHKeyboardInspector.ReadSource(View,TPath.Combine(Fixture,'Actions.dpr'),Find('BinaryButton'),Find('BinaryButton').GetValue<TJSONObject>('range'));except Rejected:=True;end;Check(Rejected,'Binary source not presented as text');
+ TFile.AppendAllText(TPath.Combine(Fixture,'Main.dfm'),sLineBreak,TEncoding.UTF8);Rejected:=False;try TDPHKeyboardInspector.ReadSource(View,TPath.Combine(Fixture,'Actions.dpr'),Row,Row.GetValue<TJSONObject>('range'));except Rejected:=True;end;Check(Rejected,'Changed source refused');TFile.WriteAllText(TPath.Combine(Fixture,'Main.dfm'),Text,TEncoding.UTF8);
+ RecordValue:=TJSONObject.Create.AddPair('record_type','action_purpose').AddPair('fields',TJSONObject.Create.AddPair('action_id',Identity).AddPair('target',Target).AddPair('target_key',EntityKey));Fields:=RecordValue.GetValue<TJSONObject>('fields');
+ try
+ for Text in ['action_name','purpose','steps','outcome','evidence'] do begin Rejected:=False;try TDPHActionPurpose.Validate(RecordValue);except Rejected:=True;end;Check(Rejected,'Required field '+Text+' cannot be omitted');Fields.AddPair(Text,'Fixture '+Text);end;
+ SetField('purpose','Prepare a synthetic invoice handoff for reviewer approval');SetField('steps','1. Select synthetic invoices. 2. Click Export. 3. Inspect the destination.');SetField('outcome','Expected export; actual runtime outcome unknown');SetField('evidence','Controlled fixture and named contributor; runtime unobserved');
+ Check(TDPHActionPurpose.Body(RecordValue).Contains('Not supplied; remains unknown.'),'Optional unknowns explicit');
+ Check(TDPHActionPurpose.Body(RecordValue).Contains('Saving does not verify business intent'),'Business claims qualified');
+ Fields.AddPair('unexpected','bad');Rejected:=False;try TDPHActionPurpose.Validate(RecordValue);except Rejected:=True;end;Check(Rejected,'Unknown field rejected');Fields.RemovePair('unexpected').Free;
+ Fields.AddPair('trigger',TJSONNumber.Create(1));Rejected:=False;try TDPHActionPurpose.Validate(RecordValue);except Rejected:=True;end;Check(Rejected,'Nontext rejected');Fields.RemovePair('trigger').Free;
+ SetField('trigger',StringOfChar('x',4097));Rejected:=False;try TDPHActionPurpose.Validate(RecordValue);except Rejected:=True;end;Check(Rejected,'Oversized field rejected');SetField('trigger','Click Export');
+ SetField('action_id','ui:wrong');Rejected:=False;try TDPHActionPurpose.Validate(RecordValue);except Rejected:=True;end;Check(Rejected,'Identity must match target');SetField('action_id',Identity);
+ DatabasePath:=TPath.Combine(Work,'actions.dphdb');if TFile.Exists(DatabasePath) then TFile.Delete(DatabasePath);Store:=TDPHKnowledgeStore.Create(DatabasePath,Fixture,TPath.Combine(Root,'migrations'));
+ try Store.InitializeProject('Action purposes fixture','Delphi');Configuration:=Store.AddConfiguration('Win32','37.0','[]','[]','Debug');Store.SelectConfiguration(Configuration);Store.ObserveManifest(Manifest);Generation:=Store.BeginGeneration(Configuration,'action-fixture',Manifest);
+ if EntityKey<>'' then Store.AddSourceEntity(Generation,'main.dfm',EntityKey,'component','ExportButton','',0,1,'{}');
+ Check(not Store.PublishGeneration(Generation,Manifest,'{}',False),'Partial capture remains partial');Knowledge:=Save(0);Rows:=Store.KnowledgeJSON;
+ try Row:=Rows.Items[0] as TJSONObject;Revision:=StrToInt64(Row.GetValue<string>('revision'));
+ Check(SameRecord(Row.GetValue<string>('structured_json')),'Exact structured fields persist');Check(Row.GetValue<string>('state')='needs_review','Save requires review');Check(Row.GetValue<string>('editor')='Purpose Test Author','Named contributor persists');
+ Check(TDPHActionPurposes.FindRecord(Rows,UpperCase(Identity))=Row,'Identity lookup ignores case');Check(TDPHActionPurposes.State(Find('ExportButton'),Rows)='needs_review','Capture mapping displays saved state');
+ Check(TDPHActionPurposes.Describe(Find('ExportButton'),Rows).Contains('synthetic invoice'),'Authored business purpose appears beside capture');
+ Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,False);try Check(Model.Document.ToJSON.Contains('synthetic invoice') and Model.Document.ToJSON.Contains('action_purpose'),'Publication includes structured and readable purpose');finally Model.Free;end;
+ Other:=TDPHActionPurposes.Inspect(View,nil,Rows);try Check(Other.GetValue<TJSONArray>('rows').Items[0].GetValue<Boolean>('record_only'),'Unmatched saved target retained');Check(TDPHActionPurposes.Describe(Other.GetValue<TJSONArray>('rows').Items[0] as TJSONObject,Rows).Contains('Historical/unresolved'),'Unmatched mapping qualified');finally Other.Free;end;
+ finally Rows.Free;end;
+ Rejected:=False;try Store.SaveKnowledge(0,0,Generation,TDPHActionPurpose.Title(RecordValue),TDPHActionPurpose.Body(RecordValue),'Other Author','user_help',EntityKey,'user','user','','',RecordValue.ToJSON);except Rejected:=True;end;Check(Rejected,'Duplicate target record refused');
+ Rejected:=False;try Save(Revision,'Contradictory business text');except Rejected:=True;end;Check(Rejected,'Readable fields cannot contradict structured record');
+ Rejected:=False;try Store.SaveKnowledge(Knowledge,Revision,Generation,TDPHActionPurpose.Title(RecordValue),TDPHActionPurpose.Body(RecordValue),'Author','user_help',EntityKey,'user','user');except Rejected:=True;end;Check(Rejected,'Ordinary editing cannot discard fields');
+ SetField('target',Target+'Changed');SetField('action_id',TDPHActionPurpose.Identity(Target+'Changed'));Rejected:=False;try Save(Revision);except Rejected:=True;end;Check(Rejected,'Existing target identity immutable');SetField('target',Target);SetField('action_id',Identity);
+ Store.ReviewKnowledge(Knowledge,Revision,Generation,'Named Purpose Reviewer','verified');Rows:=Store.KnowledgeJSON;try Row:=Rows.Items[0] as TJSONObject;Reviewed:=StrToInt64(Row.GetValue<string>('revision'));Check(Row.GetValue<string>('state')='verified','Explicit named review verifies guidance');Check(SameRecord(Row.GetValue<string>('structured_json')),'Review preserves fields');Check(Row.GetValue<string>('reviewer')='Named Purpose Reviewer','Reviewer attributed');finally Rows.Free;end;
+ Rejected:=False;try Save(Revision);except Rejected:=True;end;Check(Rejected,'Stale edit cannot overwrite review');SetField('action_name','Export for accounts review');Knowledge:=Save(Reviewed);Rows:=Store.KnowledgeJSON;try Row:=Rows.Items[0] as TJSONObject;Check((Row.GetValue<string>('state')='needs_review') and (Row.GetValue<TJSONArray>('history').Count=3),'Rename preserves identity/history and reopens review');finally Rows.Free;end;
+ Store.BuildSearchIndex(Generation);Rows:=Store.SearchProject(Generation,'synthetic invoice','',0);try Check(Rows.Count>0,'Purpose searchable');finally Rows.Free;end;Check(Store.IntegrityCheck='ok','Database integrity');
+ Rows:=Store.KnowledgeJSON;try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,False);try
+ Bundle:=TPath.GetFullPath(TPath.Combine(Work,'handoff'));
+ if not Bundle.StartsWith(TPath.GetFullPath(Work)+PathDelim,True) then raise Exception.Create('Fixture export escaped validation folder');
+ if TDirectory.Exists(Bundle) then TDirectory.Delete(Bundle,True);
+ TDPHPublisher.Export(Model,Store,Bundle);TDPHPublisher.Validate(Bundle,Model.Document.GetValue<string>('input_fingerprint'),False);Check(True,'Exported purpose handoff passes bundle validation');
+ Check(TFile.ReadAllText(TPath.Combine(Bundle,'index.html')).Contains('synthetic invoice'),'HTML handoff includes purpose');
+ Archive:=TZipFile.Create;try Archive.Open(TPath.Combine(Bundle,'User_Guide.docx'),zmRead);Archive.Read('word/document.xml',Bytes);Check(TEncoding.UTF8.GetString(Bytes).Contains('synthetic invoice'),'Exported user manual contains purpose');finally Archive.Free;end;
+ finally Model.Free;end;finally Rows.Free;end;
+ Other:=RecordValue.Clone as TJSONObject;try Other.GetValue<TJSONObject>('fields').RemovePair('action_id').Free;Other.GetValue<TJSONObject>('fields').AddPair('action_id','task:'+TGUID.NewGuid.ToString);Other.GetValue<TJSONObject>('fields').RemovePair('target').Free;Other.GetValue<TJSONObject>('fields').AddPair('target','Project task');Other.GetValue<TJSONObject>('fields').RemovePair('target_key').Free;Other.GetValue<TJSONObject>('fields').AddPair('target_key','');
+ TDPHActionPurpose.Validate(Other);Check(Store.SaveKnowledge(0,0,Generation,TDPHActionPurpose.Title(Other),TDPHActionPurpose.Body(Other),'Task Author','user_help','','user','user','','',Other.ToJSON)>0,'Project procedure saves without UI mapping');
+ Rows:=Store.KnowledgeJSON;try CopyDoc:=TDPHActionPurposes.Inspect(View,Keyboard,Rows);try Rejected:=False;for V in CopyDoc.GetValue<TJSONArray>('rows') do if V.GetValue<string>('action_id').StartsWith('task:') then Rejected:=V.GetValue<Boolean>('record_only');Check(Rejected,'Project task appears alongside UI candidates');finally CopyDoc.Free;end;finally Rows.Free;end;
+ finally Other.Free;end;
+ finally Store.Free;end;
+ Store:=TDPHKnowledgeStore.Create(DatabasePath,Fixture,TPath.Combine(Root,'migrations'));try Rows:=Store.KnowledgeJSON;try Check(SameRecord(TDPHActionPurposes.FindRecord(Rows,Identity).GetValue<string>('structured_json')),'Reopen retains current purpose');finally Rows.Free;end;finally Store.Free;end;
+ Editor:=TDPHActionPurposeForm.Create(nil);try Editor.LoadRecord(RecordValue,'Native Test Author');Editor.ApplyProfileClick(nil);Check(Editor.ModalResult=mrOk,'Serialized editor validates action purpose');Other:=Editor.RecordJSON;try Check(SameRecord(Other.ToJSON),'Editor round trips all fields and type');finally Other.Free;end;
+ Check(Editor.Profile_action_id.ReadOnly and Editor.Profile_target.ReadOnly and Editor.Profile_target_key.ReadOnly,'Identity fields are read only');Editor.ProfileAuthorEdit.Text:='';Editor.ModalResult:=mrNone;Editor.ApplyProfileClick(nil);Check(Editor.ModalResult<>mrOk,'Editor requires contributor');Editor.Hide;finally Editor.Free;end;
+ Editor:=TDPHActionPurposeForm.Create(nil);try Editor.LoadRecord(RecordValue,'Native Test Author');Editor.Show;Application.ProcessMessages;Bitmap:=TBitmap.Create(Editor.ClientWidth,Editor.ClientHeight);try if Bitmap.Canvas.BeginScene then try Editor.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-action-purpose-editor.png'));finally Bitmap.Free;end;Editor.Hide;finally Editor.Free;end;
+ Catalog:=TDPHWorkspaceCatalog.DefaultPath;CatalogHash:='';if TFile.Exists(Catalog) then CatalogHash:=THashSHA2.GetHashStringFromFile(Catalog);
+ Form:=TDPHMainForm.Create(nil);try Form.PollTimer.Enabled:=False;Form.ChangeTimer.Enabled:=False;Form.LoadView(View.Document.Clone as TJSONObject);
+ Check(Form.ActionPurposeList.Count=250,'Native first page bounds 250 rows');Check(Form.ActionPurposeNextButton.Enabled,'More rows enable Next');Form.ActionPurposeFilterChange(Form.ActionPurposeNextButton);Check(Form.ActionPurposeList.Count=Report.GetValue<TJSONArray>('rows').Count-250,'Next shows remaining rows');Check(not Form.ActionPurposeNextButton.Enabled,'Last page disables Next');Form.ActionPurposeFilterChange(Form.ActionPurposeFirstButton);
+ Check(Form.WorkspacePageCombo.Items.IndexOf('Action purposes')>=0,'Page discoverable');Form.ActionPurposeFilterEdit.Text:=Target;Form.ActionPurposeFilterChange(nil);Check(Form.ActionPurposeList.Count=1,'Filter selects unique target');Check(Form.ActionPurposeMemo.Text.Contains('Purpose not recorded'),'Native page explains missing purpose');Check(Form.ActionPurposeEditButton.Enabled,'Unique candidate enables editor');Check(not Form.ActionPurposeKnowledgeButton.Enabled,'No record disables Knowledge');Form.ActionPurposeSourceClick(nil);Check(Form.ActionPurposeMemo.Text.Contains('Source is detached'),'Detached source refused');
+ Store:=TDPHKnowledgeStore.Create(DatabasePath,Fixture,TPath.Combine(Root,'migrations'));try Form.LoadKnowledge(Store.KnowledgeJSON);finally Store.Free;end;
+ Check(Form.ActionPurposeMemo.Text.Contains('synthetic invoice'),'Native saved text refreshed');Check(Form.ActionPurposeKnowledgeButton.Enabled,'Saved record enables Knowledge');QueueEditor(True);Form.ActionPurposeEditClick(Form.ActionPurposeEditButton);Check(Form.ActionPurposeKnowledgeButton.Enabled,'Cancel retains saved purpose');
+ QueueEditor(False);Form.ActionPurposeEditClick(Form.ActionPurposeEditButton);Check(Form.KnowledgeBodyMemo.Text.Contains('Native business purpose') and Form.KnowledgeBodyMemo.ReadOnly,'Native Apply creates structured Knowledge draft');
+ Form.ActionPurposeEditClick(Form.ActionPurposeNewButton);Check(Form.StatusLabel.Text.Contains('Save or discard'),'New task protects unsaved draft');Form.DiscardKnowledgeClick(nil);
+ QueueEditor(False);Form.ActionPurposeEditClick(Form.ActionPurposeNewButton);Check(Form.KnowledgeBodyMemo.Text.Contains('Project task') and Form.KnowledgeTitleEdit.Text.Contains('task:'),'New task prepares independent project identity');Form.DiscardKnowledgeClick(nil);Form.ActionPurposeKnowledgeClick(nil);Check((Form.WorkspaceTabs.ActiveTab=Form.KnowledgeTab) and Form.KnowledgeBodyMemo.ReadOnly,'Knowledge opens structured saved revision');
+ Form.KnowledgeBodyMemo.ReadOnly:=False;Form.KnowledgeBodyMemo.Text:='unsaved test draft';Form.KnowledgeEdited(nil);Form.ActionPurposeKnowledgeClick(nil);Check(Form.StatusLabel.Text.Contains('Save or discard'),'Navigation protects draft');Form.DiscardKnowledgeClick(nil);
+ Form.ActionPurposeStateCombo.ItemIndex:=1;Form.ActionPurposeFilterChange(nil);Check(Form.ActionPurposeList.Count=0,'Unrecorded filter excludes saved target');Form.ActionPurposeStateCombo.ItemIndex:=0;Form.ActionPurposeFilterEdit.Text:='Main.dfm|MainForm/Duplicate';Form.ActionPurposeFilterChange(nil);Check((Form.ActionPurposeList.Count=2) and not Form.ActionPurposeEditButton.Enabled and not Form.ActionPurposeExplainButton.Enabled,'Ambiguous target disables edit and Explain');
+ Form.ActionPurposeFilterEdit.Text:='absent xyz';Form.ActionPurposeFilterChange(nil);Check((Form.ActionPurposeList.Count=0) and not Form.ActionPurposeSourceButton.Enabled,'Empty result clears actions');Form.ActionPurposeFilterEdit.Text:=Target;Form.ActionPurposeFilterChange(nil);Form.WorkspaceTabs.ActiveTab:=Form.ActionPurposeTab;Form.Show;Render('phase1-action-purposes-workspace.png');Form.WindowState:=TWindowState.wsNormal;Form.Width:=960;Form.Height:=600;Render('phase1-action-purposes-compact.png');Check(Form.ActionPurposeMemo.Height>=60,'Compact detail remains visible');Check(Form.ActionPurposeToolbar.ShowScrollBars,'Compact command bar scrolls');Form.Hide;
+ CopyDoc:=View.Document.Clone as TJSONObject;CopyDoc.GetValue<TJSONObject>('syntax').RemovePair('files').Free;CopyDoc.GetValue<TJSONObject>('syntax').AddPair('files',TJSONArray.Create);Form.LoadView(CopyDoc);Check(Form.ActionPurposeMemo.Text.Contains('Historical/unresolved'),'Replacement capture retains saved unresolved mapping');
+ finally Form.Free;end;
+ Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.dfm'))=Hash,'Fixture source unchanged');
+ finally RecordValue.Free;end;
+ TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-action-purposes-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Real parser, SQLite persistence/review/search/publication and native FMX controls. Business facts require a knowledgeable contributor. PaintTo renders are DPH controls, not target screenshots.').ToJSON,TEncoding.UTF8);
+ finally Report.Free;end;finally Keyboard.Free;end;finally View.Free;end;
+ Writeln('Action purposes validation passed: ',Checks,' checks.');
+ except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
+end.

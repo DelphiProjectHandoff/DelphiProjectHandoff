@@ -46,6 +46,7 @@ Items.Strings = (
 'Layout rules'
 'Component dependencies'
 'Form inheritance'
+'Action purposes'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1438,6 +1439,132 @@ Align = Top
 Height = 6
 end
 object LayoutMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object ActionPurposeTab: TTabItem
+Text = 'Action purposes'
+object ActionPurposePurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Record purpose, steps and outcome. Claims need named review. Scroll commands sideways.'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
+end
+object ActionPurposeToolbar: THorzScrollBox
+Align = Top
+Height = 52
+ShowScrollBars = True
+object ActionPurposeStateCombo: TComboBox
+Position.X = 8
+Position.Y = 4
+Width = 150
+Height = 30
+Items.Strings = ('All review states' 'not recorded' 'needs_review' 'verified' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = ActionPurposeFilterChange
+end
+object ActionPurposeFilterEdit: TEdit
+Position.X = 166
+Position.Y = 4
+Width = 250
+Height = 30
+TextPrompt = 'Find action, screen, purpose or outcome'
+OnChange = ActionPurposeFilterChange
+end
+object ActionPurposeFirstButton: TButton
+Position.X = 424
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'First page'
+OnClick = ActionPurposeFilterChange
+end
+object ActionPurposeNextButton: TButton
+Position.X = 522
+Position.Y = 4
+Width = 90
+Height = 30
+Text = 'Next page'
+Enabled = False
+OnClick = ActionPurposeFilterChange
+end
+object ActionPurposeNewButton: TButton
+Position.X = 620
+Position.Y = 4
+Width = 100
+Height = 30
+Text = 'New task'
+Enabled = False
+OnClick = ActionPurposeEditClick
+end
+object ActionPurposeEditButton: TButton
+Position.X = 728
+Position.Y = 4
+Width = 120
+Height = 30
+Text = 'Edit purpose'
+Enabled = False
+OnClick = ActionPurposeEditClick
+end
+object ActionPurposeKnowledgeButton: TButton
+Position.X = 856
+Position.Y = 4
+Width = 145
+Height = 30
+Text = 'Open in Knowledge'
+Enabled = False
+OnClick = ActionPurposeKnowledgeClick
+end
+object ActionPurposeSourceButton: TButton
+Position.X = 1009
+Position.Y = 4
+Width = 135
+Height = 30
+Text = 'Component source'
+Enabled = False
+OnClick = ActionPurposeSourceClick
+end
+object ActionPurposeExplainButton: TButton
+Position.X = 1152
+Position.Y = 4
+Width = 150
+Height = 30
+Text = 'Explain component'
+Enabled = False
+OnClick = ActionPurposeExplainClick
+end
+end
+object ActionPurposeStatus: TLabel
+Align = Top
+Height = 44
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a project capture to begin.'
+end
+object ActionPurposeList: TListBox
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+OnChange = ActionPurposeSelectionClick
+end
+object ActionPurposeSplitter: TSplitter
+Align = Top
+Height = 6
+end
+object ActionPurposeMemo: TMemo
 Align = Client
 Margins.Left = 12
 Margins.Right = 12

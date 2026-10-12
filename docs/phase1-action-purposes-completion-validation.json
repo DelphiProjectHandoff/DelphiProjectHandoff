@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "requirement": "04.19",
+  "status": "implemented_manual_capture",
+  "checks": 81,
+  "regression_checks": 186,
+  "requirements_preserved": 533,
+  "only_promoted_record": "04.19",
+  "incomplete_requirement_records": 337,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 235,
+    "implemented": 178,
+    "missing": 102
+  },
+  "guides": {
+    "guide_sources_verified": 53,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 22,
+        "toc_entries": 43,
+        "new_chapter_pages": [
+          2,
+          14
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 18,
+        "toc_entries": 35,
+        "new_chapter_pages": [
+          2,
+          16
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\ActionPurposes_PreChange_20261011_224354",
+    "files": 3875,
+    "bytes": 929470338,
+    "sha256_verified": true
+  },
+  "qualification": "The implemented capability captures attributed manual business guidance. Automated checks do not supply project business facts, independent human acceptance or actual runtime observations.",
+  "evidence_hashes": {
+    "DPH.Knowledge.ActionPurpose.pas": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f",
+    "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
+    "DPH.UI.ActionPurpose.pas": "6016874bdc24964ce2371431d77babc68f03a50f045e8d20e222e4989bcbf79d",
+    "DPH.UI.ActionPurpose.fmx": "9eb57da0310277432db54c9a80d8d03be09aa6163acd8895f04fa21f176f8e15",
+    "DPH.Storage.Database.pas": "62acdcbefdae51057f277c072c7d820798295da4b99f79a0705df25028389118",
+    "DPH.UI.Main.pas": "4d591bea9ea684acbd96826d0a69363e3700b7c3c414daca8cf59684b74a51a1",
+    "DPH.UI.Main.fmx": "4d7d953c654ca15dc9529e17ca2a1bc6461a79dc972ad062ab7dc22c1f8742f4",
+    "tests/DPH.Tests.ActionPurposes.dpr": "1682aa2a18ec259b124a903512d9620582aa08fcbf301662085f4eaba7c15b6d",
+    "tools/build-action-purposes.cmd": "07332de395e6b45672c5d613f5ccc046b9f09eaa7ef5caefc78b3f7fec57edeb",
+    "docs/phase1-action-purposes-validation.json": "55456863391d4513785d13ee300eb9da6638dec1ef5a79748394749488c39ed9",
+    "docs/phase1-action-purposes-validation.log": "4645b0c16d24466ae0259d8eb7a1733479e94aef5d09fc27dd4c930487008491",
+    "docs/guides/Action_Purposes_Run_and_Test.txt": "57d0112e66f8464063acc023a9f9c42d21475ad7ca2b24dd2a2459e3c46d1310",
+    "docs/guide-source-validation.json": "4db07b4e82d29af7346efff1e9b0b68c7fe3605a244928b6c36f91e8a3ff3d33",
+    "docs/guides/DPH_User_Guide.docx": "830ffb91599850f0c6e8ca664ed65d1415f822fcddd6136b1234d803f8cc4957",
+    "docs/guides/DPH_Engineering_Guide.docx": "cb718a62fb9ca607e1214bace64120fb8900c03fdac9615ad4f855973042c2c2",
+    "docs/pdf/DPH_User_Guide.pdf": "2683fcb1c2a79ce13333e67107ae127ce2c2cd4406ac56ace5bf251c817b993e",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "fec4912c8fd62d3a3c42a6db1dbbc4145df2d3d1732da7e651b435e5851dd21c",
+    "docs/phase1-action-purposes-build.log": "5ce835bc59a3d198cd7dcf3d2407ca4326cef36f0e228ca83ae55ebf21cc0fb2",
+    "docs/phase1-action-purposes-dependencies-regression.json": "03d4f511ab28d510d8e41d1cb95b419a076e87333a6590e81b4c1c39cfb981cc",
+    "docs/phase1-action-purposes-glossary-regression.json": "556b4cacf8c4546ea0412ce4eea7ba0b44e26ba652cde22aba2fb4f91751aa09",
+    "docs/phase1-action-purposes-knowledge-regression.json": "6de25eee42fe2cf02f68a18dfb407d6323dd59906f597da1d6921ae1c73b765a"
+  },
+  "modal_background_refresh": "PASS: Knowledge is refreshed while the native editor is open; owned saved-row snapshot preserves expected revision and evidence links."
+}
