@@ -1,0 +1,65 @@
+DPH DATABASE TRANSACTIONS - RUN AND TEST
+Last changed: 12 October 2026
+
+START AND INSPECT
+1. In File Explorer open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe. DPH opens maximized.
+3. Click Attach project at the upper left. Select the OTHER Delphi application
+   to inspect by its .dproj, .dpr or .groupproj file. Save its proposed .dphdb
+   under DPH's Databases folder. Wait for the bottom activity line to finish.
+   For an existing cache, click Open cache and select its .dphdb, then attach
+   its unchanged source. Click Full reassessment to upgrade old captures.
+4. In the upper-right page selector choose Database connections.
+5. In the kind selector choose transaction operation. Clear the text filter.
+6. Select StartTransaction, BeginTrans, Commit, Rollback or a retaining call.
+   The central evidence memo begins TRANSACTION PATHS (SOURCE POSSIBILITIES).
+7. Read each possible normal, exception or cleanup route. A normal/exception
+   exit without another boundary is a reason to inspect source and callers,
+   not proof that a transaction was left active or safely completed.
+8. In the reference selector choose Target via possible normal path or
+   possible exception path. Click Follow reference to inspect that boundary.
+   Choose Target via Transaction instead to inspect the receiver. Used by
+   references return to earlier boundaries. Follow clears the kind/text
+   filters to reveal the exact target; reselect transaction operation as needed.
+9. Drag the command bar's horizontal scrollbar right to reach Follow reference
+   and Source. Source opens the hash-checked captured location only with
+   unchanged attached source. Detached/changed/historical evidence is refused.
+10. Scroll inside the evidence memo for effects, CFG limits and unknowns.
+    Search includes reference labels, so a routine/begin search can also show
+    connected commit/rollback rows. No matches is not proof of no transactions.
+
+WHAT THE EVIDENCE MEANS
+Recognized FireDAC, ADO, dbExpress, BDE and IBX API requests are linked to their
+declared receiver and possible intraprocedural CFG routes. Commit can raise.
+Rollback can raise and cannot prove that earlier commits or external effects
+were undone. Retaining variants and savepoint rollback are separate effects.
+Post/Cancel are not transaction completion. The target app, SQL and database
+server are never executed. Aliases, factories, runtime dispatch, automatic
+transactions, caller behavior, nesting depth and server outcomes remain unknown.
+Missing/ambiguous/bounded CFG is explicitly qualified, never safe-completion proof.
+
+REPEAT THE AUTOMATED CHECKS
+1. Open the Windows Start menu. Type cmd. Right-click Command Prompt and
+   choose Run as administrator; accept Windows' elevation prompt.
+2. Enter exactly:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-database-transactions.cmd
+4. Wait for Database transactions validation passed: 402 checks.
+   The fixed ignored fixture folder is bin\database-transactions-validation.
+   No live database or selected application is opened. Review the saved report:
+   docs\phase1-database-transactions-validation.json
+5. Regression commands, one at a time:
+   tools\build-database-operations.cmd
+   tools\build-dataset-bindings.cmd
+   tools\build-database-engines.cmd
+   tools\build-wp3.cmd
+   bin\Win32\Debug\DPH.Tests.Semantics.exe "%CD%"
+   Expected checks: operations 232, bindings 92, engines 66, semantics 134.
+6. Rebuild the actual application and its FMX resource check:
+   tools\build-wp0.cmd
+   Expect PASS WP0-TEST. Start the application again using steps 1-2 above.
+
+402 focused checks and 524 regression checks apply to these tested contracts.
+They do not establish completion of every DPH project requirement.

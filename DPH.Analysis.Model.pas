@@ -2,7 +2,7 @@
 
 interface
 uses System.SysUtils, System.JSON, System.Generics.Collections, DPH.Parse.Model;
-const DPHSemanticVersion = 'DPH-WP3-13';
+const DPHSemanticVersion = 'DPH-WP3-14';
       DPHSemanticSchema = 1;
 type
   TDPHSymbol = class

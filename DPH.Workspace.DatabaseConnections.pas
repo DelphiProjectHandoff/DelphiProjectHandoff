@@ -4,6 +4,7 @@ uses System.JSON, DPH.Workspace.Model;
 type
   TDPHDatabaseConnections = class
   private
+    class procedure AttachTransactionPaths(AView:TDPHWorkspaceView;AInventory:TJSONObject); static;
     class procedure AppendOperations(AView:TDPHWorkspaceView;AInventory:TJSONObject); static;
     class procedure EvaluateEngines(AInventory:TJSONObject); static;
     class procedure ResolveFields(AInventory:TJSONObject); static;
@@ -198,6 +199,7 @@ begin
       end;
       ResolveFields(Result);
       AppendOperations(AView,Result);
+      AttachTransactionPaths(AView,Result);
       EvaluateEngines(Result);
       Result.AddPair('total',TJSONNumber.Create(Rows.Count)).AddPair('component_and_declaration_rows',TJSONNumber.Create(OriginalCount));
     except Result.Free;raise;end;
@@ -223,9 +225,17 @@ begin
   Count:=0;
   for V in Relations do begin
    Relation:=V as TJSONObject;Basis:=Relation.GetValue<string>('kind');
-   if not MatchText(Basis,['database_operation','static_sql','dynamic_sql']) then Continue;
+   if not MatchText(Basis,['database_operation','database_transaction','static_sql','dynamic_sql']) then Continue;
    Kind:='unknown';Method:=Relation.GetValue<string>('label');Effect:='Operation type and affected objects require approved source review.';
-   if Basis='database_operation' then begin
+   if Basis='database_transaction' then begin
+    if MatchText(Method,['StartTransaction','BeginTransaction','BeginTrans']) then begin Kind:='begin transaction';Effect:='Requests starting a transaction or nested savepoint. Provider settings, nesting depth and successful activation are unobserved.';end
+    else if MatchText(Method,['Commit','CommitTrans','CommitFreeAndNil']) then begin Kind:='commit request';Effect:='Requests committing the current transaction. The call can raise; a later rollback path does not prove that committed changes were undone.';end
+    else if SameText(Method,'CommitRetaining') then begin Kind:='commit retaining request';Effect:='Requests committing while retaining or restarting transaction context. Provider emulation and nested savepoint behavior require review.';end
+    else if SameText(Method,'RollbackSavepoint') then begin Kind:='rollback savepoint request';Effect:='Requests rolling back a named savepoint, not necessarily the entire transaction. Savepoint identity and successful rollback remain unobserved.';end
+    else if SameText(Method,'RollbackRetaining') then begin Kind:='rollback retaining request';Effect:='Requests undoing pending changes while retaining or restarting transaction context. Runtime success and provider behavior remain unobserved.';end
+    else begin Kind:='rollback request';Effect:='Requests rolling back pending transaction changes. The request itself can raise. Previously committed changes, implicit commits and external side effects are not proved undone.';end;
+    Basis:='Recognized API on a declared framework connection/transaction or captured descendant. Intraprocedural paths below are conservative source possibilities.';
+   end else if Basis='database_operation' then begin
     if MatchText(Method,['Open','Refresh','First','Last','Next','Prior','MoveBy','Locate','Lookup','FindFirst','FindLast','FindNext','FindPrior']) then begin Kind:='read';Effect:='Requests opening, refreshing, navigating or searching dataset records. Opening or refreshing may run configured SQL. Returned records, implicit posts and side effects are unobserved.';end
     else if MatchText(Method,['Append','Insert']) then begin Kind:='insert preparation';Effect:='Starts a new record buffer. This is not proof of an inserted database row; follow Post or cancellation and cached-update handling.';end
     else if MatchText(Method,['AppendRecord','InsertRecord']) then begin Kind:='insert';Effect:='Requests insertion of supplied record values. Success, cached updates, validation, triggers and transaction outcome are unobserved.';end
@@ -259,6 +269,8 @@ begin
    if Symbols.TryGetValue(Owner,Symbol) then Owner:=Symbol.GetValue<string>('name');
    Row:=TJSONObject.Create;Rows.AddElement(Row);
    Row.AddPair('id',ID).AddPair('name',Method).AddPair('path',Owner+' / '+Method+' / '+Kind).AddPair('class',Method).AddPair('role','database operation');
+   if Relation.GetValue<string>('kind')='database_transaction' then begin Row.RemovePair('role').Free;Row.AddPair('role','transaction operation');end;
+   Row.AddPair('routine_key',Relation.GetValue<string>('from')).AddPair('receiver_key',Relation.GetValue<string>('to',''));
    Row.AddPair('operation_kind',Kind).AddPair('effect',Effect).AddPair('basis',Basis).AddPair('condition',Relation.GetValue<string>('condition'));
    Row.AddPair('source',Relation.GetValue<string>('range.source')).AddPair('source_hash',Relation.GetValue<string>('source_hash')).AddPair('range',Relation.GetValue('range').Clone as TJSONValue).AddPair('generation_id',AView.Document.GetValue('generation_id').Clone as TJSONValue);
    Row.AddPair('availability','captured operation candidate').AddPair('declaration','source evidence, not execution evidence').AddPair('configuration',TJSONArray.Create).AddPair('links',TJSONArray.Create).AddPair('used_by',TJSONArray.Create);
@@ -266,23 +278,134 @@ begin
    Target:=nil;Reference:='unresolved receiver';
    if Relation.TryGetValue<string>('to',Key) and Symbols.TryGetValue(Key,Symbol) then begin
     Reference:=Symbol.GetValue<string>('name');
-    if not Receivers.TryGetValue(Key,Target) and (Relation.GetValue<string>('kind')='database_operation') then begin
+    if not Receivers.TryGetValue(Key,Target) and MatchText(Relation.GetValue<string>('kind'),['database_operation','database_transaction']) then begin
      if Rows.Count>=10000 then raise ERangeError.Create('Database inventory exceeds 10000 rows including operation receivers');
      Target:=TJSONObject.Create;Rows.AddElement(Target);Receivers.Add(Key,Target);
-     Target.AddPair('id',Key).AddPair('name',Reference).AddPair('path',Reference).AddPair('class',Symbol.GetValue<string>('type')).AddPair('role','dataset');
+     Target.AddPair('id',Key).AddPair('name',Reference).AddPair('path',Reference).AddPair('class',Symbol.GetValue<string>('type')).AddPair('role',IfThen(Relation.GetValue<string>('kind')='database_transaction','transaction','dataset'));
      Target.AddPair('source',Symbol.GetValue<string>('range.source')).AddPair('source_hash',Symbol.GetValue<string>('source_hash')).AddPair('range',Symbol.GetValue('range').Clone as TJSONValue).AddPair('generation_id',AView.Document.GetValue('generation_id').Clone as TJSONValue);
-     Target.AddPair('availability','captured descendant dataset declaration').AddPair('declaration',Symbol.GetValue<string>('kind')).AddPair('configuration',TJSONArray.Create).AddPair('links',TJSONArray.Create).AddPair('used_by',TJSONArray.Create);
-     Target.AddPair('unknowns','Receiver has a captured dataset ancestry. Runtime instance, inherited/custom API overrides, connection and configuration are unobserved.');
+     Target.AddPair('availability','captured database receiver declaration').AddPair('declaration',Symbol.GetValue<string>('kind')).AddPair('configuration',TJSONArray.Create).AddPair('links',TJSONArray.Create).AddPair('used_by',TJSONArray.Create);
+     Target.AddPair('unknowns','Receiver has a captured database API ancestry. Runtime instance, inherited/custom API overrides, connection and configuration are unobserved.');
     end;
    end;
-   Link:=TJSONObject.Create.AddPair('property','DataSet').AddPair('reference',Reference);Row.GetValue<TJSONArray>('links').AddElement(Link);
-   if (Target<>nil) and MatchText(Target.GetValue<string>('role'),['dataset','connection']) then begin
+   Link:=TJSONObject.Create.AddPair('property',IfThen(Relation.GetValue<string>('kind')='database_transaction','Transaction','DataSet')).AddPair('reference',Reference);Row.GetValue<TJSONArray>('links').AddElement(Link);
+   if (Target<>nil) and MatchText(Target.GetValue<string>('role'),['dataset','connection','transaction']) then begin
     Link.AddPair('target_id',Target.GetValue<string>('id')).AddPair('resolution','unique captured semantic receiver');
     Target.GetValue<TJSONArray>('used_by').AddElement(TJSONObject.Create.AddPair('id',ID).AddPair('name',Row.GetValue<string>('path')).AddPair('property','operation receiver'));
    end else Link.AddPair('resolution','receiver unavailable, ambiguous or outside recognized database inventory');
   end;
   AInventory.AddPair('operation_count',TJSONNumber.Create(Count));
  finally Locations.Free;Receivers.Free;Symbols.Free;end;
+end;
+
+class procedure TDPHDatabaseConnections.AttachTransactionPaths(AView:TDPHWorkspaceView;AInventory:TJSONObject);
+var Nodes,Edges,Rows,Paths,Origins:TJSONArray;V,X:TJSONValue;Row,Node,Edge,Target,Route:TJSONObject;
+    ByRoutine:TObjectDictionary<string,TList<TJSONObject>>;
+    Outgoing:TObjectDictionary<Integer,TList<TJSONObject>>;
+    AtNode:TObjectDictionary<Integer,TList<TJSONObject>>;
+    NodeIndex:TDictionary<Integer,TJSONObject>;Starts:TObjectDictionary<string,TList<Integer>>;
+    Seen,Published:TDictionary<string,Boolean>;Trace:TDictionary<string,string>;
+    Candidates:TList<TJSONObject>;IDs:TList<Integer>;Targets:TList<TJSONObject>;
+    Queue:TQueue<TPair<Integer,Integer>>;State:TPair<Integer,Integer>;
+    I,N,Width,Best,Flags,NextFlags,Steps,TotalSteps,Count:Integer;
+    Key,NextKey,LabelText,RouteKey,EdgeKind,TraceText:string;
+    Truncated,Stopped,Ambiguous:Boolean;
+  function SameReceiver(A,B:TJSONObject):Boolean;
+  begin Result:=(A.GetValue<string>('receiver_key')<>'') and (A.GetValue<string>('receiver_key')=B.GetValue<string>('receiver_key'));end;
+  function StateKey(ANode,AFlags:Integer):string;
+  begin Result:=IntToStr(ANode)+'|'+IntToStr(AFlags);end;
+begin
+ Rows:=AInventory.GetValue<TJSONArray>('rows');Nodes:=AView.Document.GetValue<TJSONArray>('semantics.flow_nodes');Edges:=AView.Document.GetValue<TJSONArray>('semantics.flow_edges');
+ ByRoutine:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);Outgoing:=TObjectDictionary<Integer,TList<TJSONObject>>.Create([doOwnsValues]);
+ AtNode:=TObjectDictionary<Integer,TList<TJSONObject>>.Create([doOwnsValues]);NodeIndex:=TDictionary<Integer,TJSONObject>.Create;
+ Starts:=TObjectDictionary<string,TList<Integer>>.Create([doOwnsValues]);Seen:=TDictionary<string,Boolean>.Create;Published:=TDictionary<string,Boolean>.Create;Trace:=TDictionary<string,string>.Create;Queue:=TQueue<TPair<Integer,Integer>>.Create;
+ try
+  for V in Nodes do begin
+   Node:=V as TJSONObject;NodeIndex.Add(Node.GetValue<Integer>('id'),Node);Key:=Node.GetValue<string>('routine');
+   if not ByRoutine.TryGetValue(Key,Candidates) then begin Candidates:=TList<TJSONObject>.Create;ByRoutine.Add(Key,Candidates);end;Candidates.Add(Node);
+  end;
+  for V in Edges do begin
+   Edge:=V as TJSONObject;I:=Edge.GetValue<Integer>('from');
+   if not Outgoing.TryGetValue(I,Candidates) then begin Candidates:=TList<TJSONObject>.Create;Outgoing.Add(I,Candidates);end;Candidates.Add(Edge);
+  end;
+  Count:=0;
+  for V in Rows do begin
+   Row:=V as TJSONObject;if Row.GetValue<string>('role')<>'transaction operation' then Continue;Inc(Count);
+   IDs:=TList<Integer>.Create;Starts.Add(Row.GetValue<string>('id'),IDs);Best:=MaxInt;
+   Row.AddPair('transaction_paths',TJSONArray.Create);
+   Truncated:=ByRoutine.TryGetValue(Row.GetValue<string>('routine_key'),Candidates) and (Candidates.Count>10000);
+   Row.AddPair('flow_mapping_truncated',TJSONBool.Create(Truncated));
+   if ByRoutine.TryGetValue(Row.GetValue<string>('routine_key'),Candidates) and (Candidates.Count<=10000) then begin
+    for Node in Candidates do begin
+     if MatchText(Node.GetValue<string>('kind'),['entry','normal_exit','exception_exit','exception_dispatch','try']) then Continue;
+     if (Node.GetValue<string>('range.source')<>Row.GetValue<string>('source')) or
+       (Node.GetValue<Integer>('range.start')>Row.GetValue<Integer>('range.start')) or
+       (Node.GetValue<Integer>('range.end')<Row.GetValue<Integer>('range.end')) then Continue;
+     Width:=Node.GetValue<Integer>('range.end')-Node.GetValue<Integer>('range.start');
+     if Width<Best then begin IDs.Clear;Best:=Width;end;
+     if Width=Best then IDs.Add(Node.GetValue<Integer>('id'));
+    end;
+   end;
+   for I in IDs do begin
+    if not AtNode.TryGetValue(I,Targets) then begin Targets:=TList<TJSONObject>.Create;AtNode.Add(I,Targets);end;Targets.Add(Row);
+   end;
+   Row.AddPair('flow_node_count',TJSONNumber.Create(IDs.Count));Origins:=TJSONArray.Create;Row.AddPair('flow_origin_nodes',Origins);
+   for I in IDs do Origins.AddElement(TJSONNumber.Create(I));
+  end;
+  TotalSteps:=0;
+  for V in Rows do begin
+   Row:=V as TJSONObject;if Row.GetValue<string>('role')<>'transaction operation' then Continue;
+   Paths:=Row.GetValue<TJSONArray>('transaction_paths');IDs:=Starts[Row.GetValue<string>('id')];
+   Seen.Clear;Published.Clear;Trace.Clear;Queue.Clear;Steps:=0;Truncated:=Row.GetValue<Boolean>('flow_mapping_truncated');Ambiguous:=False;
+   for I in IDs do if AtNode[I].Count>1 then Ambiguous:=True;
+   if not Ambiguous then for I in IDs do begin
+    Flags:=0;if IDs.Count>1 then Flags:=4;
+    Key:=StateKey(I,Flags);Seen.AddOrSetValue(Key,True);Trace.AddOrSetValue(Key,'');Queue.Enqueue(TPair<Integer,Integer>.Create(I,Flags));
+   end;
+   while Queue.Count>0 do begin
+    if (Steps>=5000) or (TotalSteps>=1000000) or (Paths.Count>=64) then begin Truncated:=True;Break;end;
+    State:=Queue.Dequeue;Inc(Steps);Inc(TotalSteps);Key:=StateKey(State.Key,State.Value);
+    if not Outgoing.TryGetValue(State.Key,Candidates) then Continue;
+    for Edge in Candidates do begin
+     N:=Edge.GetValue<Integer>('to');if not NodeIndex.TryGetValue(N,Node) or (Node.GetValue<string>('routine')<>Row.GetValue<string>('routine_key')) then Continue;
+     EdgeKind:=Edge.GetValue<string>('kind');NextFlags:=State.Value;
+     if ContainsText(EdgeKind,'raise') or MatchText(EdgeKind,['possible_handler','possibly_unhandled']) then NextFlags:=NextFlags or 1;
+     if MatchText(EdgeKind,['true','false','iterate','loop_exit','case_match','case_else','case_no_match','possible_branch','possible_fallthrough']) then NextFlags:=NextFlags or 2;
+     Stopped:=False;Target:=nil;
+     if AtNode.TryGetValue(N,Targets) then for X in Targets do begin
+      if not SameReceiver(Row,X as TJSONObject) then Continue;
+      if Targets.Count>1 then begin Ambiguous:=True;Stopped:=True;Break;end;
+      Target:=X as TJSONObject;Stopped:=True;if Starts[Target.GetValue<string>('id')].Count>1 then NextFlags:=NextFlags or 4;Break;
+     end;
+       if (Target<>nil) or MatchText(Node.GetValue<string>('kind'),['normal_exit','exception_exit']) then begin
+      if (NextFlags and 1)<>0 then LabelText:='possible exception path' else LabelText:='possible normal path';
+      if (NextFlags and 2)<>0 then LabelText:=LabelText+' (conditional/loop)';
+      if (NextFlags and 4)<>0 then LabelText:=LabelText+' through cleanup copies';
+      RouteKey:=IntToStr(N)+'|'+IntToStr(NextFlags);if Target<>nil then RouteKey:=Target.GetValue<string>('id')+'|'+IntToStr(NextFlags);
+      if not Published.ContainsKey(RouteKey) and (Paths.Count>=64) then Truncated:=True;
+      if not Published.ContainsKey(RouteKey) and (Paths.Count<64) then begin
+       Published.Add(RouteKey,True);Route:=TJSONObject.Create;Paths.AddElement(Route);
+       Route.AddPair('path_kind',LabelText).AddPair('flow_from',TJSONNumber.Create(State.Key)).AddPair('flow_to',TJSONNumber.Create(N));
+       TraceText:=Trace[Key];if not ContainsText('|'+TraceText+'|','|'+EdgeKind+'|') then begin if TraceText<>'' then TraceText:=TraceText+'|';TraceText:=TraceText+EdgeKind;end;
+       Route.AddPair('edge_kinds',TraceText).AddPair('resolution','conservative intraprocedural possibility, not execution');
+       if Target<>nil then begin
+        Route.AddPair('target_id',Target.GetValue<string>('id')).AddPair('target',Target.GetValue<string>('path'));
+        Row.GetValue<TJSONArray>('links').AddElement(TJSONObject.Create.AddPair('property',LabelText).AddPair('reference',Target.GetValue<string>('path')).AddPair('target_id',Target.GetValue<string>('id')).AddPair('resolution','possible control-flow route; same declared receiver'));
+        Target.GetValue<TJSONArray>('used_by').AddElement(TJSONObject.Create.AddPair('id',Row.GetValue<string>('id')).AddPair('name',Row.GetValue<string>('path')).AddPair('property',LabelText));
+       end else Route.AddPair('target',Node.GetValue<string>('kind')+' without another explicit boundary on this receiver');
+      end;
+      Stopped:=True;
+     end;
+     if Stopped then Continue;
+     NextKey:=StateKey(N,NextFlags);if Seen.ContainsKey(NextKey) then Continue;
+     Seen.Add(NextKey,True);TraceText:=Trace[Key];if not ContainsText('|'+TraceText+'|','|'+EdgeKind+'|') then begin if TraceText<>'' then TraceText:=TraceText+'|';TraceText:=TraceText+EdgeKind;end;
+     Trace.Add(NextKey,TraceText);Queue.Enqueue(TPair<Integer,Integer>.Create(N,NextFlags));
+    end;
+   end;
+   Row.AddPair('flow_truncated',TJSONBool.Create(Truncated)).AddPair('flow_ambiguous',TJSONBool.Create(Ambiguous)).AddPair('flow_states_examined',TJSONNumber.Create(Steps));
+   Row.AddPair('flow_qualification','Paths follow captured routine CFG edges to the next explicit API boundary on the same declared receiver or routine exit. Exception edges are possibilities; typed handlers, branch feasibility, aliases, interprocedural calls, implicit/automatic commits, savepoint names, server behavior and transaction activation remain unverified. Duplicated finalizer nodes retain separate pending transfers. Multiple calls in one statement are not ordered. Missing/truncated CFG is not proof of a safe exit.');
+  end;
+  AInventory.AddPair('transaction_operation_count',TJSONNumber.Create(Count));
+ finally Queue.Free;Trace.Free;Published.Free;Seen.Free;Starts.Free;NodeIndex.Free;AtNode.Free;Outgoing.Free;ByRoutine.Free;end;
 end;
 
 class procedure TDPHDatabaseConnections.ResolveFields(AInventory:TJSONObject);
@@ -362,10 +485,10 @@ begin
   // At most three resolved hops cover ordinary data-source/dataset/connection paths.
   // Conflicting references are never collapsed to whichever target was visited last.
   for Pass:=1 to 3 do for Value in Rows do begin
-   Row:=Value as TJSONObject;if not MatchText(Row.GetValue<string>('role'),['dataset','data source','transaction','database candidate','database operation']) then Continue;
+   Row:=Value as TJSONObject;if not MatchText(Row.GetValue<string>('role'),['dataset','data source','transaction','database candidate','database operation','transaction operation']) then Continue;
    Targets.Clear;Selected:=nil;UnresolvedLink:=False;
    for LinkValue in Row.GetValue<TJSONArray>('links') do
-    if MatchText(LinkValue.GetValue<string>('property'),['Connection','SQLConnection','ADOConnection','Database','DefaultDatabase','DataSet']) then begin
+    if MatchText(LinkValue.GetValue<string>('property'),['Connection','SQLConnection','ADOConnection','Database','DefaultDatabase','DataSet','Transaction']) then begin
      if LinkValue.TryGetValue<string>('target_id',ID) and Index.TryGetValue(ID,Target) then begin
       if MatchText(Target.GetValue<string>('role'),['connection','dataset']) then begin Targets.AddOrSetValue(ID,True);Selected:=Target;end;
      end else UnresolvedLink:=True;
@@ -404,7 +527,15 @@ begin
     for Value in ARow.GetValue<TJSONArray>('configuration') do if MatchText(Value.GetValue<string>('name'),['FieldName','FieldKind','Required','ReadOnly','Size','Precision']) then BindingText:=BindingText+Value.GetValue<string>('name')+' = '+Value.GetValue<string>('value')+sLineBreak;
     Result:=BindingText+'Follow reference opens the exact captured target. Field names identify serialized persistent fields, not verified live columns. Missing/runtime/inherited bindings remain unknown.'+sLineBreak+sLineBreak+Result;
   end;
-  if ARow.GetValue<string>('role')='database operation' then Result:='DATABASE OPERATION: '+UpperCase(ARow.GetValue<string>('operation_kind'))+sLineBreak+ARow.GetValue<string>('path')+sLineBreak+ARow.GetValue<string>('effect')+sLineBreak+ARow.GetValue<string>('basis')+sLineBreak+'Conditional context: '+ARow.GetValue<string>('condition')+sLineBreak+'Follow reference opens the captured receiver. Source opens the hash-checked source location.'+sLineBreak+sLineBreak+Result;
+  if MatchText(ARow.GetValue<string>('role'),['database operation','transaction operation']) then Result:='DATABASE OPERATION: '+UpperCase(ARow.GetValue<string>('operation_kind'))+sLineBreak+ARow.GetValue<string>('path')+sLineBreak+ARow.GetValue<string>('effect')+sLineBreak+ARow.GetValue<string>('basis')+sLineBreak+'Conditional context: '+ARow.GetValue<string>('condition')+sLineBreak+'Follow reference opens the captured receiver. Source opens the hash-checked source location.'+sLineBreak+sLineBreak+Result;
+  if ARow.GetValue<string>('role')='transaction operation' then begin
+    BindingText:='TRANSACTION PATHS (SOURCE POSSIBILITIES)'+sLineBreak;
+    for Value in ARow.GetValue<TJSONArray>('transaction_paths') do
+      BindingText:=BindingText+Value.GetValue<string>('path_kind')+' -> '+Value.GetValue<string>('target')+sLineBreak+'  CFG edges: '+Value.GetValue<string>('edge_kinds')+sLineBreak;
+    if ARow.GetValue<TJSONArray>('transaction_paths').Count=0 then BindingText:=BindingText+'No ordered route available. Review source; absence is not proof of safe commit/rollback handling.'+sLineBreak;
+    BindingText:=BindingText+'CFG states examined: '+ARow.GetValue('flow_states_examined').Value+'; truncated: '+ARow.GetValue('flow_truncated').Value+'; ambiguous statement: '+ARow.GetValue('flow_ambiguous').Value+sLineBreak+ARow.GetValue<string>('flow_qualification')+sLineBreak+sLineBreak;
+    Result:=BindingText+Result;
+  end;
   Result:=Result+sLineBreak+'UNKNOWNS AND NEXT INVESTIGATION'+sLineBreak+ARow.GetValue<string>('unknowns')+sLineBreak+
     'Ask the maintainer which named definition and environment are intended; inspect approved configuration locally. Do not enter credentials into authored explanations. Serialized Connected=True is a declaration, not evidence of a successful connection. This inventory never opens a target database.';
 end;

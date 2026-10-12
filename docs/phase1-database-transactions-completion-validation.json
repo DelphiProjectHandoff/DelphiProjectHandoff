@@ -1,0 +1,86 @@
+{
+  "result": "PASS",
+  "requirement": "05.13",
+  "status": "implemented",
+  "checks": 402,
+  "regression_checks": 524,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.13",
+  "incomplete_requirement_records": 324,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 229,
+    "implemented": 191,
+    "missing": 95
+  },
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 33,
+        "toc_entries": 56,
+        "new_chapter_pages": [
+          3,
+          23
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 29,
+        "toc_entries": 48,
+        "new_chapter_pages": [
+          2,
+          26
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 62 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseTransactions_PreChange_20261012_152832",
+    "files": 5378,
+    "bytes": 1979277005,
+    "sha256_verified": true
+  },
+  "qualification": "Captured API requests and conservative intraprocedural CFG possibilities only. No successful activation, commit, rollback, feasible branch or server outcome is inferred. Supported FireDAC, ADO, dbExpress, BDE and IBX declared receivers and captured descendants are recognized; aliases, factories, within-with receivers, interprocedural transaction propagation, implicit SQL transactions, savepoint identity and unsupported providers remain unverified. Missing, ambiguous and truncated CFG stays explicit. No target application, SQL, driver or database server runs.",
+  "evidence_hashes": {
+    "DPH.Analysis.Model.pas": "3d70d3c202205366af62510c6a4984d03af95a05332297a6e85ee25190455b67",
+    "DPH.Analysis.Symbols.pas": "47c187a32ad1a040760bd9459e843d9c6fa7ced7b4ea5843280d2680127cc047",
+    "DPH.Workspace.DatabaseConnections.pas": "424137052f7b22f79f0d338613e73e668dc017d1c1f7dd6999e95c90b514ade2",
+    "DPH.UI.Main.fmx": "1f2494856ed8e4101ea6789e8aea774a916c05cafc57f383065f17b9e752b091",
+    "tests/DPH.Tests.DatabaseTransactions.dpr": "d054244c9afb5eb7be68a7d77e11a765959f7f3baa1f4b647c940cda0d3f08d6",
+    "tools/build-database-transactions.cmd": "c8837f264e30fd7e9c6b590725bfcb5c25d44a77c5528282c675b7a4dc266d94",
+    "docs/phase1-database-transactions-validation.json": "5e6c192d6031d9a1214d218350ab9fec9b549d1f96b4a47c6be6a0c84cc08589",
+    "docs/phase1-database-transactions-validation.log": "dea558c988678eb1120312c411d97f1e7c2c081ad6916455449b984d99d806fe",
+    "docs/guides/Database_Transactions_Run_and_Test.txt": "3d1306448c8d5d4c9952c97f1e393846624ffa2404c5f993ddf38d76150b83dd",
+    "tools/build-guides.py": "474aa4e0d7bf21ea3bf14ecd835fe03ced7cd43007dbbefae03e52b2fb7e070e",
+    "README.md": "148198546b7642dbb2649eb65a41e50c8e13ad923b19f649a9af7e097797ada3",
+    "help/index.html": "462cfcfc479fa3cf6b6eba22ae4a9aec3ec31a94f1600467fe058209f5e03d87",
+    "docs/guide-source-validation.json": "3c13de771844946ca6f1d94c85763d4157380146c4325c89e7f2b3cd6b76cc82",
+    "docs/guides/DPH_User_Guide.docx": "2e0a77de15658603d3b0ac2dfaf0d02429d9f9acbae54e135a84762a033ed1f3",
+    "docs/guides/DPH_Engineering_Guide.docx": "1306de035335d6f06bff92e31f7161d661cd812e7eeb6aab144d98f906565feb",
+    "docs/pdf/DPH_User_Guide.pdf": "79751f7ffa267eb02b21cd0ace07bd15c379d5b3c2034fe63af875f1411e42fc",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "3e01e9ae1e79d162f3de481c32722b781b965fae8413b9d20729311c98a99ac7",
+    "docs/phase1-database-transactions-build.log": "a94646d6d28cf9a80582eab9bb650302737d75d4cb8b5c72e1d5f1cbbbd5e2dc",
+    "docs/Phase1_Database_Transactions_Completion.txt": "9af5ae7acb753e95afae15f154fe4062d959dff1517cb31eef70de55b2884fa6",
+    "docs/Phase1_Requirements_Traceability.json": "9b36f892d042ca4316a48129d7a6d54479df6e9ca1e0ff4cab7e22bacddead58",
+    "docs/Phase1_Implementation_Backlog.csv": "bc3203f8a2877de2ed8ef02bd88fe2ac4a2733050aace9a3bab11ec2402f9cdf",
+    "docs/Implementation_Completion_Tracker.txt": "5418965ae60b284c63b0556226f96a5f01c7604781f2f0d76668114453d49b76",
+    "docs/phase1-database-transactions-workspace.png": "eeb62f6d2568df6102681e541b323e37f6a4addf7e95cfd11ce6bc0c1a608e8c",
+    "docs/phase1-database-transactions-compact.png": "a5e78e700bc7f177b2231ad7fddfbe95c1db8c30d763bbd07745eb4435543859",
+    "docs/phase1-database-transactions-operations-regression.json": "480a874323c456c3b2cb77bfb86dad618fcf41770c538a602e97138686113fc6",
+    "docs/phase1-database-transactions-operations-regression.log": "9c7135da51951562e834498656514e9e322b0f4bd44ab4684e7c34595c14f894",
+    "docs/phase1-database-transactions-bindings-regression.json": "7f0dccfaa38f7415a49623292722f627011c6a98c0038ce9fb3746432822de17",
+    "docs/phase1-database-transactions-bindings-regression.log": "b78963d0700dbbbfdb6bc7b0ea87811808df45d24bfac4df805a78b504d297ed",
+    "docs/phase1-database-transactions-engines-regression.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-database-transactions-engines-regression.log": "5c0df15543d3cf767c5d42f9ffdc3126104acf39680dba0b42b0f7e02dafbe5f",
+    "docs/phase1-database-transactions-semantics-regression.json": "6984e672bc1436b362260cc1b5ddef0882c768e6ab91fd6dd1e8cdc8d606b975",
+    "docs/phase1-database-transactions-semantics-regression.log": "ff229f87444d6837bbf64984bf9be49548176b1fc867c0a09128a35d4234cfe8"
+  }
+}

@@ -94,7 +94,11 @@ Database operation inventory completed (05.12): recognized dataset CRUD and
 SQL candidates, requested effects, exact receiver and source navigation.
 232 focused and 292 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Operations_Completion.txt.
-Current live backlog: 325 incomplete requirement records; 0 unassessed.
+Database transaction paths completed (05.13): explicit API requests with
+normal, exception, conditional and cleanup CFG possibilities and exact navigation.
+402 focused and 524 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Transactions_Completion.txt.
+Current live backlog: 324 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

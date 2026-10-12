@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Database operation inventory 05.12 implemented with qualified source effects and receiver/source navigation; 325 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Transaction boundaries and rollback behavior 05.13 implemented as qualified API requests and source CFG possibilities; 324 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2222,13 +2222,29 @@
       "id": "05.13",
       "domain": "DPH-05",
       "requirement": "Transaction boundaries and rollback behavior",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Analysis.Model.pas",
+        "DPH.Analysis.Symbols.pas",
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseTransactions.dpr",
+        "tools/build-database-transactions.cmd",
+        "docs/phase1-database-transactions-validation.json",
+        "docs/phase1-database-transactions-validation.log",
+        "docs/guides/Database_Transactions_Run_and_Test.txt"
       ],
-      "limitation": "Recognize selected-program begin/commit/rollback APIs and connect success/error/cleanup paths.",
+      "limitation": "Captured API requests and conservative intraprocedural CFG possibilities only. No successful activation, commit, rollback, feasible branch or server outcome is inferred. Supported FireDAC, ADO, dbExpress, BDE and IBX declared receivers and captured descendants are recognized; aliases, factories, within-with receivers, interprocedural transaction propagation, implicit SQL transactions, savepoint identity and unsupported providers remain unverified. Missing, ambiguous and truncated CFG stays explicit. No target application, SQL, driver or database server runs.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database connections inventories begin, commit, rollback, retaining and savepoint API requests. Captured routine CFG routes connect the same declared receiver to its next explicit boundary or normal/exception exit. Error, conditional/loop and finalizer-copy paths remain distinguished. Exact receiver, source hash, generation, conditional evidence, forward/reverse references and hash-checked Source remain inspectable through IDE-editable controls. Local framework-name shadows and ordinary methods are excluded.",
+        "remaining_work": "",
+        "purpose": "Transaction boundaries and rollback behavior",
+        "evidence_group": "sql",
+        "verification": "402 focused checks and 524 regressions pass (232 operations, 92 bindings, 66 engines, 134 semantics). Actual app and FMX baseline pass. Persisted/reopened captures, normal/error/cleanup and early-return routes, differing receivers, all five provider families, descendants, shadows, unordered calls, absent/oversized CFG, redaction, native navigation and source/catalog immutability verified. All 62 final guide pages and two native renders reviewed; 58 source hashes and 104 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "DPH storage transactions are implemented; selected-program transaction boundaries are not analyzed.",
@@ -2236,6 +2252,12 @@
         "purpose": "Transaction boundaries and rollback behavior",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Database transaction paths",
+        "validation": "docs/phase1-database-transactions-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12720,23 +12742,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Database operation inventory",
+    "completed_batch": "Database transaction paths",
     "completed_requirement_ids": [
-      "05.12"
+      "05.13"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 229,
-      "implemented": 190,
-      "missing": 96
+      "implemented": 191,
+      "missing": 95
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 325,
-    "completion_record": "docs/Phase1_Database_Operations_Completion.txt",
+    "incomplete_requirement_records": 324,
+    "completion_record": "docs/Phase1_Database_Transactions_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.13",
-      "title": "Transaction boundaries and rollback behavior",
-      "scope": "Recognize selected-program begin/commit/rollback APIs and connect success/error/cleanup paths."
+      "requirement": "05.14",
+      "title": "Data validation and transformation rules",
+      "scope": "Add field-level validation/transformation rules with input/output/constraint evidence."
     }
   }
 }

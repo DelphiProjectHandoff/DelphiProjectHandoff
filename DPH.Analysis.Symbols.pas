@@ -40,7 +40,7 @@ type
     function SelectCall(const APath: string; ARoutine: Integer; const Arguments: TArray<string>): TArray<Integer>;
     function ExpressionType(const AText: string; ARoutine: Integer): string;
     function IsVisualType(const AName,AUnit: string): Boolean;
-    function IsDatasetType(const AName,AUnit: string): Boolean;
+    function IsDatabaseType(const AName,AUnit: string; const AOperation: string = ''): Boolean;
     function IsFormType(const AName,AUnit: string): Boolean;
     procedure Header(S: TDPHSymbol; const Tokens: TDPHTokens; AStart,AEnd: Integer);
     procedure Collect(const AFile: string; IR: TDPHParseResult);
@@ -704,13 +704,20 @@ begin
   finally CandidatesFound.Free; end;
 end;
 
-function TDPHSemanticAnalyzer.IsDatasetType(const AName,AUnit: string): Boolean;
+function TDPHSemanticAnalyzer.IsDatabaseType(const AName,AUnit,AOperation: string): Boolean;
 var Index,Base,Depth:Integer;R:TDPHRelation;Name,UnitName:string;Imports:TList<string>;
   function Known(const TypeName,Context:string):Boolean;
   var ShortName,RequiredUnit,ImportName:string;P:Integer;
   begin
     P:=LastDelimiter('.',TypeName);ShortName:=Copy(TypeName,P+1,MaxInt);RequiredUnit:='';
-    if MatchText(ShortName,['TDataSet']) then RequiredUnit:='Data.DB'
+    if AOperation<>'' then begin
+      if MatchText(ShortName,['TFDConnection','TFDCustomConnection','TFDTransaction','TFDCustomTransaction']) and MatchText(AOperation,['StartTransaction','Commit','Rollback','CommitRetaining','RollbackRetaining']) then RequiredUnit:='FireDAC.Comp.Client'
+      else if SameText(ShortName,'TADOConnection') and MatchText(AOperation,['BeginTrans','CommitTrans','RollbackTrans']) then RequiredUnit:='Data.Win.ADODB'
+      else if SameText(ShortName,'TSQLConnection') and MatchText(AOperation,['StartTransaction','BeginTransaction','Commit','Rollback','CommitFreeAndNil','RollbackFreeAndNil','RollbackIncompleteFreeAndNil']) then RequiredUnit:='Data.SqlExpr'
+      else if SameText(ShortName,'TDatabase') and MatchText(AOperation,['StartTransaction','Commit','Rollback']) then RequiredUnit:='Bde.DBTables'
+      else if SameText(ShortName,'TIBTransaction') and MatchText(AOperation,['StartTransaction','Commit','Rollback','CommitRetaining','RollbackRetaining','RollbackSavepoint']) then RequiredUnit:='IBX.IBDatabase';
+    end
+    else if MatchText(ShortName,['TDataSet']) then RequiredUnit:='Data.DB'
     else if MatchText(ShortName,['TFDQuery','TFDTable','TFDStoredProc','TFDMemTable']) then RequiredUnit:='FireDAC.Comp.Client'
     else if MatchText(ShortName,['TFDDataSet','TFDAdaptedDataSet']) then RequiredUnit:='FireDAC.Comp.DataSet'
     else if MatchText(ShortName,['TADOQuery','TADOTable','TADOStoredProc','TADODataSet','TCustomADODataSet']) then RequiredUnit:='Data.Win.ADODB'
@@ -734,8 +741,8 @@ begin
   for Depth:=0 to 31 do begin
     if Index<0 then Exit(Known(Name,UnitName));
     Name:=FGraph.Symbols[Index].Name;UnitName:=FGraph.Symbols[Index].UnitName;
-    // A local class sharing a framework name is not a framework dataset.
-    if Known(Name,UnitName) and MatchText(UnitName,['Data.DB','FireDAC.Comp.Client','FireDAC.Comp.DataSet','Data.Win.ADODB','Data.SqlExpr','Datasnap.DBClient','Bde.DBTables','IBX.IBQuery','IBX.IBTable','IBX.IBDataSet']) then Exit(True);
+    // A local class sharing a framework name is not a framework database type.
+    if Known(Name,UnitName) and MatchText(UnitName,['Data.DB','FireDAC.Comp.Client','FireDAC.Comp.DataSet','Data.Win.ADODB','Data.SqlExpr','Datasnap.DBClient','Bde.DBTables','IBX.IBQuery','IBX.IBTable','IBX.IBDataSet','IBX.IBDatabase']) then Exit(True);
     if FBaseTypes.TryGetValue(Index,Base) then Index:=Base
     else begin
       for R in FGraph.Relations do if (R.FromSymbol=Index) and (R.Kind='inherits') and (R.ToSymbol<0) and Known(R.LabelText,UnitName) then Exit(True);
@@ -967,7 +974,7 @@ begin
         CallEnd:=J;
       end;
       if not IsCall and (Stop+1<=Body.LastToken) and MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
-        ((I=Body.FirstToken+1) or MatchText(Tokens[I-1].Text,[';','begin','then','else','do',':','inherited'])) then IsCall:=True;
+        ((I=Body.FirstToken+1) or MatchText(Tokens[I-1].Text,[';','begin','then','else','do',':','inherited','try','except','finally'])) then IsCall:=True;
       if not IsCall and EndsText('.Create',Path) and (Stop+1<=Body.LastToken) and
         MatchText(Tokens[Stop+1].Text,[';','end','else','until']) and
         ((FindType(Copy(Path,1,Length(Path)-7),Routine.UnitName)>=0) or
@@ -977,8 +984,17 @@ begin
         InputPath:=Copy(Path,InputIndex+1,MaxInt);
         if MatchText(InputPath,['Open','Refresh','First','Last','Next','Prior','MoveBy','Locate','Lookup','FindFirst','FindLast','FindNext','FindPrior','Append','AppendRecord','Insert','InsertRecord','Edit','Post','Delete','Cancel','ApplyUpdates','CancelUpdates','ExecSQL','Execute']) then begin
           InputSymbol:=ResolveValue(Copy(Path,1,InputIndex-1),ARoutine);
-          if (InputSymbol>=0) and IsDatasetType(FGraph.Symbols[InputSymbol].TypeName,FGraph.Symbols[InputSymbol].UnitName) then
+          if (InputSymbol>=0) and IsDatabaseType(FGraph.Symbols[InputSymbol].TypeName,FGraph.Symbols[InputSymbol].UnitName) then
             FGraph.AddRelation(ARoutine,InputSymbol,'database_operation','possible_dynamic','declared_dataset_api_request_not_runtime_success',InputPath,L,Tokens[I].Condition);
+        end;
+      end;
+      if not WithinWith and (InputIndex>0) then begin
+        InputPath:=Copy(Path,InputIndex+1,MaxInt);
+        if MatchText(InputPath,['StartTransaction','BeginTransaction','BeginTrans','Commit','CommitTrans','CommitRetaining','CommitFreeAndNil','Rollback','RollbackTrans','RollbackRetaining','RollbackFreeAndNil','RollbackIncompleteFreeAndNil','RollbackSavepoint']) and
+          (IsCall or (MatchText(InputPath,['BeginTrans','BeginTransaction']) and (Stop+1<=Body.LastToken) and MatchText(Tokens[Stop+1].Text,[';','end']))) then begin
+          InputSymbol:=ResolveValue(Copy(Path,1,InputIndex-1),ARoutine);
+          if (InputSymbol>=0) and IsDatabaseType(FGraph.Symbols[InputSymbol].TypeName,FGraph.Symbols[InputSymbol].UnitName,InputPath) then
+            FGraph.AddRelation(ARoutine,InputSymbol,'database_transaction','possible_dynamic','declared_transaction_api_request_not_runtime_outcome',InputPath,L,Tokens[I].Condition);
         end;
       end;
       if IsCall and (Args.Count>0) and
@@ -1235,4 +1251,3 @@ begin
   finally Tokens.Free; FImports.Free; FTokens.Free; FNames.Free; FKeys.Free; FNodeSymbols.Free; FBaseTypes.Free; end;
 end;
 end.
-

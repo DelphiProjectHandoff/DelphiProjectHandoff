@@ -1460,7 +1460,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select a database operation to learn its requested effect; follow its dataset or open Source. SQL configuration and source calls do not prove execution or commit. Other filters trace connections and screen-data bindings. Scroll commands sideways. No target database is opened.'
+Text = 'Select transaction operation for begin, commit, rollback and possible normal/error/cleanup paths. Follow reference opens a receiver or next boundary; Source opens captured code. Database operation shows CRUD requests. Scroll commands sideways. No target database is opened.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1486,7 +1486,8 @@ Items.Strings = (
 'bound control'
 'persistent field'
 'binding control target'
-'database operation')
+'database operation'
+ 'transaction operation')
 ItemIndex = 0
 end
 object DatabaseInventoryFilter: TEdit

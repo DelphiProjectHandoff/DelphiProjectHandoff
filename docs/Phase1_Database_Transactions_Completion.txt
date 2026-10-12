@@ -1,0 +1,33 @@
+DPH REQUIREMENT 05.13 COMPLETION DATABASE TRANSACTION PATHS
+Last changed: 12 October 2026
+
+Database connections now inventories explicit begin, commit, rollback, retaining
+and savepoint API requests on supported declared database receivers. Captured
+routine CFG routes identify the next same-receiver boundary or normal/exception
+exit. Conditional and loop possibilities, exception paths and duplicated finally
+cleanup copies remain distinct. Different receiver declarations are not paired.
+Multiple calls in one statement are not assigned invented evaluation order.
+Missing or oversized CFG remains explicitly unavailable or truncated.
+Native transaction-operation filter, forward/reverse references, receiver links
+and hash-checked Source use IDE-editable controls. Analyzer version DPH-WP3-14.
+
+Validation PASS: 402 focused + 232 operations + 92 bindings + 66 engines +
+134 semantics = 926 checks. Actual application and FMX baseline PASS.
+Normal and compact native renders reviewed. All 62 final guide pages visually
+reviewed; 58 source hashes and 104 TOC destinations verified.
+Explicit directions: docs/guides/Database_Transactions_Run_and_Test.txt.
+
+Pre-change backup: H:\DPH Backups\DatabaseTransactions_PreChange_20261012_152832
+5378 files, 1979277005 bytes; every SHA256 verified. No post-change backup.
+
+Captured API requests and conservative intraprocedural CFG possibilities only. No successful activation, commit, rollback, feasible branch or server outcome is inferred. Supported FireDAC, ADO, dbExpress, BDE and IBX declared receivers and captured descendants are recognized; aliases, factories, within-with receivers, interprocedural transaction propagation, implicit SQL transactions, savepoint identity and unsupported providers remain unverified. Missing, ambiguous and truncated CFG stays explicit. No target application, SQL, driver or database server runs.
+
+API evidence: installed RAD Studio 37 Data.Win.ADODB, Data.SqlExpr and
+IBX.IBDatabase source declarations, and official FireDAC reference pages:
+https://docwiki.embarcadero.com/Libraries/Florence/en/FireDAC.Comp.Client.TFDCustomConnection.StartTransaction
+https://docwiki.embarcadero.com/Libraries/Sydney/en/FireDAC.Comp.Client.TFDCustomTransaction.CommitRetaining
+
+Only 05.13 promoted. All 533 original requirement IDs and texts preserved.
+191 implemented; 18 implemented_manual_capture; 229 partial; 95 missing.
+324 incomplete; zero unassessed. The entire product is not complete.
+Next: 05.14 Data validation and transformation rules.

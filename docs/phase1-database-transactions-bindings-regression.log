@@ -1,0 +1,100 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+17342 lines, 1.48 seconds, 10587192 bytes code, 348900 bytes data.
+PASS 1: Fixture SQLite integrity valid
+PASS 2: FMX binding links actual control target
+PASS 3: FMX edit has reverse binding link
+PASS 4: Persistent field is explicitly classified
+PASS 5: Data-aware control is classified
+PASS 6: Field parent resolves exact owning dataset
+PASS 7: Control resolves data source
+PASS 8: Control field resolves through dataset chain
+PASS 9: Field binding retains property line
+PASS 10: Field binding retains byte range
+PASS 11: Persistent field lists exact bound control
+PASS 12: Duplicate field names remain ambiguous
+PASS 13: Duplicate fields never select arbitrary target
+PASS 14: Runtime field is not invented
+PASS 15: Missing source prevents field link
+PASS 16: Nil source prevents field link
+PASS 17: Lookup dataset reference navigable
+PASS 18: Field with non-dataset parent remains unowned
+PASS 19: FMX BindSource chain resolves captured field
+PASS 20: Binary DFM field chain resolves
+PASS 21: Field metadata shown
+PASS 22: Binding explanation precedes engine guidance
+PASS 23: Text DFM connection captured
+PASS 24: Known connection class classified
+PASS 25: Dataset classified
+PASS 26: Data source classified
+PASS 27: Transaction classified
+PASS 28: Session classified
+PASS 29: Custom class property signal remains candidate
+PASS 30: Pascal-only declaration retained
+PASS 31: Confirmed component-field binding avoids duplicate declaration row
+PASS 32: Dataset connection links uniquely
+PASS 33: Data source links to dataset
+PASS 34: Qualified cross-module reference links
+PASS 35: Missing target explicitly unresolved
+PASS 36: Missing target not fabricated
+PASS 37: Unqualified external target is not guessed
+PASS 38: Unrelated visual component excluded
+PASS 39: Nil stays explicit
+PASS 40: Wrong-role target not linked
+PASS 41: Unsupported expression masked
+PASS 42: IB database reference links
+PASS 43: Transaction reference links
+PASS 44: Transaction default database links
+PASS 45: BDE logical database alias links
+PASS 46: Session alias links
+PASS 47: Parent-local nested path links
+PASS 48: Self-qualified reference links
+PASS 49: Duplicate paths remain ambiguous
+PASS 50: Ambiguous target not followed
+PASS 51: Named definition inventoried
+PASS 52: Shared definition has both referencing connections
+PASS 53: External definition contents not invented
+PASS 54: Reverse dataset dependencies retained
+PASS 55: Binary DFM connection captured
+PASS 56: Binary reference resolved
+PASS 57: FMX connection reference resolved
+PASS 58: Inherited declaration preserved
+PASS 59: Missing configuration not invented
+PASS 60: All sensitive configuration canaries absent from projection
+PASS 61: Validated driver metadata shown
+PASS 62: Valid port shown
+PASS 63: Invalid driver and port masked
+PASS 64: Connected flag qualified
+PASS 65: Exact source hash retained
+PASS 66: Reopened captured database gives identical inventory
+PASS 67: Inventory page discoverable
+PASS 68: Native page paginates at 250
+PASS 69: Next enabled for remaining rows
+PASS 70: Next shows bounded remaining rows
+PASS 71: Native text and kind filters find dataset
+PASS 72: Unique reference enables follow
+PASS 73: Follow navigates exact target
+PASS 74: Reverse references navigable
+PASS 75: Named definition kind filter
+PASS 76: Native details explain unknown definition contents
+PASS 77: Native details omit sensitive values
+PASS 78: Empty filter has no invented rows
+PASS 79: Empty filter disables reference navigation
+PASS 80: Empty inventory explains coverage limits
+PASS 81: Native bound control filter finds control
+PASS 82: Native details show captured field binding
+PASS 83: Native follow opens exact persistent field
+PASS 84: Field has dataset and reverse control links
+PASS 85: Field name search finds persistent field
+PASS 86: Compact commands scroll horizontally
+PASS 87: Evidence memo scrolls
+PASS 88: Compact evidence stays in workspace pane
+PASS 89: Compact evidence retains usable visible height
+PASS 90: Capture replacement retains redaction
+PASS 91: Owner catalog unchanged
+PASS 92: Analyzed source unchanged
+Dataset bindings validation passed: 92 checks.
