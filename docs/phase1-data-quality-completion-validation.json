@@ -1,0 +1,88 @@
+{
+  "result": "PASS",
+  "requirement": "05.19",
+  "status": "implemented_manual_capture",
+  "checks": 91,
+  "regression_checks": 239,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.19",
+  "counts": {
+    "implemented_manual_capture": 20,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 92
+  },
+  "incomplete_requirement_records": 318,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 37,
+        "toc_entries": 62,
+        "new_chapter_pages": [
+          3,
+          27
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 34,
+        "toc_entries": 54,
+        "new_chapter_pages": [
+          3,
+          31
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 71 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DataQuality_PreChange_20261012_183858",
+    "files": 7602,
+    "bytes": 2972359613,
+    "sha256_verified": true
+  },
+  "qualification": "Attributed manual capture of target data quality rules and imported results. DPH does not execute checks or validate measurements. Stable typed identities, contributor, context, original report SHA256, immutable revisions and explicit review preserve evidence. Imports accept literal UTF-8 txt/log/json up to 32 KiB. Source, procedure and exact report revision links retain provenance. Existing 64-link, 200-candidate and 250-row paging bounds apply.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "1e5c536c3fb44fd001a56177e714f5fd08b62280cbb814973c76005ad0d88c0d",
+    "DPH.Storage.Database.pas": "19a2c54d28475de14fc6419deb149cdc7df2d4503077049a542fe5ca02ca6077",
+    "DPH.UI.Main.pas": "96021c11323fa9db76d9b2bb7d8ea4f0ee1699fac73f675dfecade849fd5447a",
+    "DPH.UI.Main.fmx": "e3659f88aee88537216fa8f7c6d1250d08954d2465ad2d6cde4e8b1960ef9f00",
+    "DPH.Workspace.Worker.pas": "d6ac3ffff0c50dbcbb98f0813db1ea47769f0fa8e1f2e9418381c6735cc09953",
+    "tests/DPH.Tests.DataQuality.dpr": "30ed83046812efdcdc5c71e9fb131446f5704a52e07bd2da0722f04df1bdb1ec",
+    "tools/build-data-quality.cmd": "4126eb217f278dff50b3107116cd3e456f7e512026cc0521ec940ec4b4aab717",
+    "docs/phase1-data-quality-validation.json": "87cf521f17afab91853a6ef1b7ea4056e762a105e30184cbcb6336472bb5b763",
+    "docs/phase1-data-quality-validation.log": "4300bc997224793c5968bb55c1ba7a5051e928e51cbae27c919a8161c19a0ecb",
+    "docs/guides/Data_Quality_Run_and_Test.txt": "992d4db3f16613b1257572158526fec297f2d890a67f3f56396af3406016d899",
+    "tools/build-guides.py": "4578d5851d56cfdcddf64a37dc536164c20ec59cdcf286f433db1f6296daa1c3",
+    "README.md": "159900d2e93b1566fb04ac7184e3f32068f8a894de3b278d7c8eb882d8eeab36",
+    "help/index.html": "fbe672964dd8021f0b2cdee90e25d6b63176ad53fb4e75279097b39ce91eb97c",
+    "docs/guide-source-validation.json": "998b0ae754273692b2577f1072eb5c196a81a4b941aceceac7fd5a356e785247",
+    "docs/guides/DPH_User_Guide.docx": "7746d300f661f441a14741a00b06d8527d60ec19a2e3bc37846ec7350df97794",
+    "docs/guides/DPH_Engineering_Guide.docx": "3905fdc94e37642a3eb059ba2e9a561bb97de68ff5a76503047bf29f13c982e1",
+    "docs/pdf/DPH_User_Guide.pdf": "9fa1a79d77a01b4a3db5d73de7ed7afa2181d7c8b6b9a9b66b515ed1e5fcf74c",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "1dbc92c05be11a666e128a549964c7e46ab7a611c1efa453af1036b0a06cf71a",
+    "docs/Phase1_Data_Quality_Completion.txt": "a83bc79348f4c0e488a70b1e1e7369af32f3283e9a843fe5f832d070bbbe82e1",
+    "docs/Phase1_Requirements_Traceability.json": "80cf5e887d38a30523e0d879aa42958c9f507f427f1d302558724e3c9664a430",
+    "docs/Phase1_Implementation_Backlog.csv": "be336bac76178114ee5e5e4f616457fd8878bb2e48341872f4fbafb26e650731",
+    "docs/Implementation_Completion_Tracker.txt": "4f8b1faab32e7e0acc20207f6359a5d8bd4f089a564d5020a7a3a0924cca6193",
+    "docs/phase1-data-quality-build.log": "edcea2b853748d8acdb8f0a8cefbf0c49aa617fb1fd76fc31e80f690bbed8a7f",
+    "docs/phase1-data-quality-compact.png": "e7f32fb91c862e0fe214be1cf83f33e131f766451fa4258dc41c71e1bbcc2983",
+    "docs/phase1-data-quality-knowledge-regression-validation.json": "1d3084709b883bd21deca1df8fd15d356416d9b166dfba5213b5d243ad964484",
+    "docs/phase1-data-quality-knowledge-regression.log": "d441ef2e2c3a1d49d7e2effb10fd76cbba84ac784728e66e7b0cd1e630ca618f",
+    "docs/phase1-data-quality-publishing-regression-canonical-fixture.json": "84a7ed2a0d91803c8a64dc0a423fb529336e52bd39b9d7524a80fb9467dc6186",
+    "docs/phase1-data-quality-publishing-regression-validation.json": "c72f25bb7300b0a064a0a1c63c6dc601c65d492d11f605aff892f1acff06c553",
+    "docs/phase1-data-quality-publishing-regression.log": "afee3d8b44d2ff40a813094624d8a3f727f55df319ca4f8d99b104b73efb6823",
+    "docs/phase1-data-quality-retention-regression-compact.png": "bc38a9cbcd3376e76258385c0f77999a05464ccac14ac00ce9828cd87ecb1fa3",
+    "docs/phase1-data-quality-retention-regression-validation.json": "7a549911d2cc72181ff4da95821a262c67af77c0890554fc5ec0e8e6afc0d477",
+    "docs/phase1-data-quality-retention-regression-workspace.png": "0df9ed11865b3da9fdfa2cec8060268dda6772aa03e39bfb540a89978a55f266",
+    "docs/phase1-data-quality-retention-regression.log": "9d1f2ccd9315a6914c1a22edc17fe08d3fa51cffb06eb8ea39d654fd0296a406",
+    "docs/phase1-data-quality-workspace.png": "fc4941dd8ffb0889362e97fd53b4543535279e46f1eefd5c0f9736d67c261bf6"
+  }
+}

@@ -1,0 +1,70 @@
+DPH TARGET DATA QUALITY RULES AND CHECK REPORTS
+Last changed: 12 October 2026
+
+START AND RECORD A RULE
+1. Open File Explorer to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+   Double-click DelphiProjectHandoff.exe.
+2. Click Attach project and select the application's .dproj, .dpr or .groupproj,
+   then save its proposed database. Or click Open cache and select its .dphdb.
+3. Choose Target data quality in the upper-right page selector.
+4. Click New check. In Knowledge, replace the default title with a descriptive
+   check name and enter your name as author. Preserve the first body heading.
+5. Fill in purpose/version, data scope/environment, quality dimension, rule,
+   threshold/units, expected outcome, prerequisites/sampling/exclusions,
+   procedure/schedule, owner/operator, failure/remediation, observed results,
+   result evidence and remaining unknowns. Explicitly record Unknown and the
+   responsible maintainer when evidence is unavailable.
+6. Choose Knowledge links in the page selector. Choose entity to search an
+   implementing routine; choose evidence for captured constraints/evidence;
+   choose section for an existing saved operating procedure.
+7. Enter a specific name, click Find targets, select the exact result, choose
+   depends_on or cites and Add link. A routine labeled [semantic_routine]
+   opens its captured explanation. Search returns at most 200 candidates;
+   narrow the name when needed. No selected routine executes.
+8. Return to Knowledge and click Save. Review separately using a named reviewer.
+   Saving leaves needs_review. Edits append history and reopen review.
+
+IMPORT AN EXISTING CHECK REPORT
+9. Prepare a focused, explicitly saved UTF-8 .txt, .log or .json file of at most
+   32 KiB. Remove inappropriate customer data or credentials before importing.
+   DPH does not run a check for you and does not interpret report commands.
+10. Save or discard any existing Knowledge draft. Return to Target data quality.
+11. Enter the report contributor name and a descriptive check/environment/
+    measurement context in the second command bar. Scroll it horizontally
+    if the fields or Import check report button are outside the window.
+12. Click Import check report and select your saved extract.
+    Import saves a new attributed pending-review record immediately.
+13. Find Imported check report in the register. Select it and scroll the memo
+    to read the literal result, contributor, context, import UTC, generation
+    and original byte SHA256. Report timestamps, environment and outcomes
+    are contributor claims. A matching hash does not prove their truth.
+14. Open check loads the report's saved Knowledge record for review/history.
+    Its original revision remains preserved if its body is edited later.
+
+LINK THE REPORT TO ITS RULE
+15. Return to Target data quality and select the rule, then Open check.
+16. Choose Knowledge links. Choose section, enter Imported check report plus
+    its context, Find targets, select the exact report revision, choose cites
+    and Add link. Return to Knowledge and Save.
+17. Implementation links opens a selected rule's saved links. Select its report
+    link and Open saved target to read that exact revision. Do the same for
+    operating procedures or captured implementation evidence.
+18. Filter by review state or search text. First page/Next page cover registers
+    above 250 records. Scroll both command bars horizontally when necessary;
+    scroll the labeled evidence memo for full details. Save or discard a draft
+    before opening another record or importing another report.
+
+CONTROLLED VALIDATION
+19. Open an elevated PowerShell window and run separately:
+    Set-Location -LiteralPath 'C:\New Delphi Projects\Delphi Project Handoff'
+    cmd /c tools\build-data-quality.cmd
+    cmd /c tools\build-wp0.cmd
+20. PASS lines confirm focused actual-parser, saved-rule/report, native UI and
+    background import checks, then the application/FMX baseline. FAIL or a
+    compiler error means validation has not passed. Controlled practice source
+    remains in bin\data-quality-validation; no real target program runs.
+
+DPH's database integrity check concerns its own store. Target-data quality
+requires target-specific rules and separately obtained observed evidence.
+Captured constraints do not establish deployed enforcement or clean live data.

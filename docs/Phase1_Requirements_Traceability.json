@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target retention 05.18 implemented as attributed manual capture; 319 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Target retention 05.19 implemented as attributed manual capture; 318 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2474,13 +2474,30 @@
       "id": "05.19",
       "domain": "DPH-05",
       "requirement": "Data quality and integrity checks",
-      "implementation": "missing",
+      "implementation": "implemented_manual_capture",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.Model.pas",
+        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "DPH.Workspace.Worker.pas",
+        "tests/DPH.Tests.DataQuality.dpr",
+        "tools/build-data-quality.cmd",
+        "docs/phase1-data-quality-validation.json",
+        "docs/phase1-data-quality-validation.log",
+        "docs/guides/Data_Quality_Run_and_Test.txt"
       ],
-      "limitation": "Add selected-data quality rules, safe imported check results and source-linked integrity procedures.",
+      "limitation": "Attributed manual capture of target data quality rules and imported results. DPH does not execute checks or validate measurements. Stable typed identities, contributor, context, original report SHA256, immutable revisions and explicit review preserve evidence. Imports accept literal UTF-8 txt/log/json up to 32 KiB. Source, procedure and exact report revision links retain provenance. Existing 64-link, 200-candidate and 250-row paging bounds apply.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native target data quality register supports attributed rules, safe literal report imports, stable identities, review/history, filters, paging and source/procedure/exact-report links. Existing publication includes escaped report content.",
+        "remaining_work": "",
+        "purpose": "Data quality and integrity checks",
+        "evidence_group": "sql",
+        "verification": "91 focused plus 239 regression checks pass; application/FMX pass. All 71 final guide pages visually reviewed; 58 source hashes and 116 TOC destinations verified. Imported claims remain explicitly unverified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "DPH integrity checks do not assess selected-application data quality.",
@@ -2488,6 +2505,12 @@
         "purpose": "Data quality and integrity checks",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Target data quality",
+        "validation": "docs/phase1-data-quality-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12847,23 +12870,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Target data retention",
+    "completed_batch": "Target data quality",
     "completed_requirement_ids": [
-      "05.18"
+      "05.19"
     ],
     "counts": {
-      "implemented_manual_capture": 19,
+      "implemented_manual_capture": 20,
       "partial": 226,
       "implemented": 195,
-      "missing": 93
+      "missing": 92
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 319,
-    "completion_record": "docs/Phase1_Data_Retention_Completion.txt",
+    "incomplete_requirement_records": 318,
+    "completion_record": "docs/Phase1_Data_Quality_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.19",
-      "title": "Data quality and integrity checks",
-      "scope": "Add selected-data quality rules, safe imported check results and source-linked integrity procedures."
+      "requirement": "05.20",
+      "title": "Backup and restoration requirements",
+      "scope": "Add target backup/restore requirements, responsibilities and attributed recovery-test evidence."
     }
   }
 }

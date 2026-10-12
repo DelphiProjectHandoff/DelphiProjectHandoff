@@ -147,7 +147,7 @@ begin
             Request.Configuration:=Inventory.ConfigurationName; Request.Platform:=Inventory.PlatformName;
           finally Inventory.Free; end;
         end;
-        if MatchText(Request.Command,['screen_history','compare','open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
+        if MatchText(Request.Command,['screen_history','compare','open','knowledge','save_knowledge','review_knowledge','publish','relocate','import_screenshot','retention_preview','retention_apply','retention_pin','continuity_preview','continuity_approve','save_backup','integrity','search','link_candidates','review_tasks','observations','import_observation','import_data_quality','translate','translations','review_translation']) then Root:=TDPHKnowledgeStore.ProjectRoot(Request.Database)
         else Root:=ExtractFilePath(Request.Entry);
         Store:=TDPHKnowledgeStore.Create(Request.Database,Root,TPath.Combine(FBaseDirectory,'migrations'));
         try
@@ -342,6 +342,10 @@ begin
               if FResponses.PushItem(LifecycleResponse)=wrSignaled then LifecycleResponse:=nil;
             finally LifecycleResponse.Free; end;
             Continue;
+          end;
+          if Request.Command='import_data_quality' then begin
+            Store.ImportDataQualityReport(Request.GenerationID,Request.Body,Request.Editor,Request.Title);
+            Respond(nil,'Saved target-data check report imported with attribution and original SHA256; human review pending.',False,False,Request.Entry='',False,Store.KnowledgeJSON);Continue;
           end;
           if MatchText(Request.Command,['knowledge','save_knowledge','review_knowledge']) then
           begin

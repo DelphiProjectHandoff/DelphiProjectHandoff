@@ -29,6 +29,10 @@ type
     class procedure ValidateDataRetentionRecord(ARecord:TJSONObject);static;
     class function IsDataRetentionPolicy(ARow:TJSONObject):Boolean;static;
     class function DescribeDataRetentionPolicy(ARow:TJSONObject):string;static;
+    class function NewDataQualityRule:string;static;
+    class procedure ValidateDataQualityRecord(ARecord:TJSONObject);static;
+    class function IsDataQualityRule(ARow:TJSONObject):Boolean;static;
+    class function DescribeDataQualityRule(ARow:TJSONObject):string;static;
     function FileFormats: TJSONObject;
     class function DescribeFileFormat(ARow:TJSONObject):string; static;
     class function FileFormatContractTitle(ARow:TJSONObject):string; static;
@@ -93,6 +97,59 @@ begin
  if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
  Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
   'Open policy to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
+end;
+
+class function TDPHWorkspaceView.NewDataQualityRule:string;
+begin
+ Result:='TARGET DATA QUALITY AND INTEGRITY CHECK'+sLineBreak+
+  'Selected-application data requirements and attributed results. Unknown means unresolved. Do not enter credentials or customer records.'+sLineBreak+sLineBreak+
+  'Check name, version and purpose: Unknown'+sLineBreak+
+  'Data scope, tables/fields/files and environment: Unknown'+sLineBreak+
+  'Quality dimension (completeness, uniqueness, validity, consistency, freshness or referential integrity): Unknown'+sLineBreak+
+  'Rule, threshold, units and expected outcome: Unknown'+sLineBreak+
+  'Prerequisites, sampling, exclusions and limitations: Unknown'+sLineBreak+
+  'Check procedure, implementing routine and schedule: Unknown'+sLineBreak+
+  'Owner, operator and review responsibility: Unknown'+sLineBreak+
+  'Failure severity, remediation and escalation: Unknown'+sLineBreak+
+  'Observed result, counts, measurement time and environment: Unknown'+sLineBreak+
+  'Result evidence, contributor and verification method: Unknown'+sLineBreak+
+  'Remaining unknowns and responsible maintainer: Unknown'+sLineBreak+sLineBreak+
+  'Use Knowledge links to cite captured routines, constraints and exact procedure or imported report revisions. Import check report saves an attributed UTF-8 text extract as another quality record; link it as a section. A written name alone is not a resolved link.'+sLineBreak+
+  'Qualification: DPH never runs checks, SQL or the selected application. Source constraints are captured declarations, not proof of live data quality. Imported outcomes and timestamps remain contributor claims. DPH database integrity is separate.';
+end;
+class function TDPHWorkspaceView.IsDataQualityRule(ARow:TJSONObject):Boolean;
+var RecordValue:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try
+  if not (RecordValue is TJSONObject) then Exit;
+  Result:=(ARow.GetValue<string>('kind','')='business_rule') and (RecordValue.GetValue<string>('record_type','')='data_quality');
+ finally RecordValue.Free;end;
+end;
+class procedure TDPHWorkspaceView.ValidateDataQualityRecord(ARecord:TJSONObject);
+var ID:TGUID;Pair:TJSONPair;
+begin
+ if (ARecord=nil) or (ARecord.GetValue<string>('record_type','')<>'data_quality') then raise EArgumentException.Create('Expected a target-data quality rule');
+ if ARecord.Count<>2 then raise EArgumentException.Create('Quality check requires only its record type and stable check identity');
+ for Pair in ARecord do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Quality metadata must be text');
+ if Length(ARecord.GetValue<string>('rule_id',''))<>38 then raise EArgumentException.Create('Invalid data quality rule identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('rule_id'));except raise EArgumentException.Create('Invalid data quality rule identity');end;
+end;
+class function TDPHWorkspaceView.DescribeDataQualityRule(ARow:TJSONObject):string;
+var Links,History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved target-data quality check selected. New check prepares an unsaved Knowledge draft. Empty results do not prove that the application has no data quality checks.';
+ if not IsDataQualityRule(ARow) then Exit;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+
+  sLineBreak+'Review state: '+ARow.GetValue<string>('state','unknown')+' | revision '+ARow.GetValue<string>('revision','unknown')+
+  sLineBreak+'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do
+  if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then
+   Result:=Result+'Current revision author: '+Value.GetValue<string>('editor','unknown')+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
+ Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
+  'Open check to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
 end;
 
 class function TDPHWorkspaceView.IsHandoffProject(ADocument: TJSONObject): Boolean;

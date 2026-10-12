@@ -82,6 +82,7 @@ type
     function GenerationIsStale(AGenerationID: Int64): Boolean;
     procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
     function ScreenshotsJSON: TJSONArray;
+    function ImportDataQualityReport(AGenerationID:Int64;const AFile,AAuthor,AContext:string):Int64;
     procedure ImportObservation(AGenerationID: Int64; const AFile,AAuthor,AContext,AEntityKey: string);
     function ObservationsJSON: TJSONArray;
     function RetentionReport(ARecent: Integer): TJSONArray;
@@ -849,6 +850,16 @@ begin
           try if PriorRecord.GetValue<string>('policy_id','')<>StructuredValue.GetValue<string>('policy_id','') then raise EDPHStorage.Create('Retention policy identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''data_retention'' AND json_extract(r.structured_json,''$.policy_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('policy_id')])<>0 then raise EDPHStorage.Create('This retention policy identity already exists; refresh and edit its current revision');
+      end else if StructuredValue.GetValue<string>('record_type','')='data_quality' then begin
+        TDPHWorkspaceView.ValidateDataQualityRecord(StructuredValue as TJSONObject);
+        if SameText(ATitle.Trim,'Quality check: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive data quality rule title before saving');
+        if (AKind<>'business_rule') or (DocumentKind<>'maintenance') or (Audience<>'maintainer') or (AEntityKey<>'') then raise EDPHStorage.Create('Quality check must preserve its project scope, business rule kind and maintenance audience');
+        if not ABody.StartsWith('TARGET DATA QUALITY AND INTEGRITY CHECK'+sLineBreak) then raise EDPHStorage.Create('Preserve the target-data quality rule heading; edit the requirements below it');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('rule_id','')<>StructuredValue.GetValue<string>('rule_id','') then raise EDPHStorage.Create('Quality check identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''data_quality'' AND json_extract(r.structured_json,''$.rule_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('rule_id')])<>0 then raise EDPHStorage.Create('This data quality rule identity already exists; refresh and edit its current revision');
       end else if StructuredValue.GetValue<string>('record_type','')='data_dictionary' then begin
         TDPHDatabaseSchema.ValidateDictionary(StructuredValue as TJSONObject);
         if AKnowledgeID=0 then begin
@@ -1448,6 +1459,30 @@ begin
   except Result.Free; raise;
   end;
   finally Query.Free; end;
+end;
+function TDPHKnowledgeStore.ImportDataQualityReport(AGenerationID:Int64;const AFile,AAuthor,AContext:string):Int64;
+var Bytes,RoundTrip:TBytes;Encoding:TUTF8Encoding;Content,Body,Hash:string;RecordValue:TJSONObject;Hasher:THashSHA2;
+begin
+ RequireWriter;
+ if (AAuthor.Trim='') or (AContext.Trim='') or (Length(AAuthor)>256) or (Length(AContext)>4096) then raise EDPHStorage.Create('Enter a named report contributor and check/environment context (up to 256/4096 characters)');
+ if not MatchText(ExtractFileExt(AFile),['.txt','.log','.json']) then raise EDPHStorage.Create('Select a saved UTF-8 .txt, .log or .json check extract');
+ if TFile.GetSize(AFile)>32768 then raise EDPHStorage.Create('Check report exceeds 32 KiB; select a focused extract');
+ Bytes:=TFile.ReadAllBytes(AFile);
+ if (Length(Bytes)=0) or (Length(Bytes)>32768) then raise EDPHStorage.Create('Check report is empty or exceeds 32 KiB');
+ Encoding:=TUTF8Encoding.Create(False);
+ try Content:=Encoding.GetString(Bytes);RoundTrip:=Encoding.GetBytes(Content);finally Encoding.Free;end;
+ if (Length(RoundTrip)<>Length(Bytes)) or not CompareMem(@RoundTrip[0],@Bytes[0],Length(Bytes)) then raise EDPHStorage.Create('Check report must be valid round-trip UTF-8');
+ if Content.StartsWith(Char($FEFF)) then Delete(Content,1,1);
+ if (Content.Trim='') or ContainsStr(Content,#0) then raise EDPHStorage.Create('Check report must contain text without NUL');
+ Hasher:=THashSHA2.Create;Hasher.Update(Bytes);Hash:=Hasher.HashAsString;
+ Body:=TDPHWorkspaceView.NewDataQualityRule+sLineBreak+sLineBreak+
+  'IMPORTED CHECK REPORT - CONTRIBUTOR CLAIM UNVERIFIED'+sLineBreak+
+  'Report context: '+AContext+sLineBreak+'Report contributor: '+AAuthor+sLineBreak+
+  'Imported UTC: '+UTCNow+sLineBreak+'Captured generation: '+IntToStr(AGenerationID)+sLineBreak+
+  'Original extract SHA256: '+Hash+sLineBreak+
+  'Saved text below is literal evidence; no commands, SQL, scripts or markup are executed. Report origin, measurements, timestamps and environment are contributor claims. Named review remains separate.'+sLineBreak+sLineBreak+Content;
+ RecordValue:=TJSONObject.Create.AddPair('record_type','data_quality').AddPair('rule_id',TGUID.NewGuid.ToString);
+ try Result:=SaveKnowledge(0,0,AGenerationID,'Imported check report: '+AContext,Body,AAuthor,'business_rule','','maintenance','maintainer','','',RecordValue.ToJSON);finally RecordValue.Free;end;
 end;
 procedure TDPHKnowledgeStore.ImportObservation(AGenerationID: Int64; const AFile,AAuthor,AContext,AEntityKey: string);
 var Bytes,RoundTrip: TBytes; Encoding: TUTF8Encoding; Metadata: TJSONObject; Hasher: THashSHA2;

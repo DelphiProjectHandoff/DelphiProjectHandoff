@@ -1,0 +1,22 @@
+DPH REQUIREMENT 05.19 COMPLETION: TARGET DATA QUALITY
+Last changed: 12 October 2026
+
+Native attributed quality rules and report imports support stable identities, descriptive
+titles, policy prompts, source/procedure links, review and immutable history.
+Controls remain IDE-editable; no helper unit or schema migration.
+
+Validation PASS: 91 focused + 239 regression = 330 checks.
+Actual application and FMX baseline PASS. Normal/compact renders reviewed.
+All 71 final guide pages visually reviewed; 58 source hashes and 116 TOC
+destinations verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/Data_Quality_Run_and_Test.txt
+
+Attributed manual capture of target data quality rules and imported results. DPH does not execute checks or validate measurements. Stable typed identities, contributor, context, original report SHA256, immutable revisions and explicit review preserve evidence. Imports accept literal UTF-8 txt/log/json up to 32 KiB. Source, procedure and exact report revision links retain provenance. Existing 64-link, 200-candidate and 250-row paging bounds apply.
+
+Pre-change backup: H:\DPH Backups\DataQuality_PreChange_20261012_183858
+7602 files, 2972359613 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.19 promoted; all 533 original IDs and texts preserved.
+195 implemented; 20 implemented_manual_capture; 226 partial; 92 missing.
+318 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 05.20 Backup and restoration requirements.

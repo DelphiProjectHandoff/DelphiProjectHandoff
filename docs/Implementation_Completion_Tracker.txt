@@ -117,7 +117,10 @@ See Phase1_File_Formats_Completion.txt.
 Target data retention completed as attributed manual capture (05.18).
 66 focused and 230 regression checks passed; actual app/FMX passed.
 See Phase1_Data_Retention_Completion.txt.
-Current live backlog: 319 incomplete requirement records; 0 unassessed.
+Target data quality completed as attributed manual capture (05.19).
+91 focused and 239 regression checks passed; actual app/FMX passed.
+See Phase1_Data_Quality_Completion.txt.
+Current live backlog: 318 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

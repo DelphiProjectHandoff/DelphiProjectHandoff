@@ -53,6 +53,7 @@ Items.Strings = (
 'Database ER diagram'
 'Import/export formats'
 'Target data retention'
+'Target data quality'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1698,6 +1699,127 @@ Margins.Right = 12
 Text = 'Saved policy, attribution and review state (scroll for details)'
 end
 object DataRetentionMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object DataQualityTab: TTabItem
+Text = 'Target data quality'
+object DataQualityPurpose: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Save target-data quality rules and source links. Import a saved report below, then cite its section. Results require human review; DPH never runs target checks.'
+end
+object DataQualityToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object DataQualityState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = DataQualityFilterChange
+end
+object DataQualityFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find check, scope, owner or result'
+OnChange = DataQualityFilterChange
+end
+object DataQualityFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = DataQualityFilterChange
+end
+object DataQualityNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = DataQualityFilterChange
+end
+object DataQualityNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New check'
+OnClick = DataQualityNewClick
+end
+object DataQualityOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open check'
+OnClick = DataQualityOpenClick
+end
+object DataQualityLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = DataQualityOpenClick
+end
+end
+object DataQualityImportToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object DataQualityContributor: TEdit
+Position.X = 12
+Width = 190
+Height = 28
+TextPrompt = 'Report contributor name'
+end
+object DataQualityContext: TEdit
+Position.X = 210
+Width = 340
+Height = 28
+TextPrompt = 'Check name, environment and measurement context'
+end
+object DataQualityImport: TButton
+Position.X = 558
+Width = 150
+Height = 28
+Text = 'Import check report'
+OnClick = DataQualityImportClick
+end
+end
+object DataQualityStatus: TLabel
+Align = Top
+Height = 36
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object DataQualityList: TListBox
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+OnChange = DataQualitySelectionChange
+end
+object DataQualityEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved check, imported results and review state (scroll for details)'
+end
+object DataQualityMemo: TMemo
 Align = Client
 Margins.Left = 12
 Margins.Right = 12
