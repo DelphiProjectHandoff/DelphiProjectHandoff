@@ -50,6 +50,7 @@ Items.Strings = (
 'Screen history'
 'Database connections'
 'Database schema'
+'Database ER diagram'
 'Knowledge links'
 'Review tasks'
 'Author questions'
@@ -1668,6 +1669,14 @@ Text = 'Follow relationship'
 OnClick = DatabaseSchemaFollowClick
 Enabled = False
 end
+object DatabaseSchemaER: TButton
+Position.X = 1397
+Position.Y = 0
+Width = 150
+Height = 28
+Text = 'View ER diagram'
+OnClick = DatabaseERFocusClick
+end
 end
 object DatabaseSchemaStatus: TLabel
 Align = Top
@@ -1703,6 +1712,146 @@ ShowScrollBars = True
 Margins.Left = 12
 Margins.Right = 12
 Margins.Bottom = 12
+end
+end
+object DatabaseERTab: TTabItem
+Text = 'Database ER diagram'
+object DatabaseERPurpose: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Captured tables and foreign keys. Click a table or choose FK evidence below. Orange marks gaps; scroll commands sideways. No SQL runs.'
+StyledSettings = []
+TextSettings.FontColor = xFF146CB4
+end
+object DatabaseERToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object DatabaseERFilter: TEdit
+Position.X = 8
+Width = 240
+Height = 28
+TextPrompt = 'Find table, schema or source'
+OnChange = DatabaseERFilterChange
+end
+object DatabaseERFirst: TButton
+Position.X = 256
+Width = 90
+Height = 28
+Text = 'First page'
+OnClick = DatabaseERFilterChange
+end
+object DatabaseERNext: TButton
+Position.X = 354
+Width = 90
+Height = 28
+Text = 'Next page'
+OnClick = DatabaseERFilterChange
+Enabled = False
+end
+object DatabaseERPageSize: TComboBox
+Position.X = 452
+Width = 110
+Height = 28
+Hint = 'Maximum tables per diagram page'
+ShowHint = True
+Items.Strings = (
+'15'
+'30'
+'60')
+ItemIndex = 1
+OnChange = DatabaseERFilterChange
+end
+object DatabaseERZoom: TComboBox
+Position.X = 570
+Width = 100
+Height = 28
+Hint = 'Diagram zoom'
+ShowHint = True
+Items.Strings = (
+'75%'
+'100%'
+'125%'
+'150%'
+'200%')
+ItemIndex = 1
+OnChange = DatabaseERFilterChange
+end
+object DatabaseERAll: TButton
+Position.X = 678
+Width = 100
+Height = 28
+Text = 'All tables'
+OnClick = DatabaseERFilterChange
+end
+object DatabaseERFocus: TButton
+Position.X = 786
+Width = 170
+Height = 28
+Text = 'Focus schema selection'
+OnClick = DatabaseERFocusClick
+end
+object DatabaseERRelations: TComboBox
+Position.X = 964
+Width = 350
+Height = 28
+Hint = 'FK numbers match the diagram arrows; unresolved and off-page evidence remains selectable'
+ShowHint = True
+OnChange = DatabaseERSelectionChange
+end
+object DatabaseEROpen: TButton
+Position.X = 1322
+Width = 140
+Height = 28
+Text = 'Open evidence'
+OnClick = DatabaseEROpenClick
+Enabled = False
+end
+end
+object DatabaseERStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project. Schema completeness and deployed behavior remain unverified.'
+end
+object DatabaseERScroll: TScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+ShowScrollBars = True
+OnResize = DatabaseERResize
+object DatabaseERPaint: TPaintBox
+Width = 1000
+Height = 360
+OnPaint = DatabaseERPaintPaint
+OnMouseDown = DatabaseERMouseDown
+end
+end
+object DatabaseERSplitter: TSplitter
+Align = Bottom
+Height = 6
+end
+object DatabaseEREvidenceLabel: TLabel
+Align = Bottom
+Height = 22
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Selected table or foreign-key evidence (scroll for details)'
+end
+object DatabaseERMemo: TMemo
+Align = Bottom
+Height = 60
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
 end
 end
 object HistoryTab: TTabItem
@@ -3217,6 +3366,53 @@ EnableCaching = False
 OnShouldLoadURL = BrowserShouldLoad
 end
 end
+end
+object DatabaseERTableStyle: TRectangle
+Visible = False
+Width = 300
+Height = 240
+Margins.Left = 32
+Margins.Top = 24
+Margins.Right = 88
+Margins.Bottom = 56
+Fill.Color = xFFF3F8FD
+Stroke.Color = xFF146CB4
+Stroke.Thickness = 1.5
+end
+object DatabaseERGapStyle: TRectangle
+Visible = False
+Width = 300
+Height = 240
+Fill.Color = xFFFFF6EC
+Stroke.Color = xFFF28C28
+Stroke.Thickness = 2
+end
+object DatabaseERHeaderStyle: TRectangle
+Visible = False
+Width = 300
+Height = 42
+Fill.Color = xFF146CB4
+Stroke.Color = xFF146CB4
+end
+object DatabaseERTextStyle: TLabel
+Visible = False
+Width = 280
+Height = 20
+Margins.Left = 10
+StyledSettings = []
+TextSettings.Font.Family = 'Segoe UI'
+TextSettings.Font.Size = 11
+TextSettings.FontColor = xFF222222
+end
+object DatabaseERTitleStyle: TLabel
+Visible = False
+Width = 280
+Height = 38
+StyledSettings = []
+TextSettings.Font.Family = 'Segoe UI'
+TextSettings.Font.Size = 14
+TextSettings.Font.Style = [fsBold]
+TextSettings.FontColor = xFFFFFFFF
 end
 object GraphNodeStyle: TRectangle
 Visible = False

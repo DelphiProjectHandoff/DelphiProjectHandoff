@@ -1,0 +1,77 @@
+{
+  "result": "PASS",
+  "requirement": "05.08",
+  "status": "implemented",
+  "checks": 436,
+  "regression_checks": 536,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.08",
+  "incomplete_requirement_records": 328,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 231,
+    "implemented": 187,
+    "missing": 97
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 29,
+        "toc_entries": 52,
+        "new_chapter_pages": [
+          2,
+          19
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 26,
+        "toc_entries": 44,
+        "new_chapter_pages": [
+          2,
+          23
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseERDiagrams_PreChange_20261012_132042",
+    "files": 4699,
+    "bytes": 1610957252,
+    "sha256_verified": true
+  },
+  "qualification": "Interactive ER diagrams project supported captured table headers, ordered columns and exact key ownership/links only. Every view remains PARTIAL CAPTURED SCHEMA. Missing/ambiguous targets, duplicates, unsupported schema evidence, off-page endpoints and display truncation remain explicit; no inferred entities, cardinality, migration winner or deployed enforcement is invented. SQL dialect validity, referenced uniqueness, type compatibility and business semantics are unverified. At most 60 table cards, 32 column summaries per card and 120 related FK entries per projection; native defaults summarize seven columns. No target SQL, target application or database server is executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "3d973d0f7307a1c24bbd2d1895ccdbcadee8f1d015d1cb3a9f71d5a9a3b92f2b",
+    "DPH.UI.Main.pas": "135fa48981d11a58f8ca0ea0db327f915eb11ad6d15e888f93ad3a258c5b86f3",
+    "DPH.UI.Main.fmx": "bb3dd3d492e5c81ff37c1e7613f3cf2feb63d3819b1e2bac9ffd667179746a97",
+    "tests/DPH.Tests.DatabaseER.dpr": "0f3d6eeb64d1bf8dd4e93d4717ae3ef37b8e789b303094ca69da51c2d9794fbc",
+    "tools/build-database-er.cmd": "20ea1625b20ac084ba436190ef838eada18786c7e69a61f577c6de4caecc3735",
+    "docs/phase1-database-er-validation.json": "56c7223850b65824905665540239655abd03ce67a4d3c40ef97187a9d7bb2f26",
+    "docs/phase1-database-er-validation.log": "d1dc780a5952eb517dd4ae89da5b6ce38d32a3889fa8b4696ba9a09071c54c01",
+    "docs/guides/Database_ER_Diagrams_Run_and_Test.txt": "747fe9cfc485dde662d83588603b7c4fd7f3e85e98199909093c917d3e991f45",
+    "docs/guide-source-validation.json": "0596c9e55d3c9eb1d9841a966809783363b274332142f5a6208175b8da377d30",
+    "docs/guides/DPH_User_Guide.docx": "c828c32e912254f908ad74175e39e0bb602cb1bdfadcfabc2c10d50a00bf314d",
+    "docs/guides/DPH_Engineering_Guide.docx": "c237a7093134c32caf3ad032fdfda97367583d10514bc7dce545b115edd20a4a",
+    "docs/pdf/DPH_User_Guide.pdf": "543f5e32edc51876f4d5fab3b604c8e3dfbae3f2a08697f7b133bcbecc326dd7",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "8fe743ad633c70388580218e7aaf23d2039184f0c93a114bf4b1f184387a8e6e",
+    "docs/phase1-database-er-build.log": "cebaf3fce2ec0534d7c27bd3312f3a113d0bf2b993b6621df13f204b29a2fb57",
+    "docs/phase1-database-er-stored-objects-regression.json": "91ddef8e5053bbe47106fe9d06c0de1406a152d84d89194beb1fe08e4e084714",
+    "docs/phase1-database-er-keys-regression.json": "ca5fa2c6c9a414ba32f60b0548f26bb2ecb1643cbc7508db5b11079f0a4164ec",
+    "docs/phase1-database-er-workspace.png": "2d1c7fc63ecda17c6fd8b403425e79ed6a0a6682428c4cd8ab33b6b9c268876d",
+    "docs/phase1-database-er-diagram.png": "be9aa5a6b5601f3b2579ce057095a02032293b2e1f5b904bc2da4887b8534b0c",
+    "docs/phase1-database-er-compact.png": "cd03dec49e40a3040aabab5fe9f07d19afd9ad432cbcabf03797f8e097fb3c1d",
+    "docs/phase1-database-er-commands.png": "eab3569e91bc34dd7fca3d06671a1c5c8db9294bc6ac140530d846e4693c277a",
+    "docs/phase1-database-er-schema-workspace.png": "dc2eee8dd99de79ca7de2e2f60cff327f9b5e464b64752f0cafb14542c5dde6f",
+    "docs/phase1-database-er-schema-compact.png": "dc2eee8dd99de79ca7de2e2f60cff327f9b5e464b64752f0cafb14542c5dde6f",
+    "docs/phase1-database-er-relationships.png": "7838c65f875994bcff8ac6f6f05b31d951d68b6b5632ad633be89f2e06d23344",
+    "docs/Phase1_Database_ER_Completion.txt": "90b2d5b89272692ca337f64d16bdc619c3278007dee4cccf1ec5c27bc423e4d1"
+  }
+}

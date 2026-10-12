@@ -1,0 +1,95 @@
+DPH ENTITY RELATIONSHIP DIAGRAMS: RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.08 Entity-relationship diagrams
+
+RUN THE UPDATED APPLICATION
+1. Save any Knowledge draft, then close the existing DPH instance.
+2. In File Explorer open:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+3. Double-click DelphiProjectHandoff.exe. It opens maximized.
+4. Set the intended Debug/Release and Win32/Win64 configuration and required
+   defines. Click Attach project and select the target application's .dproj or
+   .dpr, or click Open cache and select an existing .dphdb. Save a new cache in
+   Databases. DPH rejects its own project and caches of itself.
+5. Wait for capture to finish. SQL resources must be referenced by the selected
+   project. If an old cache lacks those resources, attach the source and choose
+   Full reassessment. No SQL or target application runs.
+6. Choose Database ER diagram in the upper-right page selector.
+
+READ AND USE THE DIAGRAM
+7. Each box represents a captured table. Rows show column names and declared
+   types. PK = primary key; FK = foreign key; UQ = unique key membership.
+8. Blue arrows run from the referencing table to the referenced table. Their
+   FK numbers match the selector in the command strip. Orange borders indicate
+   table gaps, duplicate declarations or truncated column summaries. Orange
+   dashed arrows indicate unresolved captured relationships with visible ends.
+9. Click a table box. Read its full columns, keys, gaps and provenance in the
+   labeled memo below the drawing. Click Open evidence in the command strip
+   to select that exact table in Database schema. Scroll the strip sideways
+   if the command is out of view. No text search is needed for this navigation.
+10. To inspect an arrow, select its numbered FK entry in the command strip.
+    Read the ordered local/referenced columns and qualification in the memo.
+    Open evidence selects that exact key in Database schema, on its correct page.
+11. To focus a table, select its table, column or key record in Database schema
+    and click View ER diagram at the right end of that page's command strip.
+    Focus schema selection in the ER page does the same. Focus shows the selected
+    table and its directly linked incoming/outgoing neighbors, not every table
+    reachable transitively. All tables clears focus and the text filter.
+12. Search table name, schema or source in the ER filter. Choose a 15, 30 or 60
+    table page size. First page resets the offset; Next page advances one group.
+    Choose 75%, 100%, 125%, 150% or 200% zoom and use the drawing scrollbars.
+    Lower table rows remain available by scrolling. The memo scrolls separately;
+    drag its divider to adjust space. Maximize for the largest useful diagram.
+
+QUALIFICATION AND LIMITS
+The status always says PARTIAL schema and reports source gaps, unresolved FKs,
+matching tables, related FKs and omitted FK entries. Default cards summarize
+seven columns; full table evidence retains all captured columns. Each page has
+at most 60 tables and 120 FK evidence entries. Relationships touching a visible
+table remain in the selector when the other end is off page, filtered, outside
+focus or missing. Those entries have no line unless both table ends are visible.
+Missing definitions do not create invented boxes. Duplicate declarations stay
+separate. Views and inferred SQL usage references are not table entities.
+Empty results do not prove the application has no schema. Clear the filter,
+choose All tables, or attach approved SQL resources and reassess.
+Captured links do not prove uniqueness, type compatibility, SQL dialect validity,
+cardinality, effective migration order or deployed enforcement. No live database,
+SQL statement or target application is executed.
+
+CONTROLLED PRACTICE
+Run the developer validation below first. It creates fixed ignored practice files:
+C:\New Delphi Projects\Delphi Project Handoff\bin\database-er-validation
+Attach source\Schema.dpr in that folder with Debug/Win32. Save its proposed cache
+in Databases. Choose Database ER diagram and enter ER_ in the filter.
+Expected: four table boxes, two visible arrows and an explicit relationship-limit
+count. ER_ManyLinks deliberately has 130 FKs to Parent, outside this text filter.
+Click ER_Orders, then Open evidence. In Database schema click View ER diagram.
+Expected: ER_Customers, ER_Orders and ER_Lines, with two arrows. Select each FK
+entry and check the ordered columns and exact key navigation. Click All tables
+and search SelfRef for a loop arrow. Search MissingRef for an orange table and
+unresolved FK evidence without an invented target. Search Page270 and click its
+box then Open evidence to verify navigation beyond the first schema page.
+These are controlled fixture cases. Neither fixture SQL nor its application runs.
+
+DEVELOPER BUILD AND VALIDATION
+Open Windows Command Prompt as Administrator. Enter:
+cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+tools\build-database-er.cmd
+Expected: 436 checks PASS. Result and count are saved in:
+docs\phase1-database-er-validation.json
+Actual window and native canvas screenshots are saved as:
+docs\phase1-database-er-workspace.png
+docs\phase1-database-er-diagram.png
+docs\phase1-database-er-compact.png
+Run each of these separately:
+tools\build-database-stored-objects.cmd
+tools\build-database-keys.cmd
+tools\build-wp0.cmd
+Expected: 363 stored-object checks, 173 key checks and PASS WP0-TEST respectively.
+The last command builds the actual application and checks serialized FMX bindings.
+Elevation lets RAD Studio 37 read its environment file. Test artifacts refresh;
+the owner catalog and selected target sources remain unchanged.
+
+MANUALS
+docs\guides\DPH_User_Guide.docx and docs\pdf\DPH_User_Guide.pdf
+docs\guides\DPH_Engineering_Guide.docx and docs\pdf\DPH_Engineering_Guide.pdf

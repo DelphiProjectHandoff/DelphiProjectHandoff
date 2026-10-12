@@ -161,6 +161,17 @@ type
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotDialog: TOpenDialog;
+    DatabaseERTab:TTabItem;
+    DatabaseERPurpose,DatabaseERStatus,DatabaseEREvidenceLabel:TLabel;
+    DatabaseERToolbar:THorzScrollBox;
+    DatabaseERFilter:TEdit;
+    DatabaseERPageSize,DatabaseERZoom,DatabaseERRelations:TComboBox;
+    DatabaseERFirst,DatabaseERNext,DatabaseERAll,DatabaseERFocus,DatabaseEROpen,DatabaseSchemaER:TButton;
+    DatabaseERScroll:TScrollBox;
+    DatabaseERPaint:TPaintBox;
+    DatabaseERMemo:TMemo;
+    DatabaseERTableStyle,DatabaseERGapStyle,DatabaseERHeaderStyle:TRectangle;
+    DatabaseERTextStyle,DatabaseERTitleStyle:TLabel;
     DatabaseSchemaTab:TTabItem;
     DatabaseSchemaPurpose,DatabaseSchemaStatus:TLabel;
     DatabaseSchemaToolbar:THorzScrollBox;
@@ -356,6 +367,13 @@ type
     procedure ScreenshotClick(Sender: TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
+    procedure DatabaseERFilterChange(Sender:TObject);
+    procedure DatabaseERFocusClick(Sender:TObject);
+    procedure DatabaseERSelectionChange(Sender:TObject);
+    procedure DatabaseEROpenClick(Sender:TObject);
+    procedure DatabaseERResize(Sender:TObject);
+    procedure DatabaseERPaintPaint(Sender:TObject;Canvas:TCanvas);
+    procedure DatabaseERMouseDown(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
     procedure DatabaseSchemaFilterChange(Sender:TObject);
     procedure DatabaseSchemaSelectionChange(Sender:TObject);
     procedure DatabaseSchemaSourceClick(Sender:TObject);
@@ -463,6 +481,10 @@ type
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
     FComparison: TJSONObject;
+    FDatabaseER:TJSONObject;
+    FDatabaseEROffset:Integer;
+    FDatabaseERFocusID,FDatabaseEREvidenceID:string;
+    FDatabaseERScale:Single;
     FDatabaseSchema:TJSONObject;
     FDatabaseSchemaRows:TList<TJSONObject>;
     FDatabaseSchemaOffset:Integer;
@@ -506,6 +528,8 @@ type
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
+    function DatabaseERRect(AIndex:Integer):TRectF;
+    procedure DatabaseEREvidence(const AID:string);
     procedure RefreshGraphics;
     procedure UpdateScreenBounds;
     procedure UpdateScreenshotBounds;
@@ -592,6 +616,7 @@ begin
   FDynamicRows.Free; FDynamic.Free;
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
+  FDatabaseER.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -881,7 +906,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
-  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
@@ -1023,7 +1048,7 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
-  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
@@ -1982,6 +2007,125 @@ begin
       Format('Image: %d x %d pixels',[ScreenshotImage.Bitmap.Width,ScreenshotImage.Bitmap.Height])+sLineBreak+
       'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.DatabaseERFilterChange(Sender:TObject);
+var V:TJSONValue;Edge:TJSONObject;Limit,MaxColumns:Integer;
+begin
+ if FDatabaseSchemaRows=nil then Exit;
+ Limit:=StrToIntDef(DatabaseERPageSize.Selected.Text,30);
+ if Sender=DatabaseERNext then Inc(FDatabaseEROffset,Limit) else FDatabaseEROffset:=0;
+ if Sender=DatabaseERAll then begin FDatabaseERFocusID:='';DatabaseERFilter.Text:='';end;
+ FDatabaseEREvidenceID:='';DatabaseEROpen.Enabled:=False;DatabaseERRelations.Items.Clear;FreeAndNil(FDatabaseER);
+ MaxColumns:=Max(1,Min(32,Trunc((DatabaseERTableStyle.Height-DatabaseERHeaderStyle.Height-DatabaseERTextStyle.Height*2)/Max(1,DatabaseERTextStyle.Height))));
+ FDatabaseER:=TDPHDatabaseSchema.Diagram(FDatabaseSchema,DatabaseERFilter.Text,FDatabaseERFocusID,FDatabaseEROffset,Limit,MaxColumns);
+ FDatabaseERScale:=StrToIntDef(StringReplace(DatabaseERZoom.Selected.Text,'%','',[]),100)/100;
+ for V in FDatabaseER.GetValue<TJSONArray>('edges') do begin Edge:=V as TJSONObject;
+  DatabaseERRelations.Items.Add('FK '+IntToStr(DatabaseERRelations.Items.Count+1)+': '+Edge.GetValue<string>('from_name')+' -> '+Edge.GetValue<string>('to_name')+' | '+Edge.GetValue<string>('state'));
+ end;
+ DatabaseERNext.Enabled:=FDatabaseER.GetValue<Boolean>('has_next');
+ DatabaseERStatus.Text:=Format('PARTIAL schema | %d of %d matching tables from %d | %d related FKs (%d omitted) | %d source gaps; %d unresolved FKs. Blue = captured links; orange = gaps. Cardinality/deployment unverified.',[FDatabaseER.GetValue<Integer>('shown_tables'),FDatabaseER.GetValue<Integer>('matching_tables'),FDatabaseEROffset,FDatabaseER.GetValue<Integer>('related_foreign_keys'),FDatabaseER.GetValue<Integer>('omitted_foreign_keys'),FDatabaseER.GetValue<Integer>('source_gaps'),FDatabaseER.GetValue<Integer>('unresolved_foreign_keys')]);
+ DatabaseERMemo.Text:=FDatabaseER.GetValue<string>('qualification')+sLineBreak+sLineBreak+'PK = declared primary key; FK = declared foreign key; UQ = declared unique key. A badge describes captured membership, not deployed enforcement. Click a table for its full column/key evidence, or choose FK evidence in the command strip.';
+ if FDatabaseER.GetValue<Integer>('shown_tables')=0 then DatabaseERMemo.Lines.Add('No matching captured tables. Clear the text filter, click All tables, or attach approved SQL resources and reassess.');
+ if FDatabaseERFocusID<>'' then DatabaseERMemo.Lines.Add('Focus includes the selected captured table and its directly linked neighbors; the text filter still applies.');
+ DatabaseERResize(nil);
+end;
+procedure TDPHMainForm.DatabaseERFocusClick(Sender:TObject);
+var Row:TJSONObject;
+begin
+ FDatabaseERFocusID:='';
+ if (DatabaseSchemaList.ItemIndex>=0) and (DatabaseSchemaList.ItemIndex<FDatabaseSchemaRows.Count) then begin
+  Row:=FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex];
+  if (Row.GetValue<string>('kind')='table') and (Row.GetValue<string>('status')='declared header') then FDatabaseERFocusID:=Row.GetValue<string>('id')
+  else Row.TryGetValue<string>('declaration_id',FDatabaseERFocusID);
+ end;
+ DatabaseERFilter.Text:='';DatabaseERFilterChange(nil);WorkspaceTabs.ActiveTab:=DatabaseERTab;
+ if FDatabaseERFocusID='' then DatabaseERMemo.Lines.Add('No captured table/column/key selected in Database schema; showing all captured tables.');
+end;
+function TDPHMainForm.DatabaseERRect(AIndex:Integer):TRectF;
+var W,H,Left,Top:Single;Columns:Integer;
+begin
+ W:=(DatabaseERTableStyle.Width+DatabaseERTableStyle.Margins.Right)*FDatabaseERScale;H:=(DatabaseERTableStyle.Height+DatabaseERTableStyle.Margins.Bottom)*FDatabaseERScale;
+ Columns:=Max(1,Trunc((DatabaseERPaint.Width-DatabaseERTableStyle.Margins.Left*2*FDatabaseERScale)/Max(1,W)));
+ Left:=DatabaseERTableStyle.Margins.Left*FDatabaseERScale+(AIndex mod Columns)*W;Top:=DatabaseERTableStyle.Margins.Top*FDatabaseERScale+(AIndex div Columns)*H;
+ Result:=RectF(Left,Top,Left+DatabaseERTableStyle.Width*FDatabaseERScale,Top+DatabaseERTableStyle.Height*FDatabaseERScale);
+end;
+procedure TDPHMainForm.DatabaseERResize(Sender:TObject);
+var Count:Integer;
+begin
+ if FDatabaseER=nil then Exit;
+ DatabaseERPaint.Width:=Max(DatabaseERScroll.Width-24,(DatabaseERTableStyle.Width+DatabaseERTableStyle.Margins.Left*2+DatabaseERTableStyle.Margins.Right)*FDatabaseERScale);
+ Count:=FDatabaseER.GetValue<TJSONArray>('nodes').Count;
+ if Count=0 then DatabaseERPaint.Height:=Max(100,DatabaseERScroll.Height-24)
+ else DatabaseERPaint.Height:=DatabaseERRect(Count-1).Bottom+DatabaseERTableStyle.Margins.Bottom*FDatabaseERScale;
+ DatabaseERPaint.Repaint;
+end;
+procedure TDPHMainForm.DatabaseERPaintPaint(Sender:TObject;Canvas:TCanvas);
+var Nodes,Edges:TJSONArray;V,Column:TJSONValue;Node,Edge:TJSONObject;I,J,A,B:Integer;R,Header,TextRect:TRectF;P1,P2,P3,P4,P5,P6:TPointF;Scale,Pad,RowHeight,Lane:Single;Style:TRectangle;Text:string;
+begin
+ Canvas.Fill.Color:=TAlphaColors.White;Canvas.FillRect(DatabaseERPaint.LocalRect,0,0,[],1);
+ if FDatabaseER=nil then Exit;Nodes:=FDatabaseER.GetValue<TJSONArray>('nodes');Edges:=FDatabaseER.GetValue<TJSONArray>('edges');Scale:=FDatabaseERScale;Pad:=DatabaseERTextStyle.Margins.Left*Scale;RowHeight:=DatabaseERTextStyle.Height*Scale;
+ Canvas.Font.Assign(DatabaseERTextStyle.TextSettings.Font);Canvas.Font.Size:=Canvas.Font.Size*Scale;
+ if Nodes.Count=0 then begin Canvas.Fill.Color:=DatabaseERTextStyle.TextSettings.FontColor;Canvas.FillText(DatabaseERPaint.LocalRect,'No matching captured tables. Clear filters or attach SQL and reassess.',True,1,[],TTextAlign.Center,TTextAlign.Center);Exit;end;
+ for I:=0 to Edges.Count-1 do begin Edge:=Edges.Items[I] as TJSONObject;if not Edge.GetValue<Boolean>('draw') then Continue;A:=-1;B:=-1;
+  for J:=0 to Nodes.Count-1 do begin Node:=Nodes.Items[J] as TJSONObject;if Node.GetValue<string>('id')=Edge.GetValue<string>('from') then A:=J;if Node.GetValue<string>('id')=Edge.GetValue<string>('to') then B:=J;end;
+  if (A<0) or (B<0) then Continue;
+  Canvas.Stroke.Assign(DatabaseERTableStyle.Stroke);if not Edge.GetValue<Boolean>('resolved') then begin Canvas.Stroke.Assign(DatabaseERGapStyle.Stroke);Canvas.Stroke.Dash:=TStrokeDash.Dash;end;
+  Lane:=(8+(I mod 3)*8)*Scale;R:=DatabaseERRect(A);Header:=DatabaseERRect(B);
+  P1:=PointF(R.Right,R.CenterPoint.Y);P2:=PointF(R.Right+Lane,P1.Y);P3:=PointF(P2.X,Max(R.Bottom,Header.Bottom)+Lane);P4:=PointF(Header.Left-Lane,P3.Y);P5:=PointF(P4.X,Header.CenterPoint.Y);P6:=PointF(Header.Left,P5.Y);
+  Canvas.DrawLine(P1,P2,1);Canvas.DrawLine(P2,P3,1);Canvas.DrawLine(P3,P4,1);Canvas.DrawLine(P4,P5,1);Canvas.DrawLine(P5,P6,1);
+  Canvas.DrawLine(P6,PointF(P6.X-5*Scale,P6.Y-4*Scale),1);Canvas.DrawLine(P6,PointF(P6.X-5*Scale,P6.Y+4*Scale),1);
+  Canvas.Fill.Color:=Canvas.Stroke.Color;Canvas.FillText(RectF(P2.X+2*Scale,P2.Y-RowHeight,P2.X+55*Scale,P2.Y),'FK '+IntToStr(I+1),False,1,[],TTextAlign.Leading,TTextAlign.Center);
+ end;
+ for I:=0 to Nodes.Count-1 do begin Node:=Nodes.Items[I] as TJSONObject;R:=DatabaseERRect(I);Style:=DatabaseERTableStyle;if Node.GetValue<Boolean>('partial') then Style:=DatabaseERGapStyle;
+  Canvas.Fill.Assign(Style.Fill);Canvas.FillRect(R,4,4,AllCorners,1);Canvas.Stroke.Assign(Style.Stroke);Canvas.DrawRect(R,4,4,AllCorners,1);
+  Header:=RectF(R.Left,R.Top,R.Right,R.Top+DatabaseERHeaderStyle.Height*Scale);Canvas.Fill.Assign(DatabaseERHeaderStyle.Fill);Canvas.FillRect(Header,0,0,[],1);
+  Canvas.Font.Assign(DatabaseERTitleStyle.TextSettings.Font);Canvas.Font.Size:=Canvas.Font.Size*Scale;Canvas.Fill.Color:=DatabaseERTitleStyle.TextSettings.FontColor;
+  TextRect:=Header;TextRect.Inflate(-Pad,-2*Scale);Canvas.FillText(TextRect,Node.GetValue<string>('name'),True,1,[],TTextAlign.Leading,TTextAlign.Center);
+  Canvas.Font.Assign(DatabaseERTextStyle.TextSettings.Font);Canvas.Font.Size:=Canvas.Font.Size*Scale;Canvas.Fill.Color:=DatabaseERTextStyle.TextSettings.FontColor;J:=0;
+  for Column in Node.GetValue<TJSONArray>('columns') do begin
+   TextRect:=RectF(R.Left+Pad,Header.Bottom+J*RowHeight,R.Right-Pad,Header.Bottom+(J+1)*RowHeight);Text:=Column.GetValue<string>('badges');if Text<>'' then Text:='['+Text+'] ';Text:=Text+Column.GetValue<string>('name')+' : '+Column.GetValue<string>('declared_type');Canvas.FillText(TextRect,Text,False,1,[],TTextAlign.Leading,TTextAlign.Center);Inc(J);
+  end;
+  TextRect:=RectF(R.Left+Pad,R.Bottom-RowHeight*2,R.Right-Pad,R.Bottom-RowHeight);Canvas.FillText(TextRect,IntToStr(J)+'/'+Node.GetValue<Integer>('column_count').ToString+' columns | click table for evidence',False,1,[],TTextAlign.Leading,TTextAlign.Center);
+  if Node.GetValue<Boolean>('partial') then Text:='GAPS / TRUNCATION - inspect evidence' else Text:='Captured declaration; live schema unverified';TextRect.Offset(0,RowHeight);Canvas.Fill.Color:=Style.Stroke.Color;Canvas.FillText(TextRect,Text,False,1,[],TTextAlign.Leading,TTextAlign.Center);
+ end;
+end;
+procedure TDPHMainForm.DatabaseEREvidence(const AID:string);
+var V,W:TJSONValue;Row:TJSONObject;Text:string;
+begin
+ if FDatabaseSchema=nil then Exit;
+ FDatabaseEREvidenceID:='';DatabaseEROpen.Enabled:=False;
+ for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;if Row.GetValue<string>('id')<>AID then Continue;
+  FDatabaseEREvidenceID:=AID;Text:=TDPHDatabaseSchema.Describe(Row);
+  if Row.GetValue<string>('kind')='table' then begin
+   Text:=Text+sLineBreak+sLineBreak+'CAPTURED COLUMNS AND KEYS (full inventory, up to 10000 rows)'+sLineBreak;
+   for W in FDatabaseSchema.GetValue<TJSONArray>('rows') do if W.GetValue<string>('declaration_id','')=AID then Text:=Text+W.GetValue<string>('kind')+' | '+W.GetValue<string>('name')+' | '+W.GetValue<string>('declared_type','')+' | '+W.GetValue<string>('key_kind','')+' | '+W.GetValue<string>('relationship_status','')+' | '+W.GetValue<string>('reason')+sLineBreak;
+  end;
+  DatabaseERMemo.Text:=Text+sLineBreak+sLineBreak+FDatabaseER.GetValue<string>('qualification');DatabaseEROpen.Enabled:=True;Exit;
+ end;
+end;
+procedure TDPHMainForm.DatabaseERSelectionChange(Sender:TObject);
+begin
+ if (FDatabaseER=nil) or (DatabaseERRelations.ItemIndex<0) or (DatabaseERRelations.ItemIndex>=FDatabaseER.GetValue<TJSONArray>('edges').Count) then Exit;
+ DatabaseEREvidence(FDatabaseER.GetValue<TJSONArray>('edges').Items[DatabaseERRelations.ItemIndex].GetValue<string>('key_id'));
+end;
+procedure TDPHMainForm.DatabaseERMouseDown(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
+var I:Integer;
+begin
+ if (FDatabaseER=nil) or (Button<>TMouseButton.mbLeft) then Exit;
+ for I:=0 to FDatabaseER.GetValue<TJSONArray>('nodes').Count-1 do if DatabaseERRect(I).Contains(PointF(X,Y)) then begin DatabaseEREvidence(FDatabaseER.GetValue<TJSONArray>('nodes').Items[I].GetValue<string>('id'));Exit;end;
+end;
+procedure TDPHMainForm.DatabaseEROpenClick(Sender:TObject);
+var I:Integer;V:TJSONValue;
+begin
+ if (FDatabaseSchema=nil) or (FDatabaseEREvidenceID='') then Exit;I:=0;
+ for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin
+  if V.GetValue<string>('id')=FDatabaseEREvidenceID then begin
+   DatabaseSchemaKind.ItemIndex:=0;DatabaseSchemaState.ItemIndex:=0;DatabaseSchemaFilter.Text:='';DatabaseSchemaFilterChange(nil);
+   if I>=250 then begin FDatabaseSchemaOffset:=(I div 250)*250-250;DatabaseSchemaFilterChange(DatabaseSchemaNext);end;
+   DatabaseSchemaList.ItemIndex:=I mod 250;DatabaseSchemaSelectionChange(nil);WorkspaceTabs.ActiveTab:=DatabaseSchemaTab;Exit;
+  end;Inc(I);
+ end;
+ DatabaseERMemo.Lines.Add('Evidence target is no longer in this captured schema. Rebuild the diagram.');
 end;
 procedure TDPHMainForm.DatabaseSchemaFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Parameters:TJSONArray;ParameterText:string;

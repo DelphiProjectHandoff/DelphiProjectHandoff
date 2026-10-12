@@ -1,0 +1,5 @@
+{
+  "result": "PASS",
+  "checks": 173,
+  "qualification": "Controlled captured primary/foreign/unique keys, ordered relationships, unresolved evidence, grammar gaps, persistence and native FMX navigation. Expressions and deployed enforcement unverified; no SQL executed."
+}

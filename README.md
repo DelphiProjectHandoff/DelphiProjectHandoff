@@ -114,3 +114,5 @@ Requirement 05.05: Database schema now exposes captured primary, foreign and uni
 Requirement 05.06: Database schema now exposes captured indexes with ordered members/expressions, includes, predicates, methods and storage declarations. Exact captured table, column and SQL reference links reuse Follow relationship. SQL references do not prove index use or performance benefit. See docs/guides/Database_Indexes_Run_and_Test.txt.
 
 Requirement 05.07: Database schema now exposes captured procedures, functions and triggers with ordered parameters, return types, sanitized bodies and supported dependency evidence links. Dynamic SQL, ambiguous overloads and unsupported grammar remain explained gaps. See docs/guides/Database_Stored_Objects_Run_and_Test.txt.
+
+Requirement 05.08: Database ER diagram now draws captured tables, ordered column/key badges and foreign-key arrows with explicit schema gaps. Click cards or select numbered FK evidence, then Open evidence for the exact schema record. Focus, filtering, paging and zoom are available. See docs/guides/Database_ER_Diagrams_Run_and_Test.txt.

@@ -1,0 +1,5 @@
+{
+  "result": "PASS",
+  "checks": 363,
+  "qualification": "Captured procedures/functions/triggers, ordered parameters/defaults/returns, sanitized bodies, supported table and explicit call evidence, ambiguity/gaps, persistence and native navigation. Body grammar and runtime binding unverified; no SQL executed."
+}

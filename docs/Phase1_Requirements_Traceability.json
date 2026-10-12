@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Stored procedures, functions, and triggers 05.07 implemented as captured definitions, parameters and evidence-backed dependencies; 329 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Entity-relationship diagrams 05.08 implemented from captured table/key evidence with explicit incomplete-schema qualification; 328 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2032,13 +2032,28 @@
       "id": "05.08",
       "domain": "DPH-05",
       "requirement": "Entity-relationship diagrams",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseSchema.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseER.dpr",
+        "tools/build-database-er.cmd",
+        "docs/phase1-database-er-validation.json",
+        "docs/phase1-database-er-validation.log",
+        "docs/guides/Database_ER_Diagrams_Run_and_Test.txt"
       ],
-      "limitation": "Generate an ER diagram from verified table/key metadata and label incomplete schemas.",
+      "limitation": "Interactive ER diagrams project supported captured table headers, ordered columns and exact key ownership/links only. Every view remains PARTIAL CAPTURED SCHEMA. Missing/ambiguous targets, duplicates, unsupported schema evidence, off-page endpoints and display truncation remain explicit; no inferred entities, cardinality, migration winner or deployed enforcement is invented. SQL dialect validity, referenced uniqueness, type compatibility and business semantics are unverified. At most 60 table cards, 32 column summaries per card and 120 related FK entries per projection; native defaults summarize seven columns. No target SQL, target application or database server is executed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Dedicated native ER page draws captured tables, ordered column names/types and deduplicated PK/FK/UQ badges, with numbered directed foreign-key routes. Exact evidence IDs retain source/hash/generation/range and ordered local/referenced key membership. Unresolved, duplicate and truncated evidence is qualified, absent targets do not invent nodes, and off-page relations remain inspectable in the selector. Table hits and FK selection open exact schema evidence across inventory pages. IDE-editable controls/styles provide focus on one-hop neighbors, text filtering, 15/30/60-table paging, 75..200 percent zoom, separate drawing/details scrolling and a details splitter. Capture replacement rebuilds the diagram.",
+        "remaining_work": "",
+        "purpose": "Entity-relationship diagrams",
+        "evidence_group": "sql",
+        "verification": "436 focused checks pass for actual SQL resource capture, exact ownership/provenance, badges, stable order, limits, duplicates/self/missing targets, focus/filter/paging, immutable source/catalog/workspace, SQLite reopening and native table/key evidence navigation across pages, page selector, zoom, compact scrolling and capture replacement. 363 stored-object and 173 key regression checks pass. Actual application and FMX baseline pass. Both DOCX guides and companion PDFs rendered and visually reviewed; 56 source hashes and 96 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "The generic data graph contains SQL references but no entity-relationship schema model.",
@@ -2046,6 +2061,12 @@
         "purpose": "Entity-relationship diagrams",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Entity relationship diagrams",
+        "validation": "docs/phase1-database-er-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12632,23 +12653,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Stored procedures functions and triggers",
+    "completed_batch": "Entity relationship diagrams",
     "completed_requirement_ids": [
-      "05.07"
+      "05.08"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 231,
-      "implemented": 186,
-      "missing": 98
+      "implemented": 187,
+      "missing": 97
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 329,
-    "completion_record": "docs/Phase1_Database_Stored_Objects_Completion.txt",
+    "incomplete_requirement_records": 328,
+    "completion_record": "docs/Phase1_Database_ER_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.08",
-      "title": "Entity-relationship diagrams",
-      "scope": "Generate an ER diagram from verified table/key metadata and label incomplete schemas."
+      "requirement": "05.09",
+      "title": "Data dictionaries and business meanings",
+      "scope": "Add table/column business definitions, ownership, sensitivity and source/schema links."
     }
   }
 }

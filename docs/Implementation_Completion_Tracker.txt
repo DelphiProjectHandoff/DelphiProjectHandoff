@@ -75,7 +75,12 @@ ordered parameters/defaults/returns, trigger structure, sanitized bodies and
 supported exact-name dependency evidence with unresolved cases and limits.
 363 focused and 330 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Stored_Objects_Completion.txt.
-Current live backlog: 329 incomplete requirement records; 0 unassessed.
+Entity relationship diagrams completed (05.08): interactive captured table/column/
+key cards and numbered FK arrows with exact evidence navigation, qualified gaps,
+one-hop focus, filtering, paging, zoom and serialized IDE-editable controls.
+436 focused and 536 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_ER_Completion.txt.
+Current live backlog: 328 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

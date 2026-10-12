@@ -1,0 +1,72 @@
+ENTITY RELATIONSHIP DIAGRAMS COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.08 Entity-relationship diagrams
+
+DELIVERED
+Database ER diagram is a dedicated native page showing captured table boxes,
+ordered column names/types, deduplicated PK/FK/UQ membership badges and numbered
+directed foreign-key arrows. Exact captured ownership and key targets are reused.
+Table hits and numbered FK selection expose full schema evidence and source hash,
+generation and range. Open evidence selects the exact schema table/key, including
+its required inventory page. Focus includes one-hop incoming/outgoing neighbors.
+Text filtering, 15/30/60-table pages, 75..200 percent zoom, independent canvas/memo
+scrolling, horizontal commands and a details splitter are available. All controls
+and style properties are serialized in FMX and editable in the Object Inspector.
+No runtime controls or helper units were introduced. Capture replacement rebuilds
+the projection; source, owner catalog and persisted workspace remain unchanged.
+Orange borders mark gaps, duplicate definitions and truncated column summaries.
+Orange dashed arrows qualify unresolved captured relationships with visible ends.
+Missing endpoints have no invented boxes; off-page/filtered/missing FK evidence
+remains in the selector with an explicit state. View ER diagram on Database schema
+focuses the currently selected table or owner of a selected column/key/gap.
+
+LIMITS
+Every diagram remains PARTIAL CAPTURED SCHEMA. Supported source declarations and
+links do not establish SQL dialect validity, effective migration order, referenced
+uniqueness, type compatibility, business cardinality or deployed enforcement.
+Only declared table headers become entities; inferred references and views do not.
+Duplicate declarations remain separate. No target SQL, target application or live
+database server runs. Empty diagrams do not prove absence of a schema.
+Projection bounds: 60 table cards, 1..32 column summaries per card and 120 related
+FK entries; defaults summarize seven columns. Full columns remain in table evidence.
+Total/omitted counts and source gaps are explicit. Endpoints outside the current
+focus, filter or page remain inspectable, without a line until both ends are visible.
+
+VALIDATION
+436 focused checks PASS: actual captured SQL resources, ownership, badges,
+provenance, stable ordering, bounds, duplicate/self/missing targets, one-hop focus,
+filtering, paging, unchanged source/catalog/workspace and persisted reopening.
+Native FMX tests pass table/key hit/selection and exact navigation across pages,
+serialized page selector, zoom, compact scrolling and capture replacement.
+363 stored-object + 173 key regression checks PASS: 972 checks total.
+Actual application build and serialized FMX binding baseline PASS.
+Native canvas and actual window screenshots visually reviewed, including compact
+layout and reachable sideways-scrolling commands. These are application renders.
+User Guide: 29 pages, 52 TOC entries. Engineering Guide: 26 pages, 44 TOC entries.
+Both DOCX guides and companion PDFs rendered and visually reviewed; 56 source
+hashes and 96 TOC destinations verified. HTML help and explicit run/test steps
+updated. 533 requirement identities, original planning files, reconciliation
+history and historical regression artifacts preserved. Fixtures use fixed ignored
+bin folders. Current regression results are retained under this batch's filenames.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseERDiagrams_PreChange_20261012_132042
+4699 files / 1610957252 bytes; every copied file SHA256 verified before editing.
+H: is the owner's explicitly selected current USB backup drive.
+
+RUN AND TEST
+Save any Knowledge draft, close DPH, then launch the rebuilt application:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project/cache. Choose Database ER diagram in the upper-right
+page selector. Click a table or choose numbered FK evidence in the command strip;
+read the labeled details memo and click Open evidence for the exact schema record.
+Scroll the command strip sideways to reach commands outside the viewport.
+Full launch, practice and developer validation directions:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_ER_Diagrams_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.08 promoted in this execution.
+187 implemented; 18 implemented_manual_capture; 231 partial; 97 missing.
+328 incomplete requirement records remain; zero unassessed.
+Next: 05.09 Data dictionaries and business meanings. Add table/column business
+definitions, ownership, sensitivity and source/schema links.
