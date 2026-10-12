@@ -50,7 +50,12 @@ families, declared server versions, distinct client/driver evidence, conflicts,
 unknowns, attributed resolved paths and compact native engine summaries.
 66 focused and 139 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Engines_Completion.txt.
-Current live backlog: 334 incomplete requirement records; 0 unassessed.
+Tables, views, and schemas completed (05.03): captured CREATE definitions,
+qualified names, distinct reference/declaration/gap states, duplicate declarations,
+source provenance, native filtering/paging and guarded source navigation.
+57 focused and 66 engine regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Schema_Completion.txt.
+Current live backlog: 333 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

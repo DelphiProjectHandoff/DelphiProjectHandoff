@@ -1,0 +1,53 @@
+TABLES VIEWS AND SCHEMAS COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement: 05.03 Tables, views, and schemas
+
+DELIVERED
+Database schema is an IDE-editable native FMX page. It parses supported captured
+CREATE TABLE, VIEW and SCHEMA declarations in referenced SQL resources, preserving
+quoted names, qualifiers, statement-start lines, resource byte extents, SHA256,
+generation and definition text with comments/literals omitted. States distinguish
+declared headers, qualifier references, inferred SQL references and unsupported
+statements. Duplicate exact kind/spelling declarations retain every definition
+and show a count; migration order and effective deployment remain unresolved.
+Filters combine kind, evidence state and name/source text. Pages show 250 rows.
+The labeled, scrollable memo explains evidence and next investigation. Guarded
+Open source reuses the existing generation/containment/hash/decoding checks.
+Capture replacement clears borrowed rows before releasing the owned projection.
+Original captures and source remain unchanged. No SQL, target driver or target
+application is executed. These are captured definitions, not a live schema audit.
+Body grammar, column/type/constraint semantics, dialect validity, privileges and
+deployed existence remain unverified. Unsupported SQL remains an explicit gap.
+Empty results do not establish absence of a schema. Original source/cache can
+contain sensitive data; omitting display literals does not scrub the backup.
+
+VALIDATION
+57 focused checks PASS: captured SQL files, schema/table/view declarations,
+quoted and qualified names, comments/literals, duplicates, malformed/unsupported
+and oversized resources, inferred references, SQLite persisted reopening, source
+guards, unchanged workspace/source/catalog, native filters/paging/details/capture
+replacement and normal/compact FMX PaintTo renders. 66 engine regression checks
+PASS. Actual application build and FMX resource-binding baseline PASS.
+Both guides rendered and visually reviewed. User: 25 pages, 47 TOC entries.
+Engineering: 21 pages, 39 TOC entries. All 56 source hashes and 86 TOC destinations
+verified. Editable DOCX guides, companion PDFs, HTML help and explicit directions
+updated. Original plans, reconciliation history and historical engine renders
+preserved. Fixed ignored fixture folders reused; no GUID test folder introduced.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseSchema_PreChange_20261012_102158
+4293 files / 1004944245 bytes; SHA256 verified before changes.
+
+RUN AND TEST
+Save any Knowledge draft, close DPH and start:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project or cache; choose Database schema in the upper-right
+selector. Full directions, controlled practice and elevated developer validation:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Schema_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved; only 05.03 promoted in this execution.
+182 implemented; 18 implemented_manual_capture; 232 partial; 101 missing.
+333 incomplete records remain; zero unassessed.
+Next: 05.04 Columns, data types, and constraints. Add actual captured column
+types, nullability, defaults and constraints with provenance and explicit gaps.

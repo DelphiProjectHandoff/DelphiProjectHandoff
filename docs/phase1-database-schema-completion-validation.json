@@ -1,0 +1,70 @@
+{
+  "result": "PASS",
+  "requirement": "05.03",
+  "status": "implemented",
+  "checks": 57,
+  "regression_checks": 66,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.03",
+  "incomplete_requirement_records": 333,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 232,
+    "implemented": 182,
+    "missing": 101
+  },
+  "guides": {
+    "guide_sources_verified": 56,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 25,
+        "toc_entries": 47,
+        "new_chapter_pages": [
+          2,
+          15
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 21,
+        "toc_entries": 39,
+        "new_chapter_pages": [
+          2,
+          19
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseSchema_PreChange_20261012_102158",
+    "files": 4293,
+    "bytes": 1004944245,
+    "sha256_verified": true
+  },
+  "qualification": "Captured static CREATE declaration headers and definitions, distinct from inferred references and unsupported statements; body grammar, deployed schema and migration order unverified. No SQL executed.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "f17d7404815bd32e70cc846e76853d1e3f3664e02bddd6d3c2eb104f6076cfed",
+    "DPH.UI.Main.pas": "84bb553bb29207753c16c5d2eee2b88b33db319aa133252f3954f03938837536",
+    "DPH.UI.Main.fmx": "fe13cc33e68d8eda5404c58cfcd2d81bbf8ecc74b89b2a540d0e2bc6e2c6d1bd",
+    "tests/DPH.Tests.DatabaseSchema.dpr": "7b69e98b85aafae055155fa7f02f4cae4ecdab4c5b92cb658559703e199611ab",
+    "tools/build-database-schema.cmd": "d4743ef4c96f851d60d926cd4af44a3c57a207a81bc1263833ebedf124cb3cb6",
+    "docs/phase1-database-schema-validation.json": "9f0aac5adb2db65e5f66997f5df71966df977bfbcf42a1a9e6143249d26a3028",
+    "docs/phase1-database-schema-validation.log": "b50fa5786b5ce74ea2c77f4b8fd19d5a309cf739a843cf80e5ecab0d2e8a5753",
+    "docs/guides/Database_Schema_Run_and_Test.txt": "b668ca9157ceaa6f70cecc928e1808ac9e38d32875db0f443efcebc7a893c065",
+    "docs/guide-source-validation.json": "7b5a4f51419dc23efd630663560dfdaf544ec60a301e6984f8747877c62b0d9a",
+    "docs/guides/DPH_User_Guide.docx": "046f178acc0003d7a4e42b42f7c523e3342ad421d398472d06eac1bfd25ea7ac",
+    "docs/guides/DPH_Engineering_Guide.docx": "bb03bf7b961c8a0ad2c2d809fceaecffc877a328ad20b0679256533dee025bd4",
+    "docs/pdf/DPH_User_Guide.pdf": "19296cb3ada004ca7732e0971e4746a7a48a81eb257500c70df8536d97f92407",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "eb53d1a32d1f2d74eee3b7f4f453e2190b4a242ce66b04ef838c11acc1ff59ad",
+    "docs/phase1-database-schema-build.log": "763b58c4f6b6a34ae3088d056afbf886da26a58baa5160096f161f74a95ea07d",
+    "docs/phase1-database-schema-engines-regression.json": "180e8e9bea82185157d670b65e1468bd3bf55b690e53db2fff26ae308f7b9bfc",
+    "docs/phase1-database-schema-workspace.png": "ea2ce799af10e18efede721542247c8862108173b7e6c7a6087944d662da684e",
+    "docs/phase1-database-schema-compact.png": "41ea121d1baa0944188615b5f7d14277a6606c7d79fdd859671394331958dab3"
+  }
+}

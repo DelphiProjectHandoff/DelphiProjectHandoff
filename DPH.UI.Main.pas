@@ -161,6 +161,14 @@ type
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotDialog: TOpenDialog;
+    DatabaseSchemaTab:TTabItem;
+    DatabaseSchemaPurpose,DatabaseSchemaStatus:TLabel;
+    DatabaseSchemaToolbar:THorzScrollBox;
+    DatabaseSchemaFilter:TEdit;
+    DatabaseSchemaKind,DatabaseSchemaState:TComboBox;
+    DatabaseSchemaFirst,DatabaseSchemaNext,DatabaseSchemaSource:TButton;
+    DatabaseSchemaList:TListBox;
+    DatabaseSchemaMemo:TMemo;
     DatabaseInventoryTab:TTabItem;
     DatabaseInventoryPurpose,DatabaseInventoryStatus:TLabel;
     DatabaseInventoryToolbar:THorzScrollBox;
@@ -346,6 +354,9 @@ type
     procedure ScreenshotClick(Sender: TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
+    procedure DatabaseSchemaFilterChange(Sender:TObject);
+    procedure DatabaseSchemaSelectionChange(Sender:TObject);
+    procedure DatabaseSchemaSourceClick(Sender:TObject);
     procedure DatabaseInventoryFilterChange(Sender:TObject);
     procedure DatabaseInventorySelectionChange(Sender:TObject);
     procedure DatabaseInventoryFollowClick(Sender:TObject);
@@ -449,6 +460,9 @@ type
     FQualityRows: TList<TJSONObject>;
     FQualityOffset: Integer;
     FComparison: TJSONObject;
+    FDatabaseSchema:TJSONObject;
+    FDatabaseSchemaRows:TList<TJSONObject>;
+    FDatabaseSchemaOffset:Integer;
     FDatabaseInventory:TJSONObject;
     FDatabaseInventoryRows:TList<TJSONObject>;
     FDatabaseInventoryTargets:TList<string>;
@@ -509,7 +523,7 @@ var DPHMainForm: TDPHMainForm;
 implementation
 uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
-  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections;
+  DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
 var I: Integer; DatabaseDirectory: string;
@@ -526,6 +540,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
+  FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
   FDatabaseInventoryTargets:=TList<string>.Create;
   FInheritanceRows:=TList<TJSONObject>.Create;FInheritanceOrigins:=TList<TJSONObject>.Create;
@@ -572,6 +587,7 @@ begin
   FDynamicRows.Free; FDynamic.Free;
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
+  FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
   FInheritanceRows.Free;FInheritanceOrigins.Free;FInheritance.Free;
   FDependencyRows.Free; FDependencies.Free;
@@ -859,6 +875,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
@@ -1000,6 +1017,7 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
   FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
@@ -1959,6 +1977,41 @@ begin
       'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
 end;
+procedure TDPHMainForm.DatabaseSchemaFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;
+begin
+ if FDatabaseSchemaRows=nil then Exit;
+ if Sender=DatabaseSchemaNext then Inc(FDatabaseSchemaOffset,250) else FDatabaseSchemaOffset:=0;
+ FDatabaseSchemaRows.Clear;DatabaseSchemaList.Items.Clear;DatabaseSchemaNext.Enabled:=False;DatabaseSchemaSelectionChange(nil);
+ if FDatabaseSchema=nil then begin DatabaseSchemaStatus.Text:='Open a captured project to inspect tables, views and schemas.';Exit;end;
+ Count:=0;
+ for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (DatabaseSchemaKind.ItemIndex>0) and (Row.GetValue<string>('kind')<>DatabaseSchemaKind.Selected.Text) then Continue;
+  if (DatabaseSchemaState.ItemIndex>0) and (Row.GetValue<string>('status')<>DatabaseSchemaState.Selected.Text) then Continue;
+  if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source'),DatabaseSchemaFilter.Text.Trim) then Continue;
+  if (Count>=FDatabaseSchemaOffset) and (FDatabaseSchemaRows.Count<250) then begin FDatabaseSchemaRows.Add(Row);DatabaseSchemaList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('status')+' | '+Row.GetValue<string>('source')+':'+Row.GetValue<TJSONObject>('range').GetValue('line').Value);end;Inc(Count);
+ end;
+ DatabaseSchemaNext.Enabled:=Count>FDatabaseSchemaOffset+FDatabaseSchemaRows.Count;
+ DatabaseSchemaStatus.Text:=Format('%d matches; %d shown from %d. Captured declarations and references; deployed schema unverified.',[Count,FDatabaseSchemaRows.Count,FDatabaseSchemaOffset]);
+ if DatabaseSchemaList.Count>0 then begin DatabaseSchemaList.ItemIndex:=0;DatabaseSchemaSelectionChange(nil);end
+ else DatabaseSchemaMemo.Text:=FDatabaseSchema.GetValue<string>('qualification')+sLineBreak+sLineBreak+'No matching captured evidence. Clear filters or attach approved SQL scripts referenced by the project and reassess. Empty results do not prove the application has no schema.';
+end;
+procedure TDPHMainForm.DatabaseSchemaSelectionChange(Sender:TObject);
+begin
+ DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a table, view, schema or unsupported statement to read its captured evidence and next investigation.';
+ if (FDatabaseSchemaRows=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
+ DatabaseSchemaMemo.Text:=TDPHDatabaseSchema.Describe(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex])+sLineBreak+sLineBreak+FDatabaseSchema.GetValue<string>('qualification');
+ DatabaseSchemaSource.Enabled:=True;
+end;
+procedure TDPHMainForm.DatabaseSchemaSourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
+ Row:=FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do DatabaseSchemaMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+
 procedure TDPHMainForm.DatabaseInventoryFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Kind:string;
 begin

@@ -1,0 +1,89 @@
+DPH DATABASE SCHEMA RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.03 Tables, views, and schemas
+
+START AND FIND THE FEATURE
+1. Save or discard any Knowledge draft and close the existing DPH window.
+2. Open File Explorer, paste this full path into its address bar and press Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Attach project and select the intended .dproj, .dpr or .groupproj, or
+   click Open cache and choose its .dphdb. Wait for loading to finish.
+4. In the upper-right page selector, choose Database schema.
+5. Select a row. Read the labeled Schema evidence and next investigation memo.
+   A table stores rows; a view names a query result; a schema qualifies names.
+   The memo identifies the kind, name, schema qualifier, evidence state, source
+   line, SHA256, generation and captured definition. Scroll vertically for all
+   details. Drag the divider below the list to resize the evidence area.
+6. Declared header means supported captured CREATE text with balanced parentheses.
+   It does not validate the body, types, constraints, dialect or deployed object.
+   Qualifier reference means an object name mentions a schema, without proving
+   CREATE SCHEMA. Inferred reference names an object used in supported SQL;
+   table/view identity and definition remain unknown. Unsupported statements
+   remain explicit gaps. Original definitions may contain sensitive data;
+   projected definitions omit comments and literal contents, not whole backups.
+7. Combine the kind selector, text filter and evidence-state selector. Text finds
+   names, qualifiers and source files. Choose All and clear text to reset.
+   First page and Next page display up to 250 matches at a time. In a narrow
+   window, scroll the command strip sideways to find state and Open source.
+8. Click Open source to inspect the original SQL at its statement-start line.
+   Source must be attached, unchanged, inside the project and from this capture.
+   Open cache alone is detached. To attach matching source, use Attach project
+   and select the original project, then its existing database when prompted.
+   Changed source requires Full reassessment. A refusal appears in the memo.
+9. Multiple exact kind/spelling declarations show their count and preserve each
+   definition. Ask the maintainer for the approved scripts and migration order;
+   DPH does not choose the effective deployment or normalize dialect-specific
+   case. Empty results do not prove no schema exists. Clear filters, then check
+   project resource references and capture approved missing scripts by reassessing.
+   Literal SQL files referenced by supported inventory APIs are inspected; DPH
+   does not search arbitrary neighboring files, connect to a server or execute SQL.
+
+CONTROLLED PRACTICE AFTER DEVELOPER VALIDATION
+10. Click Open cache and select:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\database-schema-validation\schema.dphdb
+11. Choose Database schema. Select kind view, state declared header and type
+    Sales.Active in the text filter. Expect one captured CREATE OR REPLACE VIEW
+    at schema.sql line 4 with qualifier Sales. Read its definition and hash.
+12. Choose kind table and type Sales.Customers. Expect two declarations from
+    schema.sql and duplicate.sql. Each shows a declaration count of 2. No winner
+    is selected because the fixture supplies no authoritative migration order.
+13. Choose kind All and state inferred reference; clear the text filter.
+    UnverifiedObject is a SQL reference, with no captured definition. This does
+    not establish whether the deployed object is a table or view.
+14. Choose state unsupported to inspect malformed comments, an oversized resource,
+    ALTER statements and unsupported headers. These are evidence gaps. Choose
+    state declared header and kind table; clear text. First page shows 250 rows;
+    Next page shows the remainder. These are synthetic practice scripts.
+
+DEVELOPER BUILD AND VALIDATION
+15. Save work and close DPH. Open Start, type Command Prompt, choose Run as
+    administrator and accept elevation. Run these commands separately:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-database-schema.cmd
+    tools\build-database-engines.cmd
+    tools\build-wp0.cmd
+16. Expect PASS and zero exit status: 57 focused checks, 66 engine regression
+    checks, then PASS WP0-TEST from the actual application/FMX baseline build.
+    If a command fails, inspect the diagnostic before proceeding. Fixed ignored
+    fixture folders are reused; keep real project work elsewhere. No target SQL
+    or database connection is executed. The suites leave owner catalog unchanged.
+17. Evidence is under docs with the phase1-database-schema prefix: validation
+    JSON/log, engines-regression JSON/log, build.log and native normal/compact
+    PNGs. These images show actual DPH controls displaying controlled fixtures.
+
+SUPPORTED STATIC INSPECTION
+Supported CREATE SCHEMA name [with optional IF NOT EXISTS], CREATE TABLE name
+(body) [optional TEMP/TEMPORARY or IF NOT EXISTS], and CREATE [OR REPLACE]
+[TEMP/TEMPORARY] VIEW name AS SELECT text. Names have up to three identifier
+parts; quoted identifiers preserve spelling. Unsupported header combinations,
+view column lists, table AS SELECT, authorization clauses, dollar quoting and
+other statements stay gaps. Balanced bodies are retained, not grammar validated.
+The lexer bounds resources to 2 MiB characters, 100000 tokens and comment nesting
+16; inventory limit 10000 rows. Displayed definitions truncate after about 8000
+characters. Byte extent covers the SQL resource; line marks statement start.
+Existing inferred references retain their original semantic source range.
+
+Header references (do not establish the selected project's dialect or deployment):
+https://www.postgresql.org/docs/current/sql-createview.html
+https://www.postgresql.org/docs/18/sql-createtable.html
+https://www.postgresql.org/docs/16/sql-createschema.html

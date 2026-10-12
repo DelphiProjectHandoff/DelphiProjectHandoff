@@ -95,3 +95,10 @@ Database connections now shows selected-project **engine and version evidence**
 server version declarations, client/driver versions, conflicts and unknowns are
 distinguished. No production connection is made. See
 [Database engines run and test](docs/guides/Database_Engines_Run_and_Test.txt).
+
+Database schema (05.03) now separates captured table/view/schema declarations,
+qualifier references, inferred SQL references and unsupported statements. Source
+line/hash/generation, duplicate declarations, filtering, paging and guarded source
+navigation help investigate the schema. Captured definitions do not establish a
+valid dialect or deployed database. See
+[Database schema run and test](docs/guides/Database_Schema_Run_and_Test.txt).
