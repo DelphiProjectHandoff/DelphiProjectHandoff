@@ -1,0 +1,63 @@
+DPH MIGRATION AND SCHEMA-VERSION HISTORY: RUN AND TEST
+Last changed: 12 October 2026
+
+RUN
+1. Open File Explorer and go to:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Attach project. Select the application you intend to document using
+   its .dproj, .dpr or .groupproj. Choose its database when prompted.
+   To inspect an existing capture, click Open cache and select its .dphdb.
+4. Choose Database schema in the upper-right page selector.
+5. In the leftmost kind selector choose migration. Leave the state selector
+   at All. Enter part of a script filename or user_version=number to search.
+6. Select a script row. Read the labeled evidence memo below the list.
+   Filename numbers and loader enumeration are ordering candidates only.
+   Conflicting numbers remain explicit. No deployed winner is selected.
+7. Drag the command bar horizontal scrollbar right to reveal the relationship
+   selector. Select a captured schema evidence link and click Follow relationship.
+8. To open unchanged script source, select its migration row and click Open source.
+   A migration gap opens evidence for the Pascal loader of missing SQL.
+   Detached or changed source refuses navigation with an explanation.
+9. Use First page/Next page for inventories over 250 rows. Clear the search
+   field and select All kinds to return to the complete schema evidence list.
+
+INTERPRETATION
+Only supported explicit SQLite user_version integer assignments are captured
+as application-version candidates. Queries and engine schema_version counters
+do not establish a target version. Multiple assignments retain their lines.
+Other frameworks and dynamic expressions remain unknown.
+Verification requests are captured spelling, not results. DPH never executes
+the selected target, migration SQL, verification SQL, driver or server.
+Applied state remains unknown; captured source is not a deployment ledger.
+Record maintainer-supplied ordering/framework/verification explanations in
+Knowledge with attribution and evidence. Do not infer results from filenames.
+
+AUTOMATED CHECKS AND CONTROLLED PRACTICE
+1. Open Windows Start, type Command Prompt, and choose Run as administrator.
+2. Enter:
+   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+3. Enter:
+   tools\build-schema-history.cmd
+   A PASS line per check and zero exit indicate success. Any FAIL or nonzero
+   exit requires investigation. The suite uses fixed ignored controlled data
+   under bin\schema-history-validation; it does not execute SQL.
+4. Build the actual application and check IDE resource bindings:
+   tools\build-wp0.cmd
+5. For shared schema/ER/stored-object/lineage regressions, run:
+   tools\build-database-schema.cmd
+   tools\build-database-er.cmd
+   tools\build-database-stored-objects.cmd
+   tools\build-data-lineage.cmd
+6. For practice after the focused test, attach:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\schema-history-validation\source\Schema.dpr
+   Save a new practice database when prompted; avoid replacing a real project.
+   Inspect 001_initial.sql and 1_conflict.sql to see order conflicts.
+   Inspect 002_upgrade.sql for multiple explicit version assignments.
+   Inspect missing.sql for an unavailable source gap.
+
+EVIDENCE
+docs/phase1-schema-history-validation.json and its companion .log record the
+focused run. Native PaintTo images show real instantiated DPH controls using
+controlled fixtures; they are not screenshots of an analyzed target app.
+User and Engineering guides are in docs/guides with PDFs in docs/pdf.

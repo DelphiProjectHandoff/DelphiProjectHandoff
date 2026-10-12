@@ -1642,7 +1642,8 @@ Items.Strings = (
 'index'
 'procedure'
 'function'
-'trigger')
+'trigger'
+'migration')
 ItemIndex = 0
 end
 object DatabaseSchemaFilter: TEdit
@@ -1686,7 +1687,9 @@ Items.Strings = (
 'captured constraint'
 'declared key'
 'declared index'
-'declared stored object')
+'declared stored object'
+'migration candidate'
+'migration gap')
 ItemIndex = 0
 end
 object DatabaseSchemaSource: TButton

@@ -1,0 +1,100 @@
+{
+  "result": "PASS",
+  "requirement": "05.16",
+  "status": "implemented",
+  "checks": 90,
+  "regression_checks": 1030,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.16",
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 227,
+    "implemented": 194,
+    "missing": 94
+  },
+  "incomplete_requirement_records": 321,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 35,
+        "toc_entries": 59,
+        "new_chapter_pages": [
+          3,
+          25
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 31,
+        "toc_entries": 51,
+        "new_chapter_pages": [
+          2,
+          28
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "All 66 final pages reviewed; no clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\SchemaHistory_PreChange_20261012_171950",
+    "files": 5880,
+    "bytes": 2603673723,
+    "sha256_verified": true
+  },
+  "qualification": "Captured migration candidates only. Numeric filename prefixes and lexical loader enumeration do not prove deployment order. Supported top-level SQLite user_version nonnegative 32-bit assignments remain source evidence; engine schema_version counters and version queries are not application target versions. Verification requests are never executed or reported successful. Applied state, framework metadata, dynamic expressions, dialect validity and deployed versions remain unknown. Existing SQL/resource/row bounds and explicit display truncation apply.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseSchema.pas": "988548013d7465e7a95b4b1729c0fec5938f5d866afda932bfeab22639160bda",
+    "DPH.UI.Main.pas": "1e3d29f890b3827ff1bb9f7156df8d3420b1b67d7812e9bac3ccad31e0cf0937",
+    "DPH.UI.Main.fmx": "3a8b8550832a79f1514ec5dcd898e939b11f6bfd7b769af477e4e38d88411905",
+    "tests/DPH.Tests.SchemaHistory.dpr": "d7ceceffea0e97e4d2aff085f705b6830e3c6018740c79fb66a256449bf6f80e",
+    "tools/build-schema-history.cmd": "56a595c2a05b681af72d50ccc9566558c2e2e6e0b5f114612359925640a94b2b",
+    "docs/phase1-schema-history-validation.json": "9ea2b217bc0189962a9e729aeeb4980cc2fb77dd23f88649b7432f937a65544d",
+    "docs/phase1-schema-history-validation.log": "9aaaf45e29c0188ac86590dfd5e7b94c2b00b176de3d704ad745095c19c26467",
+    "docs/guides/Schema_History_Run_and_Test.txt": "09dae43f50fa3629eb7cff670194f5340be5adfc503902165b0c33a52ab814a2",
+    "tools/build-guides.py": "db599dd78652f6b56fe022e82e670cc3163a2e61cf17098b7ee5e6775b5fdca5",
+    "README.md": "cfbf175862f0c14e773dec3255b3c40ce95f8c27a406c259e3c33ea5a6b72a14",
+    "help/index.html": "4d604faac805ff924f780664847aa01ad4baea92213c27b2004cc7ed0c083cec",
+    "docs/guide-source-validation.json": "ada068d9fb0b4ea812e86bf9c830e9bce426a1fa3131db512a469ea8a9cb7f84",
+    "docs/guides/DPH_User_Guide.docx": "c117f7f3054f7b2716d03ce2392c79c0b1aa888ea4223689b50227a23a91742a",
+    "docs/guides/DPH_Engineering_Guide.docx": "93e581a4900062bcc7b4d800bfbde52a56283288ba669da2620b48c1737eb7c4",
+    "docs/pdf/DPH_User_Guide.pdf": "e6c10b29bfcf82879b82cfdb2bdc66addd48b3a75a6ebb1e1c78d63bd4acb95f",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "d137607cc86ef78a4bbd5bf2f4cc1f961bfa3a755eacbe8ba214c64d869bbf3a",
+    "docs/Phase1_Schema_History_Completion.txt": "308331b8db5e1f67e87ff3dddc916862ce9fc66e5d6ab82c43ae6a5533e55b9e",
+    "docs/Phase1_Requirements_Traceability.json": "4ef304fd06b337663698be870a45426486bc3cbcede388cdf7c8464b31270f42",
+    "docs/Phase1_Implementation_Backlog.csv": "95f6dd8f6a37e814df6adf6ef6cb32f98277fb502e6477919fed5dc6ab90f3c8",
+    "docs/Implementation_Completion_Tracker.txt": "0c484264ef713cbe96fd48909ce4b4323701761094d903431086606bd373e581",
+    "docs/phase1-schema-history-build.log": "7368ce3fa0d690350516fa2322bc78a24bae0ce91d48941af7b43651c429f099",
+    "docs/phase1-schema-history-compact.png": "f5be4a03cae96d53454c7fd5cc8392159e6b7e1ae4f3504e6d91a1990688cb5e",
+    "docs/phase1-schema-history-er-regression-commands.png": "eab3569e91bc34dd7fca3d06671a1c5c8db9294bc6ac140530d846e4693c277a",
+    "docs/phase1-schema-history-er-regression-compact.png": "cd03dec49e40a3040aabab5fe9f07d19afd9ad432cbcabf03797f8e097fb3c1d",
+    "docs/phase1-schema-history-er-regression-diagram.png": "be9aa5a6b5601f3b2579ce057095a02032293b2e1f5b904bc2da4887b8534b0c",
+    "docs/phase1-schema-history-er-regression-relationships.png": "40469a258992738604f17ac292c0711b0ba6c522ecb3f5e3e2e4556b4d686c29",
+    "docs/phase1-schema-history-er-regression-schema-compact.png": "ea42b0a9976c819b9ac1e92dd70b205d081fdb428625d70a444c52c4e599651c",
+    "docs/phase1-schema-history-er-regression-schema-workspace.png": "ea42b0a9976c819b9ac1e92dd70b205d081fdb428625d70a444c52c4e599651c",
+    "docs/phase1-schema-history-er-regression-validation.json": "56c7223850b65824905665540239655abd03ce67a4d3c40ef97187a9d7bb2f26",
+    "docs/phase1-schema-history-er-regression-workspace.png": "2d1c7fc63ecda17c6fd8b403425e79ed6a0a6682428c4cd8ab33b6b9c268876d",
+    "docs/phase1-schema-history-er-regression.log": "b336838d83427af5f268cbadfe72457ced03d501de44b597b3e1dbb31a5c1110",
+    "docs/phase1-schema-history-lineage-regression-compact.png": "05663944e033dad3752279ba8309d0f0d592d965fd1c5c9a6aaf8a270fa4f0e0",
+    "docs/phase1-schema-history-lineage-regression-diagram.png": "0ecc24161448e119fc4beef10b07ce54483ba310bd8310a31dec9efccd8e4105",
+    "docs/phase1-schema-history-lineage-regression-validation.json": "2a56323386a7667597aabceca83a0324135642c3904aabf9a9ea572075285daa",
+    "docs/phase1-schema-history-lineage-regression-workspace.png": "e2dc2b690f0938b0df65c9daaaeb25501eebd1aa086006a89efa5ee0c9d84523",
+    "docs/phase1-schema-history-lineage-regression.log": "11e678910a0cc7fb6b3cd6438c9cf6ffcd539e6f47051175445df00732f01eb3",
+    "docs/phase1-schema-history-schema-regression-compact.png": "25a8ebeaadd9346eb0a009ae2105c053a5278c46812eb25ba5ac9e64e4849fc8",
+    "docs/phase1-schema-history-schema-regression-validation.json": "9f0aac5adb2db65e5f66997f5df71966df977bfbcf42a1a9e6143249d26a3028",
+    "docs/phase1-schema-history-schema-regression-workspace.png": "ec03951332d05148d99c6fd092858c4d53eb501653630d0eb25eb1243e8f48d1",
+    "docs/phase1-schema-history-schema-regression.log": "8a0773db10c185d204c69b73ba88e7f87a0d52af0f260f73e5b450648a7e42fb",
+    "docs/phase1-schema-history-stored-objects-regression-compact.png": "200f7e666489dfc1b7cde6b1479351105d709df315ad2b7493b8dc455e43e7c9",
+    "docs/phase1-schema-history-stored-objects-regression-relationships.png": "0605f6e66f93f1d1c802106bb47cb1500a30d4cbd1ee0844a9b81f9e7799934e",
+    "docs/phase1-schema-history-stored-objects-regression-validation.json": "8cfea3efb9e3ce9648ad56a462402f2dce49704ad796a52ded7c89f4788901e2",
+    "docs/phase1-schema-history-stored-objects-regression-workspace.png": "173d91f320a41264ef2b02538730b8f51f1898690b14c88f5fba3127de61c8ae",
+    "docs/phase1-schema-history-stored-objects-regression.log": "a42fcc72469b816d004d2f08f741f9420351a25f873e77c534c048c540670ef6",
+    "docs/phase1-schema-history-workspace.png": "2ef01e09d25ddfd486d5d97ecacb0c0e32377ebbca8f8d085bb4c738e7917ff1"
+  }
+}

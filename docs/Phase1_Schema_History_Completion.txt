@@ -1,0 +1,24 @@
+DPH REQUIREMENT 05.16 COMPLETION: MIGRATION AND SCHEMA-VERSION HISTORY
+Last changed: 12 October 2026
+
+Referenced captured SQL resources now expose migration candidates, filename
+order/conflicts, explicit target-version assignments, verification requests,
+loader evidence, exact schema relationships and guarded source navigation.
+Unavailable literal SQL references remain visible migration gaps.
+No new helper unit or storage migration. Controls remain IDE-editable.
+
+Validation PASS: 90 focused + 1030 regression = 1120 checks.
+Actual application and FMX baseline PASS. Two focused native renders reviewed.
+All 66 final guide pages visually reviewed; 58 source hashes and 110 TOC
+destinations verified. Editable DOCX guides and companion PDFs updated.
+Directions: docs/guides/Schema_History_Run_and_Test.txt
+
+Captured migration candidates only. Numeric filename prefixes and lexical loader enumeration do not prove deployment order. Supported top-level SQLite user_version nonnegative 32-bit assignments remain source evidence; engine schema_version counters and version queries are not application target versions. Verification requests are never executed or reported successful. Applied state, framework metadata, dynamic expressions, dialect validity and deployed versions remain unknown. Existing SQL/resource/row bounds and explicit display truncation apply.
+
+Pre-change backup: H:\DPH Backups\SchemaHistory_PreChange_20261012_171950
+5880 files, 2603673723 bytes; every SHA256 verified. No post-change backup.
+
+Only 05.16 promoted; all 533 original requirement IDs and texts preserved.
+194 implemented; 18 implemented_manual_capture; 227 partial; 94 missing.
+321 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 05.17 Import/export file formats.

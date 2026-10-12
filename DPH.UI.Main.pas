@@ -2188,7 +2188,7 @@ begin
  for V in FDatabaseSchema.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (DatabaseSchemaKind.ItemIndex>0) and (Row.GetValue<string>('kind')<>DatabaseSchemaKind.Selected.Text) then Continue;
   if (DatabaseSchemaState.ItemIndex>0) and (Row.GetValue<string>('status')<>DatabaseSchemaState.Selected.Text) then Continue;
-  ParameterText:='';if Row.TryGetValue<TJSONArray>('parameters',Parameters) then ParameterText:=Parameters.ToJSON;SavedDictionary:=TDPHDatabaseSchema.FindDictionary(FKnowledge,Row);if SavedDictionary<>nil then ParameterText:=ParameterText+' '+SavedDictionary.GetValue<string>('body');
+  ParameterText:=Row.GetValue<string>('target_version','')+' '+Row.GetValue<string>('filename_order','')+' '+Row.GetValue<string>('verification','')+' '+Row.GetValue<string>('order_basis','');if Row.TryGetValue<TJSONArray>('parameters',Parameters) then ParameterText:=Parameters.ToJSON;SavedDictionary:=TDPHDatabaseSchema.FindDictionary(FKnowledge,Row);if SavedDictionary<>nil then ParameterText:=ParameterText+' '+SavedDictionary.GetValue<string>('body');
   if (DatabaseSchemaFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('name')+' '+Row.GetValue<string>('schema')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<string>('declared_type','')+' '+Row.GetValue<string>('nullability','')+' '+Row.GetValue<string>('constraints','')+' '+Row.GetValue<string>('key_kind','')+' '+Row.GetValue<string>('reference_table','')+' '+Row.GetValue<string>('relationship_status','')+' '+Row.GetValue<string>('table','')+' '+Row.GetValue<string>('method','')+' '+Row.GetValue<string>('predicate','')+' '+Row.GetValue<string>('storage_kind','')+' '+Row.GetValue<string>('storage_options','')+' '+Row.GetValue<string>('language','')+' '+Row.GetValue<string>('returns','')+' '+Row.GetValue<string>('trigger_table','')+' '+Row.GetValue<string>('events','')+' '+Row.GetValue<string>('body','')+' '+Row.GetValue<string>('timing','')+' '+Row.GetValue<string>('when','')+' '+ParameterText,DatabaseSchemaFilter.Text.Trim) then Continue;
   if (Count>=FDatabaseSchemaOffset) and (FDatabaseSchemaRows.Count<250) then begin FDatabaseSchemaRows.Add(Row);DatabaseSchemaList.Items.Add(Row.GetValue<string>('kind')+' | '+Row.GetValue<string>('name')+' | '+Row.GetValue<string>('status')+' | '+Row.GetValue<string>('source')+':'+Row.GetValue<TJSONObject>('range').GetValue('line').Value);end;Inc(Count);
  end;
@@ -2215,7 +2215,7 @@ begin
   DatabaseSchemaMemo.Lines.Add(sLineBreak+'CAPTURED SCHEMA EVIDENCE'+sLineBreak+SchemaText);
  end;
  DatabaseSchemaSource.Enabled:=True;
- if MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['key','index','procedure','function','trigger']) then
+ if MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['key','index','procedure','function','trigger','migration']) then
   for Link in FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<TJSONArray>('links') do
    if Link.TryGetValue<string>('target_id',ID) then begin FDatabaseSchemaTargets.Add(ID);DatabaseSchemaLinks.Items.Add(Link.GetValue<string>('role')+': '+Link.GetValue<string>('reference'));end;
  DatabaseSchemaFollow.Enabled:=FDatabaseSchemaTargets.Count>0;if DatabaseSchemaFollow.Enabled then DatabaseSchemaLinks.ItemIndex:=0;

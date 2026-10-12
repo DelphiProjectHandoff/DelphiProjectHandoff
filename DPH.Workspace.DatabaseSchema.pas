@@ -735,6 +735,99 @@ begin
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=0;Counts.TryGetValue(Key,Count);Counts.AddOrSetValue(Key,Count+1);end;
    for Value in Rows do begin Row:=Value as TJSONObject;if Row.GetValue<string>('status')<>'declared header' then Continue;Key:=Row.GetValue<string>('kind')+'|'+Row.GetValue<string>('name');Count:=Counts[Key];Row.RemovePair('definition_count').Free;Row.AddPair('definition_count',TJSONNumber.Create(Count));if Count>1 then begin Row.RemovePair('reason').Free;Row.AddPair('reason','Multiple captured declarations have this exact kind/spelling. Migration order and effective definition are unresolved; no last-definition winner is selected.');end;end;
    ResolveKeys;ResolveStored;
+   // Migration evidence is projected after schema identities have been assigned.
+   // File naming and loader order are candidates, never deployment precedence.
+   for FileValue in AView.Document.GetValue<TJSONArray>('syntax.files') do begin
+    FileRow:=FileValue as TJSONObject;Path:=FileRow.GetValue<string>('path');
+    if not SameText(ExtractFileExt(Path),'.sql') then Continue;
+    if FileRow.GetValue<string>('sha256','')='' then Continue;
+    Name:=ExtractFileName(Path.Replace('/',PathDelim));I:=1;
+    while (I<=Length(Name)) and CharInSet(Name[I],['0'..'9']) do Inc(I);
+    Text:='';if (I>1) and (I<=Length(Name)) and CharInSet(Name[I],['_','-','.']) then Text:=Copy(Name,1,I-1);
+    if Length(Text)>32 then Text:='';
+    Node:=TJSONObject.Create.AddPair('start',TJSONNumber.Create(0)).AddPair('end',TJSONNumber.Create(0));
+    try
+     if FileRow.TryGetValue<TJSONArray>('ir.nodes',Nodes) then for NodeValue in Nodes do
+      if NodeValue.GetValue<string>('kind')='sql_text' then begin Node.Free;Node:=NodeValue.Clone as TJSONObject;Break;end;
+     AddRow('migration',Path,'unknown','migration candidate','Captured SQL resource; application, migration framework, effective order and deployed version remain unverified.','',1,Node);
+     Row.AddPair('filename_order',Text).AddPair('order_basis','Leading numeric filename candidate within its directory; not execution order.').AddPair('target_version','unknown').AddPair('version_basis','No supported explicit version assignment captured.').AddPair('verification','No supported verification request captured; no verification executed.').AddPair('links',TJSONArray.Create).AddPair('loader_evidence',TJSONArray.Create);
+     if Text='' then begin Row.RemovePair('order_basis').Free;Row.AddPair('order_basis','No supported leading numeric filename order captured; migration precedence unknown.');end;
+     Row.AddPair('applied_status','unknown; captured source is not a deployment ledger');
+     if Node.TryGetValue<string>('value',SQL) then begin
+      Tokenize(SQL,1,Tokens,Issue);
+      if Issue<>'' then begin Row.RemovePair('version_basis').Free;Row.AddPair('version_basis','SQL unreadable: '+Issue);end
+      else begin
+       First:=0;Count:=0;Definition:='';Status:='';Position:=0;
+       while First<Tokens.Count do begin
+        Last:=First;while (Last<Tokens.Count) and (Tokens[Last].Text<>';') do Inc(Last);
+        J:=First+1;SchemaName:='main';
+        if (J+2<Last) and Tokens[J].Identifier and (Tokens[J+1].Text='.') then begin SchemaName:=Tokens[J].Text;Inc(J,2);end;
+        if (Position=0) and (First<Last) and SameText(Tokens[First].Text,'PRAGMA') and (J<Last) then begin
+         Kind:=LowerCase(Tokens[J].Text);Inc(J);
+         if Kind='user_version' then begin
+          if (J+1<Last) and (Tokens[J].Text='=') then begin Inc(J);BodyAt:=J;Valid:=J+1=Last;end
+          else if (J+2<Last) and (Tokens[J].Text='(') and (Tokens[Last-1].Text=')') then begin Inc(J);BodyAt:=J;Valid:=J+2=Last;end
+          else begin BodyAt:=Last;Valid:=False;end;
+          if Valid and (Length(Tokens[BodyAt].Text)<=10) and TryStrToInt(Tokens[BodyAt].Text,Depth) and (Depth>=0) then begin
+           Inc(Count);if Count<=250 then begin if Definition<>'' then Definition:=Definition+'; ';Definition:=Definition+SchemaName+'.user_version='+IntToStr(Depth)+' at line '+IntToStr(Tokens[First].Line);end
+           else if Row.GetValue('version_limit')=nil then Row.AddPair('version_limit','Version display truncated to first 250 assignments; no final assignment selected.');
+          end else if BodyAt<Last then Status:='Unsupported user_version assignment remains unresolved.';
+         end;
+         if MatchText(Kind,['integrity_check','quick_check','foreign_key_check']) then begin
+          if Length(Issue)<8000 then begin if Issue<>'' then Issue:=Issue+'; ';Issue:=Issue+Kind+' request at line '+IntToStr(Tokens[First].Line)+'; result not captured';end
+          else if Row.GetValue('verification_limit')=nil then Row.AddPair('verification_limit','Verification request display truncated to 8000 characters.');
+         end;
+        end;
+        for I:=First to Last-1 do begin
+         if SameText(Tokens[I].Text,'BEGIN') and (I+1<Last) and not MatchText(Tokens[I+1].Text,['TRANSACTION','WORK','DEFERRED','IMMEDIATE','EXCLUSIVE']) then Inc(Position)
+         else if SameText(Tokens[I].Text,'CASE') then Inc(Position)
+         else if SameText(Tokens[I].Text,'END') and (Position>0) then Dec(Position);
+        end;
+        First:=Last+1;
+       end;
+       if Count>0 then begin Row.RemovePair('target_version').Free;Row.AddPair('target_version',Definition);Row.RemovePair('version_basis').Free;Row.AddPair('version_basis','Explicit SQLite user_version assignment candidate; application-defined integer, not an engine schema counter. Multiple assignments retain their source order without selecting a deployed winner. '+Status);end
+       else if Status<>'' then begin Row.RemovePair('version_basis').Free;Row.AddPair('version_basis',Status);end;
+       if Issue<>'' then begin Row.RemovePair('verification').Free;Row.AddPair('verification',Issue+'; never executed by DPH');end;
+      end;
+     end;
+     Count:=0;
+     for Value in Rows do if (Value<>Row) and (Value.GetValue<string>('source')=Path) and (Value.GetValue<string>('kind')<>'migration') then begin
+      Inc(Count);if Count<=250 then Row.GetValue<TJSONArray>('links').AddElement(TJSONObject.Create.AddPair('role','captured schema evidence').AddPair('reference',Value.GetValue<string>('name')).AddPair('state','same captured source; deployment unverified').AddPair('target_id',Value.GetValue<string>('id')));
+     end;
+     Row.AddPair('schema_evidence_count',TJSONNumber.Create(Count));if Count>250 then Row.AddPair('link_limit','Only first 250 schema evidence links shown; filter the source file for all rows.');
+     for Value in AView.Document.GetValue<TJSONArray>('semantics.relationships') do if Value.GetValue<string>('rule')='loader_lexical_order_not_runtime_precedence' then begin
+      NodeValue:=AView.Symbol(Value.GetValue<string>('from'));
+      if (NodeValue<>nil) and (NodeValue.GetValue<string>('range.source')=Path) then begin
+       if Row.GetValue<TJSONArray>('loader_evidence').Count<1000 then Row.GetValue<TJSONArray>('loader_evidence').AddElement(TJSONObject.Create.AddPair('label',Value.GetValue<string>('label')).AddPair('source',Value.GetValue<string>('range.source')).AddPair('line',Value.GetValue<TJSONValue>('range.line').Clone as TJSONValue).AddPair('source_hash',Value.GetValue<string>('source_hash','')).AddPair('qualification','Captured loader enumeration; no execution or precedence proof.'))
+       else if Row.GetValue('loader_limit')=nil then Row.AddPair('loader_limit','Loader evidence truncated to 1000 entries.');
+      end;
+     end;
+    finally Node.Free;end;
+   end;
+   Counts.Clear;
+   for Value in Rows do if Value.GetValue<string>('kind')='migration' then begin
+    Text:=Value.GetValue<string>('filename_order');if Text='' then Continue;
+    while (Length(Text)>1) and (Text[1]='0') do Delete(Text,1,1);
+    Key:=LowerCase(ExtractFilePath(Value.GetValue<string>('source').Replace('/',PathDelim)))+'|'+Text;
+    Count:=0;Counts.TryGetValue(Key,Count);Counts.AddOrSetValue(Key,Count+1);
+   end;
+   for Value in Rows do if Value.GetValue<string>('kind')='migration' then begin
+    Row:=Value as TJSONObject;Text:=Row.GetValue<string>('filename_order');if Text='' then Continue;
+    while (Length(Text)>1) and (Text[1]='0') do Delete(Text,1,1);
+    Key:=LowerCase(ExtractFilePath(Row.GetValue<string>('source').Replace('/',PathDelim)))+'|'+Text;
+    if Counts[Key]>1 then begin Row.RemovePair('order_basis').Free;Row.AddPair('order_basis','Conflicting numeric filename candidates within the same directory; no order selected.');end;
+   end;
+   for Value in AView.Document.GetValue<TJSONArray>('semantics.relationships') do begin
+    if Value.GetValue<string>('rule')<>'literal_definition_unavailable_or_opaque' then Continue;
+    Text:=Value.GetValue<string>('label');I:=Pos(': ',Text);if I=0 then Continue;Name:=Copy(Text,I+2,MaxInt);
+    if not SameText(ExtractFileExt(Name),'.sql') then Continue;
+    Path:=Value.GetValue<string>('range.source');FileRow:=TJSONObject.Create.AddPair('sha256',Value.GetValue<string>('source_hash',''));
+    try
+     AddRow('migration',Name,'unknown','migration gap','Literal SQL loader refers to unavailable or opaque source. Target version, ordering and verification remain unknown.','',Value.GetValue<Integer>('range.line',1),Value.GetValue<TJSONObject>('range'));
+     Row.RemovePair('range_precision').Free;Row.AddPair('range_precision','Captured Pascal loader range; referenced SQL source unavailable.');
+     Row.AddPair('filename_order','').AddPair('order_basis','Referenced SQL source unavailable; no order guessed.').AddPair('target_version','unknown').AddPair('version_basis','Referenced SQL source unavailable.').AddPair('verification','No readable migration or verification source.').AddPair('applied_status','unknown; referenced source unavailable').AddPair('schema_evidence_count',TJSONNumber.Create(0)).AddPair('links',TJSONArray.Create).AddPair('loader_evidence',TJSONArray.Create);
+    finally FileRow.Free;end;
+   end;
   except Result.Free;raise;end;
  finally ReferenceNames.Free;Counts.Free;Tokens.Free;end;
 end;
@@ -818,6 +911,16 @@ class function TDPHDatabaseSchema.Describe(ARow:TJSONObject):string;
 var ColumnFacts,CountText:string;Link,Member:TJSONValue;
 begin
  ColumnFacts:='';CountText:='';
+ if ARow.GetValue<string>('kind')='migration' then begin
+  Result:='MIGRATION AND SCHEMA-VERSION EVIDENCE'+sLineBreak+ARow.GetValue<string>('name')+sLineBreak+
+   'Filename order candidate: '+ARow.GetValue<string>('filename_order')+sLineBreak+ARow.GetValue<string>('order_basis')+sLineBreak+
+   'Target version: '+ARow.GetValue<string>('target_version')+sLineBreak+ARow.GetValue<string>('version_basis')+sLineBreak+
+   ARow.GetValue<string>('version_limit','')+sLineBreak+'Verification: '+ARow.GetValue<string>('verification')+sLineBreak+ARow.GetValue<string>('verification_limit','')+sLineBreak+'Applied state: '+ARow.GetValue<string>('applied_status')+sLineBreak+
+   'Captured schema evidence rows: '+ARow.GetValue('schema_evidence_count').Value+sLineBreak+ARow.GetValue<string>('link_limit','')+sLineBreak;
+  for Member in ARow.GetValue<TJSONArray>('loader_evidence') do Result:=Result+'Loader candidate '+Member.GetValue<string>('label')+' | '+Member.GetValue<string>('source')+':'+Member.GetValue<TJSONValue>('line').Value+' | SHA256 '+Member.GetValue<string>('source_hash')+sLineBreak;
+  Result:=Result+'Generation '+ARow.GetValue('generation_id').Value+' | '+ARow.GetValue<string>('source')+sLineBreak+'SHA256 '+ARow.GetValue<string>('source_hash')+sLineBreak+sLineBreak+
+   'A migration changes database structure or data between application versions. This row identifies a captured SQL script candidate. Follow relationship opens its schema evidence; Open source verifies the captured bytes first. Filename numbers and loader enumeration do not prove deployment order. DPH does not search unrelated folders or execute migration/verification SQL. Missing scripts, runtime paths, framework metadata, dialect validity, rollback effectiveness and actual applied versions remain unknown. SQLite user_version is application-defined; schema_version is an engine counter and is not promoted to an application version. See https://www.sqlite.org/pragma.html#pragma_user_version';Exit;
+ end;
  if MatchText(ARow.GetValue<string>('kind'),['procedure','function','trigger']) then begin
   ColumnFacts:='Stored object: '+ARow.GetValue<string>('name')+' | Header: '+ARow.GetValue<string>('header_operation')+sLineBreak+'Language: '+ARow.GetValue<string>('language')+' | Returns: '+ARow.GetValue<string>('returns')+sLineBreak+'Ordered parameters:'+sLineBreak;
   for Member in ARow.GetValue<TJSONArray>('parameters') do ColumnFacts:=ColumnFacts+Member.GetValue<Integer>('position').ToString+': '+Member.GetValue<string>('name')+' | '+Member.GetValue<string>('mode')+' | '+Member.GetValue<string>('declared_type')+' | default '+Member.GetValue<string>('default')+' | line '+Member.GetValue<Integer>('line').ToString+sLineBreak;

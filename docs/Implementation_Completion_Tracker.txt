@@ -106,7 +106,11 @@ Data lineage completed (05.15): scoped inputs, fields, procedures and destinatio
 candidates with explicit unresolved breaks and navigable diagrams.
 174 focused and 1144 regression checks passed; actual app/FMX passed.
 See Phase1_Data_Lineage_Completion.txt.
-Current live backlog: 322 incomplete requirement records; 0 unassessed.
+Migration and schema-version history completed (05.16): captured script, order,
+version and verification candidates with explicit gaps and unknown applied state.
+90 focused and 1030 regression checks passed; actual app/FMX passed.
+See Phase1_Schema_History_Completion.txt.
+Current live backlog: 321 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.
