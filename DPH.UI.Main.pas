@@ -1969,8 +1969,8 @@ begin
  Kind:='';if DatabaseInventoryKind.ItemIndex>0 then Kind:=DatabaseInventoryKind.Selected.Text;Count:=0;
  for V in FDatabaseInventory.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (Kind<>'') and (Row.GetValue<string>('role')<>Kind) then Continue;
-  if (DatabaseInventoryFilter.Text.Trim<>'') and not ContainsText(Row.ToJSON,DatabaseInventoryFilter.Text.Trim) then Continue;
-  if (Count>=FDatabaseInventoryOffset) and (FDatabaseInventoryRows.Count<250) then begin FDatabaseInventoryRows.Add(Row);DatabaseInventoryList.Items.Add(Row.GetValue<string>('role')+' | '+Row.GetValue<string>('path')+' : '+Row.GetValue<string>('class'));end;Inc(Count);
+  if (DatabaseInventoryFilter.Text.Trim<>'') and not ContainsText(Row.GetValue<string>('path')+' '+Row.GetValue<string>('class')+' '+Row.GetValue<string>('source')+' '+Row.GetValue<TJSONArray>('configuration').ToJSON+' '+Row.GetValue<TJSONArray>('links').ToJSON+' '+Row.GetValue<TJSONArray>('used_by').ToJSON+' '+Row.GetValue<string>('engine.family')+' '+Row.GetValue<string>('engine.server_version'),DatabaseInventoryFilter.Text.Trim) then Continue;
+  if (Count>=FDatabaseInventoryOffset) and (FDatabaseInventoryRows.Count<250) then begin FDatabaseInventoryRows.Add(Row);DatabaseInventoryList.Items.Add(Row.GetValue<string>('role')+' | '+Row.GetValue<string>('path')+' : '+Row.GetValue<string>('class')+' | Engine: '+Row.GetValue<string>('engine.family')+' | Declared version: '+Row.GetValue<string>('engine.server_version'));end;Inc(Count);
  end;
  DatabaseInventoryNext.Enabled:=Count>FDatabaseInventoryOffset+FDatabaseInventoryRows.Count;
  DatabaseInventoryStatus.Text:=Format('%d matches; %d shown from %d. Configuration is masked; no target database is opened.',[Count,FDatabaseInventoryRows.Count,FDatabaseInventoryOffset]);
@@ -1983,7 +1983,7 @@ begin
  if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;
  DatabaseInventoryMemo.Text:='Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.';
  if (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
- Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventoryMemo.Text:=FDatabaseInventory.GetValue<string>('qualification')+sLineBreak+sLineBreak+TDPHDatabaseConnections.Describe(Row);
+ Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
  for Value in Row.GetValue<TJSONArray>('links') do if Value.TryGetValue<string>('target_id',ID) then begin FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Target via '+Value.GetValue<string>('property')+': '+Value.GetValue<string>('reference'));end;
  for Value in Row.GetValue<TJSONArray>('used_by') do begin FDatabaseInventoryTargets.Add(Value.GetValue<string>('id'));DatabaseInventoryLinks.Items.Add('Used by '+Value.GetValue<string>('name')+' via '+Value.GetValue<string>('property'));end;
  DatabaseInventoryFollow.Enabled:=FDatabaseInventoryTargets.Count>0;if DatabaseInventoryFollow.Enabled then DatabaseInventoryLinks.ItemIndex:=0;

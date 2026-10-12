@@ -89,3 +89,9 @@ drag the list divider to adjust the evidence area. DPH opens no target database.
 [Explicit run and test directions](docs/guides/Database_Connections_Run_and_Test.txt)
 include a controlled practice. Run `tools\build-database-connections.cmd` elevated
 for 66 checks. Original source/cache files can still contain secrets.
+
+Database connections now shows selected-project **engine and version evidence**
+(requirement 05.02). Recognized FireDAC driver declarations identify families;
+server version declarations, client/driver versions, conflicts and unknowns are
+distinguished. No production connection is made. See
+[Database engines run and test](docs/guides/Database_Engines_Run_and_Test.txt).

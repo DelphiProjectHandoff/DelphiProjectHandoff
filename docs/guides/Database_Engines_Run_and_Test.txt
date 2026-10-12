@@ -1,0 +1,82 @@
+DPH DATABASE ENGINES AND VERSIONS — RUN AND TEST
+Last changed: 12 October 2026
+Requirement: 05.02 Database engines and versions
+
+START AND FIND THE FEATURE
+1. Save or discard any Knowledge draft and close the existing DPH window.
+2. Open File Explorer. Paste this complete path into the address bar, press Enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+3. Click Attach project and choose the intended .dproj, .dpr or .groupproj,
+   or click Open cache and select its .dphdb. Wait until loading finishes.
+4. In the upper-right page selector, choose Database connections.
+5. Select a row. Read Engine and Declared version in the list, then read
+   DATABASE ENGINE AND VERSION EVIDENCE at the top of the memo below it.
+   Drag the divider immediately below the list upward for more memo space.
+   Scroll vertically inside the memo. Scroll the toolbar sideways to reach
+   the reference selector and Follow reference in a narrow window.
+
+INTERPRET THE EVIDENCE
+6. A recognized captured FireDAC DriverID identifies a declared engine family:
+   ADS, ASA, DB2, FB, IB, IBLite, Infx, MSAcc, MSSQL, MySQL, Ora, PG, SQLite, Mongo.
+   MySQL-compatible leaves the exact compatible-server product unknown.
+   ODBC and virtual/custom drivers stay unknown. A generic connection class,
+   file extension, port, SQL dialect or DPH internal SQLite is insufficient.
+7. ServerVersion and DatabaseVersion show bounded numeric captured declarations,
+   if present. They are not measured versions. ClientVersion and DriverVersion
+   are separate evidence; they do not establish the server release.
+   Conflicting declarations stay conflicting. Missing/invalid values remain
+   unknown or masked. Unknown does not mean that no database exists.
+8. Read each fact's source line, SHA256 and generation. A dependent dataset or
+   data source can show Via resolved captured reference, with original connection
+   evidence. This follows at most three unique captured hops. Unresolved paths
+   and conflicting targets cannot establish a single engine.
+9. Choose Target or Used by in the reference selector and click Follow reference
+   to inspect that exact linked row. First page and Next page show 250 matches.
+10. Filter by engine family (for example Firebird or PostgreSQL) or component.
+    The kind selector also narrows matches. Clear text and choose All to reset.
+11. Named external definitions, runtime overrides, current availability and
+    compatibility remain unknown. No target server, driver, INI or registry
+    definition is accessed. Original sources/cache can still contain secrets;
+    masked evidence is not a scrubbed backup. Do not enter credentials in notes.
+
+CONTROLLED PRACTICE AFTER DEVELOPER VALIDATION
+12. Click Open cache and select:
+    C:\New Delphi Projects\Delphi Project Handoff\bin\database-engines-validation\engines.dphdb
+13. Choose Database connections. Set kind to connection; filter Versioned.
+    Select MainModule.Versioned. Expect Engine: Firebird and a DECLARED server
+    version 5.0.2. ClientVersion 4.0.1 and DriverVersion 37.0 stay separate.
+14. Clear the filter, choose All, then filter SQLite. Expect two captured
+    connection rows: one has an unknown version; BinaryModule.Embedded declares
+    3.45.1. Neither is DPH own internal SQLite version or a live measurement.
+15. Filter Unknown: its ODBC, port 3050 and SQL dialect do not identify an engine.
+    Filter Virtual: CustomFB remains unknown. Filter VersionConflict: server
+    declarations disagree. Filter TwoConnections: captured targets conflict.
+16. Filter Dataset and inspect its original connection facts and Via attribution.
+    Follow reference to Versioned. Filter ExternalDB to inspect the unavailable
+    named definition; its engine/version remains unknown.
+    These are synthetic declarations for practice, not tested live databases.
+
+DEVELOPER BUILD AND VALIDATION
+17. Save work and close DPH. Open Start, type Command Prompt, choose Run as
+    administrator, and accept elevation. Run these commands separately:
+    cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+    tools\build-database-engines.cmd
+    tools\build-database-connections.cmd
+    tools\build-screen-history.cmd
+    tools\build-wp0.cmd
+18. Expect PASS and zero exit status: 66 focused, 66 inventory and 73 history
+    checks, then PASS WP0-TEST from the actual application/FMX baseline build.
+    If any command fails, inspect its error before continuing. No real server
+    is opened by these suites. Fixed ignored fixture folders are recreated;
+    keep real work elsewhere. The history suite restores owner catalog changes.
+19. Developer evidence: docs\phase1-database-engines-validation.json/.log,
+    connections-regression.json/.log, history-regression.json/.log and build.log
+    with the same phase1-database-engines prefix. Native workspace/compact PNGs
+    show real DPH controls displaying controlled fixtures.
+
+IMPLEMENTATION REFERENCE
+Recognized FireDAC DriverID mapping:
+https://docwiki.embarcadero.com/RADStudio/Sydney/en/Databases_(FireDAC)
+This reference explains driver families, not the selected project's actual
+deployment, installed versions or compatibility. Only captured project evidence
+can supply its declarations; live runtime verification remains a separate task.

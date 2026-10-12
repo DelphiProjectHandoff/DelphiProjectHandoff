@@ -1,0 +1,53 @@
+DATABASE ENGINES AND VERSIONS — COMPLETION RECORD
+Last changed: 12 October 2026
+Requirement completed: 05.02 Database engines and versions
+
+DELIVERED
+Database connections now shows Engine and Declared version in inventory rows and
+at the top of its labeled evidence memo. Fourteen recognized captured FireDAC
+DriverID values identify engine families. Engine facts retain source, line/range,
+generation and SHA256. Unknown/virtual drivers and ODBC do not invent an engine;
+conflicting declarations remain conflicting. MySQL-compatible retains uncertainty
+about the exact compatible-server product. DPH own SQLite is not target evidence.
+Numeric ServerVersion and DatabaseVersion are captured declarations only, never
+measured versions. ClientVersion and DriverVersion stay separately named evidence.
+Invalid/sensitive values remain masked. Unique resolved connection/dataset paths
+can propagate original evidence up to three hops; unresolved or conflicting paths
+remain gaps. Named external definitions and runtime overrides remain unknown.
+No target server, component class or driver is opened. Compatibility and current
+availability are not established by these static declarations.
+Native engine filtering excludes explanatory boilerplate. Compact details show
+the engine summary immediately. All controls remain serialized and IDE editable.
+
+VALIDATION
+66 focused checks PASS: all driver IDs, declared/missing/conflicting versions,
+client/server separation, unknown/virtual/ADO cases, ambiguous and unresolved paths,
+text/binary DFM and FMX, persisted reopening, source attribution, redaction canaries,
+native filtering/details, capture replacement and compact layout.
+139 regression checks PASS: 66 existing inventory + 73 screen history.
+Actual application build and FMX baseline PASS. Native normal/compact renders
+inspected. User guide: 24 pages / 46 TOC entries. Engineering: 21 pages / 38 entries.
+Editable DOCX and companion PDFs rendered and visually reviewed; all 84 TOC
+entries and 55 source hashes verified. HTML help and explicit directions updated.
+Original requirements, plans and reconciliation history preserved. Historical
+inventory renders restored from committed Git baseline after regression testing.
+Validation reuses fixed ignored fixture folders; no disposable GUID folder added.
+
+PRE-CHANGE BACKUP
+H:\DPH Backups\DatabaseEngines_PreChange_20261012_075546
+4207 files / 985023992 bytes; SHA256 verified before changes.
+
+RUN AND TEST
+Save any Knowledge draft, close DPH, then start:
+C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug\DelphiProjectHandoff.exe
+Open the intended project or cache, choose Database connections in the upper-right
+selector and select a row. Full directions, controlled practice and developer checks:
+C:\New Delphi Projects\Delphi Project Handoff\docs\guides\Database_Engines_Run_and_Test.txt
+
+REQUIREMENT ACCOUNTING
+533 records preserved. Only 05.02 promoted in this execution.
+181 implemented; 18 implemented_manual_capture; 233 partial; 101 missing.
+334 incomplete records remain. Zero unassessed records.
+This completes engine/version evidence, not the full product implementation.
+Next record: 05.03 Tables, views, and schemas — import or parse schema metadata
+for views, schemas and verified object definitions.

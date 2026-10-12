@@ -3,6 +3,9 @@ interface
 uses System.JSON, DPH.Workspace.Model;
 type
   TDPHDatabaseConnections = class
+  private
+    class procedure EvaluateEngines(AInventory:TJSONObject); static;
+  public
     class function Inspect(AView:TDPHWorkspaceView):TJSONObject; static;
     class function Describe(ARow:TJSONObject):string; static;
   end;
@@ -47,11 +50,12 @@ var Rows,Nodes,Properties,Links,Configuration:TJSONArray; FileValue,Value,Other:
   var SafeValue,Decoded,KnownName:string;N:Integer;
   begin
     KnownName:=AName;
-    if not MatchText(KnownName,['DriverID','Protocol','Port','Connected','LoginPrompt','Server','Host','Database','DatabaseName','User_Name','UserName','User ID','UID','Password','PWD','Passwd','ConnectionString','Params','Params.Strings','Provider','ConnectionDefName','ConnectionName','SessionName','DatabaseName','SQLDialect','CharacterSet','CharSet','Authentication','Token','AccessToken','Secret','APIKey','Key','PrivateKey','SSLMode','OSAuthent','Trusted_Connection']) then KnownName:='[other configuration key]';
+    if not MatchText(KnownName,['ServerVersion','DatabaseVersion','ClientVersion','DriverVersion','DriverID','Protocol','Port','Connected','LoginPrompt','Server','Host','Database','DatabaseName','User_Name','UserName','User ID','UID','Password','PWD','Passwd','ConnectionString','Params','Params.Strings','Provider','ConnectionDefName','ConnectionName','SessionName','DatabaseName','SQLDialect','CharacterSet','CharSet','Authentication','Token','AccessToken','Secret','APIKey','Key','PrivateKey','SSLMode','OSAuthent','Trusted_Connection']) then KnownName:='[other configuration key]';
     Decoded:=Literal(AValue);SafeValue:='[REDACTED configuration value]';
     if MatchText(KnownName,['DriverID','Protocol','SQLDialect','CharacterSet','CharSet','SSLMode']) and Identifier(Decoded) then SafeValue:=Decoded;
     if SameText(KnownName,'Port') and TryStrToInt(Decoded,N) and (N>=1) and (N<=65535) then SafeValue:=IntToStr(N);
     if MatchText(KnownName,['Connected','LoginPrompt','OSAuthent','Trusted_Connection']) and MatchText(Decoded,['True','False','Yes','No']) then SafeValue:=Decoded;
+    if MatchText(KnownName,['ServerVersion','DatabaseVersion','ClientVersion','DriverVersion']) and TRegEx.IsMatch(Decoded,'^[0-9]{1,5}(\.[0-9]{1,5}){0,4}$') then SafeValue:=Decoded;
     Setting:=TJSONObject.Create.AddPair('name',KnownName).AddPair('value',SafeValue);
     Setting.AddPair('line',AProperty.GetValue('line').Clone as TJSONValue).AddPair('start',AProperty.GetValue('start').Clone as TJSONValue).AddPair('end',AProperty.GetValue('end').Clone as TJSONValue);
     Configuration.AddElement(Setting);
@@ -107,7 +111,7 @@ begin
                 Text:=Match.Groups[1].Value.Replace('''''','''');Number:=Pos('=',Text);
                 if Number>0 then Config(Trim(Copy(Text,1,Number-1)),Copy(Text,Number+1,MaxInt),PropertyNode);
               end;
-            end else if MatchText(Name,['Params','ConnectionString','DriverID','Protocol','Port','Connected','LoginPrompt','Server','Host','Database','DatabaseName','User_Name','UserName','User ID','UID','Password','PWD','Passwd','Provider','ConnectionDefName','ConnectionName','SessionName','SQLDialect','CharacterSet','CharSet','Authentication','Token','AccessToken','Secret','APIKey','Key','PrivateKey','SSLMode','OSAuthent','Trusted_Connection']) then Config(Name,Raw,PropertyNode);
+            end else if MatchText(Name,['ServerVersion','DatabaseVersion','ClientVersion','DriverVersion','Params','ConnectionString','DriverID','Protocol','Port','Connected','LoginPrompt','Server','Host','Database','DatabaseName','User_Name','UserName','User ID','UID','Password','PWD','Passwd','Provider','ConnectionDefName','ConnectionName','SessionName','SQLDialect','CharacterSet','CharSet','Authentication','Token','AccessToken','Secret','APIKey','Key','PrivateKey','SSLMode','OSAuthent','Trusted_Connection']) then Config(Name,Raw,PropertyNode);
             if SameText(ClassName,'TDatabase') and SameText(Name,'DatabaseName') and Identifier(Literal(Raw)) then begin Index('alias:'+Literal(Raw),Row);Index(Path+'|'+Row.GetValue<string>('root')+'|alias:'+Literal(Raw),Row);end;
             if SameText(ClassName,'TSession') and SameText(Name,'SessionName') and Identifier(Literal(Raw)) then begin Index('session:'+Literal(Raw),Row);Index(Path+'|'+Row.GetValue<string>('root')+'|session:'+Literal(Raw),Row);end;
           end;
@@ -175,16 +179,84 @@ begin
           Link.AddPair('resolution',Text);
         end;
       end;
+      EvaluateEngines(Result);
       Result.AddPair('total',TJSONNumber.Create(Rows.Count)).AddPair('component_and_declaration_rows',TJSONNumber.Create(OriginalCount));
     except Result.Free;raise;end;
   finally Ordered.Free;Declarations.Free;Definitions.Free;Names.Free;Groups.Free;end;
 end;
-class function TDPHDatabaseConnections.Describe(ARow:TJSONObject):string;
-var Value:TJSONValue;
+class procedure TDPHDatabaseConnections.EvaluateEngines(AInventory:TJSONObject);
+const DriverIDs:array[0..13] of string=('ADS','ASA','DB2','FB','IB','IBLite','Infx','MSAcc','MSSQL','MySQL','Ora','PG','SQLite','Mongo');
+      Families:array[0..13] of string=('Advantage Database Server','SQL Anywhere','IBM DB2','Firebird','InterBase','InterBase','Informix','Microsoft Access','Microsoft SQL Server','MySQL-compatible','Oracle','PostgreSQL','SQLite','MongoDB');
+var Rows:TJSONArray;Value,SettingValue,LinkValue:TJSONValue;Row,Engine,Fact,Target,Selected:TJSONObject;
+    Index:TDictionary<string,TJSONObject>;Targets:TDictionary<string,Boolean>;
+    Name,Text,Family,Version,State,VersionState,ClassName,ID:string;
+    I,Pass:Integer;Unrecognized,InvalidVersion,UnresolvedLink:Boolean;
 begin
-  Result:=UpperCase(ARow.GetValue<string>('role'))+' '+ARow.GetValue<string>('path')+' : '+ARow.GetValue<string>('class')+sLineBreak+
+ Rows:=AInventory.GetValue<TJSONArray>('rows');Index:=TDictionary<string,TJSONObject>.Create;Targets:=TDictionary<string,Boolean>.Create;
+ try
+  for Value in Rows do begin
+   Row:=Value as TJSONObject;Index.Add(Row.GetValue<string>('id'),Row);
+   Engine:=TJSONObject.Create;Row.AddPair('engine',Engine);Engine.AddPair('evidence',TJSONArray.Create);
+   Family:='unknown';Version:='unknown';State:='unknown';VersionState:='unknown';Unrecognized:=False;InvalidVersion:=False;
+   ClassName:=Row.GetValue<string>('class');ClassName:=Copy(ClassName,LastDelimiter('.',ClassName)+1,MaxInt);
+   for SettingValue in Row.GetValue<TJSONArray>('configuration') do begin
+    Name:=SettingValue.GetValue<string>('name');Text:=SettingValue.GetValue<string>('value');
+    if (Row.GetValue<string>('role')='connection') and (SameText(Name,'DriverID') or MatchText(Name,['ServerVersion','DatabaseVersion','ClientVersion','DriverVersion'])) then begin
+     Fact:=SettingValue.Clone as TJSONObject;
+     Fact.AddPair('source',Row.GetValue<string>('source')).AddPair('source_hash',Row.GetValue<string>('source_hash')).AddPair('generation_id',Row.GetValue('generation_id').Clone as TJSONValue);
+     Engine.GetValue<TJSONArray>('evidence').AddElement(Fact);
+     if SameText(Name,'DriverID') then begin
+      // Only the FireDAC connection contract gives DriverID this meaning.
+      I:=-1;if SameText(ClassName,'TFDConnection') then I:=IndexText(Text,DriverIDs);
+      if I<0 then Unrecognized:=True
+      else if State='unknown' then begin Family:=Families[I];State:='identified';end
+      else if Family<>Families[I] then begin Family:='conflicting';State:='conflicting';end;
+     end else if MatchText(Name,['ServerVersion','DatabaseVersion']) then begin
+      if not TRegEx.IsMatch(Text,'^[0-9]{1,5}(\.[0-9]{1,5}){0,4}$') then InvalidVersion:=True
+      else if VersionState='unknown' then begin Version:=Text;VersionState:='declared';end
+      else if Version<>Text then begin Version:='conflicting';VersionState:='conflicting';end;
+     end;
+    end;
+   end;
+   if Unrecognized and (State='identified') then begin Family:='conflicting';State:='conflicting';end;
+   if InvalidVersion and (VersionState='declared') then begin Version:='conflicting';VersionState:='conflicting';end;
+   Engine.AddPair('family',Family).AddPair('state',State).AddPair('server_version',Version).AddPair('version_state',VersionState).AddPair('hops',TJSONNumber.Create(0));
+   Engine.AddPair('qualification','Engine family is inferred only from a recognized captured FireDAC DriverID. MySQL-compatible does not distinguish MySQL from compatible servers. ODBC, virtual/unknown drivers, generic classes, filenames, ports, SQL dialect and DPH internal SQLite do not establish the selected project engine. Numeric ServerVersion/DatabaseVersion are captured declarations only, not measured server versions. ClientVersion/DriverVersion never become server versions. External definitions, runtime overrides and compatibility remain unknown; no connection is made.');
+  end;
+  // At most three resolved hops cover ordinary data-source/dataset/connection paths.
+  // Conflicting references are never collapsed to whichever target was visited last.
+  for Pass:=1 to 3 do for Value in Rows do begin
+   Row:=Value as TJSONObject;if not MatchText(Row.GetValue<string>('role'),['dataset','data source','transaction','database candidate']) then Continue;
+   Targets.Clear;Selected:=nil;UnresolvedLink:=False;
+   for LinkValue in Row.GetValue<TJSONArray>('links') do
+    if MatchText(LinkValue.GetValue<string>('property'),['Connection','SQLConnection','ADOConnection','Database','DefaultDatabase','DataSet']) then begin
+     if LinkValue.TryGetValue<string>('target_id',ID) and Index.TryGetValue(ID,Target) then begin
+      if MatchText(Target.GetValue<string>('role'),['connection','dataset']) then begin Targets.AddOrSetValue(ID,True);Selected:=Target;end;
+     end else UnresolvedLink:=True;
+    end;
+   if (Targets.Count=1) and not UnresolvedLink and (Selected.GetValue<Integer>('engine.hops')<3) then begin
+    Engine:=Selected.GetValue<TJSONObject>('engine').Clone as TJSONObject;
+    Engine.RemovePair('via').Free;Engine.AddPair('via',Selected.GetValue<string>('path')+' | '+Selected.GetValue<string>('id'));
+    Engine.RemovePair('hops').Free;Engine.AddPair('hops',TJSONNumber.Create(Selected.GetValue<Integer>('engine.hops')+1));
+    Row.RemovePair('engine').Free;Row.AddPair('engine',Engine);
+   end else if Targets.Count>1 then begin
+    Engine:=Row.GetValue<TJSONObject>('engine');Engine.RemovePair('family').Free;Engine.AddPair('family','conflicting');Engine.RemovePair('state').Free;Engine.AddPair('state','conflicting');
+    Engine.RemovePair('server_version').Free;Engine.AddPair('server_version','unknown');Engine.RemovePair('version_state').Free;Engine.AddPair('version_state','unknown');
+   end;
+  end;
+ finally Targets.Free;Index.Free;end;
+end;
+class function TDPHDatabaseConnections.Describe(ARow:TJSONObject):string;
+var Value:TJSONValue;Engine:TJSONObject;
+begin
+  Engine:=ARow.GetValue<TJSONObject>('engine');
+  Result:='DATABASE ENGINE AND VERSION EVIDENCE'+sLineBreak+'Engine: '+Engine.GetValue<string>('family')+' | '+Engine.GetValue<string>('state')+sLineBreak+'Server version declaration: '+Engine.GetValue<string>('server_version')+' | '+Engine.GetValue<string>('version_state')+sLineBreak+sLineBreak+
+    UpperCase(ARow.GetValue<string>('role'))+' '+ARow.GetValue<string>('path')+' : '+ARow.GetValue<string>('class')+sLineBreak+
     'Generation '+ARow.GetValue('generation_id').Value+' | '+ARow.GetValue<string>('availability')+' | '+ARow.GetValue<string>('declaration')+sLineBreak+
-    'Source '+ARow.GetValue<string>('source')+':'+ARow.GetValue<TJSONObject>('range').GetValue('line').Value+' | SHA256 '+ARow.GetValue<string>('source_hash')+sLineBreak+sLineBreak+'SAFE CONFIGURATION'+sLineBreak;
+    'Source '+ARow.GetValue<string>('source')+':'+ARow.GetValue<TJSONObject>('range').GetValue('line').Value+' | SHA256 '+ARow.GetValue<string>('source_hash')+sLineBreak;
+  if Engine.GetValue<string>('via','')<>'' then Result:=Result+'Via resolved captured reference: '+Engine.GetValue<string>('via')+sLineBreak;
+  for Value in Engine.GetValue<TJSONArray>('evidence') do Result:=Result+Value.GetValue<string>('name')+' = '+Value.GetValue<string>('value')+' | '+Value.GetValue<string>('source')+':'+Value.GetValue<TJSONValue>('line').Value+' | SHA256 '+Value.GetValue<string>('source_hash')+sLineBreak;
+  Result:=Result+Engine.GetValue<string>('qualification')+sLineBreak+sLineBreak+'SAFE CONFIGURATION'+sLineBreak;
   for Value in ARow.GetValue<TJSONArray>('configuration') do Result:=Result+Value.GetValue<string>('name')+' = '+Value.GetValue<string>('value')+' | line '+Value.GetValue<TJSONValue>('line').Value+sLineBreak;
   Result:=Result+sLineBreak+'CAPTURED REFERENCES'+sLineBreak;
   for Value in ARow.GetValue<TJSONArray>('links') do Result:=Result+Value.GetValue<string>('property')+' -> '+Value.GetValue<string>('reference')+' | '+Value.GetValue<string>('resolution')+sLineBreak;

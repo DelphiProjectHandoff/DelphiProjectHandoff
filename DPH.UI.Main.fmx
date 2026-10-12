@@ -1458,7 +1458,7 @@ Height = 64
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Select a database declaration for masked configuration and source evidence. Scroll commands sideways to follow Target or Used by links. No target database is opened.'
+Text = 'Select a row for database engine, version declarations and masked evidence. Filter by engine name or component. Scroll commands sideways to follow references. No target database is opened.'
 StyledSettings = []
 TextSettings.FontColor = xFF146CB4
 end
@@ -1548,7 +1548,7 @@ Align = Top
 Height = 26
 Margins.Left = 12
 Margins.Right = 12
-Text = 'Database evidence and masked configuration'
+Text = 'Database evidence (scroll for details)'
 end
 object DatabaseInventoryMemo: TMemo
 Align = Client

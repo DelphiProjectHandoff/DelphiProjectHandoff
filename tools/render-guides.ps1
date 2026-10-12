@@ -6,7 +6,7 @@ if (-not $PDFDirectory) { $PDFDirectory = Join-Path $projectRoot 'docs\pdf' }
 $guideRoot = [IO.Path]::GetFullPath($GuideDirectory)
 $pdfRoot = [IO.Path]::GetFullPath($PDFDirectory)
 $pythonPath = 'C:\Users\marti\AppData\Local\Microsoft\WindowsApps\python.exe'
-$renderer = 'C:\Users\marti\.codex\plugins\cache\openai-primary-runtime\documents\26.1009.11318\skills\documents\render_docx.py'
+$renderer = 'C:\Users\marti\.codex\plugins\cache\openai-primary-runtime\documents\26.1011.11113\skills\documents\render_docx.py'
 $env:PATH = 'C:\Program Files\LibreOffice\program;C:\Users\marti\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin;' + $env:PATH
 [IO.Directory]::CreateDirectory($pdfRoot) | Out-Null
 foreach ($guide in Get-ChildItem -LiteralPath $guideRoot -File -Filter '*.docx') {

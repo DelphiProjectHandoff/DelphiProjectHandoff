@@ -1,0 +1,5 @@
+﻿{
+    "result": "PASS",
+    "checks": 66,
+    "qualification": "Controlled captured driver/version declarations using actual text/binary DFM, FMX, SQLite capture persistence and native FMX controls; no target server or driver is opened."
+}

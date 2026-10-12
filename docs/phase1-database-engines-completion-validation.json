@@ -1,0 +1,71 @@
+{
+  "result": "PASS",
+  "requirement": "05.02",
+  "status": "implemented",
+  "checks": 66,
+  "regression_checks": 139,
+  "requirements_preserved": 533,
+  "only_promoted_record": "05.02",
+  "incomplete_requirement_records": 334,
+  "unassessed": 0,
+  "counts": {
+    "implemented_manual_capture": 18,
+    "partial": 233,
+    "implemented": 181,
+    "missing": 101
+  },
+  "guides": {
+    "guide_sources_verified": 55,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 24,
+        "toc_entries": 46,
+        "new_chapter_pages": [
+          2,
+          15
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 21,
+        "toc_entries": 38,
+        "new_chapter_pages": [
+          2,
+          18
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "backup": {
+    "path": "H:\\DPH Backups\\DatabaseEngines_PreChange_20261012_075546",
+    "files": 4207,
+    "bytes": 985023992,
+    "sha256_verified": true
+  },
+  "qualification": "Captured driver and numeric version declarations only, not measured production identity/version or compatibility. Client/driver versions are separate. Unknowns and conflicts remain explicit; no target connection is made.",
+  "evidence_hashes": {
+    "DPH.Workspace.DatabaseConnections.pas": "bf8db39796d0f041f6d3d253c1688950feb779e7cf2cd5925f1f8ba5483f638b",
+    "DPH.UI.Main.pas": "c016ecc76fb4b7a82b803fd7ebe3d41be2d38288f63b41586e4e2c318ce7c0f8",
+    "DPH.UI.Main.fmx": "809064f9e9497125340f5c25c2f1ee6d365f342b02b3e702a6400bfdd1fb8a23",
+    "tests/DPH.Tests.DatabaseEngines.dpr": "5fe1a432aa93c0a7c7b26bd9434b9f97cd52382d8245df8c8dbb75534dec78d8",
+    "tools/build-database-engines.cmd": "66c98850026a36d91054560825f9a5f08cece43271fe63bbd12dd955a0819fbb",
+    "docs/phase1-database-engines-validation.json": "849dcafd6ddaa82a6583736aa42ea0d9af0db905df9997dac133c95d7466d99f",
+    "docs/phase1-database-engines-validation.log": "b9df2d84541b4dadb80bfb323ad5cc744bd5153c172f269ac2a634839f59d472",
+    "docs/guides/Database_Engines_Run_and_Test.txt": "290c484ece5337a4962558ede48587411d31141c65a98652b01e1c38e0b17195",
+    "docs/guide-source-validation.json": "863a3aaaebb4d6d819c04cd6629d59a19267e753b99f9b4c08299ac9675a9f02",
+    "docs/guides/DPH_User_Guide.docx": "c70e55dba8534e91b34cc417ec7ea11b8d57cd4bbe7fab191177f8170154a9c1",
+    "docs/guides/DPH_Engineering_Guide.docx": "eb2707297c04fa4a2bfa053f8fbad207db9e92e5bb3489ff8a9f93058d50393d",
+    "docs/pdf/DPH_User_Guide.pdf": "04f0e9d095811b28f384b6d7cd7012a90fc410972cfa782abde2112578e51932",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "36e359993d1bae684719469af89fbaffcfe20443666453a2ee3488ab3bafd28a",
+    "docs/phase1-database-engines-build.log": "a74ca8b95dc885c3192f9d9524ec28bc94fc2f11d9330096a55cd1629da7b937",
+    "docs/phase1-database-engines-connections-regression.json": "3e142e32078b98a31883ee1c352225aa1b02c64ef78b658fa4f9cefd737a6c2a",
+    "docs/phase1-database-engines-history-regression.json": "936bb87924efb0ec47697f64d7c19e4eb3282d2a160cb154da0ec472ecde0ae2",
+    "docs/phase1-database-engines-workspace.png": "deacd953d1920b723679f3fcc13d78424877978ae18ec46c01e7b29f16dfb902",
+    "docs/phase1-database-engines-compact.png": "358b1a3a3e2eb48fd72943c73ba9d44940d39914af42032562cd55aece4bf003"
+  }
+}

@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Database connection inventory 05.01 implemented; 335 partial or missing requirement records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Database engines and versions 05.02 implemented; 334 partial or missing requirement records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -1786,13 +1786,28 @@
       "id": "05.02",
       "domain": "DPH-05",
       "requirement": "Database engines and versions",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.SQL.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.DatabaseConnections.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.DatabaseEngines.dpr",
+        "tools/build-database-engines.cmd",
+        "docs/phase1-database-engines-validation.json",
+        "docs/phase1-database-engines-validation.log",
+        "docs/guides/Database_Engines_Run_and_Test.txt"
       ],
-      "limitation": "Identify selected-project engine/version evidence from configuration or approved imports without connecting to production.",
+      "limitation": "Captured static declarations only: fourteen recognized FireDAC DriverID values identify families, not actual deployed products, versions or compatibility. Numeric ServerVersion/DatabaseVersion are declarations; ClientVersion/DriverVersion stay separate. Unknown/virtual/ODBC drivers, external definitions, missing or conflicting paths and runtime overrides remain explicit gaps. Sensitive/invalid values are masked. No target database or driver is opened. Three-hop propagation and existing 10000-row bound apply.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Database connections now presents selected-project engine family and declared server-version evidence at the top of native details and in list summaries. Recognized captured FireDAC IDs map to families; source line/range, SHA256 and generation accompany each fact. Matching and conflicting version declarations, client/driver versions, unknown providers and unavailable definitions remain distinct. Unique resolved connection/dataset paths carry original evidence to dependents; unresolved/conflicting paths do not invent an engine. Engine-name filtering excludes explanatory boilerplate and compact layout shows the engine summary.",
+        "remaining_work": "",
+        "purpose": "Database engines and versions",
+        "evidence_group": "sql",
+        "verification": "66 focused text/binary DFM, FMX, persisted-capture, mapping, version/conflict, redaction and native UI checks pass. 66 database inventory and 73 screen-history regression checks pass. Actual application build/FMX baseline pass. Native normal/compact layouts inspected. Both editable DOCX/PDF guides rendered and visually reviewed; 55 source hashes and all 84 TOC entries verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "DPH's own SQLite version is available; that is not the selected application's database engine inventory.",
@@ -1800,6 +1815,12 @@
         "purpose": "Database engines and versions",
         "evidence_group": "sql",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Database engines and versions",
+        "validation": "docs/phase1-database-engines-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12506,23 +12527,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Database connection inventory",
+    "completed_batch": "Database engines and versions",
     "completed_requirement_ids": [
-      "05.01"
+      "05.02"
     ],
     "counts": {
       "implemented_manual_capture": 18,
       "partial": 233,
-      "implemented": 180,
-      "missing": 102
+      "implemented": 181,
+      "missing": 101
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 335,
-    "completion_record": "docs/Phase1_Database_Connections_Completion.txt",
+    "incomplete_requirement_records": 334,
+    "completion_record": "docs/Phase1_Database_Engines_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "05.02",
-      "title": "Database engines and versions",
-      "scope": "Identify selected-project engine/version evidence from configuration or approved imports without connecting to production."
+      "requirement": "05.03",
+      "title": "Tables, views, and schemas",
+      "scope": "Import or parse schema metadata for views, schemas and verified object definitions."
     }
   }
 }

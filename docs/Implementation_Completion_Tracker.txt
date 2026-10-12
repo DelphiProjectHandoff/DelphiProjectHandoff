@@ -45,7 +45,12 @@ data sources, transactions, sessions and named definitions; masked configuration
 resolved references and Used by navigation, explicit gaps, filtering and pagination.
 66 focused and 207 regression checks passed; actual app/FMX baseline passed.
 See Phase1_Database_Connections_Completion.txt.
-Current live backlog: 335 incomplete requirement records; 0 unassessed.
+Database engines and versions completed (05.02): recognized captured driver
+families, declared server versions, distinct client/driver evidence, conflicts,
+unknowns, attributed resolved paths and compact native engine summaries.
+66 focused and 139 regression checks passed; actual app/FMX baseline passed.
+See Phase1_Database_Engines_Completion.txt.
+Current live backlog: 334 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.
