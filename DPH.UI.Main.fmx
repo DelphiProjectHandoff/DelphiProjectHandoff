@@ -1,4 +1,4 @@
-﻿object DPHMainForm: TDPHMainForm
+object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
@@ -15,7 +15,34 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 56
+object FullScanButton: TButton
+Align = Right
+Width = 138
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 8
+Text = 'Refresh lessons'
+OnClick = FullScanClick
+end
 
+object OpenCacheButton: TButton
+Align = Right
+Width = 145
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 8
+Text = 'Open saved lessons'
+OnClick = OpenCacheClick
+end
+object OpenProjectButton: TButton
+Align = Right
+Width = 145
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 10
+Text = 'Choose application'
+OnClick = OpenProjectClick
+end
 object LessonPageCombo: TComboBox
 Align = Right
 Visible = False
@@ -66,93 +93,9 @@ TextSettings.Font.Size = 25
 TextSettings.FontColor = xFF146CB4
 end
 end
-object CommandScroll: THorzScrollBox
-Align = Top
-Height = 84
-ShowScrollBars = True
-AutoHide = True
-object CommandLayout: TLayout
-Width = 1320
-Height = 118
-
-object OpenProjectButton: TButton
-Text = 'Choose application'
-Position.X = 8
-Position.Y = 4
-Width = 150
-Height = 28
-OnClick = OpenProjectClick
-end
-object OpenCacheButton: TButton
-Text = 'Open saved lessons'
-Position.X = 166
-Position.Y = 4
-Width = 150
-Height = 28
-OnClick = OpenCacheClick
-end
-object FullScanButton: TButton
-Text = 'Refresh lessons'
-Position.X = 326
-Position.Y = 4
-Width = 145
-Height = 28
-OnClick = FullScanClick
-end
-
-object BackButton: TButton
-Text = 'Back'
-Position.X = 8
-Position.Y = 42
-Width = 80
-Height = 28
-OnClick = BackClick
-end
-object ParentButton: TButton
-Text = 'Up one level'
-Position.X = 96
-Position.Y = 42
-Width = 100
-Height = 28
-OnClick = ParentClick
-end
-object BookmarkButton: TButton
-Text = 'Save place'
-Position.X = 204
-Position.Y = 42
-Width = 100
-Height = 28
-OnClick = BookmarkClick
-end
-object BookmarksButton: TButton
-Text = 'Saved places'
-Position.X = 312
-Position.Y = 42
-Width = 110
-Height = 28
-OnClick = BookmarksClick
-end
-object NextPageButton: TButton
-Text = 'Next results'
-Position.X = 430
-Position.Y = 42
-Width = 110
-Height = 28
-OnClick = NextPageClick
-end
-object BreadcrumbLabel: TLabel
-Text = 'Choose the application you want to learn, or open its saved lessons.'
-Position.X = 556
-Position.Y = 42
-Width = 580
-Height = 40
-end
-
-end
-end
 object LearnerNavRow1: TLayout
 Align = Top
-Height = 42
+Height = 34
 Margins.Left = 12
 Margins.Right = 12
 object LearnerTab0: TRectangle
@@ -284,13 +227,13 @@ StyledSettings = []
 TextSettings.Font.Size = 13
 TextSettings.FontColor = xFF125A92
 TextSettings.HorzAlign = Center
-Text = 'Screenshots'
+Text = 'Form designs'
 end
 end
 end
 object LearnerNavRow2: TLayout
 Align = Top
-Height = 42
+Height = 34
 Margins.Left = 12
 Margins.Right = 12
 object LearnerTab6: TRectangle
@@ -312,7 +255,7 @@ StyledSettings = []
 TextSettings.Font.Size = 13
 TextSettings.FontColor = xFF125A92
 TextSettings.HorzAlign = Center
-Text = 'Form designs'
+Text = 'Screenshots'
 end
 end
 object LearnerTab7: TRectangle
@@ -805,7 +748,7 @@ Height = 86
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Prepare lessons for the selected application. First describe what it does and whom it helps. Then prepare one common task with clear steps and expected results. Add explanations, screenshots and business terms as needed. Learners return to Learn the project or Learn a task in the top-right selector.'
+Text = 'Prepare lessons for the selected application. Describe what it does and whom it helps, then prepare a common task with clear steps and expected results. Add explanations, screenshots, and business terms where useful. The two rows of tabs above return learners to Learn the project or Learn a task.'
 StyledSettings = []
 TextSettings.Font.Size = 16
 TextSettings.FontColor = xFF146CB4
@@ -2018,7 +1961,7 @@ Lines.Strings = (
 '4. Learn a real task shows supplied instructions, or a source-connected action that still needs an author.'
 '5. Explore related tasks, then Resolve unknowns to see what source alone cannot explain.'
 ''
-'The upper-right page selector is the learning route. Prepare lessons contains settings and authoring tools for the person supplying explanations.'
+'The two rows of tabs show the learning route. Prepare lessons contains settings and authoring tools for the person supplying explanations.'
 'Form designs are reconstructed layouts. Screenshots contains separately supplied images.'
 'DPH reads the application files without changing or running them.'
 )
@@ -2033,6 +1976,61 @@ end
 end
 object ExplainTab: TTabItem
 Text = 'Project map'
+object ProjectMapToolbar: THorzScrollBox
+Align = Top
+Height = 42
+object ProjectMapToolbarItems: TLayout
+Width = 1160
+Height = 40
+object BackButton: TButton
+Position.X = 8
+Position.Y = 5
+Width = 80
+Height = 30
+Text = 'Back'
+OnClick = BackClick
+end
+object ParentButton: TButton
+Position.X = 96
+Position.Y = 5
+Width = 100
+Height = 30
+Text = 'Up one level'
+OnClick = ParentClick
+end
+object BookmarkButton: TButton
+Position.X = 204
+Position.Y = 5
+Width = 100
+Height = 30
+Text = 'Save place'
+OnClick = BookmarkClick
+end
+object BookmarksButton: TButton
+Position.X = 312
+Position.Y = 5
+Width = 110
+Height = 30
+Text = 'Saved places'
+OnClick = BookmarksClick
+end
+object NextPageButton: TButton
+Position.X = 430
+Position.Y = 5
+Width = 110
+Height = 30
+Text = 'Next results'
+OnClick = NextPageClick
+end
+object BreadcrumbLabel: TLabel
+Position.X = 556
+Position.Y = 5
+Width = 580
+Height = 30
+Text = 'Choose the application you want to learn, or open its saved lessons.'
+end
+end
+end
 object ExplainFallback: TMemo
 Align = Client
 ReadOnly = True

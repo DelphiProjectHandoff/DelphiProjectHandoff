@@ -8,12 +8,11 @@ uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITyp
 type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
-    CommandScroll: THorzScrollBox;
     ProjectSearchProgress: TLayout;
     ProjectSearchSpinner: TAniIndicator;
     ProjectSearchProgressText: TLabel;
     ProjectPreparationMessage: TLabel;
-    HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
+    HeaderLayout,LearnerNavRow1,LearnerNavRow2,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
@@ -2756,7 +2755,7 @@ begin
     '<li><strong>Learn a real task.</strong> Follow its own supplied steps. If no task is ready, DPH shows a source-connected action and identifies what the owner must explain.</li>'+
     '<li><strong>Explore related tasks.</strong> Review other supplied tasks and actions found in this application.</li>'+
     '<li><strong>Resolve unknowns.</strong> Ask for missing business meaning, expected results or actual screenshots. Source alone cannot establish them.</li></ol></section>'+
-    '<section><h2>You do not need compiler expertise to begin</h2><p>The page selector at the upper right is your learning route. The left-hand list finds parts by name; the right-hand panel explains your selection.</p>'+
+    '<section><h2>You do not need compiler expertise to begin</h2><p>Use the two rows of tabs to follow your learning route. In Project map, the left-hand list finds parts by name and the right-hand panel explains your selection.</p>'+
     '<p><strong>Prepare lessons</strong> is for the person supplying explanations or adjusting how source files are read. It holds the advanced settings; learners can leave them alone.</p></section>'+
     '<section><h2>Understand what you are seeing</h2><p>Form designs are drawings made from the saved layout. Screenshots are separately supplied images of the application. An absent explanation is a question for the author, not a fact to guess.</p>'+
     '<p>DPH reads the application''s files without changing or running it.</p></section></main></body></html>';
@@ -4539,7 +4538,8 @@ begin
     FullscreenButton.Text:='Full screen';
     if ScreenModeCombo.ItemIndex=4 then begin FBinding:=True; try ScreenModeCombo.ItemIndex:=1; finally FBinding:=False; end; end;
   end;
-  HeaderLayout.Visible:=not FScreenFullscreen; CommandScroll.Visible:=not FScreenFullscreen;
+  HeaderLayout.Visible:=not FScreenFullscreen;
+  LearnerNavRow1.Visible:=not FScreenFullscreen; LearnerNavRow2.Visible:=not FScreenFullscreen;
   ExplorerLayout.Visible:=not FScreenFullscreen; ExplorerSplitter.Visible:=not FScreenFullscreen;
   InspectorLayout.Visible:=not FScreenFullscreen; InspectorSplitter.Visible:=not FScreenFullscreen;
   UpdateScreenBounds;
