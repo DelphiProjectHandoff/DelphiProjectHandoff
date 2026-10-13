@@ -8,11 +8,12 @@ Project root
 bin
   Win32/Debug holds compiled executables. probes holds temporary probe executables.
   reports holds generated developer JSON/TSV. notes holds extracted developer notes.
+  Validation and guide-render folders are disposable outputs; tests and guide-rendering tools recreate them when run.
   Developer .cmd, .dpr, .py and .ps1 scripts in bin are source files and remain in place.
 dcu
   Compiled Delphi units; existing Win32 output folders stay in dcu.
 Databases
-  Application database location. validation-archives contains old disposable test databases that were formerly loose in bin. README.txt explains the application database policy.
+  Application database location. README.txt explains the application database policy.
 docs/guides
   Current editable User and Engineering Guides and the three current run/test directions. source contains the maintained prose from which manuals are built. reference holds historical specialist directions.
 docs/pdf
