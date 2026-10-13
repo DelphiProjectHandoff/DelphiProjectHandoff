@@ -15,7 +15,8 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 56
-object WorkspacePageCombo: TComboBox
+
+object LessonPageCombo: TComboBox
 Align = Right
 Width = 210
 Margins.Top = 12
@@ -23,55 +24,24 @@ Margins.Bottom = 12
 Margins.Right = 12
 Items.Strings = (
 'Getting started'
-'Projects'
-'Database tools'
-'Rename review'
-'Search project'
 'Learn the project'
-'Explain'
-'Source'
-'Graphs'
 'Form designs'
 'Screenshots'
-'References'
-'Details'
-'Coverage'
-'Source quality'
-'Revision comparison'
-'Knowledge'
+'Explain'
+'Graphs'
 'Business glossary'
-'Keyboard and focus'
-'Menus and commands'
-'Dynamic controls'
-'Layout rules'
-'Component dependencies'
-'Form inheritance'
-'Action purposes'
-'Screen history'
-'Database connections'
-'Database schema'
-'Database ER diagram'
-'Import/export formats'
-'Target data retention'
-'Target backup and restore'
-'Business processes'
-'Business rules'
-'Rule fields'
-'Calculations'
-'Calculation fields'
-'Calculation evidence'
-'Departmental workflows'
-'Workflow fields'
-'Process fields'
-'Target data quality'
-'Knowledge links'
-'Review tasks'
-'Author questions'
-'Runtime observations'
-'Translations'
-'Validate bundle'
-'Publish')
+'Search project'
+'Saved explanations')
 OnChange = WorkspacePageChange
+end
+object SetupButton: TButton
+Align = Right
+Width = 118
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 8
+Text = 'Prepare lessons'
+OnClick = SetupClick
 end
 object HelpButton: TButton
 Align = Right
@@ -93,87 +63,38 @@ end
 end
 object CommandScroll: THorzScrollBox
 Align = Top
-Height = 140
+Height = 84
 ShowScrollBars = True
 AutoHide = True
 object CommandLayout: TLayout
 Width = 1320
 Height = 118
-object CodePageEdit: TEdit
-Position.X = 8
-Position.Y = 80
-Width = 80
-Height = 28
-Text = '0'
-TextPrompt = 'Code page'
-end
-object CodePageLabel: TLabel
-Position.X = 100
-Position.Y = 80
-Width = 1180
-Height = 28
-Text = 'Source code page: 0 = Unicode; 1252 = Western; 1251 = Cyrillic; 932 = Japanese. BOM takes precedence. Apply with reassessment.'
-end
+
 object OpenProjectButton: TButton
-Text = 'Attach project'
+Text = 'Choose application'
 Position.X = 8
 Position.Y = 4
-Width = 120
+Width = 150
 Height = 28
 OnClick = OpenProjectClick
 end
 object OpenCacheButton: TButton
-Text = 'Open cache'
-Position.X = 136
+Text = 'Open saved lessons'
+Position.X = 166
 Position.Y = 4
-Width = 120
+Width = 150
 Height = 28
 OnClick = OpenCacheClick
 end
 object FullScanButton: TButton
-Text = 'Full reassessment'
-Position.X = 264
+Text = 'Refresh lessons'
+Position.X = 326
 Position.Y = 4
 Width = 145
 Height = 28
 OnClick = FullScanClick
 end
-object ConfigurationCombo: TComboBox
-Position.X = 420
-Position.Y = 4
-Width = 120
-Height = 28
-Items.Strings = (
-'Debug'
-'Release'
-)
-ItemIndex = 0
-end
-object PlatformCombo: TComboBox
-Position.X = 550
-Position.Y = 4
-Width = 100
-Height = 28
-Items.Strings = (
-'Win32'
-'Win64'
-)
-ItemIndex = 0
-end
-object DefinesEdit: TEdit
-Position.X = 660
-Position.Y = 4
-Width = 260
-Height = 28
-TextPrompt = 'Additional defines; separated'
-end
-object ExternalRootsEdit: TEdit
-Position.X = 930
-Position.Y = 4
-Width = 350
-Height = 28
-TextPrompt = 'Explicit dependency roots; separated'
-end
+
 object BackButton: TButton
 Text = 'Back'
 Position.X = 8
@@ -215,24 +136,17 @@ Height = 28
 OnClick = NextPageClick
 end
 object BreadcrumbLabel: TLabel
-Text = 'Select a Delphi project or cached database'
-Position.X = 690
+Text = 'Choose the application you want to learn, or open its saved lessons.'
+Position.X = 516
 Position.Y = 42
 Width = 620
 Height = 40
 end
-object RelocateButton: TButton
-Text = 'Relocate verified source'
-Position.X = 510
-Position.Y = 42
-Width = 170
-Height = 28
-OnClick = RelocateClick
-end
+
 end
 end
 object StatusLabel: TLabel
-Text = 'Ready | source projects are read only'
+Text = 'Choose an application to begin learning. DPH reads its files without changing them.'
 Align = Bottom
 Height = 48
 WordWrap = True
@@ -308,7 +222,7 @@ Align = Top
 Height = 32
 Margins.Left = 8
 Margins.Right = 8
-Text = 'Selection details'
+Text = 'About your selection'
 StyledSettings = []
 TextSettings.Font.Size = 18
 TextSettings.FontColor = xFF146CB4
@@ -319,7 +233,7 @@ Height = 80
 Margins.Left = 8
 Margins.Right = 8
 WordWrap = True
-Text = 'Click an object in Explorer to inspect it. Double-click a [+] or [-] branch to expand or collapse it. Open Explain for its code or Details for statements and evidence.'
+Text = 'Select something on the left to learn what it is. Explain describes its role and connections. Begin with Learn the project if you are new to this application.'
 end
 object InspectorMemo: TMemo
 Align = Client
@@ -344,6 +258,151 @@ Align = Client
 TabPosition = None
 ActiveTab = OverviewTab
 OnChange = WorkspacePageChange
+object SetupTab: TTabItem
+Text = 'Project setup'
+object SetupScroll: TVertScrollBox
+Align = Client
+object SetupPurpose: TLabel
+Align = Top
+Height = 86
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'For the person preparing lessons: choose the source configuration, then refresh lessons. Learners can leave these settings alone. Additional project information below supports preparing and checking explanations; it is not the learning route.'
+end
+object WorkspacePageCombo: TComboBox
+Align = Top
+Height = 34
+Margins.Top = 8
+Margins.Bottom = 8
+Margins.Right = 12
+Items.Strings = (
+'Getting started'
+'Project setup'
+'Projects'
+'Database tools'
+'Rename review'
+'Search project'
+'Learn the project'
+'Explain'
+'Source'
+'Graphs'
+'Form designs'
+'Screenshots'
+'References'
+'Details'
+'Coverage'
+'Source quality'
+'Revision comparison'
+'Saved explanations'
+'Business glossary'
+'Keyboard and focus'
+'Menus and commands'
+'Dynamic controls'
+'Layout rules'
+'Component dependencies'
+'Form inheritance'
+'Action purposes'
+'Screen history'
+'Database connections'
+'Database schema'
+'Database ER diagram'
+'Import/export formats'
+'Target data retention'
+'Target backup and restore'
+'Business processes'
+'Business rules'
+'Rule fields'
+'Calculations'
+'Calculation fields'
+'Calculation evidence'
+'Departmental workflows'
+'Workflow fields'
+'Process fields'
+'Target data quality'
+'Knowledge links'
+'Review tasks'
+'Author questions'
+'Runtime observations'
+'Translations'
+'Validate bundle'
+'Publish')
+OnChange = WorkspacePageChange
+end
+object AnalysisSettingsLayout: TLayout
+Align = Top
+Height = 390
+object AnalysisSettingsTitle: TLabel
+Position.X = 12
+Position.Y = 0
+Width = 650
+Height = 36
+Text = 'Source-reading settings (Debug, platform, extra defines, allowed dependency folders, text encoding)'
+WordWrap = True
+end
+object ConfigurationCombo: TComboBox
+Position.X = 12
+Position.Y = 40
+Width = 120
+Height = 28
+Items.Strings = (
+'Debug'
+'Release'
+)
+ItemIndex = 0
+end
+object PlatformCombo: TComboBox
+Position.X = 12
+Position.Y = 80
+Width = 100
+Height = 28
+Items.Strings = (
+'Win32'
+'Win64'
+)
+ItemIndex = 0
+end
+object DefinesEdit: TEdit
+Position.X = 12
+Position.Y = 120
+Width = 260
+Height = 28
+TextPrompt = 'Additional defines; separated'
+end
+object ExternalRootsEdit: TEdit
+Position.X = 12
+Position.Y = 160
+Width = 350
+Height = 28
+TextPrompt = 'Explicit dependency roots; separated'
+end
+object CodePageEdit: TEdit
+Position.X = 12
+Position.Y = 200
+Width = 80
+Height = 28
+Text = '0'
+TextPrompt = 'Text encoding'
+end
+object CodePageLabel: TLabel
+Position.X = 12
+Position.Y = 240
+Width = 650
+Height = 65
+WordWrap = True
+Text = 'Text encoding is only needed if an older source file displays incorrect characters. Leave 0 unless the application author supplies a Windows encoding number. Refresh lessons after changing these settings.'
+end
+object RelocateButton: TButton
+Text = 'Relocate verified source'
+Position.X = 12
+Position.Y = 330
+Width = 170
+Height = 28
+OnClick = RelocateClick
+end
+end
+end
+end
 object CoverageTab: TTabItem
 Text = 'Coverage'
 object CoveragePurpose: TLabel
@@ -846,7 +905,7 @@ end
   Text = 'Learn the project'
 object LearningTopics: TListBox
 Align = Left
-Width = 220
+Width = 188
 OnChange = LearningClick
 end
 object OverviewMemo: TMemo
@@ -871,26 +930,17 @@ ReadOnly = True
 WordWrap = True
 TextSettings.Font.Size = 16
 Lines.Strings = (
-'Welcome to Delphi Project Handoff'
+'Learn what a Delphi application does, how to use it, and how its parts work together.'
 ''
-'1. Choose Debug / Win32 and enter required compiler defines.'
-'2. Choose Attach project; select a .dproj, .dpr or .groupproj.'
-'3. Save its .dphdb database in the proposed Databases folder, or choose another location outside the selected source folder.'
-'4. Read the status line along the bottom of the window. PARTIAL means incomplete evidence.'
-'5. Click Learn the project, then Coverage and troubleshooting in its topic list to read the gaps.'
-'6. In that same topic list, click How the program starts.'
-'7. In that same topic list, click Screens and user actions; choose a control link.'
-'8. Read Explain for callers, decisions and outputs. Selection details on the right identifies the object.'
-'9. Click Source for exact code, or Knowledge to record a named author answer.'
-'10. Click Publish to export a bundle after reviewing exclusions and privacy.'
+'1. Click Choose application at the top left and select its .dproj, .dpr or .groupproj file.'
+'2. Accept the proposed saved-lessons file in Databases. For an existing file, click Open saved lessons instead.'
+'3. Learn the project opens when the application is ready. Begin with its purpose, then Screens and actions.'
+'4. Follow an action to its responding operation. Explain introduces its role and connections.'
+'5. Describe what starts the action, what it uses and what result the user expects. Ask the author about missing explanations.'
 ''
-'Open cache shows saved historical evidence without executing the program.'
-'Open cache starts in Databases; browse to an existing database if it is elsewhere. Existing databases have not been moved.'
-'DPH rejects its own project and caches of itself. A rejected selection keeps your current workspace.'
-'Form designs are approximate reconstructions. Screenshots imports actual PNG images you supply.'
-'DPH never compiles or executes the selected application during analysis.'
-''
-'Full directions: docs/guides/DPH_User_Guide.docx and docs/pdf/DPH_User_Guide.pdf.'
+'The upper-right page selector is the learning route. Prepare lessons contains settings and authoring tools for the person supplying explanations.'
+'Form designs are reconstructed layouts. Screenshots contains separately supplied images.'
+'DPH reads the application files without changing or running them.'
 )
 end
 object HelpBrowser: TWebBrowser
@@ -1203,7 +1253,7 @@ TextSettings.Font.Size = 14
 end
 end
 object KnowledgeTab: TTabItem
-Text = 'Knowledge'
+Text = 'Saved explanations'
 object KnowledgeToolbar: TLayout
 Align = Top
 Height = 224

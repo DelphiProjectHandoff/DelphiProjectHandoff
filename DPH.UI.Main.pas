@@ -407,7 +407,12 @@ type
     RunProjectSearchButton,NextProjectSearchButton,OpenSearchResultButton: TButton;
     ProjectSearchList: TListBox;
     ProjectSearchMemo: TMemo;
-    WorkspacePageCombo: TComboBox;
+    WorkspacePageCombo,LessonPageCombo: TComboBox;
+    SetupTab: TTabItem;
+    SetupScroll: TVertScrollBox;
+    SetupPurpose,AnalysisSettingsTitle: TLabel;
+    AnalysisSettingsLayout: TLayout;
+    SetupButton: TButton;
     CoverageTab: TTabItem;
     CoverageMemo: TMemo;
     CoverageList: TListBox;
@@ -617,6 +622,7 @@ type
     procedure LearningClick(Sender: TObject);
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
+    procedure SetupClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -840,7 +846,7 @@ begin
     RestoreDestinationDialog.InitialDir:=DatabaseDirectory;
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
-  for I:=0 to 10 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
+  for I:=0 to 11 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
@@ -930,20 +936,33 @@ begin
     end;
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
+procedure TDPHMainForm.SetupClick(Sender: TObject);
+begin WorkspaceTabs.ActiveTab:=SetupTab; end;
 procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
-var Index: Integer;
+var Index: Integer; Choice: TComboBox;
 begin
   if FBinding then Exit;
-  if Sender=WorkspacePageCombo then begin
-    if WorkspacePageCombo.ItemIndex<0 then Exit;
+  if (Sender=WorkspacePageCombo) or (Sender=LessonPageCombo) then begin
+    Choice:=Sender as TComboBox;
+    if Choice.ItemIndex<0 then Exit;
     for Index:=0 to WorkspaceTabs.TabCount-1 do
-      if WorkspaceTabs.Tabs[Index].Text=WorkspacePageCombo.Items[WorkspacePageCombo.ItemIndex] then begin
+      if WorkspaceTabs.Tabs[Index].Text=Choice.Items[Choice.ItemIndex] then begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
       end;
-  end else if WorkspaceTabs.ActiveTab<>nil then begin
+  end;
+  if WorkspaceTabs.ActiveTab<>nil then begin
     FBinding:=True;
-    try WorkspacePageCombo.ItemIndex:=WorkspacePageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
+    try
+      WorkspacePageCombo.ItemIndex:=WorkspacePageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
+      LessonPageCombo.ItemIndex:=LessonPageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
     finally FBinding:=False; end;
+    ExplorerLayout.Visible:=(WorkspaceTabs.ActiveTab=ExplainTab) or (WorkspaceTabs.ActiveTab=SourceTab) or
+      (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) or
+      (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
+    ExplorerSplitter.Visible:=ExplorerLayout.Visible;
+    InspectorLayout.Visible:=(WorkspaceTabs.ActiveTab=ExplainTab) or (WorkspaceTabs.ActiveTab=SourceTab) or
+      (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
+    InspectorSplitter.Visible:=InspectorLayout.Visible;
   end;
 end;
 procedure TDPHMainForm.ProjectSearchClick(Sender: TObject);
@@ -1280,7 +1299,13 @@ begin
     if R.RestoredDatabase<>'' then OpenSelection('',R.RestoredDatabase);
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
-    StatusLabel.Text:=R.MessageText; if FView<>nil then StatusLabel.Text:=StatusLabel.Text+' | '+FView.FlagsText;
+    StatusLabel.Text:=R.MessageText;
+    if R.Busy and not R.Failed then StatusLabel.Text:='Preparing the selected application lessons...';
+    if (FView<>nil) and not R.Busy and not R.Failed then begin
+      StatusLabel.Text:='Lessons for '+FView.Document.GetValue<string>('entry')+'. Choose Learn the project to continue.';
+      if not FView.Document.GetValue<Boolean>('analysis_complete') then
+        StatusLabel.Text:=StatusLabel.Text+' Some code could not be explained; check unanswered questions.';
+    end;
   finally R.Free; end;
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
@@ -1359,7 +1384,7 @@ begin
   finally FBinding:=False; end;
   RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions; QualityClick(nil);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
-  if SameProject then WorkspaceTabs.ActiveTab:=SavedTab;
+  if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
 end;
 procedure TDPHMainForm.KeyboardFilterChange(Sender: TObject);
 var Value: TJSONValue; Row: TJSONObject; Count,Order: Integer; Text,Query: string;
@@ -2093,7 +2118,7 @@ var HTML,PreviewPath: string;
 begin
   if FExplanations=nil then Exit;
   OverviewMemo.Text:=FExplanations.TopicText(Max(0,LearningTopics.ItemIndex));
-  HTML:=FExplanations.TopicHTML(Max(0,LearningTopics.ItemIndex)); PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  HTML:=FExplanations.LessonHTML(Max(0,LearningTopics.ItemIndex)); PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
     LearningBrowser.Navigate('file://'+PreviewPath);
@@ -2104,7 +2129,7 @@ var HTML,PreviewPath: string;
 begin
   if FExplanations=nil then Exit;
   ExplainFallback.Text:=FExplanations.ObjectText(FSelected);
-  HTML:=FExplanations.ObjectHTML(FSelected); PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  HTML:=FExplanations.ObjectLessonHTML(FSelected); PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
     ExplainBrowser.Navigate('file://'+PreviewPath);
@@ -2115,8 +2140,16 @@ var Directory,Fragment,NodeKey: string; P,I: Integer; V: TJSONValue; S: TJSONObj
 begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
-  if Sender=HelpBrowser then Directory:=TPath.Combine(FBaseDirectory,'help');
-  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,Sender<>HelpBrowser); if ACancel then Exit;
+  if Sender=HelpBrowser then Directory:=FLearningDirectory;
+  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,True); if ACancel then Exit;
+  P:=Pos('#lesson_',AURL);
+  if P>0 then begin
+    ACancel:=True;
+    if TryStrToInt(Copy(AURL,P+8,MaxInt),I) and (I>=0) and (I<LearningTopics.Count) then begin
+      LearningTopics.ItemIndex:=I; LearningClick(nil); WorkspaceTabs.ActiveTab:=OverviewTab;
+    end;
+    Exit;
+  end;
   P:=Pos('#g_',AURL);
   if (P>0) and (FGraph<>nil) then begin
     ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
@@ -2151,11 +2184,34 @@ begin
   end;
 end;
 procedure TDPHMainForm.HelpClick(Sender: TObject);
+var ID:TGUID; HTML,PreviewPath:string;
 begin
   WorkspaceTabs.ActiveTab:=HelpTab;
-  if not TFile.Exists(TPath.Combine(FBaseDirectory,'help\index.html')) then begin StatusLabel.Text:='Getting started HTML is missing; use the displayed quick-start directions'; Exit; end;
+  if FLearningDirectory='' then begin
+    CreateGUID(ID); FLearningDirectory:=TPath.Combine(TPath.GetTempPath,'DPH-Learning-'+GUIDToString(ID));
+    FExplainDirectory:=TPath.Combine(FLearningDirectory,'object'); FFlowDirectory:=TPath.Combine(FLearningDirectory,'flow');
+    TDirectory.CreateDirectory(FLearningDirectory); TDirectory.CreateDirectory(FExplainDirectory); TDirectory.CreateDirectory(FFlowDirectory);
+  end;
+  HTML:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
+    '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
+    'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28}h1{margin:0;font-size:30px}main{padding:26px;max-width:1000px;margin:auto}'+
+    'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
+    '*{box-sizing:border-box}a{color:#146cb4}</style><title>Learn an application with DPH</title></head><body><header><h1>Welcome to Delphi Project Handoff</h1>'+
+    '<p>Learn what a Delphi application does, how to use it, and how its parts work together.</p></header><main><section><h2>Your first ten minutes</h2><ol>'+
+    '<li><strong>Choose application.</strong> Click the button at the top left. Select the application''s .dproj, .dpr or .groupproj file. This identifies the program you want to learn.</li>'+
+    '<li><strong>Keep its lessons.</strong> Accept the proposed file in the Databases folder. DPH stores what it learns there. If you have already done this, use <strong>Open saved lessons</strong> instead.</li>'+
+    '<li><strong>Read Learn the project.</strong> This page opens when the application is ready. Begin with its purpose, then meet its screens and controls.</li>'+
+    '<li><strong>Follow one action.</strong> Pick a familiar button or event. Open its responding operation and read Explain. Follow one next operation before exploring the whole program.</li>'+
+    '<li><strong>Check your understanding.</strong> Describe what starts the action, what it uses, what decisions it makes, and what result the user expects. Ask the author about anything the lessons cannot establish.</li></ol></section>'+
+    '<section><h2>You do not need compiler expertise to begin</h2><p>The page selector at the upper right is your learning route. The left-hand list finds parts by name; the right-hand panel explains your selection.</p>'+
+    '<p><strong>Prepare lessons</strong> is for the person supplying explanations or adjusting how source files are read. It holds the advanced settings; learners can leave them alone.</p></section>'+
+    '<section><h2>Understand what you are seeing</h2><p>Form designs are drawings made from the saved layout. Screenshots are separately supplied images of the application. An absent explanation is a question for the author, not a fact to guess.</p>'+
+    '<p>DPH reads the application''s files without changing or running it.</p></section></main></body></html>';
+  PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
-    HelpBrowser.Navigate('file://'+TPath.Combine(FBaseDirectory,'help\index.html'));
+    HelpBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin HelpBrowser.Visible:=False; StatusLabel.Text:='Getting started preview unavailable: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.ObservationSelectionClick(Sender: TObject);
@@ -3566,12 +3622,11 @@ begin
   if FSelected<>AKey then FLineageSeed:='';
   FWholeGraph:=False;
   if AHistory and (FSelected<>'') and (FSelected<>AKey) then FHistory.Add(FSelected); FSelected:=AKey;
-  InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+'Kind: '+S.GetValue<string>('kind')+sLineBreak+
-    'Signature: '+S.GetValue<string>('signature')+sLineBreak+'Declared type: '+S.GetValue<string>('type')+sLineBreak+sLineBreak+
-    'Source: '+S.GetValue<string>('range.source')+':'+S.GetValue<Integer>('range.line').ToString+sLineBreak+
-    'Generation: '+FView.Document.GetValue('generation_id').Value+sLineBreak+sLineBreak+
-    'Read Explain for the role, callers, effects and execution trace. Open Source to inspect the attached code. References contains the direct forward and reverse links.'+sLineBreak+sLineBreak+
-    'Evidence SHA256:'+sLineBreak+S.GetValue<string>('source_hash');
+  InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+
+    'This is a '+S.GetValue<string>('kind')+' in the selected application.'+sLineBreak+sLineBreak+
+    'Read Explain to understand its connections and the steps behind it. A routine is a named operation; an event connects an action to that operation.'+sLineBreak+sLineBreak+
+    'Source location: '+S.GetValue<string>('range.source')+':'+S.GetValue<Integer>('range.line').ToString+sLineBreak+sLineBreak+
+    'Use Learn the project for the guided route. Source details remain available through Prepare lessons.';
   RelationsList.Items.Clear; FRelationKeys.Clear;
   FreeAndNil(FDetails); FDetails:=FView.Details(AKey); DetailsList.Items.Clear;
   for V in FDetails do begin Row:=V as TJSONObject;

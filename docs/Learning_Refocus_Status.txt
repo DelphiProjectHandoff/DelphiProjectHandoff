@@ -1,0 +1,63 @@
+DPH LEARNING REFOCUS - ACTIVE WORK
+Owner direction received: 12 October 2026
+
+Controlling purpose
+DPH teaches a newcomer about one selected Delphi application: its purpose,
+screens, user tasks, responding operations, decisions, information and results.
+The owner's latest instruction supersedes the previous broad implementation
+order. Do not resume marching through the 312 technical backlog records.
+Every further feature must contribute directly to learning that application.
+Source identity and storage remain supporting mechanisms, not the learning route.
+
+First correction implemented
+- Nine learner destinations replace the nearly fifty-page main selector.
+- Compiler options, encoding and advanced preparation pages are separate.
+- Guided lessons use the available width; selection panes appear for object work.
+- Twelve beginner topics cover purpose, startup, screens, actions, decisions,
+  information, program organization, changes, questions, terms and user tasks.
+- Screen/action lessons derive their controls and handlers from the selected
+  source. Decisions use actual captured expressions. Connections are selectable.
+- Purpose explanations preserve contributor and review status. Missing author
+  knowledge is a visible question, not invented behavior.
+- User/help/troubleshooting instructions appear in Task walkthroughs, with their
+  expected outcomes when supplied and links to related source objects.
+- Object explanations introduce role, relevant authored purpose and a bounded
+  set of understandable connections. Source walkthroughs are optional details.
+- Unlinked global notes no longer appear as the purpose of every object.
+- Fingerprint and generation dumps are absent from ordinary learner topics.
+- Form reconstructions remain distinguished from supplied screenshots.
+
+Verification
+82 focused learning checks (including actual FMX/WebView2 interaction).
+19 project-profile checks; 114 publishing regression checks.
+Application build and IDE-serialized form baseline passed.
+Actual native screenshots are docs/learning-refocus-*.png; their selected program
+is a test fixture, not a screenshot of a customer's selected application.
+Native compact lesson layout was visually inspected and corrected.
+These results establish this correction only, not final product acceptance.
+
+Backup
+H:\DPH Backups\LearningRefocus_PreChange_20261012_213753
+Verified pre-change backup: 13,281 files, 3,645,233,928 bytes.
+The user's H: instruction overrides the older D: directive.
+
+Documentation hold
+Do not read or act on C:\Users\marti\OneDrive\Desktop\DPH Guides Review.txt yet.
+Existing guides, guide generator, PDF/DOCX manuals and help assets are deferred
+until the application work is finished. Their previous wording may describe
+the old technical interface; do not present them as updated instructions.
+
+Continuation
+Continue simplifying and completing the actual learner workflow. Validate it
+against real selected-project controls, actions, explanations and user tasks.
+Review remaining legacy pages for a direct learning purpose before retaining
+them as preparation tools. Complete useful instruction capture and retrieval,
+screen/field explanations and task learning without adding generic administrative
+systems. Then perform the documentation review and rewrite, last.
+Do not mark historical partial/missing records implemented merely by hiding
+pages, renaming requirements, or changing their status. Scope changes and actual
+implementation are distinct. Final delivery must demonstrate a usable learning
+tool, not a count of technical records or a claim of full source understanding.
+
+Development is active under the owner's resume instruction; no further phase
+approval is required for authorized learning-focused corrections.

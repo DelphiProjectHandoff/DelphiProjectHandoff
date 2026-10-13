@@ -20,9 +20,11 @@ type
     class function Encode(const AText: string): string; static;
     function ObjectText(const AKey: string): string;
     function ObjectHTML(const AKey: string): string;
+    function ObjectLessonHTML(const AKey: string): string;
     function RoutineLesson(const AKey: string): string;
     function TopicText(AIndex: Integer): string;
     function TopicHTML(AIndex: Integer): string;
+    function LessonHTML(AIndex: Integer): string;
     function FlowSVG(const AKey: string): string;
     function FlowHTML(const AKey: string): string;
     function GraphHTML(AGraph: TJSONObject): string;
@@ -143,11 +145,11 @@ end;
 class function TDPHExplanationModel.TopicTitle(AIndex: Integer): string;
 begin
   case AIndex of
-    0: Result:='Start here'; 1: Result:='How the program starts'; 2: Result:='Screens and user actions';
-    3: Result:='Follow an event into the code'; 4: Result:='Logic, branches and background work';
-    5: Result:='Data, configuration and outputs'; 6: Result:='Architecture and dependencies';
-    7: Result:='Plan a maintenance change'; 8: Result:='Coverage and troubleshooting';
-    9: Result:='Questions for the original author'; 10: Result:='Delphi terms explained';
+    0: Result:='Start here'; 1: Result:='How it starts'; 2: Result:='Screens and actions';
+    3: Result:='Follow an action'; 4: Result:='Decisions and loops';
+    5: Result:='Inputs and results'; 6: Result:='How the parts fit';
+    7: Result:='Before a change'; 8: Result:='Unanswered points';
+    9: Result:='Ask the author'; 10: Result:='Delphi terms'; 11: Result:='Task walkthroughs';
   else Result:='Project learning guide'; end;
 end;
 function TDPHExplanationModel.RoutineLesson(const AKey: string): string;
@@ -430,9 +432,9 @@ begin
     'pre{white-space:pre-wrap;font:15px/1.6 Segoe UI,Arial,sans-serif}table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:13px}td,th{border:1px solid #dce5ef;padding:9px;text-align:left;vertical-align:top;overflow-wrap:anywhere}'+
     'small{color:#53697f}.diagram{overflow:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
     '.card{break-inside:avoid}}</style></head><body><header><h1>'+Encode(ATitle)+'</h1><p>'+
-    Encode(FFacts.GetValue<string>('project'))+' | generation '+FFacts.GetValue('generation_id').Value+' | '+Encode(FFacts.GetValue<string>('configuration'))+' / '+Encode(FFacts.GetValue<string>('platform'))+'</p></header><main>'+
-    IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p class="warning">Historical or partial evidence. Read the coverage gaps before relying on this explanation.</p>','')+ABody+
-    '<p><small>Deterministic explanation of captured static evidence. No external AI, no runtime execution, no invented business rationale.</small></p></main></body></html>';
+    Encode(FFacts.GetValue<string>('project'))+'</p></header><main>'+
+    IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+ABody+
+    '<details class="card"><summary>About this lesson</summary><p>Prepared from the selected source files; the application was not run. Source capture '+FFacts.GetValue('generation_id').Value+'; '+Encode(FFacts.GetValue<string>('configuration'))+' / '+Encode(FFacts.GetValue<string>('platform'))+'.</p></details></main></body></html>';
 end;
 function TDPHExplanationModel.ObjectHTML(const AKey: string): string;
 var S,R: TJSONObject; Body,Kind,Key: string; Text: TStringBuilder; Rows: TList<TJSONObject>; Count,Pass: Integer; V,W: TJSONValue; Linked: Boolean;
@@ -491,7 +493,7 @@ begin
       if Count>=30 then Text.Append('<p>First 30 decisions shown. Inspect the full routine source and CFG for the remainder.</p>'); Text.Append('</section>');
     end;
     for V in FFacts.GetValue<TJSONArray>('knowledge') do begin R:=V as TJSONObject;
-      Linked:=R.GetValue<TJSONArray>('links').Count=0;
+      Linked:=R.GetValue<string>('entity_key','')=AKey;
       for W in R.GetValue<TJSONArray>('links') do if (W as TJSONObject).GetValue<string>('canonical_key','')=AKey then Linked:=True;
       if not Linked then Continue;
       Text.Append('<section class="card"><h2>Attributed knowledge: '+Encode(R.GetValue<string>('title'))+'</h2><p>'+Encode(R.GetValue<string>('state'))+' | '+Encode(R.GetValue<string>('owner'))+'</p><p>'+Encode(R.GetValue<string>('body'))+'</p></section>');
@@ -503,6 +505,58 @@ begin
   try Body:=Body+TraceHTML(AKey); except on E: Exception do raise EReadError.Create('Trace: '+E.Message); end;
   try Body:=Body+FlowSVG(AKey); except on E: Exception do raise EReadError.Create('Flow: '+E.Message); end;
   Result:=Page(S.GetValue<string>('name'),Body);
+end;
+function TDPHExplanationModel.ObjectLessonHTML(const AKey: string): string;
+var Body: TStringBuilder; S,R: TJSONObject; V,W: TJSONValue; Rows: TList<TJSONObject>;
+    Kind,DetailHTML,Target,Verb: string; Count,P: Integer; Linked,Found: Boolean;
+begin
+  if not FSymbols.TryGetValue(AKey,S) then Exit(Page('Explain this selection','<p>Choose a screen control, action or operation to begin.</p>'));
+  Body:=TStringBuilder.Create;
+  try
+    Kind:=S.GetValue<string>('kind');
+    Body.Append('<section class="card"><h2>Understand this selection</h2>');
+    if Kind='component' then Body.Append('<p>This is a saved part of a screen. Its properties describe how it was designed; its events connect actions to operations.</p>')
+    else if Kind='event' then Body.Append('<p>This is an event: the connection between an action and the operation that responds to it.</p>')
+    else if MatchText(Kind,['routine','anonymous']) then Body.Append('<p>This is an operation in the application. A procedure performs work; a function also returns a result. Read its connections below to see the part it plays.</p>')
+    else if Kind='unit' then Body.Append('<p>This is a unit: a source file grouping related definitions and operations.</p>')
+    else Body.Append('<p>This '+Encode(Kind)+' is part of the selected application. Its connections help explain where it fits.</p>');
+    Body.Append('</section><section class="card"><h2>Why it matters to the user</h2>'); Found:=False;
+    for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
+      R:=V as TJSONObject; Linked:=R.GetValue<string>('entity_key','')=AKey;
+      for W in R.GetValue<TJSONArray>('links') do if W.GetValue<string>('canonical_key','')=AKey then Linked:=True;
+      if not Linked then Continue;
+      Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body'))+'</p><p><small>Supplied by '+
+        Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>'); Found:=True;
+    end;
+    if not Found then Body.Append('<p>A purpose explanation has not been supplied for this selection. The connections below show what the code refers to, but cannot establish why its author chose that behavior. Ask what task this helps its user accomplish.</p>');
+    Body.Append('</section><section class="card"><h2>Follow what happens next</h2>'); Count:=0;
+    if FOutgoing.TryGetValue(AKey,Rows) then for R in Rows do begin
+      Kind:=R.GetValue<string>('kind'); Target:=R.GetValue<string>('to','');
+      if not MatchText(Kind,['calls','binds','reads','writes','shows_form','shows_modal_form','closes_form','schedules','passes_callback']) then Continue;
+      Verb:='Connects to';
+      if Kind='calls' then Verb:='Can call the operation';
+      if Kind='binds' then Verb:='Names this responding operation';
+      if Kind='reads' then Verb:='Uses information from';
+      if Kind='writes' then Verb:='Can change';
+      if MatchText(Kind,['shows_form','shows_modal_form']) then Verb:='Can open the screen';
+      if Kind='closes_form' then Verb:='Can close the screen';
+      if MatchText(Kind,['schedules','passes_callback']) then Verb:='Supplies work that may run later in';
+      Body.Append('<p>'+Verb+' '+Link(Target)+'.</p>');
+      if R.GetValue<string>('resolution')<>'confirmed_static' then Body.Append('<p><small>This connection needs confirmation; the source alone does not establish its exact target or timing.</small></p>');
+      Inc(Count); if Count>=8 then Break;
+    end;
+    if Count=0 then Body.Append('<p>No supported next operation was found directly here. For a screen control, open its event in the left-hand list. For code, inspect the walkthrough below or ask the author about missing connections.</p>');
+    if Count>=8 then Body.Append('<p>Eight connections are shown to keep this lesson focused. Further connections are in the optional details.</p>');
+    Body.Append('<p>These are possible source paths. Conditions and user input determine which paths a real run takes.</p></section>'+
+      '<section class="card"><h2>Check your understanding</h2><p>Explain what starts this operation, what information it uses, and what it can change. Which user result is documented, and which part still needs an answer?</p></section>');
+    DetailHTML:=ObjectHTML(AKey); P:=Pos('<main>',DetailHTML);
+    if P>0 then begin
+      DetailHTML:=Copy(DetailHTML,P+6,MaxInt); P:=Pos('</main>',DetailHTML);
+      if P>0 then DetailHTML:=Copy(DetailHTML,1,P-1);
+      Body.Append('<details class="card"><summary>Optional: read the code walkthrough and source details</summary>'+DetailHTML+'</details>');
+    end;
+    Result:=Page(S.GetValue<string>('name'),Body.ToString);
+  finally Body.Free; end;
 end;
 function TDPHExplanationModel.Prose(const AText: string): string;
 var Line: string; Text: TStringBuilder;
@@ -591,6 +645,178 @@ begin
     end;
     Result:=Text.ToString;
   finally Text.Free; end;
+end;
+function TDPHExplanationModel.LessonHTML(AIndex: Integer): string;
+var Body: TStringBuilder; V,W: TJSONValue; S,R,Fields,Metadata,Target: TJSONObject;
+    Rows: TList<TJSONObject>; Caption,ControlType,Key,Handler,Kind: string;
+    Count: Integer; Found,HasPurpose: Boolean;
+begin
+  if not (AIndex in [0..11]) then Exit(Page('Learn the application','<p>Choose a topic from the lesson list.</p>'));
+  Body:=TStringBuilder.Create;
+  try
+    if AIndex=0 then begin
+      Body.Append('<section class="card"><h2>What does this application do?</h2>'); HasPurpose:=False;
+      for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
+        R:=V as TJSONObject; Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
+        if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject
+        else Metadata:=Metadata.Clone as TJSONObject;
+        try
+          if (Metadata=nil) or (Metadata.GetValue<string>('record_type','')<>'project_profile') then Continue;
+          Fields:=Metadata.GetValue<TJSONObject>('fields',nil); if Fields=nil then Continue;
+          Body.Append('<p>'+Encode(Fields.GetValue<string>('purpose','Not supplied'))+'</p><p><small>Explanation supplied by '+
+            Encode(R.GetValue<string>('owner','not supplied'))+'; review status: '+Encode(R.GetValue<string>('state','not supplied'))+'.</small></p>');
+          HasPurpose:=True;
+        finally Metadata.Free; end;
+      end;
+      if not HasPurpose then Body.Append('<p>The author has not yet supplied an application-purpose explanation. Begin with a screen you recognize, and ask what task it helps its users accomplish. A filename cannot answer that question.</p>');
+      Body.Append('</section><section class="card"><h2>Your first route through the application</h2><ol>'+
+        '<li><a href="#lesson_2">Meet its screens and controls</a>. Find a button or field and read what connects it to the program. <a href="#lesson_11">Read its supplied task walkthroughs</a> for user instructions.</li>'+
+        '<li><a href="#lesson_3">Follow one action</a>. Open its handler: the operation called when the action occurs.</li>'+
+        '<li><a href="#lesson_4">Read the decisions</a>. Follow what happens when a condition is true and when it is false.</li>'+
+        '<li><a href="#lesson_5">Follow the information</a>. Find what the operation reads, changes, or produces.</li>'+
+        '<li><a href="#lesson_9">Ask what is still unclear</a>. Separate what the code shows from what its author needs to explain.</li></ol></section>'+
+        '<section class="card"><h2>A small first exercise</h2><p>Choose one action. Explain, in your own words: what starts it, which operation responds, one decision it makes, and the result its user expects. Follow the links above to find the first three. If the expected result is not documented, record it as a question rather than guessing.</p>'+
+        '<p><a href="#lesson_10">New to Delphi? Read the terms first.</a></p></section>');
+    end else if AIndex=2 then begin
+      Body.Append('<section class="card"><h2>Meet the interface</h2><p>A form is a screen. A control is something on that screen, such as a button, label or input box. A caption is the text a user sees. An event connects an action to a named operation in the code.</p>'+
+        '<p>Open Form designs in the page selector to see the saved layout. These drawings are reconstructions, not actual screenshots. Screenshots shows images supplied separately.</p></section>');
+      Count:=0;
+      for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+        S:=V as TJSONObject; if S.GetValue<string>('kind')<>'component' then Continue;
+        Key:=S.GetValue<string>('key'); Caption:=''; ControlType:=S.GetValue<string>('type','');
+        if S.GetValue('serialized_properties')<>nil then for W in S.GetValue<TJSONArray>('serialized_properties') do begin
+          R:=W as TJSONObject;
+          if MatchText(R.GetValue<string>('name'),['Text','Caption']) then Caption:=R.GetValue<string>('value');
+        end;
+        Body.Append('<section class="card"><h2>'+Link(Key)+'</h2>');
+        if Caption<>'' then Body.Append('<p><strong>Text shown to the user:</strong> '+Encode(Caption)+'</p>')
+        else Body.Append('<p>No display text was saved for this control. Its code name is not an explanation of its purpose.</p>');
+        Body.Append('<p><strong>Control type:</strong> '+Encode(ControlType)+'. Open the name above to inspect its connections.</p>');
+        Found:=False;
+        if S.GetValue('serialized_properties')<>nil then for W in S.GetValue<TJSONArray>('serialized_properties') do begin
+          R:=W as TJSONObject;
+          if StartsText('On',R.GetValue<string>('name')) then begin
+            Body.Append('<p><strong>Action connection:</strong> '+Encode(R.GetValue<string>('name'))+' calls the named handler '+Encode(R.GetValue<string>('value'))+'.</p>'); Found:=True;
+          end;
+        end;
+        if not Found then Body.Append('<p>No event was saved directly on this control. It may display information, use an action object, or be connected by code.</p>');
+        Body.Append('<p><small>Found in '+Encode(S.GetValue<string>('range.source'))+'.</small></p></section>');
+        Inc(Count); if Count>=30 then Break;
+      end;
+      if Count=0 then Body.Append('<section class="card"><p>No supported screen controls were found in this selection. It may be a nonvisual application, or its form files may be unavailable.</p></section>');
+      if Count>=30 then Body.Append('<p>First 30 controls shown. Use the left-hand search to find another by name.</p>');
+      Body.Append('<section class="card"><h2>Try it</h2><p>Find a button. Identify its display text and its event handler. What task does the button help the user accomplish? Check the explanation; the caption alone cannot establish the whole task.</p><a href="#lesson_3">Next: follow an action into its operation</a></section>');
+    end else if AIndex=3 then begin
+      Body.Append('<section class="card"><h2>From an action to its operation</h2><p>When a user clicks a button, Delphi calls its connected event handler. That handler may call other operations. Follow one connection below and read the explanation before opening the source code.</p></section>');
+      Count:=0;
+      for V in FFacts.GetValue<TJSONArray>('relationships') do begin
+        R:=V as TJSONObject; if R.GetValue<string>('kind')<>'binds' then Continue;
+        Key:=R.GetValue<string>('from'); Handler:=R.GetValue<string>('to','');
+        Body.Append('<section class="card"><h2>'+Link(Key)+'</h2><ol><li>This saved event names a responding operation.</li>');
+        if FSymbols.TryGetValue(Handler,Target) then begin
+          Body.Append('<li>Open '+Link(Handler)+' to read that operation.</li><li>Inside its explanation, look at what it calls and what it changes.</li></ol>');
+          if FOutgoing.TryGetValue(Handler,Rows) then begin
+            Found:=False;
+            for S in Rows do if S.GetValue<string>('kind')='calls' then begin
+              Body.Append('<p>One next operation to explore: '+Link(S.GetValue<string>('to',''))+'. This is a source connection; conditions may prevent it from running.</p>'); Found:=True; Break;
+            end;
+            if not Found then Body.Append('<p>No direct next call was resolved. Read its decisions and assignments in Explain.</p>');
+          end;
+        end else Body.Append('<li>The named handler could not be found in the available source. Ask the author for the missing connection.</li></ol>');
+        Body.Append('</section>'); Inc(Count); if Count>=30 then Break;
+      end;
+      if Count=0 then Body.Append('<section class="card"><p>No saved event-to-handler connections were found. Select a routine in the left-hand list to learn its operations directly. Runtime connections need an explanation from the author.</p></section>');
+      if Count>=30 then Body.Append('<p>First 30 connections shown. Use search for additional events.</p>');
+      Body.Append('<section class="card"><h2>Check your understanding</h2><p>Describe the route as: user action, responding operation, next operation, expected result. Say which parts the code shows and which parts still need the author to explain.</p><a href="#lesson_4">Next: understand decisions and alternatives</a></section>');
+    end else begin
+      Body.Append('<section class="card">'); Count:=0;
+      case AIndex of
+        1: begin
+          Body.Append('<h2>How the application gets ready</h2><p>The Delphi program file describes the work done before the application waits for user actions. The following expressions were found in that startup section.</p>');
+          for V in FFacts.GetValue<TJSONArray>('startup') do begin
+            R:=V as TJSONObject; Caption:=R.GetValue<string>('text');
+            Body.Append('<h3>'+Encode(Caption)+'</h3>');
+            if ContainsText(Caption,'Application.Initialize') then Body.Append('<p>Prepares the application framework.</p>')
+            else if ContainsText(Caption,'Application.CreateForm') then Body.Append('<p>Requests creation of a form or data module. Read the names in the call to identify which one.</p>')
+            else if ContainsText(Caption,'Application.Run') then Body.Append('<p>Starts the event loop: the application can respond to user actions.</p>')
+            else Body.Append('<p>This is a startup instruction. Its intended purpose needs the called operation or an author explanation.</p>');
+            Inc(Count); if Count>=20 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No supported startup instructions were found. Ask the author which program file and initialization steps apply.</p>');
+          if Count>=20 then Body.Append('<p>First 20 startup instructions shown.</p>');
+          Body.Append('<h3>Try it</h3><p>Identify the first screen created. Does it match the screen the user sees first? The source shows the request; the author or an actual screenshot can confirm the displayed result.</p>');
+        end;
+        4: begin
+          Body.Append('<h2>Understand a decision</h2><p>An if statement chooses between alternatives. A loop repeats work. A try/finally block arranges cleanup even when work leaves early. These are actual decisions found in the selected application.</p>');
+          for V in FFacts.GetValue<TJSONArray>('flow_nodes') do begin
+            R:=V as TJSONObject; Kind:=R.GetValue<string>('kind');
+            if not MatchText(Kind,['if','while','for','repeat','case','try','raise','exit']) then Continue;
+            Body.Append('<p><strong>'+Encode(Kind)+':</strong> '+Encode(R.GetValue<string>('expression'))+'<br>Read it in '+Link(R.GetValue<string>('routine'))+'.</p>');
+            Inc(Count); if Count>=12 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No supported decision was found. This does not establish that the application has no decisions.</p>');
+          if Count>=12 then Body.Append('<p>Twelve examples shown. Search for a particular operation to read its own decisions.</p>');
+          Body.Append('<h3>Try it</h3><p>Open one operation. Expand its optional walkthrough and explain what happens when one condition is true and when it is false. Work that runs in the background may finish later; its timing needs confirmation.</p>');
+        end;
+        5: begin
+          Body.Append('<h2>Follow the information</h2><p>An operation can read a value, change a value, or prepare an output. These connections provide starting points for learning where information comes from and where it goes.</p>');
+          for V in FFacts.GetValue<TJSONArray>('relationships') do begin
+            R:=V as TJSONObject; Kind:=R.GetValue<string>('kind');
+            if not MatchText(Kind,['reads','writes','renders','output_candidate']) then Continue;
+            Caption:='uses'; if Kind='writes' then Caption:='can change';
+            if MatchText(Kind,['renders','output_candidate']) then Caption:='may prepare an output associated with';
+            Body.Append('<p>'+Link(R.GetValue<string>('from'))+' '+Caption+' '+Link(R.GetValue<string>('to',''))+'.</p>');
+            Inc(Count); if Count>=12 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No supported information connections were found. Ask the author for an example of an input and its resulting output.</p>');
+          if Count>=12 then Body.Append('<p>Twelve examples shown. Open an operation for its own connections.</p>');
+          Body.Append('<h3>Try it</h3><p>Choose one result and ask where its original information came from, what changes it, and where the user sees it. These source connections do not establish actual values or successful delivery.</p>');
+        end;
+        6: begin
+          Body.Append('<h2>How the parts fit together</h2><p>Delphi groups code into units. A unit can use another unit, but that dependency does not mean every operation in it runs. Start with a few units related to a screen or action you recognize.</p>');
+          for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+            S:=V as TJSONObject; if S.GetValue<string>('kind')<>'unit' then Continue;
+            Body.Append('<p>'+Link(S.GetValue<string>('key'))+'</p>'); Inc(Count); if Count>=20 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No supported units were found in this selection.</p>');
+          if Count>=20 then Body.Append('<p>First 20 units shown. Use search to find another.</p>');
+          Body.Append('<h3>Try it</h3><p>Pick a screen and identify the unit containing its event handler. Ask what responsibility that unit has, and which other unit does the next piece of work.</p>');
+        end;
+        7: Body.Append('<h2>Before making a change</h2><ol><li>Describe the user behavior you intend to change.</li><li>Follow its action to the responsible operation.</li><li>Read the callers and the information it changes.</li><li>Ask the author about rules or consequences that are not explained.</li><li>Use the selected application''s approved build and test instructions.</li><li>Refresh the lessons after the source changes and check affected explanations.</li></ol><p>DPH reads the application; it does not prove a change is correct by reading it.</p>');
+        8: Body.Append('<h2>What still needs explaining</h2><p>A lesson can be incomplete because a source file is missing, a connection could not be understood, or a human explanation has not been supplied. These are different problems.</p><ol><li>Ask whether all required source and form files were supplied.</li><li>Open the particular action or operation and identify the missing connection.</li><li>Ask for its intended result and an example of correct behavior.</li></ol><p>Prepare lessons contains the detailed source-reading checks for the person maintaining the lessons.</p><p><a href="#lesson_9">Read the questions for the author</a>.</p>');
+        9: begin
+          Body.Append('<h2>Questions for the author</h2><p>Use these questions to fill gaps in your understanding. A saved answer needs a named contributor; an unanswered question must not become an invented explanation.</p>');
+          for V in FFacts.GetValue<TJSONArray>('author_questions') do begin
+            R:=V as TJSONObject; Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('prompt'))+'</p>');
+            Inc(Count); if Count>=12 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No automatic questions are available. Ask: what task matters most, how do I recognize a correct result, and what mistakes should I avoid?</p>');
+          if Count>=12 then Body.Append('<p>Twelve questions shown. The person preparing lessons can inspect the full question list.</p>');
+        end;
+        10: Body.Append('<h2>Delphi terms in plain language</h2><p><strong>Form:</strong> a screen or window.</p><p><strong>Control:</strong> something on a screen, such as a button or input box.</p><p><strong>Property:</strong> a setting belonging to an object, such as its caption or visibility.</p><p><strong>Event:</strong> something that happens, such as a click.</p><p><strong>Event handler:</strong> the operation that responds to an event.</p><p><strong>Procedure:</strong> a named operation. <strong>Function:</strong> an operation that returns a result.</p><p><strong>Parameter:</strong> information passed to an operation.</p><p><strong>Variable:</strong> a named place holding a value that can change.</p><p><strong>Unit:</strong> a source file grouping definitions and operations.</p><p><strong>Class:</strong> a definition used to create objects with data and operations.</p><p><strong>Background work:</strong> work that can continue while the interface responds; completion order needs care.</p><p>Business glossary contains terms specific to the selected application.</p>');
+        11: begin
+          Body.Append('<h2>Task walkthroughs for this application</h2><p>These are instructions supplied for the selected application. Read the prerequisites, follow the named actions, and compare the result with the expected outcome. The contributor and review status identify whose explanation you are using.</p>');
+          for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
+            R:=V as TJSONObject;
+            if MatchText(R.GetValue<string>('state',''),['rejected','retired']) then Continue;
+            if not MatchText(R.GetValue<string>('kind',''),['user_help','troubleshooting']) and
+              not MatchText(R.GetValue<string>('document_kind',''),['user','help']) then Continue;
+            Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body')).Replace(sLineBreak,'</p><p>')+'</p><p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');
+            for W in R.GetValue<TJSONArray>('links') do begin
+              Key:=W.GetValue<string>('canonical_key','');
+              if (Key<>'') and FSymbols.ContainsKey(Key) then Body.Append('<p>Explore the related part of the application: '+Link(Key)+'.</p>');
+            end;
+            Inc(Count); if Count>=30 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No user walkthrough has been supplied for this application yet. Ask its author for one common task: who performs it, what must be ready, the screen actions in order, the expected result, and what to do if it fails. The code alone cannot supply unwritten operating instructions.</p>');
+          if Count>=30 then Body.Append('<p>First 30 instruction records shown. Use Search project for another task.</p>');
+          Body.Append('<h3>Practice</h3><p>Choose a supplied task, explain its steps in your own words, and identify the result you would check. Do not run the selected application or alter live information without its owner''s approval.</p>');
+        end;
+      end;
+      Body.Append('</section><section class="card"><p><a href="#lesson_0">Return to your learning route</a></p></section>');
+    end;
+    Result:=Page(TopicTitle(AIndex),Body.ToString);
+  finally Body.Free; end;
 end;
 function TDPHExplanationModel.TopicHTML(AIndex: Integer): string;
 var Body: TStringBuilder; V: TJSONValue; S: TJSONObject; Kind,Key: string; Count: Integer;

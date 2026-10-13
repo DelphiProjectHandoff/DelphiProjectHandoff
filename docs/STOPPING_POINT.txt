@@ -1,6 +1,6 @@
-DPH STOPPING POINT
+﻿DPH STOPPING POINT
 Recorded: 2026-10-12
-Status: STOPPED at the user's explicit request. Do not resume without instruction.
+Historical pause: superseded by the owner's 12 October 2026 resume and learning-refocus instruction.
 
 Last completed requirement: 06.06 - Calculations and formulas.
 Implementation commit: 10daccda9d0b516012b0b558b95c14e558020ef7
@@ -31,3 +31,6 @@ docs/pdf/DPH_Engineering_Guide - Copy.pdf
 docs/pdf/DPH_User_Guide - Copy.pdf
 
 This note records the pause only; it does not authorize further development.
+
+CURRENT: Development resumed. See docs/Learning_Refocus_Status.txt.
+The old next-item order (06.07 onward) is superseded by the owner's learning-only direction.
