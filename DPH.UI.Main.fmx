@@ -269,69 +269,67 @@ Height = 86
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'For the person preparing lessons: choose the source configuration, then refresh lessons. Learners can leave these settings alone. Additional project information below supports preparing and checking explanations; it is not the learning route.'
+Text = 'Prepare lessons for the selected application. First describe what it does and whom it helps. Then prepare one common task with clear steps and expected results. Add explanations, screenshots and business terms as needed. Learners return to Learn the project or Learn a task in the top-right selector.'
+StyledSettings = []
+TextSettings.Font.Size = 16
+TextSettings.FontColor = xFF146CB4
+end
+object SetupLessonToolbar: THorzScrollBox
+Align = Top
+Height = 50
+object SetupProfileButton: TButton
+Position.X = 12
+Position.Y = 8
+Width = 210
+Height = 32
+Text = 'Describe this application'
+OnClick = ProjectProfileClick
+end
+object SetupTaskButton: TButton
+Position.X = 234
+Position.Y = 8
+Width = 210
+Height = 32
+Text = 'Prepare task instructions'
+OnClick = TaskEditClick
+end
+end
+object SetupMaterialLabel: TLabel
+Align = Top
+Height = 30
+Margins.Left = 12
+Text = 'Other lesson material: choose a page below.'
 end
 object WorkspacePageCombo: TComboBox
 Align = Top
 Height = 34
 Margins.Top = 8
 Margins.Bottom = 8
+Margins.Left = 12
 Margins.Right = 12
 Items.Strings = (
-'Getting started'
-'Project setup'
-'Projects'
-'Database tools'
-'Rename review'
-'Search project'
 'Learn the project'
 'Learn a task'
-'Explain'
-'Source'
-'Graphs'
-'Form designs'
-'Screenshots'
-'References'
-'Details'
-'Coverage'
-'Source quality'
-'Revision comparison'
-'Saved explanations'
-'Prepare a task'
-'Business glossary'
-'Keyboard and focus'
-'Menus and commands'
-'Dynamic controls'
-'Layout rules'
-'Component dependencies'
-'Form inheritance'
 'Action purposes'
-'Screen history'
-'Database connections'
-'Database schema'
-'Database ER diagram'
-'Import/export formats'
-'Target data retention'
-'Target backup and restore'
-'Business processes'
-'Business rules'
-'Rule fields'
-'Calculations'
-'Calculation fields'
-'Calculation evidence'
-'Departmental workflows'
-'Workflow fields'
-'Process fields'
-'Target data quality'
-'Knowledge links'
-'Review tasks'
+'Screenshots'
+'Business glossary'
 'Author questions'
+'Saved explanations'
+'Knowledge links'
 'Runtime observations'
-'Translations'
-'Validate bundle'
-'Publish')
+'Publish'
+'Projects')
 OnChange = WorkspacePageChange
 end
+object AnalysisSettingsExpander: TExpander
+Align = Top
+Margins.Left = 12
+Margins.Right = 12
+Height = 424
+HeaderHeight = 34
+Text = 'Source reading settings (only if the application author needs them)'
+ContentSize = '390'
+IsExpanded = False
 object AnalysisSettingsLayout: TLayout
 Align = Top
 Height = 390
@@ -406,6 +404,7 @@ end
 end
 end
 end
+end
 object TaskTab: TTabItem
 Text = 'Learn a task'
 object TaskPurposeLabel: TLabel
@@ -415,6 +414,8 @@ Margins.Right = 12
 Height = 64
 WordWrap = True
 Text = 'Learn one task step by step. Read what must be ready, follow each action, and check the expected result. DPH presents instructions without running the selected application.'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object TaskToolbar: THorzScrollBox
 Align = Top
@@ -453,6 +454,8 @@ Align = Top
 Height = 32
 WordWrap = True
 Text = 'Choose a saved task'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object TaskFilter: TEdit
 Align = Top
@@ -506,12 +509,14 @@ end
 object TaskReaderScroll: TVertScrollBox
 Align = Client
 object TaskReaderTitle: TLabel
-TextSettings.Font.Size = 20
 Position.Y = 0
 Align = Top
 Height = 38
 WordWrap = True
 Text = 'Choose a task to learn'
+StyledSettings = []
+TextSettings.Font.Size = 20
+TextSettings.FontColor = xFF146CB4
 end
 object TaskContextMemo: TMemo
 Position.Y = 38
@@ -520,6 +525,8 @@ Height = 110
 WordWrap = True
 ReadOnly = True
 ShowScrollBars = True
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object TaskStepLabel: TLabel
 Position.Y = 148
@@ -527,6 +534,9 @@ Align = Top
 Height = 30
 WordWrap = True
 Text = 'Step instructions'
+StyledSettings = []
+TextSettings.Font.Size = 17
+TextSettings.FontColor = xFF146CB4
 end
 object TaskResultMemo: TMemo
 Position.Y = 358
@@ -535,6 +545,8 @@ Height = 120
 WordWrap = True
 ReadOnly = True
 ShowScrollBars = True
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object TaskActionMemo: TMemo
 Position.Y = 178
@@ -543,7 +555,8 @@ Height = 180
 ReadOnly = True
 WordWrap = True
 ShowScrollBars = True
-TextSettings.Font.Size = 17
+StyledSettings = []
+TextSettings.Font.Size = 18
 end
 end
 end
@@ -557,6 +570,8 @@ Margins.Right = 12
 Height = 70
 WordWrap = True
 Text = 'Prepare instructions for this selected application. Supply a purpose, prerequisites, ordered actions and expected results. Keep each step, then Save task. Do not invent outcomes; enter Unknown where a result needs confirmation.'
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object TaskEditorToolbar: THorzScrollBox
 Align = Top
@@ -601,6 +616,8 @@ Align = Top
 Height = 30
 WordWrap = True
 Text = 'Task name'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_name: TMemo
 Align = Top
@@ -609,12 +626,16 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object Tutor_purpose_label: TLabel
 Align = Top
 Height = 30
 WordWrap = True
 Text = 'What the learner will accomplish'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_purpose: TMemo
 Align = Top
@@ -623,12 +644,16 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object Tutor_prerequisites_label: TLabel
 Align = Top
 Height = 30
 WordWrap = True
 Text = 'Before the learner begins'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_prerequisites: TMemo
 Align = Top
@@ -637,12 +662,16 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object Tutor_expected_result_label: TLabel
 Align = Top
 Height = 30
 WordWrap = True
 Text = 'Expected result of the whole task'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_expected_result: TMemo
 Align = Top
@@ -651,12 +680,16 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object Tutor_troubleshooting_label: TLabel
 Align = Top
 Height = 30
 WordWrap = True
 Text = 'If something goes wrong'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_troubleshooting: TMemo
 Align = Top
@@ -665,12 +698,16 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object Tutor_practice_label: TLabel
 Align = Top
 Height = 30
 WordWrap = True
 Text = 'Practice and check your understanding'
+StyledSettings = []
+TextSettings.Font.Size = 15
 end
 object Tutor_practice: TMemo
 Align = Top
@@ -679,6 +716,8 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TaskEditorChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object TutorStepsLabel: TLabel
 Align = Top
@@ -756,6 +795,8 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TutorStepChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 object TutorExpectedLabel: TLabel
 Align = Top
@@ -770,6 +811,8 @@ WordWrap = True
 ReadOnly = False
 ShowScrollBars = True
 OnChange = TutorStepChanged
+StyledSettings = []
+TextSettings.Font.Size = 16
 end
 end
 end
@@ -5374,7 +5417,7 @@ object QuestionsPurpose: TLabel
 Align = Top
 Height = 76
 WordWrap = True
-Text = 'Focused questions from captured gaps, uncertain relationships, asynchronous work, SQL/output contracts and absent reviewed procedures. Up to 100 questions, at most 20 per category. Inspect evidence, then record the named author response. Saving does not verify an answer. Only an explicitly verified response with no pending review hides its exact question.'
+Text = 'Ask the application author about unclear behavior or missing instructions. Select a question, read it, then choose Record author answer. Save the reply with the contributor name. An answer still needs review by someone who knows the application.'
 end
 object QuestionsToolbar: TLayout
 Align = Top

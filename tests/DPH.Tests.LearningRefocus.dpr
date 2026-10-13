@@ -9,6 +9,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, 
   DPH.Publish.BrowserPolicy in '..\DPH.Publish.BrowserPolicy.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas', DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
   DPH.Workspace.Worker in '..\DPH.Workspace.Worker.pas',
+  DPH.UI.ActionPurpose in '..\DPH.UI.ActionPurpose.pas', DPH.Knowledge.ActionPurpose in '..\DPH.Knowledge.ActionPurpose.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas', DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
 var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArtifact,ReferenceBundle: string; ID: TGUID;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
@@ -78,6 +79,8 @@ begin
             Check(not ContainsText(Explain.ObjectHTML(Key),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Unlinked global notes do not masquerade as an object purpose');
             Check(ContainsText(Explain.ObjectLessonHTML(Key),'Fixture explanation supplied') and not ContainsText(Explain.ObjectLessonHTML(Key),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Learner explanation includes linked knowledge and excludes unrelated notes');
             Check(ContainsText(Explain.ObjectLessonHTML(Key),'<details class="card"><summary>Optional: read the code walkthrough'),'Detailed source walkthrough is optional in the learner explanation');
+            FlowText:=Explain.ObjectLessonHTML(Key);FlowText:=Copy(FlowText,1,Pos('<details class="card"><summary>Optional',FlowText)-1);
+            Check(ContainsText(FlowText,'Choices and stopping points') and ContainsText(FlowText,'Sender &gt; 0') and ContainsText(FlowText,'true result follows one branch'),'Beginner explanation teaches the actual branch before the optional technical walkthrough');
             for I:=0 to 11 do begin
               FlowText:=Explain.LessonHTML(I);
               Check((Length(FlowText)>1500) and not ContainsText(FlowText,'SHA256') and not ContainsText(FlowText,'confirmed_static'),'Learner topic '+IntToStr(I)+' avoids technical hash and resolution dumps');
@@ -85,6 +88,77 @@ begin
             Check(ContainsText(Explain.LessonHTML(0),'author has not yet supplied') and not ContainsText(Explain.LessonHTML(0),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Application purpose gap is explicit without dumping unrelated records');
             Check(ContainsText(Explain.LessonHTML(2),'btnConvert') and ContainsText(Explain.LessonHTML(2),'OnClick') and ContainsText(Explain.LessonHTML(2),'Click'),'Screen lesson uses actual captured control and action binding');
             Check(ContainsText(Explain.LessonHTML(3),'responding operation') and ContainsText(Explain.LessonHTML(3),'#s_'),'Action lesson links actual event and handler');
+            var FAQFacts:=Model.Document.Clone as TJSONObject;
+            try
+              var FAQRecord:=TJSONObject.Create.AddPair('title','Answer: Which task first?').AddPair('body','Begin with the supplied example option.').AddPair('owner','Named application teacher').AddPair('state','needs_review').AddPair('question_metadata',TJSONObject.Create.AddPair('prompt','Which task should a newcomer learn first?'));
+              FAQFacts.GetValue<TJSONArray>('knowledge').AddElement(FAQRecord);
+              var FAQModel:=TDPHExplanationModel.Create(FAQFacts);
+              try
+                FlowText:=FAQModel.LessonHTML(9);
+                Check(ContainsText(FlowText,'Which task should a newcomer') and ContainsText(FlowText,'Begin with the supplied example option.'),'Question lesson presents the saved author reply with its actual question');
+                Check(ContainsText(FlowText,'Named application teacher') and ContainsText(FlowText,'still needs review'),'Saved answer remains attributed and does not become automatically verified');
+                FAQRecord.RemovePair('state').Free;FAQRecord.AddPair('state','retired');
+                Check(not ContainsText(FAQModel.LessonHTML(9),'Begin with the supplied example option.'),'Retired answer is excluded from the learner questions page');
+              finally FAQModel.Free;end;
+            finally FAQFacts.Free;end;
+            var ActionFacts:=Model.Document.Clone as TJSONObject;
+            try
+              var ActionFields:=TJSONObject.Create;
+              for var ActionFieldName in DPHActionPurposeKeys do ActionFields.AddPair(ActionFieldName,'Unknown');
+              ActionFields.RemovePair('action_id').Free;ActionFields.AddPair('action_id',TDPHActionPurpose.Identity('captured button'));
+              ActionFields.RemovePair('target').Free;ActionFields.AddPair('target','captured button');
+              ActionFields.RemovePair('action_name').Free;ActionFields.AddPair('action_name','Choose an option');
+              ActionFields.RemovePair('purpose').Free;ActionFields.AddPair('purpose','Learn the available alternatives');
+              var ActionMetadata:=TJSONObject.Create.AddPair('record_type','action_purpose').AddPair('fields',ActionFields);
+              var ActionRecord:=TJSONObject.Create.AddPair('title','INTERNAL_IDENTITY_TITLE').AddPair('body','INTERNAL_IDENTITY_BODY').AddPair('entity_key',Key).AddPair('owner','Application teacher').AddPair('state','needs_review').AddPair('links',TJSONArray.Create).AddPair('structured_record',ActionMetadata);
+              ActionFacts.GetValue<TJSONArray>('knowledge').AddElement(ActionRecord);
+              var ActionLesson:=TDPHExplanationModel.Create(ActionFacts);
+              try
+                FlowText:=ActionLesson.ObjectLessonHTML(Key);FlowText:=Copy(FlowText,1,Pos('<details class="card"><summary>Optional',FlowText)-1);
+                Check(ContainsText(FlowText,'Choose an option') and ContainsText(FlowText,'Learn the available alternatives'),'Linked purpose explains the action name and user goal');
+                Check(not ContainsText(FlowText,'INTERNAL_IDENTITY') and not ContainsText(FlowText,'Stable action identity'),'Learner purpose omits internal record title, identity and storage body');
+              finally ActionLesson.Free;end;
+              var PurposeEditor:=TDPHActionPurposeForm.Create(nil);
+              try
+                PurposeEditor.LoadRecord(ActionMetadata,'Application teacher');PurposeEditor.Show;Application.ProcessMessages;
+                Check(not PurposeEditor.Profile_action_id_Row.Visible and not PurposeEditor.Profile_target_Row.Visible and not PurposeEditor.Profile_target_key_Row.Visible,'Purpose editor hides the three internal identity rows');
+                Check(PurposeEditor.Profile_action_name_Row.Position.Y=0,'Purpose editor begins with the visible action name');
+                var RoundTripPurpose:=PurposeEditor.RecordJSON;
+                try Check(RoundTripPurpose.GetValue<string>('fields.action_id')=ActionFields.GetValue<string>('action_id'),'Simpler editor preserves the saved identity');finally RoundTripPurpose.Free;end;
+                Bitmap:=TBitmap.Create(PurposeEditor.ClientWidth,PurposeEditor.ClientHeight);try
+                  if Bitmap.Canvas.BeginScene then try PurposeEditor.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
+                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-purpose-editor.png'));
+                finally Bitmap.Free;end;
+                PurposeEditor.Hide;
+              finally PurposeEditor.Free;end;
+            finally ActionFacts.Free;end;
+            var ControlFacts:=Model.Document.Clone as TJSONObject;
+            try
+              var ControlKey:='';
+              for var ControlRow in ControlFacts.GetValue<TJSONArray>('symbols') do
+                if ControlRow.GetValue<string>('kind')='component' then begin
+                  ControlKey:=ControlRow.GetValue<string>('key');
+                  (ControlRow as TJSONObject).RemovePair('serialized_properties').Free;
+                  var ControlProperties:=TJSONArray.Create;
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','Caption').AddPair('value','Choose <safely>'));
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','Hint').AddPair('value','Enter the supplied example'));
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','ReadOnly').AddPair('value','True'));
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','MaxLength').AddPair('value','30'));
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','Enabled').AddPair('value','False'));
+                  ControlProperties.AddElement(TJSONObject.Create.AddPair('name','Visible').AddPair('value','False'));
+                  (ControlRow as TJSONObject).AddPair('serialized_properties',ControlProperties);Break;
+                end;
+              Check(ControlKey<>'','Control explanation test uses a captured selected-project component');
+              var ControlLesson:=TDPHExplanationModel.Create(ControlFacts);
+              try
+                FlowText:=ControlLesson.ObjectLessonHTML(ControlKey);
+                Check(ContainsText(FlowText,'Text saved for this control: Choose &lt;safely&gt;'),'Control explanation uses escaped visible text');
+                Check(ContainsText(FlowText,'Guidance supplied with this control: Enter the supplied example'),'Control explanation includes supplied typing guidance');
+                Check(ContainsText(FlowText,'without allowing direct typing') and ContainsText(FlowText,'30 characters'),'Field explanation describes actual saved editability and input limit');
+                Check(ContainsText(FlowText,'starts this control unavailable') and ContainsText(FlowText,'starts this control hidden'),'Control explanation distinguishes saved availability and visibility');
+                Check(ContainsText(FlowText,'running application may change them'),'Design settings are not presented as guaranteed runtime behavior');
+              finally ControlLesson.Free;end;
+            finally ControlFacts.Free;end;
             Check(ContainsText(Explain.LessonHTML(4),'Sender &gt; 0'),'Decisions lesson teaches an actual application condition');
             Check(ContainsText(Explain.LessonHTML(11),'Practice choosing a mode') and ContainsText(Explain.LessonHTML(11),'Expected result: identify both branch alternatives.') and ContainsText(Explain.LessonHTML(11),'Named task author'),'Task lesson displays selected-application instructions, expected outcome and named author');
             Check(not ContainsText(Explain.LessonHTML(11),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Task lesson excludes unrelated engineering notes');
@@ -171,23 +245,41 @@ begin
               Check((Form.LessonPageCombo.Items.Count=10) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
               Form.SetupClick(nil); Check(Form.WorkspaceTabs.ActiveTab=Form.SetupTab,'Prepare lessons opens its separate setup page');
+              Check((Form.WorkspacePageCombo.Items.Count=11) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu contains lesson material rather than database administration');
+              Check(not Form.AnalysisSettingsExpander.IsExpanded and (Form.AnalysisSettingsExpander.Height<50),'Source reading settings start collapsed');
+              Form.AnalysisSettingsExpander.IsExpanded:=True;Application.ProcessMessages;
+              Check(Form.AnalysisSettingsExpander.Height>390,'Native expander exposes the IDE-editable source settings when requested');
+              Form.AnalysisSettingsExpander.IsExpanded:=False;
+              Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
+                if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
+                Bitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-preparation.png'));
+              finally Bitmap.Free;end;
               Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Learn the project'); Form.WorkspacePageChange(Form.LessonPageCombo);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'Learner page selector returns from preparation to learning');
               Form.LoadView(View.Document.Clone as TJSONObject);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
+              Check((Form.DatabaseInventoryList.Count=0) and (Form.QualityList.Count=0) and (Form.ActionPurposeList.Count=0),'Opening a lesson leaves unrequested preparation reports unloaded');
               Check(not Form.ExplorerLayout.Visible and not Form.InspectorLayout.Visible,'Guided lessons reserve width for learning instead of technical side panels');
               Form.LoadKnowledge(Store.KnowledgeJSON);
+              Form.WorkspaceTabs.ActiveTab:=Form.ActionPurposeTab;Form.WorkspacePageChange(nil);
+              Check(Form.ActionPurposeList.Count>0,'Requesting action purposes builds their real preparation report');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
 
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Your first route'); Check(True,'Real WebView2 renders the learning workspace');
 
               Failed:=False; Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#lesson_3',Failed);
               Check(Failed and (Form.LearningTopics.ItemIndex=3),'Lesson link opens its actual next topic without external navigation');
+              Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#task_reader',Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.TaskTab),'Task walkthrough link opens the native step reader');
+              Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#ask_author',Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.QuestionsTab),'Question lesson link opens the existing named-answer workflow');
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               WaitHTML(Form.LearningBrowser,'document.body.innerText','From an action to its operation');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Meet the interface');
+              Check(ContainsText(Form.OverviewMemo.Text,'Meet the interface') and not ContainsText(Form.OverviewMemo.Text,'Source capture'),'Text fallback presents the same beginner screen lesson without technical capture metadata');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
               Form.WindowState:=TWindowState.wsNormal; Form.ClientWidth:=960;Form.ClientHeight:=600;Application.ProcessMessages;
@@ -199,6 +291,7 @@ begin
               Form.SearchEdit.Text:='TMain.Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
               WaitHTML(Form.ExplainBrowser,'document.body.innerText','Understand this selection'); Check(True,'Real WebView2 renders the readable selected-object explanation');
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Explorer selection opens Explain');
+              Check(ContainsText(Form.ExplainFallback.Text,'Understand this selection') and not ContainsText(Form.ExplainFallback.Text,'FORM PROPERTIES') and not ContainsText(Form.ExplainFallback.Text,'Source SHA256'),'Text fallback keeps the learning explanation and excludes optional technical dumps');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               Check(BrowserBitmap<>nil,'Native WebView2 image capture is available for visual QA');
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-explain-browser.png'));
@@ -259,6 +352,8 @@ begin
         try Model:=TDPHDocumentModel.Create(View,nil,[],[],True,True); Explain:=TDPHExplanationModel.Create(Model.Document);
           try
             Check(Model.Document.GetValue<TJSONArray>('startup').Count>0,'Pinned program startup is captured from its DPR body');
+            Check(Model.Document.GetValue<TJSONArray>('startup').Count=3,'Pinned startup lesson includes the three startup operations without treating form-call arguments as separate actions');
+            Check(ContainsText(Explain.LessonHTML(1),'Prepares the application framework') and ContainsText(Explain.LessonHTML(1),'Requests creation of a form'),'Token spacing does not prevent plain-language startup explanations');
             Check(ContainsText(Explain.TopicText(1),'Application.CreateForm'),'Startup lesson cites actual form creation');
             Rows:=View.Search('btnConvertClick','routine',''); try Key:=(Rows.Items[0] as TJSONObject).GetValue<string>('key'); finally Rows.Free; end;
             Check(ContainsText(Explain.TraceHTML(Key),'CreateAnonymousThread') or ContainsText(Explain.TraceHTML(Key),'passes_callback'),'Reference convert explanation reaches its actual callback evidence');
@@ -273,7 +368,7 @@ begin
               Check(ContainsText(Form.ExplainFallback.Text,'btnConvertClick'),'Reference object explanation works in the actual FMX form');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-reference-explain.png')); finally BrowserBitmap.Free; end;
-              WaitHTML(Form.ExplainBrowser,'(()=>{const h=Array.from(document.querySelectorAll("h2")).find(x=>x.textContent==="Follow the work"); if(!h)return "WAIT"; h.scrollIntoView();return "TRACE_READY";})()','TRACE_READY');
+              WaitHTML(Form.ExplainBrowser,'(()=>{for(const d of document.querySelectorAll("details")){if(d.querySelector("summary")?.textContent.includes("Optional:"))d.open=true;}const h=Array.from(document.querySelectorAll("h2")).find(x=>x.textContent==="Follow the work"); if(!h||!h.offsetHeight)return "WAIT"; h.scrollIntoView();return "TRACE_READY";})()','TRACE_READY');
               Check(True,'Reference execution trace is present in the actual rendered explanation');
               Application.ProcessMessages; TThread.Sleep(100);
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;

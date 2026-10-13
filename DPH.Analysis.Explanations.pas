@@ -149,7 +149,7 @@ begin
     3: Result:='Follow an action'; 4: Result:='Decisions and loops';
     5: Result:='Inputs and results'; 6: Result:='How the parts fit';
     7: Result:='Before a change'; 8: Result:='Unanswered points';
-    9: Result:='Ask the author'; 10: Result:='Delphi terms'; 11: Result:='Task walkthroughs';
+    9: Result:='Questions and answers'; 10: Result:='Delphi terms'; 11: Result:='Task walkthroughs';
   else Result:='Project learning guide'; end;
 end;
 function TDPHExplanationModel.RoutineLesson(const AKey: string): string;
@@ -507,29 +507,88 @@ begin
   Result:=Page(S.GetValue<string>('name'),Body);
 end;
 function TDPHExplanationModel.ObjectLessonHTML(const AKey: string): string;
-var Body: TStringBuilder; S,R: TJSONObject; V,W: TJSONValue; Rows: TList<TJSONObject>;
-    Kind,DetailHTML,Target,Verb: string; Count,P: Integer; Linked,Found: Boolean;
+const PurposeFields:array[0..7] of string=('action_name','screen','trigger','purpose','preconditions','steps','outcome','exceptions');
+      PurposeLabels:array[0..7] of string=('Action name','Screen and user role','What starts it','Why the user needs it','Before you begin','How to use it','Expected result','If something goes wrong');
+var Body: TStringBuilder; S,R,Metadata,Fields: TJSONObject; V,W: TJSONValue; Rows,LessonRows: TList<TJSONObject>;
+    Kind,DetailHTML,Target,Verb,PropertyName,PropertyValue,Meaning: string; Count,P,Limit,I,Pass: Integer; Linked,Found: Boolean;
 begin
   if not FSymbols.TryGetValue(AKey,S) then Exit(Page('Explain this selection','<p>Choose a screen control, action or operation to begin.</p>'));
   Body:=TStringBuilder.Create;
   try
     Kind:=S.GetValue<string>('kind');
-    Body.Append('<section class="card"><h2>Understand this selection</h2>');
+    Body.Append('<section class="card"><h2>Understand this selection</h2><p><strong>'+Encode(S.GetValue<string>('name'))+'</strong></p>');
     if Kind='component' then Body.Append('<p>This is a saved part of a screen. Its properties describe how it was designed; its events connect actions to operations.</p>')
     else if Kind='event' then Body.Append('<p>This is an event: the connection between an action and the operation that responds to it.</p>')
     else if MatchText(Kind,['routine','anonymous']) then Body.Append('<p>This is an operation in the application. A procedure performs work; a function also returns a result. Read its connections below to see the part it plays.</p>')
     else if Kind='unit' then Body.Append('<p>This is a unit: a source file grouping related definitions and operations.</p>')
     else Body.Append('<p>This '+Encode(Kind)+' is part of the selected application. Its connections help explain where it fits.</p>');
-    Body.Append('</section><section class="card"><h2>Why it matters to the user</h2>'); Found:=False;
+    Body.Append('</section>');
+    if (Kind='component') and (S.GetValue('serialized_properties')<>nil) then begin
+      Body.Append('<section class="card"><h2>What the learner sees and can enter</h2>');Found:=False;
+      for V in S.GetValue<TJSONArray>('serialized_properties') do begin
+        R:=V as TJSONObject;PropertyName:=R.GetValue<string>('name');PropertyValue:=R.GetValue<string>('value').Trim;Meaning:='';
+        if (Length(PropertyValue)>=2) and PropertyValue.StartsWith('''') and PropertyValue.EndsWith('''') then
+          PropertyValue:=Copy(PropertyValue,2,Length(PropertyValue)-2).Replace('''''','''');
+        if MatchText(PropertyName,['Text','Caption']) then Meaning:='Text saved for this control: '+PropertyValue
+        else if MatchText(PropertyName,['Hint','TextHint','TextPrompt']) then Meaning:='Guidance supplied with this control: '+PropertyValue
+        else if SameText(PropertyName,'ReadOnly') and SameText(PropertyValue,'True') then Meaning:='This control is designed to display information without allowing direct typing.'
+        else if SameText(PropertyName,'ReadOnly') and SameText(PropertyValue,'False') then Meaning:='The saved design permits editing; other application rules may still restrict it.'
+        else if SameText(PropertyName,'Enabled') and SameText(PropertyValue,'False') then Meaning:='The saved design starts this control unavailable. Ask what enables it.'
+        else if SameText(PropertyName,'Visible') and SameText(PropertyValue,'False') then Meaning:='The saved design starts this control hidden. Ask when it is shown.'
+        else if SameText(PropertyName,'MaxLength') and TryStrToInt(PropertyValue,Limit) and (Limit>0) then Meaning:='The saved input limit is '+IntToStr(Limit)+' characters.';
+        if Meaning<>'' then begin Body.Append('<p>'+Encode(Meaning)+'</p>');Found:=True;end;
+      end;
+      if not Found then Body.Append('<p>No supported display text, typing guidance or input limit was saved directly on this control. Ask the author for an example of its use.</p>');
+      Body.Append('<p><small>These are saved design settings. The running application may change them. A field name alone does not establish what a user should enter.</small></p></section>');
+    end;
+    Body.Append('<section class="card"><h2>Why it matters to the user</h2>'); Found:=False;
     for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
       R:=V as TJSONObject; Linked:=R.GetValue<string>('entity_key','')=AKey;
       for W in R.GetValue<TJSONArray>('links') do if W.GetValue<string>('canonical_key','')=AKey then Linked:=True;
       if not Linked then Continue;
-      Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body'))+'</p><p><small>Supplied by '+
-        Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>'); Found:=True;
+      Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
+      if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject else Metadata:=Metadata.Clone as TJSONObject;
+      try
+        if (Metadata<>nil) and (Metadata.GetValue<string>('record_type','')='action_purpose') then begin
+          Fields:=Metadata.GetValue<TJSONObject>('fields');
+          for I:=0 to High(PurposeFields) do begin
+            Meaning:=Fields.GetValue<string>(PurposeFields[I],'Not supplied; ask the author.');
+            Body.Append('<h3>'+PurposeLabels[I]+'</h3><p>'+Encode(Meaning)+'</p>');
+          end;
+        end else Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body'))+'</p>');
+        Body.Append('<p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');Found:=True;
+      finally Metadata.Free;end;
     end;
     if not Found then Body.Append('<p>A purpose explanation has not been supplied for this selection. The connections below show what the code refers to, but cannot establish why its author chose that behavior. Ask what task this helps its user accomplish.</p>');
-    Body.Append('</section><section class="card"><h2>Follow what happens next</h2>'); Count:=0;
+    Body.Append('</section>');DetailHTML:='';Count:=0;
+    LessonRows:=TList<TJSONObject>.Create;
+    try
+    if FFlow.TryGetValue(AKey,Rows) then for R in Rows do LessonRows.Add(R);
+    LessonRows.Sort(TComparer<TJSONObject>.Construct(function(const L,R: TJSONObject): Integer
+    begin Result:=CompareValue(L.GetValue<Int64>('range.start'),R.GetValue<Int64>('range.start'));end));
+    for Pass:=0 to 1 do begin
+      if Count>=4 then Break;
+      for R in LessonRows do begin
+      Kind:=R.GetValue<string>('kind');Meaning:='';PropertyValue:=R.GetValue<string>('expression','');
+      if (Pass=0) and not MatchText(Kind,['if','case','while','repeat','for']) then Continue;
+      if (Pass=1) and MatchText(Kind,['if','case','while','repeat','for']) then Continue;
+      if Length(PropertyValue)>180 then PropertyValue:=Copy(PropertyValue,1,180)+'...';
+      if Kind='if' then Meaning:='It makes a choice by testing '+PropertyValue+'. A true result follows one branch; a false result follows the other.'
+      else if Kind='case' then Meaning:='It chooses among several alternatives using '+PropertyValue+'.'
+      else if Kind='while' then Meaning:='It can repeat work while '+PropertyValue+' is true. The work may run zero times.'
+      else if Kind='repeat' then Meaning:='It tests '+PropertyValue+' after doing the repeated work. A false result repeats it; a true result stops repeating.'
+      else if Kind='for' then Meaning:='It repeats work for the range or items described by '+PropertyValue+'.'
+      else if Kind='try_finally' then Meaning:='It arranges cleanup after the protected work, including paths that leave early.'
+      else if Kind='try_except' then Meaning:='It has a place to handle an error raised during the protected work.'
+      else if Kind='raise' then Meaning:='This path can report an error: '+PropertyValue+'. It does not mean every run fails.'
+      else if Kind='exit' then Meaning:='This path can leave the operation early: '+PropertyValue+'.';
+      if Meaning='' then Continue;DetailHTML:=DetailHTML+'<p>'+Encode(Meaning)+'</p>';Inc(Count);if Count>=4 then Break;
+      end;
+    end;
+    finally LessonRows.Free;end;
+    if Count>0 then Body.Append('<section class="card"><h2>Choices and stopping points</h2>'+DetailHTML+
+      '<p>These are examples from this operation, not a record of a run. Read the optional walkthrough for all supported paths and their order.</p></section>');
+    Body.Append('<section class="card"><h2>Follow what happens next</h2>'); Count:=0;
     if FOutgoing.TryGetValue(AKey,Rows) then for R in Rows do begin
       Kind:=R.GetValue<string>('kind'); Target:=R.GetValue<string>('to','');
       if not MatchText(Kind,['calls','binds','reads','writes','shows_form','shows_modal_form','closes_form','schedules','passes_callback']) then Continue;
@@ -735,6 +794,7 @@ begin
           Body.Append('<h2>How the application gets ready</h2><p>The Delphi program file describes the work done before the application waits for user actions. The following expressions were found in that startup section.</p>');
           for V in FFacts.GetValue<TJSONArray>('startup') do begin
             R:=V as TJSONObject; Caption:=R.GetValue<string>('text');
+            if StartsText('Application . ',Caption) then Caption:='Application.'+Copy(Caption,15,MaxInt);
             Body.Append('<h3>'+Encode(Caption)+'</h3>');
             if ContainsText(Caption,'Application.Initialize') then Body.Append('<p>Prepares the application framework.</p>')
             else if ContainsText(Caption,'Application.CreateForm') then Body.Append('<p>Requests creation of a form or data module. Read the names in the call to identify which one.</p>')
@@ -785,7 +845,18 @@ begin
         7: Body.Append('<h2>Before making a change</h2><ol><li>Describe the user behavior you intend to change.</li><li>Follow its action to the responsible operation.</li><li>Read the callers and the information it changes.</li><li>Ask the author about rules or consequences that are not explained.</li><li>Use the selected application''s approved build and test instructions.</li><li>Refresh the lessons after the source changes and check affected explanations.</li></ol><p>DPH reads the application; it does not prove a change is correct by reading it.</p>');
         8: Body.Append('<h2>What still needs explaining</h2><p>A lesson can be incomplete because a source file is missing, a connection could not be understood, or a human explanation has not been supplied. These are different problems.</p><ol><li>Ask whether all required source and form files were supplied.</li><li>Open the particular action or operation and identify the missing connection.</li><li>Ask for its intended result and an example of correct behavior.</li></ol><p>Prepare lessons contains the detailed source-reading checks for the person maintaining the lessons.</p><p><a href="#lesson_9">Read the questions for the author</a>.</p>');
         9: begin
-          Body.Append('<h2>Questions for the author</h2><p>Use these questions to fill gaps in your understanding. A saved answer needs a named contributor; an unanswered question must not become an invented explanation.</p>');
+          Body.Append('<h2>Answers supplied for this application</h2><p>Read what the application author or another named contributor has explained. Review status tells you whether someone has checked the answer.</p>');
+          for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
+            R:=V as TJSONObject;if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
+            Metadata:=R.GetValue<TJSONObject>('question_metadata',nil);if Metadata=nil then Continue;
+            Body.Append('<h3>'+Encode(Metadata.GetValue<string>('prompt',R.GetValue<string>('title')) )+'</h3><p>'+
+              Encode(R.GetValue<string>('body')).Replace(sLineBreak,'</p><p>')+'</p><p><small>Answer supplied by '+Encode(R.GetValue<string>('owner'))+'. ');
+            if R.GetValue<string>('state')='verified' then Body.Append('Reviewed answer.') else Body.Append('This answer still needs review.');
+            Body.Append('</small></p>');Inc(Count);if Count>=30 then Break;
+          end;
+          if Count=0 then Body.Append('<p>No saved answers have been supplied yet. The questions below identify useful things to ask.</p>');
+          if Count>=30 then Body.Append('<p>First 30 answers shown. Use Search project to find another answer by its words.</p>');
+          Body.Append('<h2>Questions still to ask</h2><p>Use these questions to fill gaps in your understanding. <a href="#ask_author">Open Author questions</a> to record a named reply.</p>');Count:=0;
           for V in FFacts.GetValue<TJSONArray>('author_questions') do begin
             R:=V as TJSONObject; Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('prompt'))+'</p>');
             Inc(Count); if Count>=12 then Break;
@@ -793,9 +864,21 @@ begin
           if Count=0 then Body.Append('<p>No automatic questions are available. Ask: what task matters most, how do I recognize a correct result, and what mistakes should I avoid?</p>');
           if Count>=12 then Body.Append('<p>Twelve questions shown. The person preparing lessons can inspect the full question list.</p>');
         end;
-        10: Body.Append('<h2>Delphi terms in plain language</h2><p><strong>Form:</strong> a screen or window.</p><p><strong>Control:</strong> something on a screen, such as a button or input box.</p><p><strong>Property:</strong> a setting belonging to an object, such as its caption or visibility.</p><p><strong>Event:</strong> something that happens, such as a click.</p><p><strong>Event handler:</strong> the operation that responds to an event.</p><p><strong>Procedure:</strong> a named operation. <strong>Function:</strong> an operation that returns a result.</p><p><strong>Parameter:</strong> information passed to an operation.</p><p><strong>Variable:</strong> a named place holding a value that can change.</p><p><strong>Unit:</strong> a source file grouping definitions and operations.</p><p><strong>Class:</strong> a definition used to create objects with data and operations.</p><p><strong>Background work:</strong> work that can continue while the interface responds; completion order needs care.</p><p>Business glossary contains terms specific to the selected application.</p>');
+        10: Body.Append('<h2>Delphi terms in plain language</h2><p><strong>Form:</strong> a screen or window.</p>'+
+          '<p><strong>Control:</strong> something on a screen, such as a button or input box.</p>'+
+          '<p><strong>Property:</strong> a setting belonging to an object, such as its caption or visibility.</p>'+
+          '<p><strong>Event:</strong> something that happens, such as a click.</p>'+
+          '<p><strong>Event handler:</strong> the operation that responds to an event.</p>'+
+          '<p><strong>Procedure:</strong> a named operation. <strong>Function:</strong> an operation that returns a result.</p>'+
+          '<p><strong>Parameter:</strong> information passed to an operation.</p>'+
+          '<p><strong>Variable:</strong> a named place holding a value that can change.</p>'+
+          '<p><strong>Unit:</strong> a source file grouping definitions and operations.</p>'+
+          '<p><strong>Class:</strong> a definition used to create objects with data and operations.</p>'+
+          '<p><strong>Background work:</strong> work that can continue while the interface responds; completion order needs care.</p>'+
+          '<p>Business glossary contains terms specific to the selected application.</p>');
         11: begin
           Body.Append('<h2>Task walkthroughs for this application</h2><p>These are instructions supplied for the selected application. Read the prerequisites, follow the named actions, and compare the result with the expected outcome. The contributor and review status identify whose explanation you are using.</p>');
+          Body.Append('<p><a href="#task_reader">Open Learn a task</a> to follow the prepared steps one at a time, with Previous, Next and Start again.</p>');
           for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
             R:=V as TJSONObject;
             if MatchText(R.GetValue<string>('state',''),['rejected','retired']) then Continue;

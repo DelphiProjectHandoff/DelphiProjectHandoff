@@ -1,5 +1,5 @@
 object DPHActionPurposeForm: TDPHActionPurposeForm
-  Caption = 'Action and business purpose record'
+  Caption = 'Explain a button, field or task'
   ClientWidth = 820
   ClientHeight = 740
   Constraints.MinWidth = 620
@@ -11,7 +11,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
     Margins.Left = 12
     Margins.Right = 12
     WordWrap = True
-    Text = 'Document the action or task name, business purpose, steps, expected outcome and evidence with a named contributor. Apply prepares a Knowledge draft; click Save there, then review explicitly. Unknown permissions and outcomes must remain explicit. Do not enter credentials.'
+    Text = 'Explain what this action helps a user accomplish, how to use it, and how to recognize a correct result. Name the person supplying the explanation. Apply opens a saved-explanation draft: click Save there to keep it, then ask someone who knows the application to review it.'
     StyledSettings = []
     TextSettings.Font.Size = 16
     TextSettings.FontColor = xFF146CB4
@@ -37,7 +37,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       Position.Y = 26
       Width = 210
       Height = 30
-      Text = 'Apply to Knowledge draft'
+      Text = 'Apply explanation draft'
       OnClick = ApplyProfileClick
     end
     object CancelProfileButton: TButton
@@ -53,6 +53,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
     Align = Client
     ShowScrollBars = True
     object Profile_action_id_Row: TLayout
+      Visible = False
       Position.Y = 0
       Width = 780
       Height = 122
@@ -76,7 +77,8 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_target_Row: TLayout
-      Position.Y = 122
+      Visible = False
+      Position.Y = 0
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -99,7 +101,8 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_target_key_Row: TLayout
-      Position.Y = 244
+      Visible = False
+      Position.Y = 0
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -122,7 +125,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_action_name_Row: TLayout
-      Position.Y = 366
+      Position.Y = 0
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -144,7 +147,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_screen_Row: TLayout
-      Position.Y = 488
+      Position.Y = 122
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -166,7 +169,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_trigger_Row: TLayout
-      Position.Y = 610
+      Position.Y = 244
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -188,7 +191,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_purpose_Row: TLayout
-      Position.Y = 732
+      Position.Y = 366
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -210,7 +213,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_preconditions_Row: TLayout
-      Position.Y = 854
+      Position.Y = 488
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -232,7 +235,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_steps_Row: TLayout
-      Position.Y = 976
+      Position.Y = 610
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -254,7 +257,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_outcome_Row: TLayout
-      Position.Y = 1098
+      Position.Y = 732
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -276,7 +279,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_evidence_Row: TLayout
-      Position.Y = 1220
+      Position.Y = 854
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -298,7 +301,7 @@ object DPHActionPurposeForm: TDPHActionPurposeForm
       end
     end
     object Profile_exceptions_Row: TLayout
-      Position.Y = 1342
+      Position.Y = 976
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]

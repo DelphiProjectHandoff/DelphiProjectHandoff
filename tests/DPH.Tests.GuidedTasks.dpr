@@ -59,14 +59,17 @@ begin
    finally Store.Free;Semantic.Free;Analyzer.Free;end;
    Form:=TDPHMainForm.Create(nil);
    try
+    Check(not Form.WorkspaceTabs.Enabled,'Project opening protects lesson drafts until the candidate is accepted');
     Form.ChangeTimer.Enabled:=False;Form.Show;Form.WorkspaceTabs.ActiveTab:=Form.TaskTab;WaitForTask('Initial task');
+    Check(Form.WorkspaceTabs.Enabled,'Accepted project restores normal lesson interaction');
     Form.TaskList.ItemIndex:=Form.TaskList.Items.IndexOf('Initial task');Form.TaskSelectionChange(nil);
     Check(ContainsText(Form.TaskActionMemo.Text,'Open the responding operation'),'Learner reads the actual supplied first action');
     Check(ContainsText(Form.TaskResultMemo.Text,'Its explanation appears'),'Learner sees the expected result beside the action');
     Form.TaskList.ItemIndex:=Form.TaskList.Items.IndexOf('Legacy instructions');Form.TaskSelectionChange(nil);
     Check(ContainsText(Form.TaskActionMemo.Text,'Original free-text') and not Form.TaskNext.Enabled,'Legacy text remains readable without fabricated step boundaries');
     Check((Form.FindComponent('Tutor_name')<>nil) and (Form.TutorSteps<>nil) and (Form.TutorAuthor<>nil),'Task editor controls are serialized in the native form');
-    Form.TaskEditClick(Form.TaskNew);
+    Form.SetupClick(nil);Form.TaskEditClick(Form.SetupTaskButton);
+    Check(Form.WorkspaceTabs.ActiveTab=Form.TaskEditorTab,'Prepare lessons opens a real new task draft');
     Form.Tutor_name.Text:='Choose an option';Form.Tutor_purpose.Text:='Learn the two alternatives in an event handler';
     Form.Tutor_prerequisites.Text:='Use the supplied example source';Form.Tutor_expected_result.Text:='Explain the true and false alternatives';
     Form.Tutor_troubleshooting.Text:='Ask the author if the handler cannot be found';Form.Tutor_practice.Text:='Explain which path is taken when Sender is zero';Form.TutorAuthor.Text:='Learning instructor';

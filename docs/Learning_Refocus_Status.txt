@@ -81,3 +81,23 @@ These show DPH with a synthetic Delphi fixture, not customer application screens
 Documentation review remains deferred. The historical requirement ledger is unchanged.
 Continue simplifying the preparation menu, completing useful screen/field instruction
 and checking the complete newcomer learning route before rewriting the guides.
+
+Lesson preparation checkpoint: 12 October 2026
+Preparation now offers eleven lesson-related destinations. Describe this application
+and Prepare task instructions open their actual native editors. Source settings
+start collapsed. Field lessons explain saved labels, typing guidance, input limits
+and availability. Linked purpose records display human fields without identity
+metadata. Questions and answers includes attributed saved answers and direct links
+to the question workflow. Operation lessons explain actual choices before optional
+source details. The plain-text fallback now contains the same beginner lesson.
+Hidden preparation reports build only when requested. Reference lesson opening
+measured 5305 ms after this change, versus 21,848 ms before it.
+118 native learning/reference, 39 task, 19 profile and 114 publishing checks passed;
+application and serialized form baseline passed. All 2430 reference files and 62
+original inputs, fixtures, guides/help files remain unchanged.
+Verified backup: H:\DPH Backups\LessonPreparation_PreChange_20261012_223858
+14432 files; 3700072819 bytes; individual SHA256 verification.
+Actual native evidence is docs/lesson-preparation-*.png. Synthetic fixture images
+and pinned reference images are labeled by filename. Human acceptance remains
+unperformed. Guides review is still unread; documentation remains deferred.
+Next: finish learner sharing and the newcomer route, then review documentation last.

@@ -465,7 +465,10 @@ type
     WorkspacePageCombo,LessonPageCombo: TComboBox;
     SetupTab: TTabItem;
     SetupScroll: TVertScrollBox;
-    SetupPurpose,AnalysisSettingsTitle: TLabel;
+    SetupPurpose,AnalysisSettingsTitle,SetupMaterialLabel: TLabel;
+    SetupLessonToolbar: THorzScrollBox;
+    SetupProfileButton,SetupTaskButton: TButton;
+    AnalysisSettingsExpander: TExpander;
     AnalysisSettingsLayout: TLayout;
     SetupButton: TButton;
     CoverageTab: TTabItem;
@@ -875,7 +878,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
@@ -1065,7 +1068,7 @@ var Key:string;Steps:TJSONArray;I:Integer;
 begin
  if FBusy or (FView=nil) then Exit;
  if FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current draft first';Exit;end;
- if Sender=TaskNew then begin NewKnowledgeClick(nil);FTaskDraft:=TDPHWorkspaceView.NewLearningLesson;end
+ if (Sender=TaskNew) or (Sender=SetupTaskButton) then begin NewKnowledgeClick(nil);FTaskDraft:=TDPHWorkspaceView.NewLearningLesson;end
  else begin
   if (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
   if not TDPHWorkspaceView.IsLearningLesson(FTaskRows[TaskList.ItemIndex]) then begin TaskOpenNotes(nil);Exit;end;
@@ -1161,7 +1164,7 @@ end;
 procedure TDPHMainForm.SetupClick(Sender: TObject);
 begin WorkspaceTabs.ActiveTab:=SetupTab; end;
 procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
-var Index: Integer; Choice: TComboBox;
+var Index: Integer; Choice: TComboBox; V:TJSONValue;
 begin
   if FBinding then Exit;
   if (Sender=WorkspacePageCombo) or (Sender=LessonPageCombo) then begin
@@ -1185,6 +1188,29 @@ begin
     InspectorLayout.Visible:=(WorkspaceTabs.ActiveTab=ExplainTab) or (WorkspaceTabs.ActiveTab=SourceTab) or
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
     InspectorSplitter.Visible:=InspectorLayout.Visible;
+  end;
+  if FView<>nil then begin
+    if ((WorkspaceTabs.ActiveTab=ActionPurposeTab) or (WorkspaceTabs.ActiveTab=KeyboardTab) or
+      (WorkspaceTabs.ActiveTab=CommandsTab) or (WorkspaceTabs.ActiveTab=DependencyTab) or
+      (WorkspaceTabs.ActiveTab=LayoutTab)) and (FKeyboard=nil) then FKeyboard:=TDPHKeyboardInspector.Inspect(FView);
+    if (WorkspaceTabs.ActiveTab=ActionPurposeTab) and (FActionPurposes=nil) then begin FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end;
+    if WorkspaceTabs.ActiveTab=KeyboardTab then KeyboardFilterChange(nil);
+    if (WorkspaceTabs.ActiveTab=CommandsTab) and (FCommands=nil) then begin FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard);CommandsFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=DependencyTab) and (FDependencies=nil) then begin FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=LayoutTab) and (FLayout=nil) then begin FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=InheritanceTab) and (FInheritance=nil) then begin FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=DynamicTab) and (FDynamic=nil) then begin FDynamic:=TDPHDynamicControls.Inspect(FView);DynamicFilterChange(nil);end;
+    if ((WorkspaceTabs.ActiveTab=DatabaseSchemaTab) or (WorkspaceTabs.ActiveTab=DatabaseERTab)) and (FDatabaseSchema=nil) then begin FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);end;
+    if WorkspaceTabs.ActiveTab=DatabaseERTab then DatabaseERFilterChange(nil);
+    if (WorkspaceTabs.ActiveTab=DatabaseInventoryTab) and (FDatabaseInventory=nil) then begin FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=CalculationEvidenceTab) and (FCalculationEvidence=nil) then begin FCalculationEvidence:=FView.Calculations;CalculationEvidenceFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=FileFormatsTab) and (FFileFormats=nil) then begin FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=ProjectsTab) and (FProjectMembers=nil) then begin
+      FProjectMembers:=FView.ProjectMembers;for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('name'));end;
+    if WorkspaceTabs.ActiveTab=QuestionsTab then RefreshQuestions;
+    if WorkspaceTabs.ActiveTab=CoverageTab then RefreshCoverage;
+    if WorkspaceTabs.ActiveTab=QualityTab then QualityClick(nil);
+    if (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) then RefreshGraphics;
   end;
 end;
 procedure TDPHMainForm.ProjectSearchClick(Sender: TObject);
@@ -1381,7 +1407,7 @@ begin
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
-  FPendingCommand:=Request.Command; FBusy:=True; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
+  FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -1457,7 +1483,7 @@ begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
   while FWorker.Poll(R) do
   try
-    FBusy:=R.Busy;
+    FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
     if R.Document<>nil then begin
       if FPendingDatabase<>'' then begin
@@ -1573,21 +1599,18 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
-  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);
-  FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);FCalculationEvidence:=FView.Calculations;CalculationEvidenceFilterChange(nil);
-  FFileFormatRows.Clear;FreeAndNil(FFileFormats);FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
-  FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
-  FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
-  FCommandRows.Clear; FreeAndNil(FCommands); FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard); CommandsFilterChange(nil);
-  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);
-  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);
-  FDependencyRows.Clear;FreeAndNil(FDependencies);FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);
-  FLayoutRows.Clear;FreeAndNil(FLayout);FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);
-  FDynamicRows.Clear; FreeAndNil(FDynamic); FDynamic:=TDPHDynamicControls.Inspect(FView); DynamicFilterChange(nil);
-  FreeAndNil(FProjectMembers); FProjectMembers:=FView.ProjectMembers; ProjectMembersList.Items.Clear;
-  for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('kind')+' | '+V.GetValue<string>('name')+' | '+V.GetValue<string>('path')+' | '+V.GetValue<string>('availability'));
-  ProjectMemberMemo.Text:='Select a captured project or output declaration above to read its settings and evidence.';
-  if ProjectMembersList.Count>0 then begin ProjectMembersList.ItemIndex:=0; ProjectMemberSelectionClick(nil); end;
+  FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FreeAndNil(FDatabaseER);
+  FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
+  FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
+  FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
+  FKeyboardRows.Clear;FreeAndNil(FKeyboard);KeyboardFilterChange(nil);
+  FCommandRows.Clear;FreeAndNil(FCommands);CommandsFilterChange(nil);
+  FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);
+  FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceFilterChange(nil);
+  FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyFilterChange(nil);
+  FLayoutRows.Clear;FreeAndNil(FLayout);LayoutFilterChange(nil);
+  FDynamicRows.Clear;FreeAndNil(FDynamic);DynamicFilterChange(nil);
+  FreeAndNil(FProjectMembers);ProjectMembersList.Items.Clear;ProjectMemberMemo.Text:='';
   InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
   if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; end
   else begin
@@ -1626,7 +1649,7 @@ begin
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshLearning; RefreshCoverage; RefreshQuestions; QualityClick(nil);
+  RefreshExplorer; RefreshLearning; RefreshQuestions;
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
 end;
@@ -2232,10 +2255,9 @@ begin
   if (FQuestions=nil) or (QuestionsList.ItemIndex<0) then Exit;
   Row:=FQuestions.Items[QuestionsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
   QuestionMemo.Text:=Row.GetValue<string>('prompt')+sLineBreak+sLineBreak+
-    'Why this question: '+Row.GetValue<string>('rule')+sLineBreak+'Source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Int64>('line').ToString+
-    sLineBreak+'Source SHA256: '+Row.GetValue<string>('source_hash')+sLineBreak+'Captured generation: '+Row.GetValue<string>('generation_id')+
-    sLineBreak+'Question ID: '+Row.GetValue<string>('id')+sLineBreak+sLineBreak+
-    'This is a question prompted by captured evidence or absent reviewed content. It is not an author answer or a finding of runtime failure. A source location is absent for project-level procedure questions.';
+    'Choose Record author answer to preserve the explanation supplied by someone who knows this application.';
+  if Range.GetValue<string>('source')<>'' then QuestionMemo.Lines.Add('Related source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Int64>('line').ToString);
+  QuestionMemo.Lines.Add('This is an unanswered question. It does not establish a problem in the running application. Inspect evidence opens the supporting detail.');
 end;
 procedure TDPHMainForm.QuestionsClick(Sender: TObject);
 var Row,Detail: TJSONObject; Kind: string;
@@ -2358,22 +2380,30 @@ begin
   LearningClick(nil); ShowExplanation; RefreshGraphics;
 end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
-var HTML,PreviewPath: string;
+var HTML,PreviewPath,Fallback: string;
 begin
   if FExplanations=nil then Exit;
-  OverviewMemo.Text:=FExplanations.TopicText(Max(0,LearningTopics.ItemIndex));
-  HTML:=FExplanations.LessonHTML(Max(0,LearningTopics.ItemIndex)); PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  HTML:=FExplanations.LessonHTML(Max(0,LearningTopics.ItemIndex));
+  Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
+  Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
+  Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
+  OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+  PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
     LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin LearningBrowser.Visible:=False; StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.ShowExplanation;
-var HTML,PreviewPath: string;
+var HTML,PreviewPath,Fallback: string;
 begin
   if FExplanations=nil then Exit;
-  ExplainFallback.Text:=FExplanations.ObjectText(FSelected);
-  HTML:=FExplanations.ObjectLessonHTML(FSelected); PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  HTML:=FExplanations.ObjectLessonHTML(FSelected);
+  Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
+  Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
+  Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
+  ExplainFallback.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+  PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
     ExplainBrowser.Navigate('file://'+PreviewPath);
@@ -2386,6 +2416,8 @@ begin
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=FLearningDirectory;
   ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,True); if ACancel then Exit;
+  if EndsText('#task_reader',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=TaskTab;Exit;end;
+  if EndsText('#ask_author',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=QuestionsTab;Exit;end;
   P:=Pos('#lesson_',AURL);
   if P>0 then begin
     ACancel:=True;
@@ -2446,6 +2478,7 @@ begin
     '<li><strong>Choose application.</strong> Click the button at the top left. Select the application''s .dproj, .dpr or .groupproj file. This identifies the program you want to learn.</li>'+
     '<li><strong>Keep its lessons.</strong> Accept the proposed file in the Databases folder. DPH stores what it learns there. If you have already done this, use <strong>Open saved lessons</strong> instead.</li>'+
     '<li><strong>Read Learn the project.</strong> This page opens when the application is ready. Begin with its purpose, then meet its screens and controls.</li>'+
+    '<li><strong>Learn a task.</strong> Choose Learn a task in the top-right selector. Select supplied instructions, read Before you begin, then use Next step and compare the expected result. If no task has been supplied, ask the author to use Prepare lessons.</li>'+
     '<li><strong>Follow one action.</strong> Pick a familiar button or event. Open its responding operation and read Explain. Follow one next operation before exploring the whole program.</li>'+
     '<li><strong>Check your understanding.</strong> Describe what starts the action, what it uses, what decisions it makes, and what result the user expects. Ask the author about anything the lessons cannot establish.</li></ol></section>'+
     '<section><h2>You do not need compiler expertise to begin</h2><p>The page selector at the upper right is your learning route. The left-hand list finds parts by name; the right-hand panel explains your selection.</p>'+
@@ -3800,7 +3833,7 @@ begin
         ExplorerList.Items.Add(Prefix+S.GetValue<string>('kind')+'  '+LabelText); FExplorerKeys.Add(S.GetValue<string>('key'));
       end;
     finally ExplorerList.Items.EndUpdate; end;
-    BreadcrumbLabel.Text:='Project / '+FScope+' | page '+IntToStr(FPage div 250+1)+' | '+IntToStr(Rows.Count)+' objects';
+    BreadcrumbLabel.Text:='Learning '+TPath.GetFileNameWithoutExtension(FView.Document.GetValue<string>('entry'));
   finally Rows.Free; end;
 end;
 procedure TDPHMainForm.SearchChange(Sender: TObject);
@@ -3955,7 +3988,9 @@ const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data f
 var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
-  FlowBrowser.Visible:=False;GraphPaint.Height:=4500;
+  FlowBrowser.Visible:=False;
+  if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
+  GraphPaint.Height:=4500;
   IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
   GraphLegend.Text:='Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence';
   Limit:=120; GraphGroupingCombo.Enabled:=(GraphCombo.ItemIndex<>1) and not IsLineage;
@@ -3969,6 +4004,7 @@ begin
    if FGraph<>nil then GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);
   end
   else if IsLineage then begin
+   if FDatabaseInventory=nil then FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);
    Seed:=FLineageSeed;if Seed='' then Seed:=FSelected;Direction:=FLineageDirection;if Direction='' then Direction:='both';
    if FDatabaseInventory<>nil then FGraph:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,Seed,Direction);
    GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
@@ -4155,7 +4191,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

@@ -278,6 +278,7 @@ begin
         Parent:=Node.GetValue<Integer>('parent'); Depth:=0; IncludeRow:=False;
         while (Parent>0) and (Parent<Nodes.Count) and (Depth<128) do begin
           R:=Nodes.Items[Parent] as TJSONObject;
+          if R.GetValue<string>('kind')='expression' then begin IncludeRow:=False;Break;end;
           if StartsText('routine_',R.GetValue<string>('kind')) or StartsText('anonymous_',R.GetValue<string>('kind')) then begin IncludeRow:=False; Break; end;
           if (R.GetValue<string>('kind')='block') and (R.GetValue<Integer>('parent')=0) then IncludeRow:=True;
           Parent:=R.GetValue<Integer>('parent'); Inc(Depth);
