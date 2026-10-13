@@ -196,6 +196,41 @@ type
     BusinessProcessFirst,BusinessProcessNext,BusinessProcessNew,BusinessProcessOpen,BusinessProcessLinks:TButton;
     BusinessProcessList:TListBox;
     BusinessProcessMemo:TMemo;
+    CalculationEvidenceTab:TTabItem;
+    CalculationEvidencePurpose,CalculationEvidenceStatus,CalculationSourceLabel:TLabel;
+    CalculationEvidenceToolbar:THorzScrollBox;
+    CalculationEvidenceFilter:TEdit;
+    CalculationEvidenceFirst,CalculationEvidenceNext,CalculationEvidenceSource,CalculationEvidenceExplain,CalculationEvidenceDefine,CalculationEvidenceButton:TButton;
+    CalculationEvidenceList:TListBox;
+    CalculationEvidenceSplitter:TSplitter;
+    CalculationEvidenceMemo:TMemo;
+    CalculationTab:TTabItem;
+    CalculationPurpose,CalculationStatus,CalculationEvidenceLabel:TLabel;
+    CalculationToolbar:THorzScrollBox;
+    CalculationFilter:TEdit;
+    CalculationState:TComboBox;
+    CalculationFirst,CalculationNext,CalculationNew,CalculationOpen,CalculationLinks:TButton;
+    CalculationList:TListBox;
+    CalculationMemo:TMemo;
+    CalculationEdit:TButton;
+    CalculationEditorTab:TTabItem;
+    CalculationEditorPurpose,CalculationAuthorLabel:TLabel;
+    CalculationEditorToolbar:THorzScrollBox;
+    CalculationAuthor:TEdit;
+    CalculationApply,CalculationCancel:TButton;
+    CalculationEditorScroll:TVertScrollBox;
+    Calc_name_Row:TLayout;Calc_name_Label:TLabel;Calc_name:TMemo;
+    Calc_meaning_Row:TLayout;Calc_meaning_Label:TLabel;Calc_meaning:TMemo;
+    Calc_formula_Row:TLayout;Calc_formula_Label:TLabel;Calc_formula:TMemo;
+    Calc_inputs_Row:TLayout;Calc_inputs_Label:TLabel;Calc_inputs:TMemo;
+    Calc_outputs_Row:TLayout;Calc_outputs_Label:TLabel;Calc_outputs:TMemo;
+    Calc_units_Row:TLayout;Calc_units_Label:TLabel;Calc_units:TMemo;
+    Calc_rounding_Row:TLayout;Calc_rounding_Label:TLabel;Calc_rounding:TMemo;
+    Calc_assumptions_Row:TLayout;Calc_assumptions_Label:TLabel;Calc_assumptions:TMemo;
+    Calc_exceptions_Row:TLayout;Calc_exceptions_Label:TLabel;Calc_exceptions:TMemo;
+    Calc_examples_Row:TLayout;Calc_examples_Label:TLabel;Calc_examples:TMemo;
+    Calc_owner_Row:TLayout;Calc_owner_Label:TLabel;Calc_owner:TMemo;
+    Calc_unknowns_Row:TLayout;Calc_unknowns_Label:TLabel;Calc_unknowns:TMemo;
     BusinessRuleTab:TTabItem;
     BusinessRulePurpose,BusinessRuleStatus,BusinessRuleEvidenceLabel:TLabel;
     BusinessRuleToolbar:THorzScrollBox;
@@ -524,6 +559,19 @@ type
     procedure BusinessProcessNewClick(Sender:TObject);
     procedure BusinessProcessOpenClick(Sender:TObject);
 
+    procedure CalculationEvidenceFilterChange(Sender:TObject);
+    procedure CalculationEvidenceSelectionChange(Sender:TObject);
+    procedure CalculationEvidenceSourceClick(Sender:TObject);
+    procedure CalculationEvidenceExplainClick(Sender:TObject);
+    procedure CalculationEvidenceDefineClick(Sender:TObject);
+    procedure CalculationEvidenceOpenClick(Sender:TObject);
+    procedure CalculationFilterChange(Sender:TObject);
+    procedure CalculationSelectionChange(Sender:TObject);
+    procedure CalculationNewClick(Sender:TObject);
+    procedure CalculationOpenClick(Sender:TObject);
+
+    procedure CalculationEditClick(Sender:TObject);
+    procedure CalculationApplyClick(Sender:TObject);
     procedure BusinessRuleFilterChange(Sender:TObject);
     procedure BusinessRuleSelectionChange(Sender:TObject);
     procedure BusinessRuleNewClick(Sender:TObject);
@@ -675,6 +723,8 @@ type
     FWorkflowStepDirty:Boolean;
     FStructuredEditorPending:Boolean;
     FStructuredEditorID:string;
+    FCalculationEvidence:TJSONObject;FCalculationEvidenceRows:TList<TJSONObject>;FCalculationEvidenceOffset:Integer;
+    FCalculationRows:TList<TJSONObject>;FCalculationOffset:Integer;
     FBusinessRuleRows:TList<TJSONObject>;FBusinessRuleOffset:Integer;
     FBusinessProcessRows:TList<TJSONObject>;
     FBusinessProcessOffset:Integer;
@@ -767,7 +817,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FBusinessRuleRows:=TList<TJSONObject>.Create;FDepartmentalWorkflowRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FCalculationEvidenceRows:=TList<TJSONObject>.Create;FCalculationRows:=TList<TJSONObject>.Create;FBusinessRuleRows:=TList<TJSONObject>.Create;FDepartmentalWorkflowRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -794,7 +844,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -818,7 +868,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FDataQualityRows.Free;FWorkflowDraft.Free;FDepartmentalWorkflowRows.Free;FBusinessRuleRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
+  FDataQualityRows.Free;FWorkflowDraft.Free;FDepartmentalWorkflowRows.Free;FCalculationEvidenceRows.Free;FCalculationEvidence.Free;FCalculationRows.Free;FBusinessRuleRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -1108,6 +1158,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
@@ -1151,7 +1202,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -1254,6 +1305,7 @@ begin
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);
+  FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);FCalculationEvidence:=FView.Calculations;CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); FKeyboard:=TDPHKeyboardInspector.Inspect(FView); KeyboardFilterChange(nil);
@@ -2608,6 +2660,106 @@ begin
  end;
 end;
 
+procedure TDPHMainForm.CalculationEvidenceOpenClick(Sender:TObject);
+begin WorkspaceTabs.ActiveTab:=CalculationEvidenceTab;end;
+procedure TDPHMainForm.CalculationEvidenceFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;
+begin
+ if FCalculationEvidenceRows=nil then Exit;
+ if Sender=CalculationEvidenceNext then Inc(FCalculationEvidenceOffset,250) else FCalculationEvidenceOffset:=0;
+ FCalculationEvidenceRows.Clear;CalculationEvidenceList.Items.Clear;CalculationEvidenceNext.Enabled:=False;CalculationEvidenceSelectionChange(nil);
+ if FCalculationEvidence=nil then begin CalculationEvidenceStatus.Text:='Open a captured project to inspect calculation candidates.';Exit;end;
+ Count:=0;
+ for V in FCalculationEvidence.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
+  if (CalculationEvidenceFilter.Text.Trim<>'') and not ContainsText(TDPHWorkspaceView.DescribeCalculationEvidence(Row),CalculationEvidenceFilter.Text.Trim) then Continue;
+  if (Count>=FCalculationEvidenceOffset) and (FCalculationEvidenceRows.Count<250) then begin FCalculationEvidenceRows.Add(Row);CalculationEvidenceList.Items.Add(Row.GetValue<string>('source')+':'+Row.GetValue<Integer>('range.line').ToString+' | '+Row.GetValue<string>('expression'));end;Inc(Count);
+ end;
+ CalculationEvidenceNext.Enabled:=Count>FCalculationEvidenceOffset+FCalculationEvidenceRows.Count;
+ CalculationEvidenceStatus.Text:=Format('%d matches; %d shown from %d. %d empty/long expressions unavailable. %s',[Count,FCalculationEvidenceRows.Count,FCalculationEvidenceOffset,FCalculationEvidence.GetValue<Integer>('unavailable_expressions'),FCalculationEvidence.GetValue<string>('limit','')]);
+ if CalculationEvidenceList.Count>0 then CalculationEvidenceList.ItemIndex:=0;CalculationEvidenceSelectionChange(nil);
+end;
+procedure TDPHMainForm.CalculationEvidenceSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FCalculationEvidenceRows<>nil) and (CalculationEvidenceList.ItemIndex>=0) and (CalculationEvidenceList.ItemIndex<FCalculationEvidenceRows.Count) then Row:=FCalculationEvidenceRows[CalculationEvidenceList.ItemIndex];
+ CalculationEvidenceSource.Enabled:=Row<>nil;CalculationEvidenceDefine.Enabled:=Row<>nil;CalculationEvidenceExplain.Enabled:=False;
+ if Row<>nil then CalculationEvidenceExplain.Enabled:=Row.GetValue<string>('target_key','')<>'';
+ CalculationEvidenceMemo.Text:=TDPHWorkspaceView.DescribeCalculationEvidence(Row);
+ if (Row<>nil) and (FCalculationEvidence<>nil) then CalculationEvidenceMemo.Lines.Add(FCalculationEvidence.GetValue<string>('qualification'));
+end;
+procedure TDPHMainForm.CalculationEvidenceSourceClick(Sender:TObject);
+var Row,Range:TJSONObject;
+begin
+ if (FView=nil) or (CalculationEvidenceList.ItemIndex<0) or (CalculationEvidenceList.ItemIndex>=FCalculationEvidenceRows.Count) then Exit;
+ Row:=FCalculationEvidenceRows[CalculationEvidenceList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
+ if FDetached then begin CalculationEvidenceMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
+ except on E:Exception do CalculationEvidenceMemo.Lines.Add('Source unavailable: '+E.Message);end;
+end;
+procedure TDPHMainForm.CalculationEvidenceExplainClick(Sender:TObject);
+var Key:string;
+begin
+ if (FView=nil) or (CalculationEvidenceList.ItemIndex<0) or (CalculationEvidenceList.ItemIndex>=FCalculationEvidenceRows.Count) then Exit;
+ Key:=FCalculationEvidenceRows[CalculationEvidenceList.ItemIndex].GetValue<string>('target_key');if Key='' then Exit;SelectSymbol(Key);WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.CalculationEvidenceDefineClick(Sender:TObject);
+var Row:TJSONObject;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before defining a calculation.';Exit;end;
+ if (CalculationEvidenceList.ItemIndex<0) or (CalculationEvidenceList.ItemIndex>=FCalculationEvidenceRows.Count) then Exit;
+ Row:=FCalculationEvidenceRows[CalculationEvidenceList.ItemIndex];CalculationNewClick(nil);
+ if WorkspaceTabs.ActiveTab<>CalculationEditorTab then Exit;
+ Calc_formula.Text:=Row.GetValue<string>('expression');Calc_assumptions.Text:='Captured expression candidate with original literals omitted: '+Row.GetValue<string>('source')+':'+Row.GetValue<Integer>('range.line').ToString+' | SHA256 '+Row.GetValue<string>('source_hash')+' | generation '+Row.GetValue('generation_id').Value+'. Verify against source and attach exact implementation links; business meaning, units and runtime values remain unknown.';
+ StatusLabel.Text:='Name the calculation and contributor, define meaning, inputs, outputs and units. Apply then Save; add exact implementation links and review. Captured formula text is not evaluated.';
+end;
+
+procedure TDPHMainForm.CalculationFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FCalculationRows=nil then Exit;
+ if Sender=CalculationNext then Inc(FCalculationOffset,250) else FCalculationOffset:=0;
+ FCalculationRows.Clear;CalculationList.Items.Clear;CalculationNext.Enabled:=False;CalculationNew.Enabled:=FView<>nil;
+ CalculationSelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin CalculationStatus.Text:='Open a captured project, then New calculation to record its business calculation.';Exit;end;
+ Query:=CalculationFilter.Text.Trim;StateFilter:='';if CalculationState.ItemIndex>0 then StateFilter:=CalculationState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsCalculation(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeCalculation(Row),Query) then Continue;
+  if (Count>=FCalculationOffset) and (FCalculationRows.Count<250) then begin
+   FCalculationRows.Add(Row);CalculationList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ CalculationNext.Enabled:=Count>FCalculationOffset+FCalculationRows.Count;
+ CalculationStatus.Text:=IntToStr(Count)+' saved calculations match; '+IntToStr(FCalculationRows.Count)+' shown from '+IntToStr(FCalculationOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if CalculationList.Count>0 then CalculationList.ItemIndex:=0;
+ CalculationSelectionChange(nil);
+end;
+procedure TDPHMainForm.CalculationSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FCalculationRows<>nil) and (CalculationList.ItemIndex>=0) and (CalculationList.ItemIndex<FCalculationRows.Count) then Row:=FCalculationRows[CalculationList.ItemIndex];
+ CalculationEdit.Enabled:=Row<>nil;CalculationOpen.Enabled:=Row<>nil;CalculationLinks.Enabled:=Row<>nil;
+ CalculationMemo.Text:=TDPHWorkspaceView.DescribeCalculation(Row);
+end;
+procedure TDPHMainForm.CalculationNewClick(Sender:TObject);
+begin CalculationEditClick(CalculationNew);end;
+procedure TDPHMainForm.CalculationOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another calculation.';Exit;end;
+ if (CalculationList.ItemIndex<0) or (CalculationList.ItemIndex>=FCalculationRows.Count) then Exit;
+ Row:=FCalculationRows[CalculationList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=CalculationLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
 procedure TDPHMainForm.BusinessRuleFilterChange(Sender:TObject);
 var V:TJSONValue;Row,RecordValue:TJSONObject;Count:Integer;Query,StateFilter,Code:string;
 begin
@@ -2767,6 +2919,51 @@ begin
  finally RecordValue.Free;end;
 end;
 
+procedure TDPHMainForm.CalculationEditClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before editing a calculation.';Exit;end;
+ if Sender=CalculationNew then begin NewKnowledgeClick(nil);RecordValue:=TDPHWorkspaceView.NewCalculation;end
+ else begin
+  if CalculationList.ItemIndex<0 then Exit;
+  CalculationOpenClick(nil);
+  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+  if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'calculation_definition') then begin RecordValue.Free;Exit;end;
+ end;
+ try
+  FKnowledgeStructuredJSON:=RecordValue.ToJSON;FStructuredEditorID:=RecordValue.GetValue<string>('calculation_id');FStructuredEditorPending:=True;Fields:=RecordValue.GetValue<TJSONObject>('fields');
+  for Key in DPHCalculationKeys do (FindComponent('Calc_'+Key) as TMemo).Text:=Fields.GetValue<string>(Key,'Unknown');
+  Calc_name.ReadOnly:=FKnowledgeID<>0;CalculationAuthor.Text:=KnowledgeAuthorEdit.Text;
+ finally RecordValue.Free;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=CalculationEditorTab;
+ StatusLabel.Text:='Complete the calculation fields, enter a named contributor and Apply to Knowledge draft. Then Save, add source links and review.';
+end;
+procedure TDPHMainForm.CalculationApplyClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) or not FKnowledgeEdited then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+ try
+  try
+   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'calculation_definition') or (RecordValue.GetValue<string>('calculation_id','')<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this calculation with Edit fields before applying');
+   Fields:=RecordValue.GetValue<TJSONObject>('fields');
+   for Key in DPHCalculationKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Calc_'+Key) as TMemo).Text.Trim);end;
+   TDPHWorkspaceView.ValidateCalculation(RecordValue);
+   if CalculationAuthor.Text.Trim='' then raise EArgumentException.Create('Enter a named contributor');
+   FBinding:=True;
+   try
+    KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=CalculationAuthor.Text.Trim;
+    KnowledgeBodyMemo.Text:=TDPHWorkspaceView.CalculationBody(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+    KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
+   finally FBinding:=False;end;
+   FStructuredEditorPending:=False;WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Calculation draft prepared. Click Save to persist. Add exact source links on Knowledge links, Save again and review separately.';
+  except on E:Exception do StatusLabel.Text:=E.Message;end;
+ finally RecordValue.Free;end;
+end;
+
 procedure TDPHMainForm.BusinessRuleEditClick(Sender:TObject);
 var RecordValue,Fields:TJSONObject;Key:string;
 begin
@@ -2794,7 +2991,7 @@ begin
  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
  try
   try
-   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_rule_definition') or (RecordValue.GetValue<string>('rule_id','')<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this rule with Edit fields before applying');
+   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_rule_definition') or (RecordValue.GetValue<string>('rule_id',RecordValue.GetValue<string>('calculation_id',''))<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this rule with Edit fields before applying');
    Fields:=RecordValue.GetValue<TJSONObject>('fields');
    for Key in DPHBusinessRuleKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Rule_'+Key) as TMemo).Text.Trim);end;
    TDPHWorkspaceView.ValidateBusinessRule(RecordValue);
@@ -2871,7 +3068,7 @@ begin
  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON);
  try
   if not (RecordValue is TJSONObject) then Exit;
-  ID:=RecordValue.GetValue<string>('process_id',RecordValue.GetValue<string>('workflow_id',RecordValue.GetValue<string>('rule_id','')));
+  ID:=RecordValue.GetValue<string>('process_id',RecordValue.GetValue<string>('workflow_id',RecordValue.GetValue<string>('rule_id',RecordValue.GetValue<string>('calculation_id',''))));
   if ID<>FStructuredEditorID then begin StatusLabel.Text:='Reopen the record with Edit fields before changing these fields.';Exit;end;
   FStructuredEditorPending:=True;FKnowledgeEdited:=True;
  finally RecordValue.Free;end;
@@ -3659,7 +3856,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

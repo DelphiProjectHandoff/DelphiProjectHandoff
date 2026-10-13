@@ -1,0 +1,105 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.BusinessRule.CalculationRegression.dpr(71) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+19684 lines, 1.77 seconds, 10844656 bytes code, 349344 bytes data.
+PASS 1: Structured rule inputs rendered
+PASS 2: Structured rule outputs rendered
+PASS 3: Accountable owner rendered separately from contributor
+PASS 4: Structured ordered steps rendered
+PASS 5: Missing department remains explicitly unknown
+PASS 6: Business rule qualification retained
+PASS 7: Anonymous rule author rejected
+PASS 8: Placeholder title rejected
+PASS 9: Removed rule heading rejected
+PASS 10: Incorrect rule kind rejected
+PASS 11: Incorrect rule audience rejected
+PASS 12: Invalid stable rule identity rejected
+PASS 13: Unknown rule metadata rejected
+PASS 14: Empty structured inputs rejected; Unknown must be explicit
+PASS 15: Numeric owner rejected
+PASS 16: Oversized structured field rejected
+PASS 17: Noncanonical GUID spelling rejected to prevent duplicate identities
+PASS 18: Actual captured semantic implementation routine available
+PASS 19: Typed persisted rule recognized
+PASS 20: Named contributor persists
+PASS 21: Saved rule remains pending review
+PASS 22: Routine and exact procedure-revision links persist
+PASS 23: Structured rule inputs persist
+PASS 24: Unresolved fields stay explicit
+PASS 25: Inspector distinguishes resolved link count
+PASS 26: Duplicate rule identity rejected
+PASS 27: Typed metadata cannot be discarded
+PASS 28: Saved rule identity cannot change
+PASS 29: Anonymous rule review rejected
+PASS 30: Named reviewer persists
+PASS 31: Review appends immutable history
+PASS 32: Review retains exact implementation links
+PASS 33: Stale rule edit rejected
+PASS 34: Rule edits reopen review
+PASS 35: Prior reviewed rule retained
+PASS 36: Rule revision preserves implementation links
+PASS 37: Changed structured output persists
+PASS 38: Structured rule body cannot diverge from fields
+PASS 39: Rule database integrity valid
+PASS 40: Rule codes unique ignoring ASCII case across distinct GUIDs
+PASS 41: Saved human rule identifier immutable across revisions
+PASS 42: Invalid or unresolved human rule code rejected
+PASS 43: Invalid or unresolved human rule code rejected
+PASS 44: Invalid or unresolved human rule code rejected
+PASS 45: Invalid or unresolved human rule code rejected
+PASS 46: Invalid or unresolved human rule code rejected
+PASS 47: Invalid or unresolved human rule code rejected
+PASS 48: Maintainer publication includes authored rule
+PASS 49: Canonical handoff preserves typed rule identity
+PASS 50: Business rule handoff passes full bundle validation
+PASS 51: Published HTML includes structured inputs
+PASS 52: Business rule survives database close and reopen
+PASS 53: Exact structured fields survive reopening
+PASS 54: Immutable review and edit history survives reopening
+PASS 55: Exact source and procedure links survive reopening
+PASS 56: Native register includes rule and excludes unrelated procedure
+PASS 57: Native inspector shows current contributor
+PASS 58: Open plan enters saved Knowledge workflow
+PASS 59: Saved structured body protected from free text edits
+PASS 60: Saved stable title protected
+PASS 61: Saved rule kind protected
+PASS 62: Implementation links opens exact link workflow
+PASS 63: Native exact implementation links available
+PASS 64: Saved implementation routine opens captured explanation
+PASS 65: Edit opens native structured fields
+PASS 66: Native editor restores persisted input
+PASS 67: Saved rule name remains stable
+PASS 68: Compact editor commands scroll horizontally
+PASS 69: Unknowns field retains editable height
+PASS 70: Apply prepares Knowledge draft
+PASS 71: Native structured edit generates canonical body
+PASS 72: Unsaved structured draft protected from selection
+PASS 73: Unsaved structured draft protected from replacement
+PASS 74: New rule opens structured editor
+PASS 75: New rule name editable
+PASS 76: Anonymous contributor keeps rule in editor
+PASS 77: New native rule canonical body prepared
+PASS 78: Canonical draft body protected
+PASS 79: Review-state filter respects pending edit
+PASS 80: Rule text search finds authored input
+PASS 81: Empty register explains unresolved obligations
+PASS 82: Empty results disable opening
+PASS 83: Compact rule detail remains readable
+PASS 84: Compact commands and long policies scroll
+PASS 85: Large register first page bounded
+PASS 86: Large register next page accessible
+PASS 87: Remaining rule rows accessible
+PASS 88: Unstructured original business-rule notes remain in catalog
+PASS 89: Legacy notes clearly distinguish missing structured identifiers
+PASS 90: Legacy note cannot silently become a typed rule
+PASS 91: Open record preserves original legacy text
+PASS 92: Native catalog searches stable rule identifier
+PASS 93: Clearing loaded knowledge removes prior rule rows
+PASS 94: No capture disables new rule
+PASS 95: Rule workflow leaves captured workspace unchanged
+PASS 96: Target source unchanged
+PASS 97: Owner catalog unchanged

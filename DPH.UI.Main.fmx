@@ -57,6 +57,9 @@ Items.Strings = (
 'Business processes'
 'Business rules'
 'Rule fields'
+'Calculations'
+'Calculation fields'
+'Calculation evidence'
 'Departmental workflows'
 'Workflow fields'
 'Process fields'
@@ -1917,6 +1920,210 @@ WordWrap = True
 ShowScrollBars = True
 end
 end
+object CalculationEvidenceTab:TTabItem
+Text = 'Calculation evidence'
+object CalculationEvidencePurpose:TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Inspect captured expression candidates. Meaning and units remain unknown. Open source or routine; New definition records attributed meaning for review. No formula is evaluated.'
+end
+object CalculationEvidenceToolbar:THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object CalculationEvidenceFilter:TEdit
+Position.X = 12
+Width = 220
+Height = 28
+TextPrompt = 'Find expression, routine or source'
+OnChange = CalculationEvidenceFilterChange
+end
+object CalculationEvidenceFirst:TButton
+Position.X = 240
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = CalculationEvidenceFilterChange
+end
+object CalculationEvidenceNext:TButton
+Position.X = 333
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = CalculationEvidenceFilterChange
+end
+object CalculationEvidenceSource:TButton
+Position.X = 426
+Width = 110
+Height = 28
+Text = 'Open source'
+OnClick = CalculationEvidenceSourceClick
+end
+object CalculationEvidenceExplain:TButton
+Position.X = 544
+Width = 110
+Height = 28
+Text = 'Open routine'
+OnClick = CalculationEvidenceExplainClick
+end
+object CalculationEvidenceDefine:TButton
+Position.X = 662
+Width = 120
+Height = 28
+Text = 'New definition'
+OnClick = CalculationEvidenceDefineClick
+end
+end
+object CalculationEvidenceStatus:TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to inspect candidates.'
+end
+object CalculationEvidenceList:TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = CalculationEvidenceSelectionChange
+end
+object CalculationEvidenceSplitter:TSplitter
+Align = Top
+Height = 6
+end
+object CalculationSourceLabel:TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Calculation source evidence and unknowns'
+end
+object CalculationEvidenceMemo:TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object CalculationTab: TTabItem
+Text = 'Calculations'
+object CalculationPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Define calculation meaning, formula, inputs, outputs and units. Apply then Save; link source and review. Calculation evidence shows captured candidates, not evaluated results.'
+end
+object CalculationToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object CalculationState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = CalculationFilterChange
+end
+object CalculationFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find formula, meaning, input or unit'
+OnChange = CalculationFilterChange
+end
+object CalculationFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = CalculationFilterChange
+end
+object CalculationNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = CalculationFilterChange
+end
+object CalculationNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New calculation'
+OnClick = CalculationNewClick
+end
+object CalculationOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open record'
+OnClick = CalculationOpenClick
+end
+object CalculationLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = CalculationOpenClick
+end
+object CalculationEdit:TButton
+Position.X = 983
+Width = 110
+Height = 28
+Text = 'Edit fields'
+OnClick = CalculationEditClick
+end
+object CalculationEvidenceButton:TButton
+Position.X = 1101
+Width = 160
+Height = 28
+Text = 'Calculation evidence'
+OnClick = CalculationEvidenceOpenClick
+end
+end
+object CalculationStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object CalculationList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = CalculationSelectionChange
+end
+object CalculationEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved calculation and review evidence'
+end
+object CalculationMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
 object DepartmentalWorkflowTab: TTabItem
 Text = 'Business workflows'
 object DepartmentalWorkflowPurpose: TLabel
@@ -2528,6 +2735,248 @@ Height = 26
 Text = 'Unknowns and responsible maintainer'
 end
 object Process_unknowns:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+end
+end
+object CalculationEditorTab:TTabItem
+Text = 'Calculation fields'
+object CalculationEditorPurpose:TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Describe one selected-application calculation. Name is stable after saving. Enter Unknown where evidence is unavailable. Apply prepares a Knowledge draft; Save persists it. Cancel discards the current draft.'
+end
+object CalculationEditorToolbar:THorzScrollBox
+Align = Top
+Height = 80
+ShowScrollBars = True
+object CalculationAuthorLabel:TLabel
+Position.X = 12
+Width = 200
+Height = 24
+Text = 'Named contributor'
+end
+object CalculationAuthor:TEdit
+Position.X = 12
+Position.Y = 28
+Width = 200
+Height = 28
+OnChange = StructuredEditorChange
+end
+object CalculationApply:TButton
+Position.X = 220
+Position.Y = 28
+Width = 180
+Height = 28
+Text = 'Apply to Knowledge draft'
+OnClick = CalculationApplyClick
+end
+object CalculationCancel:TButton
+Position.X = 220
+Width = 150
+Height = 24
+Text = 'Cancel / discard draft'
+OnClick = DiscardKnowledgeClick
+end
+end
+object CalculationEditorScroll:TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+object Calc_name_Row:TLayout
+Align = Top
+Height = 112
+object Calc_name_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Calculation name'
+end
+object Calc_name:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_meaning_Row:TLayout
+Align = Top
+Height = 112
+object Calc_meaning_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Business meaning and applicability'
+end
+object Calc_meaning:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_formula_Row:TLayout
+Align = Top
+Height = 112
+object Calc_formula_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Formula or algorithm (not evaluated)'
+end
+object Calc_formula:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_inputs_Row:TLayout
+Align = Top
+Height = 112
+object Calc_inputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Inputs definitions and origins'
+end
+object Calc_inputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_outputs_Row:TLayout
+Align = Top
+Height = 112
+object Calc_outputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Outputs definitions and recipients'
+end
+object Calc_outputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_units_Row:TLayout
+Align = Top
+Height = 112
+object Calc_units_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Units and conversions'
+end
+object Calc_units:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_rounding_Row:TLayout
+Align = Top
+Height = 112
+object Calc_rounding_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Precision and rounding'
+end
+object Calc_rounding:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_assumptions_Row:TLayout
+Align = Top
+Height = 112
+object Calc_assumptions_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Assumptions and valid ranges'
+end
+object Calc_assumptions:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_exceptions_Row:TLayout
+Align = Top
+Height = 112
+object Calc_exceptions_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Exceptions and boundary conditions'
+end
+object Calc_exceptions:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_examples_Row:TLayout
+Align = Top
+Height = 112
+object Calc_examples_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Worked examples and expected results (authored)'
+end
+object Calc_examples:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_owner_Row:TLayout
+Align = Top
+Height = 112
+object Calc_owner_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Accountable calculation owner'
+end
+object Calc_owner:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Calc_unknowns_Row:TLayout
+Align = Top
+Height = 112
+object Calc_unknowns_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Unknowns and responsible maintainer'
+end
+object Calc_unknowns:TMemo
 Align = Client
 Margins.Bottom = 8
 WordWrap = True

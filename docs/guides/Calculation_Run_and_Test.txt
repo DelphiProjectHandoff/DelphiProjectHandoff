@@ -1,0 +1,59 @@
+DPH REQUIREMENT 06.06 CALCULATIONS AND FORMULAS
+Last changed: 12 October 2026
+
+RUN
+1. Open File Explorer and enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Open cache for the intended external-project .dphdb, or Attach
+   project to capture that project's .dproj or .dpr.
+4. In the upper-right selector choose Calculation evidence.
+
+INSPECT CAPTURED CALCULATIONS
+1. Select a candidate. Read the expression, routine, source range, SHA256,
+   generation and unresolved meaning/units in the memo below the list.
+2. Click Open routine to inspect its explanation and dependencies. Return
+   through the page selector. Open source requires unchanged attached source.
+3. Search an expression, routine or source filename in the filter. First page
+   and Next page expose 250 matching rows. Scroll the toolbar horizontally
+   in a narrow window and the detail memo vertically for complete evidence.
+4. String literal contents are omitted. Arithmetic/bitwise/boolean operators
+   and mathematical API spellings are candidates, possibly overloaded.
+   DPH does not evaluate them. Empty/long expressions, parser gaps, dynamic
+   code and the visible 10000-row bound prevent claims of an exhaustive list.
+
+DEFINE AND REVIEW BUSINESS MEANING
+1. Select a candidate and click New definition, or choose Calculations and
+   click New calculation for a formula not found in captured source.
+2. In Calculation fields enter a descriptive name and your contributor name.
+   Complete meaning, formula, input/output definitions, units, rounding,
+   assumptions, exceptions, worked examples, accountable owner and unknowns.
+   Enter Unknown where evidence is unavailable. The saved name stays fixed.
+3. Example: invoice total = Subtotal * (1 + TaxRate). Specify that Subtotal
+   and total use the stated currency, TaxRate is a dimensionless fraction,
+   and whether rounding occurs per line or only at the final total. Document
+   boundary cases and expected examples from approved business evidence.
+   DPH stores this authored text; it does not calculate or verify the result.
+4. Click Apply to Knowledge draft, then Save on Knowledge. Apply is unsaved.
+5. Choose Calculations, select the saved definition and click Implementation
+   links. Search the exact captured routine or saved procedure, select it and
+   Add link. Return to Knowledge and Save edits. Source/hash text copied into
+   Assumptions is explanatory; add the exact implementation link separately.
+6. Compare all definitions with linked evidence and review with a named
+   reviewer on Knowledge. Review records content assessment, not proof of
+   numerical correctness, runtime execution or business authorization.
+7. Use Calculations text/state filters to find the definition. Edit fields,
+   change an assumption, Apply and Save. Confirm its new revision needs
+   review and Open record still shows the immutable earlier history.
+8. Publish with an audience including maintainer knowledge. Open index.html
+   and find the authored formula and units. Validate bundle using the trusted
+   opened capture fingerprint.
+
+DEVELOPER VALIDATION
+Open elevated PowerShell. Enter each command on its own line:
+ Set-Location 'C:\New Delphi Projects\Delphi Project Handoff'
+ cmd /c tools\build-calculation.cmd
+ cmd /c tools\build-wp0.cmd
+Require exit code 0. Read docs\phase1-calculation-validation.json and
+ docs\phase1-calculation-validation.log. Fixtures use the fixed ignored
+ bin\calculation-validation directory. No selected target program executes.

@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business-rule catalog 06.04 implemented; 313 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Calculations and formulas 06.06 implemented; 312 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2752,14 +2752,29 @@
       "id": "06.06",
       "domain": "DPH-06",
       "requirement": "Calculations and formulas",
-      "implementation": "partial",
+      "implementation": "implemented_manual_capture",
       "evidence": [
-        "DPH.Analysis.Symbols.pas",
-        "DPH.Analysis.Model.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Workspace.Model.pas",
+        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.Calculation.dpr",
+        "tools/build-calculation.cmd",
+        "docs/phase1-calculation-validation.json",
+        "docs/phase1-calculation-validation.log",
+        "docs/guides/Calculation_Run_and_Test.txt"
       ],
-      "limitation": "Add a calculation/formula inventory and reviewed business meaning/unit/input/output definitions.",
+      "limitation": "Captured arithmetic and mathematical API-spelling candidates and constant formulas provide exact source ranges, hash, generation, conditional context and routine navigation without evaluating formulas. String literals are omitted, nested expression roots avoid duplicated rows, unavailable expression text is counted and the 10000-row limit is visible. Separate authored definitions capture reviewed business meaning, formula, inputs, outputs, units, rounding, assumptions, boundary cases, worked examples and owner. Native IDE-editable editors, exact links, immutable review/history and canonical publication preserve this evidence. Parser gaps, overloads and dynamic calculations remain unresolved; numerical correctness and runtime outcomes are not established.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 4,
+        "finding": "Captured calculation candidate inventory plus attributed structured definitions for reviewed business meaning, formula, input/output definitions, units, precision, rounding, assumptions and examples; native navigation, exact links, review/history and publication are available.",
+        "remaining_work": "",
+        "purpose": "Calculations and formulas",
+        "evidence_group": "semantics",
+        "verification": "116 focused and 696 regression checks pass; actual application/FMX pass. Native normal/compact renders reviewed. All 77 guide pages covered by pixel identity or individual changed-page inspection; 58 source hashes and 128 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 4,
         "finding": "Source expressions and assignment dependencies retain calculations without evaluating them.",
@@ -2767,6 +2782,12 @@
         "purpose": "Calculations and formulas",
         "evidence_group": "semantics",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Calculations and formulas",
+        "validation": "docs/phase1-calculation-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12973,23 +12994,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Business-rule catalog",
+    "completed_batch": "Calculations and formulas",
     "completed_requirement_ids": [
-      "06.04"
+      "06.06"
     ],
     "counts": {
-      "implemented_manual_capture": 24,
-      "partial": 225,
+      "implemented_manual_capture": 25,
+      "partial": 224,
       "implemented": 196,
       "missing": 88
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 313,
-    "completion_record": "docs/Phase1_Business_Rule_Completion.txt",
+    "incomplete_requirement_records": 312,
+    "completion_record": "docs/Phase1_Calculation_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "06.06",
-      "title": "Calculations and formulas",
-      "scope": "Add a calculation/formula inventory and reviewed business meaning/unit/input/output definitions."
+      "requirement": "06.07",
+      "title": "Approval and authorization workflows",
+      "scope": "Add business approval roles, transitions, checks and code links separately from DPH content review."
     }
   }
 }

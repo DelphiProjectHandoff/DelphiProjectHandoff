@@ -8,6 +8,7 @@ const DPHWorkflowKeys:array[0..4] of string = ('name','owner','scope','trigger',
  DPHWorkflowStepKeys:array[0..8] of string = ('step_id','department','role','action','inputs','outputs','handoff','exception_handling','exception_target');
 
 const DPHBusinessRuleKeys:array[0..8] of string = ('rule_code','name','scope','conditions','outcomes','exceptions','owner','approval','unknowns');
+const DPHCalculationKeys:array[0..11] of string = ('name','meaning','formula','inputs','outputs','units','rounding','assumptions','exceptions','examples','owner','unknowns');
 type
   TDPHWorkspaceView = class
   private
@@ -46,6 +47,13 @@ type
     class function BusinessProcessBody(ARecord:TJSONObject):string;static;
     class function IsBusinessProcess(ARow:TJSONObject):Boolean;static;
     class function DescribeBusinessProcess(ARow:TJSONObject):string;static;
+    class function NewCalculation:TJSONObject;static;
+    class procedure ValidateCalculation(ARecord:TJSONObject);static;
+    class function CalculationBody(ARecord:TJSONObject):string;static;
+    class function IsCalculation(ARow:TJSONObject):Boolean;static;
+    class function DescribeCalculation(ARow:TJSONObject):string;static;
+    function Calculations:TJSONObject;
+    class function DescribeCalculationEvidence(ARow:TJSONObject):string;static;
     class function NewBusinessRule:TJSONObject;static;
     class procedure ValidateBusinessRule(ARecord:TJSONObject);static;
     class function BusinessRuleBody(ARecord:TJSONObject):string;static;
@@ -252,6 +260,56 @@ begin
  Result:='No saved rule selected. New rule opens structured fields. Empty results do not prove the application has no business rules.';
  if not IsBusinessRule(ARow) then Exit;
  if ARow.GetValue<string>('structured_json','{}')='{}' then begin Result:='Unstructured business-rule note. Rule identifier, applicability, conditions, outcomes and accountable owner have not been separately captured. Open record to inspect original text or New rule to create a separately attributed structured record. Preserve the original and link it as exact evidence.'+sLineBreak+ARow.GetValue<string>('title')+sLineBreak+'Contributor: '+ARow.GetValue<string>('owner')+' | review state: '+ARow.GetValue<string>('state')+sLineBreak+ARow.GetValue<string>('body');Exit;end;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+sLineBreak+
+ 'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+
+ 'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+
+ 'Explicit implementation/evidence links: '+IntToStr(ARow.GetValue<TJSONArray>('rich_links').Count)+sLineBreak+ARow.GetValue<string>('body');
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then Result:=Result+sLineBreak+'Current revision author: '+Value.GetValue<string>('editor','unknown');
+end;
+
+class function TDPHWorkspaceView.NewCalculation:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','calculation_definition').AddPair('calculation_id',TGUID.NewGuid.ToString);
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);
+ for Key in DPHCalculationKeys do Fields.AddPair(Key,'Unknown');
+end;
+class procedure TDPHWorkspaceView.ValidateCalculation(ARecord:TJSONObject);
+var Fields:TJSONObject;Pair:TJSONPair;Key:string;ID:TGUID;
+begin
+ if (ARecord=nil) or (ARecord.Count<>3) or (ARecord.GetValue<string>('record_type','')<>'calculation_definition') then raise EArgumentException.Create('Expected a structured business calculation');
+ if not (ARecord.GetValue('calculation_id') is TJSONString) or (Length(ARecord.GetValue<string>('calculation_id',''))<>38) then raise EArgumentException.Create('Invalid calculation identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('calculation_id'));except raise EArgumentException.Create('Invalid calculation identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('calculation_id') then raise EArgumentException.Create('Calculation identity must use its canonical GUID representation');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>Length(DPHCalculationKeys)) then raise EArgumentException.Create('Calculation requires its twelve structured fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Calculation fields must be text');
+ for Key in DPHCalculationKeys do begin
+  if Fields.GetValue<string>(Key,'').Trim='' then raise EArgumentException.Create('Complete '+Key+' or explicitly enter Unknown');
+  if Length(Fields.GetValue<string>(Key))>4096 then raise EArgumentException.Create('Calculation field exceeds 4096 characters: '+Key);
+ end;
+ if SameText(Fields.GetValue<string>('name').Trim,'Unknown') or (Length(Fields.GetValue<string>('name'))>200) then raise EArgumentException.Create('Enter a descriptive calculation name of at most 200 characters');
+end;
+class function TDPHWorkspaceView.CalculationBody(ARecord:TJSONObject):string;
+const Labels:array[0..11] of string = ('Calculation name','Business meaning and applicability','Formula or algorithm (not evaluated)','Inputs definitions and origins','Outputs definitions and recipients','Units and conversions','Precision and rounding','Assumptions and valid ranges','Exceptions and boundary conditions','Worked examples and expected results (authored)','Accountable calculation owner','Unknowns and responsible maintainer');
+var I:Integer;Fields:TJSONObject;
+begin
+ ValidateCalculation(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');
+ Result:='CALCULATION DEFINITION'+sLineBreak;
+ for I:=0 to High(DPHCalculationKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHCalculationKeys[I])+sLineBreak;
+ Result:=Result+sLineBreak+'Attributed business description; Unknown remains unresolved. Source links identify captured code, not observed execution. Formula text and worked examples are authored evidence, never evaluated by DPH. Units, precision and business meanings require named review; no target execution or numerical correctness is proved.';
+end;
+class function TDPHWorkspaceView.IsCalculation(ARow:TJSONObject):Boolean;
+var V:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ V:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try if V is TJSONObject then Result:=(ARow.GetValue<string>('kind','')='business_rule') and (V.GetValue<string>('record_type','')='calculation_definition');finally V.Free;end;
+end;
+class function TDPHWorkspaceView.DescribeCalculation(ARow:TJSONObject):string;
+var History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved calculation selected. New calculation opens structured fields. Empty results do not prove the application has no calculations.';
+ if not IsCalculation(ARow) then Exit;
  Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+sLineBreak+
  'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+
  'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+
@@ -482,6 +540,59 @@ destructor TDPHWorkspaceView.Destroy;
 begin FSymbols.Free; FDocument.Free; inherited; end;
 function TDPHWorkspaceView.Symbol(const AKey: string): TJSONObject;
 begin if not FSymbols.TryGetValue(AKey,Result) then Result:=nil; end;
+
+
+function TDPHWorkspaceView.Calculations:TJSONObject;
+var Files,Nodes,Rows:TJSONArray;F,N,V:TJSONValue;FileRow,Node,Row,Owner,Range:TJSONObject;
+    I,Parent,Depth,Ancestor:Integer;Text,Kind,Path:string;Owners:TDictionary<Integer,TJSONObject>;
+begin
+ Result:=TJSONObject.Create;Rows:=TJSONArray.Create;Result.AddPair('rows',Rows);
+ Result.AddPair('qualification','Captured arithmetic, bitwise/boolean and recognized mathematical API-spelling candidates; operators may be overloaded. Literals are omitted, formulas are not evaluated, and lexical spelling does not prove numeric type, runtime dispatch, reaching inputs, output units or business meaning. Parser gaps, opaque/long expressions and dynamic calculations remain unknown. Record a definition and review it against exact source evidence. No target code executes.');
+ Result.AddPair('unavailable_expressions',TJSONNumber.Create(0));Depth:=0;
+ Files:=FDocument.GetValue<TJSONArray>('syntax.files');
+ Owners:=TDictionary<Integer,TJSONObject>.Create;
+ try
+  for F in Files do begin
+   FileRow:=F as TJSONObject;Path:=FileRow.GetValue<string>('path');
+   if not FileRow.TryGetValue<TJSONArray>('ir.nodes',Nodes) then Continue;
+   Owners.Clear;
+   for V in FDocument.GetValue<TJSONArray>('semantics.symbols') do
+    if MatchText(V.GetValue<string>('kind'),['routine','anonymous']) and (V.GetValue<string>('range.source')=Path) then Owners.AddOrSetValue(V.GetValue<Integer>('range.start'),V as TJSONObject);
+   for I:=0 to Nodes.Count-1 do begin
+    Node:=Nodes[I] as TJSONObject;Kind:=Node.GetValue<string>('kind');
+    if not MatchText(Kind,['expression','declaration_const']) then Continue;
+    Parent:=Node.GetValue<Integer>('parent',-1);
+    if (Parent>=0) and (Parent<Nodes.Count) and (Nodes[Parent].GetValue<string>('kind')='expression') then Continue;
+    Text:=Node.GetValue<string>('value','');
+    if (Text='') or (Length(Text)>16000) then begin Inc(Depth);Continue;end;
+    Text:=TRegEx.Replace(Text,'''(?:[^'']|'''')*''','<literal omitted>');
+    if not TRegEx.IsMatch(Text,'(?:^|\s)(?:\+|-|\*|/|div|mod|shl|shr|and|or|xor)(?:\s|$)|\b(?:Round|Trunc|Abs|Sqr|Sqrt|Power|Exp|Ln|Sin|Cos|Inc|Dec)\s*\(',[roIgnoreCase]) then Continue;
+    if Rows.Count>=10000 then begin if Result.GetValue('limit')=nil then Result.AddPair('limit','Calculation candidate inventory truncated at 10000 rows; empty or bounded results do not establish completeness.');Break;end;
+    Range:=TJSONObject.Create.AddPair('source',Path).AddPair('start',Node.GetValue('start').Clone as TJSONValue).AddPair('end',Node.GetValue('end').Clone as TJSONValue).AddPair('line',Node.GetValue('line').Clone as TJSONValue).AddPair('column',Node.GetValue('column').Clone as TJSONValue);
+    Row:=TJSONObject.Create.AddPair('id',Path+'|'+Node.GetValue('start').Value+'|'+Node.GetValue('end').Value+'|'+Kind).AddPair('kind',Kind).AddPair('expression',Text).AddPair('source',Path).AddPair('source_hash',FileRow.GetValue<string>('sha256','')).AddPair('generation_id',FDocument.GetValue('generation_id').Clone as TJSONValue).AddPair('range',Range).AddPair('condition',Node.GetValue<string>('condition','')).AddPair('target_key','').AddPair('routine','Unknown').AddPair('business_meaning','Unknown').AddPair('inputs','Unknown; follow source and captured dependency links').AddPair('outputs','Unknown; follow source and define recipients').AddPair('units','Unknown');Rows.AddElement(Row);
+    Owner:=nil;Ancestor:=Parent;
+    for var Hop:=0 to 127 do begin
+     if (Ancestor<0) or (Ancestor>=Nodes.Count) then Break;
+     if Owners.TryGetValue(Nodes[Ancestor].GetValue<Integer>('start'),Owner) then Break;
+     Ancestor:=Nodes[Ancestor].GetValue<Integer>('parent',-1);
+    end;
+    if Owner<>nil then begin Row.RemovePair('target_key').Free;Row.AddPair('target_key',Owner.GetValue<string>('key'));Row.RemovePair('routine').Free;Row.AddPair('routine',Owner.GetValue<string>('name'));end;
+   end;
+   if Result.GetValue('limit')<>nil then Break;
+  end;
+  Result.RemovePair('unavailable_expressions').Free;Result.AddPair('unavailable_expressions',TJSONNumber.Create(Depth));
+ finally Owners.Free;end;
+end;
+class function TDPHWorkspaceView.DescribeCalculationEvidence(ARow:TJSONObject):string;
+begin
+ Result:='Select a captured candidate. Empty results do not prove that no calculations exist. Long/opaque expressions and unsupported or dynamic code remain unknown.';
+ if ARow=nil then Exit;
+ Result:='Captured expression candidate (not evaluated)'+sLineBreak+ARow.GetValue<string>('expression')+sLineBreak+
+ 'Routine: '+ARow.GetValue<string>('routine')+sLineBreak+'Source: '+ARow.GetValue<string>('source')+':'+ARow.GetValue<Integer>('range.line').ToString+sLineBreak+
+ 'SHA256: '+ARow.GetValue<string>('source_hash')+sLineBreak+'Generation: '+ARow.GetValue('generation_id').Value+sLineBreak+'Conditional context: '+ARow.GetValue<string>('condition')+sLineBreak+
+ 'Business meaning: Unknown'+sLineBreak+'Inputs: '+ARow.GetValue<string>('inputs')+sLineBreak+'Outputs: '+ARow.GetValue<string>('outputs')+sLineBreak+'Units: Unknown'+sLineBreak+
+ 'Follow source/routine evidence, create an attributed definition, attach exact implementation links and review. API spellings and operators may be overloaded. Original literals are omitted; parser gaps and expression bounds prevent an exhaustive inventory. Numerical results, runtime execution and correctness are not established.';
+end;
 
 function TDPHWorkspaceView.FileFormats:TJSONObject;
 var Rows,Files,Nodes,Shape:TJSONArray; F,N,V,W:TJSONValue; FileRow,Node,Row,Range,Owner:TJSONObject;

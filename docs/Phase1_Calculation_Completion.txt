@@ -1,0 +1,18 @@
+DPH REQUIREMENT 06.06 COMPLETION: CALCULATIONS AND FORMULAS
+Last changed: 12 October 2026
+
+Captured arithmetic and mathematical API-spelling candidates and constant formulas provide exact source ranges, hash, generation, conditional context and routine navigation without evaluating formulas. String literals are omitted, nested expression roots avoid duplicated rows, unavailable expression text is counted and the 10000-row limit is visible. Separate authored definitions capture reviewed business meaning, formula, inputs, outputs, units, rounding, assumptions, boundary cases, worked examples and owner. Native IDE-editable editors, exact links, immutable review/history and canonical publication preserve this evidence. Parser gaps, overloads and dynamic calculations remain unresolved; numerical correctness and runtime outcomes are not established.
+
+Validation PASS: 116 focused + 696 regression = 812 checks.
+Actual application and FMX baseline PASS. Native normal/compact editor and catalog renders reviewed.
+All 77 guide pages reviewed: 66 pixel-identical previously reviewed pages and 11 changed pages inspected. 58 source hashes and 128 TOC destinations verified.
+Editable DOCX/PDF guides, HTML help and explicit run/test directions updated.
+Directions: docs/guides/Calculation_Run_and_Test.txt
+
+Pre-change backup: H:\DPH Backups\Calculations_PreChange_20261012_205718
+12545 files, 3509915095 bytes; every SHA256 verified. No post-change backup.
+
+Only 06.06 promoted; all 533 original IDs and texts preserved.
+196 implemented; 25 implemented_manual_capture; 224 partial; 88 missing.
+312 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.07 Approval and authorization workflows.

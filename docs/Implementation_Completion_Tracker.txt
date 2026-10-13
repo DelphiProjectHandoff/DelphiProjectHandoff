@@ -135,7 +135,10 @@ See Phase1_Process_Diagram_Completion.txt.
 Business-rule catalog completed (06.04).
 97 focused and 599 regression checks passed; actual app/FMX passed.
 See Phase1_Business_Rule_Completion.txt.
-Current live backlog: 313 incomplete requirement records; 0 unassessed.
+Calculations and formulas completed (06.06).
+116 focused and 696 regression checks passed; actual app/FMX passed.
+See Phase1_Calculation_Completion.txt.
+Current live backlog: 312 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

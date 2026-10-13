@@ -1,0 +1,125 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Calculation.dpr(41) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Calculation.dpr(101) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+19696 lines, 1.58 seconds, 10850256 bytes code, 349356 bytes data.
+PASS 1: Arithmetic expressions and constant formula captured without nested duplicates or literal false positives
+PASS 2: Calculation projection omits original literal contents
+PASS 3: Constant declaration formula retained
+PASS 4: Captured expression links its actual enclosing routine
+PASS 5: Candidate retains captured source hash
+PASS 6: Candidate retains generation
+PASS 7: Business meaning never invented
+PASS 8: Units never inferred from operators
+PASS 9: Candidate inspector explains evaluation boundary
+PASS 10: Unavailable bounded formula text explicitly counted
+PASS 11: Unavailable formula not silently projected as complete
+PASS 12: Main calculation source fixture available
+PASS 13: Constant formula fixture supports bounded projection checks
+PASS 14: Candidate inventory enforces 10000-row bound
+PASS 15: Inventory truncation explicitly reported
+PASS 16: Structured calculation inputs rendered
+PASS 17: Structured calculation outputs rendered
+PASS 18: Accountable owner rendered separately from contributor
+PASS 19: Structured formula rendered
+PASS 20: Missing department remains explicitly unknown
+PASS 21: Business calculation qualification retained
+PASS 22: Anonymous calculation author rejected
+PASS 23: Placeholder title rejected
+PASS 24: Removed calculation heading rejected
+PASS 25: Incorrect calculation kind rejected
+PASS 26: Incorrect calculation audience rejected
+PASS 27: Invalid stable calculation identity rejected
+PASS 28: Unknown calculation metadata rejected
+PASS 29: Empty structured inputs rejected; Unknown must be explicit
+PASS 30: Numeric owner rejected
+PASS 31: Oversized structured field rejected
+PASS 32: Noncanonical GUID spelling rejected to prevent duplicate identities
+PASS 33: Actual captured semantic implementation routine available
+PASS 34: Typed persisted calculation recognized
+PASS 35: Named contributor persists
+PASS 36: Saved calculation remains pending review
+PASS 37: Routine and exact procedure-revision links persist
+PASS 38: Structured calculation inputs persist
+PASS 39: Unresolved fields stay explicit
+PASS 40: Inspector distinguishes resolved link count
+PASS 41: Duplicate calculation identity rejected
+PASS 42: Typed metadata cannot be discarded
+PASS 43: Saved calculation identity cannot change
+PASS 44: Anonymous calculation review rejected
+PASS 45: Named reviewer persists
+PASS 46: Review appends immutable history
+PASS 47: Review retains exact implementation links
+PASS 48: Stale calculation edit rejected
+PASS 49: Calculation edits reopen review
+PASS 50: Prior reviewed calculation retained
+PASS 51: Calculation revision preserves implementation links
+PASS 52: Changed structured output persists
+PASS 53: Structured calculation body cannot diverge from fields
+PASS 54: Calculation database integrity valid
+PASS 55: Maintainer publication includes authored calculation
+PASS 56: Publication retains authored units and conversions
+PASS 57: Publication retains authored rounding policy
+PASS 58: Canonical handoff preserves typed calculation identity
+PASS 59: Business calculation handoff passes full bundle validation
+PASS 60: Published HTML includes structured inputs
+PASS 61: Business calculation survives database close and reopen
+PASS 62: Exact structured fields survive reopening
+PASS 63: Immutable review and edit history survives reopening
+PASS 64: Exact source and procedure links survive reopening
+PASS 65: Calculation page listed in serialized header selector
+PASS 66: Calculation page opens through actual header selector
+PASS 67: Calculation page listed in serialized header selector
+PASS 68: Calculation page opens through actual header selector
+PASS 69: Calculation page listed in serialized header selector
+PASS 70: Calculation page opens through actual header selector
+PASS 71: Native source candidate inventory available after load
+PASS 72: Candidate opens captured routine explanation
+PASS 73: Native candidate search filters formula text
+PASS 74: New definition opens typed calculation fields
+PASS 75: Candidate prefill retains captured formula
+PASS 76: Candidate prefill leaves business meaning unresolved
+PASS 77: Candidate prefill retains source identity for review
+PASS 78: Candidate cannot overwrite pending definition
+PASS 79: Native register includes calculation and excludes unrelated procedure
+PASS 80: Native inspector shows current contributor
+PASS 81: Open plan enters saved Knowledge workflow
+PASS 82: Saved structured body protected from free text edits
+PASS 83: Saved stable title protected
+PASS 84: Saved calculation kind protected
+PASS 85: Implementation links opens exact link workflow
+PASS 86: Native exact implementation links available
+PASS 87: Saved implementation routine opens captured explanation
+PASS 88: Edit opens native structured fields
+PASS 89: Native editor restores precise authored units
+PASS 90: Native editor restores persisted input
+PASS 91: Saved calculation name remains stable
+PASS 92: Compact editor commands scroll horizontally
+PASS 93: Unknowns field retains editable height
+PASS 94: Apply prepares Knowledge draft
+PASS 95: Native structured edit generates canonical body
+PASS 96: Unsaved structured draft protected from selection
+PASS 97: Unsaved structured draft protected from replacement
+PASS 98: New calculation opens structured editor
+PASS 99: New calculation name editable
+PASS 100: Anonymous contributor keeps calculation in editor
+PASS 101: New native calculation canonical body prepared
+PASS 102: Canonical draft body protected
+PASS 103: Review-state filter respects pending edit
+PASS 104: Calculation text search finds authored input
+PASS 105: Empty register explains unresolved obligations
+PASS 106: Empty results disable opening
+PASS 107: Compact calculation detail remains readable
+PASS 108: Compact commands and long policies scroll
+PASS 109: Large register first page bounded
+PASS 110: Large register next page accessible
+PASS 111: Remaining calculation rows accessible
+PASS 112: Clearing loaded knowledge removes prior calculation rows
+PASS 113: No capture disables new calculation
+PASS 114: Calculation workflow leaves captured workspace unchanged
+PASS 115: Target source unchanged
+PASS 116: Owner catalog unchanged

@@ -146,3 +146,5 @@ Requirement 06.02 adds Departmental workflows with native ordered step editing, 
 Requirement 06.03 adds Process diagram to Departmental workflows: actual SVG and native step diagrams, normal handoffs, stable exception routes, explicit Unknown destinations and exact reviewed process links. Publication retains and validates the projection. See docs/guides/Process_Diagram_Run_and_Test.txt.
 
 Requirement 06.04 adds Business rules with stable unique rule identifiers, applicability, conditions, outcomes, exceptions, accountable owners and approval responsibilities. Native editing, exact implementation links, review/history and clearly distinguished original notes are available. See docs/guides/Business_Rule_Run_and_Test.txt.
+
+Requirement 06.06 adds Calculation evidence for captured expression and constant-formula candidates, plus Calculations and Calculation fields for reviewed business meaning, formulas, inputs, outputs, units, rounding, assumptions and examples. Exact implementation links and immutable review/history accompany publication. See docs/guides/Calculation_Run_and_Test.txt. DPH never evaluates formula text.

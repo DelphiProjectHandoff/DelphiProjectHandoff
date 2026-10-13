@@ -1,0 +1,154 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+20269 lines, 1.72 seconds, 10863924 bytes code, 349456 bytes data.
+PASS 1: Step input rendered
+PASS 2: Departmental handoff rendered
+PASS 3: Step role rendered
+PASS 4: Explicit ordered sequence rendered
+PASS 5: Exception destination resolves stable step identity
+PASS 6: Unresolved business fields remain explicit
+PASS 7: Anonymous process author rejected
+PASS 8: Placeholder title rejected
+PASS 9: Removed process heading rejected
+PASS 10: Incorrect process kind rejected
+PASS 11: Incorrect process audience rejected
+PASS 12: Invalid stable process identity rejected
+PASS 13: Unknown process metadata rejected
+PASS 14: Empty structured scope rejected; Unknown must be explicit
+PASS 15: Numeric owner rejected
+PASS 16: Oversized structured field rejected
+PASS 17: Noncanonical GUID spelling rejected to prevent duplicate identities
+PASS 18: Dangling exception destination rejected
+PASS 19: Duplicate step identity rejected
+PASS 20: Non-text step role rejected
+PASS 21: Unnamed step action rejected
+PASS 22: Oversized step field rejected
+PASS 23: More than 64 workflow steps rejected
+PASS 24: Actual captured semantic implementation routine available
+PASS 25: Typed persisted process recognized
+PASS 26: Named contributor persists
+PASS 27: Saved process remains pending review
+PASS 28: Routine and exact procedure-revision links persist
+PASS 29: Departmental handoff persists
+PASS 30: Unresolved fields stay explicit
+PASS 31: Inspector distinguishes resolved link count
+PASS 32: Duplicate process identity rejected
+PASS 33: Typed metadata cannot be discarded
+PASS 34: Saved process identity cannot change
+PASS 35: Anonymous process review rejected
+PASS 36: Named reviewer persists
+PASS 37: Review appends immutable history
+PASS 38: Review retains exact implementation links
+PASS 39: Stale process edit rejected
+PASS 40: Workflow edits reopen review
+PASS 41: Prior reviewed process retained
+PASS 42: Workflow revision preserves implementation links
+PASS 43: Changed structured output persists
+PASS 44: Structured process body cannot diverge from fields
+PASS 45: Workflow database integrity valid
+PASS 46: Two authored steps, end and explicit unknown destination
+PASS 47: Every authored normal and exception route preserved
+PASS 48: Diagram never claims runtime observation
+PASS 49: Diagram preserves current pending review state
+PASS 50: Exact business-process revision linked
+PASS 51: Pinned linked revision reviewed by a named reviewer
+PASS 52: Process reviewer remains separate from workflow contributor
+PASS 53: Real scalable diagram rendered
+PASS 54: Unresolved route remains visible
+PASS 55: Reviewed exact process connection labeled
+PASS 56: Diagram retains departmental roles
+PASS 57: Exception legend visible
+PASS 58: Pinned process navigation anchor included
+PASS 59: End-node anchors namespaced by workflow identity
+PASS 60: Rendering never mutates authoritative projection
+PASS 61: Reordering changes authored first step
+PASS 62: Reordering retains stable exception destination
+PASS 63: Authored script-like labels encoded safely
+PASS 64: Encoded labels remain readable
+PASS 65: Self-return exception preserved without recursion
+PASS 66: Explicit exception End differs from unresolved route
+PASS 67: All 64 authored steps retain both routes
+PASS 68: Maximum bounded workflow is never silently truncated
+PASS 69: Maximum workflow renders without recursive traversal
+PASS 70: Diagram rejects workflow beyond explicit 64-step bound
+PASS 71: Absent scope never invents process links
+PASS 72: Maintainer publication includes authored process
+PASS 73: Canonical handoff preserves typed process identity
+PASS 74: Canonical publication retains derived process projection
+PASS 75: Business process handoff passes full bundle validation
+PASS 76: Canonical workflow diagram exists before tamper checks
+PASS 77: Full bundle validation rejects missing current-template workflow diagram
+PASS 78: Full bundle validation rejects divergent diagram even with matching artifact hashes
+PASS 79: Published HTML includes structured inputs
+PASS 80: Published HTML contains actual SVG diagram
+PASS 81: User audience excludes maintainer workflow diagram
+PASS 82: Business process survives database close and reopen
+PASS 83: Exact structured fields survive reopening
+PASS 84: Immutable review and edit history survives reopening
+PASS 85: Exact source and procedure links survive reopening
+PASS 86: Native register includes process and excludes unrelated procedure
+PASS 87: Native inspector shows current contributor
+PASS 88: Open plan enters saved Knowledge workflow
+PASS 89: Saved structured body protected from free text edits
+PASS 90: Saved stable title protected
+PASS 91: Saved process kind protected
+PASS 92: Implementation links opens exact link workflow
+PASS 93: Native exact implementation links available
+PASS 94: Saved implementation routine opens captured explanation
+PASS 95: Saved workflow opens native diagram workspace
+PASS 96: Business-step graph excludes technical grouping
+PASS 97: Graph selector accurately labels displayed business process
+PASS 98: Graph legend distinguishes human workflow from static code
+PASS 99: Compact native process diagram remains scrollable
+PASS 100: Pinned process link opens immutable evidence inside DPH
+PASS 101: Pinned process review evidence visible
+PASS 102: Browser step anchor opens correct namespaced workflow evidence
+PASS 103: Native step selection opens full evidence
+PASS 104: Native selected step details preserve responsible role
+PASS 105: Edit opens native workflow editor
+PASS 106: Saved ordered steps restored
+PASS 107: Saved workflow name protected
+PASS 108: Save refuses unapplied workflow editor
+PASS 109: Diagram refuses an unsaved structured draft
+PASS 110: Native selected step restores role
+PASS 111: Native selected step restores handoff
+PASS 112: Referring exception prevents removal of its target
+PASS 113: Dirty step prevents workflow apply
+PASS 114: Dirty step prevents replacement
+PASS 115: Apply edited step preserves count
+PASS 116: Move down keeps selected step identity
+PASS 117: Move down changes authored order
+PASS 118: Move up restores authored order
+PASS 119: New structured step appended
+PASS 120: Apply workflow prepares canonical Knowledge draft
+PASS 121: Edited step output enters canonical body
+PASS 122: Added step enters canonical body
+PASS 123: Unsaved workflow draft protected from selection
+PASS 124: Unsaved workflow draft protected from replacement
+PASS 125: New workflow opens editor
+PASS 126: New workflow starts without invented steps
+PASS 127: New workflow name editable
+PASS 128: Empty workflow cannot apply
+PASS 129: New authored step applies to draft
+PASS 130: Anonymous workflow contributor rejected
+PASS 131: New workflow canonical body generated
+PASS 132: Structured workflow body protected
+PASS 133: Review-state filter respects pending edit
+PASS 134: Workflow text search finds authored input
+PASS 135: Empty register explains unresolved obligations
+PASS 136: Empty results disable opening
+PASS 137: Compact workflow commands scroll
+PASS 138: Compact workflow detail remains readable
+PASS 139: Compact commands and long policies scroll
+PASS 140: Large register first page bounded
+PASS 141: Large register next page accessible
+PASS 142: Remaining workflow rows accessible
+PASS 143: Clearing loaded knowledge removes prior workflow rows
+PASS 144: No capture disables new workflow
+PASS 145: Workflow workflow leaves captured workspace unchanged
+PASS 146: Target source unchanged
+PASS 147: Owner catalog unchanged
