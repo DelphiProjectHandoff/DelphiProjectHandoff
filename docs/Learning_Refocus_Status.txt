@@ -61,3 +61,23 @@ tool, not a count of technical records or a claim of full source understanding.
 
 Development is active under the owner's resume instruction; no further phase
 approval is required for authorized learning-focused corrections.
+
+Guided task checkpoint: 12 October 2026
+Learn a task now presents contributor-supplied prerequisites, ordered actions,
+expected results, troubleshooting and practice. Previous, Next and Start again
+operate on the saved sequence. Prepare a new task saves directly to that reader.
+The native, IDE-editable editor supports editing, reordering, removing and undoing
+steps. Existing free-text instructions remain readable without inventing steps.
+Blank instructions, contradictory structured text, duplicate task identities and
+unnamed contributors are rejected. All content remains in the selected DPH database.
+No selected application code is executed or modified by task instruction editing.
+
+Pre-change backup: H:\DPH Backups\GuidedTasks_PreChange_20261012_220915
+13,853 files; 3,673,741,959 bytes; individually SHA256 verified.
+36 guided-task checks; 82 native learning checks; 19 profile checks; 114 publishing
+checks passed. Application build and serialized-form baseline passed.
+Native task reader and preparation screenshots: docs/guided-tasks-*.png.
+These show DPH with a synthetic Delphi fixture, not customer application screenshots.
+Documentation review remains deferred. The historical requirement ledger is unchanged.
+Continue simplifying the preparation menu, completing useful screen/field instruction
+and checking the complete newcomer learning route before rewriting the guides.

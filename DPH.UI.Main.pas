@@ -407,6 +407,61 @@ type
     RunProjectSearchButton,NextProjectSearchButton,OpenSearchResultButton: TButton;
     ProjectSearchList: TListBox;
     ProjectSearchMemo: TMemo;
+    TaskReaderTitle: TLabel;
+    TaskContextMemo: TMemo;
+    TaskStepLabel: TLabel;
+    TaskPrevious: TButton;
+    TaskNext: TButton;
+    TaskRestart: TButton;
+    TaskNavigation: THorzScrollBox;
+    TaskResultMemo: TMemo;
+    TaskActionMemo: TMemo;
+    TaskReaderPanel: TLayout;
+    TaskReaderScroll: TVertScrollBox;
+    TaskPickerLabel: TLabel;
+    TaskFilter: TEdit;
+    TaskNextPage: TButton;
+    TaskList: TListBox;
+    TaskPicker: TLayout;
+    TaskNew: TButton;
+    TaskEdit: TButton;
+    TaskNotes: TButton;
+    TaskToolbar: THorzScrollBox;
+    TaskPurposeLabel: TLabel;
+    TaskTab: TTabItem;
+    Tutor_name_label: TLabel;
+    Tutor_name: TMemo;
+    Tutor_purpose_label: TLabel;
+    Tutor_purpose: TMemo;
+    Tutor_prerequisites_label: TLabel;
+    Tutor_prerequisites: TMemo;
+    Tutor_expected_result_label: TLabel;
+    Tutor_expected_result: TMemo;
+    Tutor_troubleshooting_label: TLabel;
+    Tutor_troubleshooting: TMemo;
+    Tutor_practice_label: TLabel;
+    Tutor_practice: TMemo;
+    TutorStepsLabel: TLabel;
+    TutorSteps: TListBox;
+    TutorNewStep: TButton;
+    TutorKeepStep: TButton;
+    TutorDiscardStep: TButton;
+    TutorRemoveStep: TButton;
+    TutorStepUp: TButton;
+    TutorStepDown: TButton;
+    TutorStepToolbar: THorzScrollBox;
+    TutorActionLabel: TLabel;
+    TutorAction: TMemo;
+    TutorExpectedLabel: TLabel;
+    TutorExpected: TMemo;
+    TutorAuthorLabel: TLabel;
+    TutorAuthor: TEdit;
+    TutorSave: TButton;
+    TutorCancel: TButton;
+    TaskEditorToolbar: THorzScrollBox;
+    TaskEditorPurpose: TLabel;
+    TaskEditorScroll: TVertScrollBox;
+    TaskEditorTab: TTabItem;
     WorkspacePageCombo,LessonPageCombo: TComboBox;
     SetupTab: TTabItem;
     SetupScroll: TVertScrollBox;
@@ -622,6 +677,17 @@ type
     procedure LearningClick(Sender: TObject);
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
+    procedure TaskFilterChange(Sender: TObject);
+    procedure TaskSelectionChange(Sender: TObject);
+    procedure TaskNavigate(Sender: TObject);
+    procedure TaskEditClick(Sender: TObject);
+    procedure TaskOpenNotes(Sender: TObject);
+    procedure TaskEditorChanged(Sender: TObject);
+    procedure TutorStepSelection(Sender: TObject);
+    procedure TutorStepChanged(Sender: TObject);
+    procedure TutorStepAction(Sender: TObject);
+    procedure TaskSaveClick(Sender: TObject);
+    procedure TaskCancelClick(Sender: TObject);
     procedure SetupClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -729,6 +795,11 @@ type
     FWorkflowStepDirty:Boolean;
     FStructuredEditorPending:Boolean;
     FStructuredEditorID:string;
+    FTaskRows:TList<TJSONObject>;
+    FTaskDraft:TJSONObject;
+    FTaskOffset,FTaskStep,FTutorStep:Integer;
+    FTutorStepDirty:Boolean;
+    FTaskSavingID:string;
     FCalculationEvidence:TJSONObject;FCalculationEvidenceRows:TList<TJSONObject>;FCalculationEvidenceOffset:Integer;
     FCalculationRows:TList<TJSONObject>;FCalculationOffset:Integer;
     FBusinessRuleRows:TList<TJSONObject>;FBusinessRuleOffset:Integer;
@@ -813,6 +884,7 @@ var I: Integer; DatabaseDirectory: string;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
   FPreviewPages:=TList<string>.Create;
+  FTaskRows:=TList<TJSONObject>.Create;
   FQualityRows:=TList<TJSONObject>.Create;
   FEditableLinks:=TJSONArray.Create;
   FHistory:=TList<string>.Create; FBookmarks:=TList<string>.Create; FDetached:=True;
@@ -850,6 +922,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
+  TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
@@ -867,7 +940,7 @@ begin
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
-  FProjectMembers.Free; FComparison.Free; FQualityRows.Free;
+  FProjectMembers.Free; FComparison.Free; FQualityRows.Free;FTaskRows.Free;FTaskDraft.Free;
   FKeyboardRows.Free; FKeyboard.Free;
   FCommandRows.Free; FCommands.Free;
   FDynamicRows.Free; FDynamic.Free;
@@ -935,6 +1008,155 @@ begin
         ' | recorded child condition: '+Node.GetValue<string>('condition'));
     end;
   finally ProjectMemberMemo.Lines.EndUpdate; end;
+end;
+procedure TDPHMainForm.TaskFilterChange(Sender:TObject);
+var V:TJSONValue;R:TJSONObject;Count:Integer;
+begin
+ if FTaskRows=nil then Exit;
+ if Sender=TaskNextPage then Inc(FTaskOffset,50) else FTaskOffset:=0;
+ FTaskRows.Clear;TaskList.Items.Clear;TaskNextPage.Enabled:=False;Count:=0;
+ if FKnowledge<>nil then for V in FKnowledge do begin
+  R:=V as TJSONObject;
+  if MatchText(R.GetValue<string>('state'),['retired','rejected']) then Continue;
+  if not MatchText(R.GetValue<string>('kind'),['user_help','troubleshooting']) then Continue;
+  if (TaskFilter.Text.Trim<>'') and not ContainsText(R.GetValue<string>('title')+' '+R.GetValue<string>('body'),TaskFilter.Text.Trim) then Continue;
+  if (Count>=FTaskOffset) and (FTaskRows.Count<50) then begin FTaskRows.Add(R);TaskList.Items.Add(R.GetValue<string>('title'));end;Inc(Count);
+ end;
+ TaskNextPage.Enabled:=Count>FTaskOffset+FTaskRows.Count;
+ if TaskList.Count>0 then TaskList.ItemIndex:=0;
+ TaskSelectionChange(nil);
+end;
+procedure TDPHMainForm.TaskSelectionChange(Sender:TObject);
+begin FTaskStep:=0;TaskNavigate(nil);end;
+procedure TDPHMainForm.TaskNavigate(Sender:TObject);
+var R,Lesson,Fields,Step:TJSONObject;Steps:TJSONArray;
+begin
+ TaskPrevious.Enabled:=False;TaskNext.Enabled:=False;TaskRestart.Enabled:=False;TaskEdit.Enabled:=False;TaskNotes.Enabled:=False;
+ TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:='Select saved instructions on the left. If none are supplied, use Learn the project or ask the author to prepare one common task.';
+ TaskStepLabel.Text:='Step instructions';TaskActionMemo.Text:='';TaskResultMemo.Text:='';
+ if (FTaskRows=nil) or (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
+ R:=FTaskRows[TaskList.ItemIndex];TaskReaderTitle.Text:=R.GetValue<string>('title');TaskEdit.Enabled:=True;TaskNotes.Enabled:=True;
+ TaskContextMemo.Text:='Instructions by '+R.GetValue<string>('owner')+'.';
+ if R.GetValue<string>('state')='verified' then TaskContextMemo.Lines.Add('These instructions have been reviewed.')
+ else TaskContextMemo.Lines.Add('These instructions still need review by someone who knows the application.');
+ if not TDPHWorkspaceView.IsLearningLesson(R) then begin TaskActionMemo.Text:=R.GetValue<string>('body');TaskStepLabel.Text:='Read the supplied instructions';Exit;end;
+ Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
+ try
+  TDPHWorkspaceView.ValidateLearningLesson(Lesson);Fields:=Lesson.GetValue<TJSONObject>('fields');Steps:=Lesson.GetValue<TJSONArray>('steps');
+  if Sender=TaskNext then Inc(FTaskStep) else if Sender=TaskPrevious then Dec(FTaskStep) else if Sender=TaskRestart then FTaskStep:=0;
+  FTaskStep:=EnsureRange(FTaskStep,0,Steps.Count-1);Step:=Steps.Items[FTaskStep] as TJSONObject;
+  TaskContextMemo.Lines.Add('Purpose: '+Fields.GetValue<string>('purpose'));TaskContextMemo.Lines.Add('Before you begin: '+Fields.GetValue<string>('prerequisites'));
+  TaskStepLabel.Text:=Format('Step %d of %d',[FTaskStep+1,Steps.Count]);TaskActionMemo.Text:=Step.GetValue<string>('action');
+  TaskResultMemo.Text:='Expected after this step: '+Step.GetValue<string>('expected_result');
+  if FTaskStep=Steps.Count-1 then TaskResultMemo.Lines.Add('Expected final result: '+Fields.GetValue<string>('expected_result')+sLineBreak+'If something goes wrong: '+Fields.GetValue<string>('troubleshooting')+sLineBreak+'Practice: '+Fields.GetValue<string>('practice'));
+  TaskPrevious.Enabled:=FTaskStep>0;TaskNext.Enabled:=FTaskStep<Steps.Count-1;TaskRestart.Enabled:=True;
+ finally Lesson.Free;end;
+end;
+procedure TDPHMainForm.TaskOpenNotes(Sender:TObject);
+var ID:string;I:Integer;
+begin
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current instructions first';Exit;end;
+ if (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
+ ID:=FTaskRows[TaskList.ItemIndex].GetValue<string>('id');PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;Exit;end;
+end;
+procedure TDPHMainForm.TaskEditClick(Sender:TObject);
+var Key:string;Steps:TJSONArray;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current draft first';Exit;end;
+ if Sender=TaskNew then begin NewKnowledgeClick(nil);FTaskDraft:=TDPHWorkspaceView.NewLearningLesson;end
+ else begin
+  if (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
+  if not TDPHWorkspaceView.IsLearningLesson(FTaskRows[TaskList.ItemIndex]) then begin TaskOpenNotes(nil);Exit;end;
+  TaskOpenNotes(nil);FTaskDraft:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+ end;
+ FBinding:=True;
+ try
+  for Key in DPHLessonKeys do (FindComponent('Tutor_'+Key) as TMemo).Text:=FTaskDraft.GetValue<string>('fields.'+Key);
+  TutorAuthor.Text:=KnowledgeAuthorEdit.Text;TutorSteps.Items.Clear;Steps:=FTaskDraft.GetValue<TJSONArray>('steps');
+  Tutor_name.ReadOnly:=FKnowledgeID<>0;
+  for I:=0 to Steps.Count-1 do TutorSteps.Items.Add(IntToStr(I+1)+'. '+Steps.Items[I].GetValue<string>('action'));
+  FTutorStep:= -1;TutorSteps.ItemIndex:= -1;TutorAction.Text:='';TutorExpected.Text:='Unknown';FTutorStepDirty:=False;
+ finally FBinding:=False;end;
+ FKnowledgeEdited:=True;FStructuredEditorPending:=True;WorkspaceTabs.ActiveTab:=TaskEditorTab;
+end;
+procedure TDPHMainForm.TaskEditorChanged(Sender:TObject);
+begin if not FBinding and (FTaskDraft<>nil) then begin FKnowledgeEdited:=True;FStructuredEditorPending:=True;end;end;
+procedure TDPHMainForm.TutorStepChanged(Sender:TObject);
+begin if not FBinding and (FTaskDraft<>nil) then begin FTutorStepDirty:=True;FKnowledgeEdited:=True;FStructuredEditorPending:=True;end;end;
+procedure TDPHMainForm.TutorStepSelection(Sender:TObject);
+var Steps:TJSONArray;Step:TJSONObject;
+begin
+ if FBinding or (FTaskDraft=nil) then Exit;
+ if FTutorStepDirty then begin FBinding:=True;try TutorSteps.ItemIndex:=FTutorStep;finally FBinding:=False;end;StatusLabel.Text:='Keep this step or undo its edit before selecting another';Exit;end;
+ Steps:=FTaskDraft.GetValue<TJSONArray>('steps');FTutorStep:=TutorSteps.ItemIndex;FBinding:=True;
+ try
+  TutorAction.Text:='';TutorExpected.Text:='Unknown';
+  if (FTutorStep>=0) and (FTutorStep<Steps.Count) then begin Step:=Steps.Items[FTutorStep] as TJSONObject;TutorAction.Text:=Step.GetValue<string>('action');TutorExpected.Text:=Step.GetValue<string>('expected_result');end;
+ finally FBinding:=False;end;
+end;
+procedure TDPHMainForm.TutorStepAction(Sender:TObject);
+var Steps:TJSONArray;Step:TJSONObject;Elements:TList<TJSONValue>;V:TJSONValue;I,Target:Integer;
+begin
+ if FBusy or (FTaskDraft=nil) then Exit;Steps:=FTaskDraft.GetValue<TJSONArray>('steps');
+ try
+  if Sender=TutorDiscardStep then begin FTutorStepDirty:=False;TutorStepSelection(nil);Exit;end;
+  if (Sender<>TutorKeepStep) and FTutorStepDirty then raise EArgumentException.Create('Keep this step or undo its edit first');
+  if Sender=TutorNewStep then begin
+   if Steps.Count>=100 then raise EArgumentException.Create('A task may contain at most 100 steps');
+   FBinding:=True;try FTutorStep:= -1;TutorSteps.ItemIndex:= -1;TutorAction.Text:='';TutorExpected.Text:='Unknown';finally FBinding:=False;end;
+   FTutorStepDirty:=True;Exit;
+  end;
+  Elements:=TList<TJSONValue>.Create;
+  try
+   for V in Steps do Elements.Add(V);
+   if Sender=TutorKeepStep then begin
+    if TutorAction.Text.Trim='' then raise EArgumentException.Create('Enter the action for this step');
+    if SameText(TutorAction.Text.Trim,'Unknown') then raise EArgumentException.Create('Explain what the learner does');
+    if (TutorExpected.Text.Trim='') or (Length(TutorAction.Text)>4096) or (Length(TutorExpected.Text)>4096) then raise EArgumentException.Create('Enter the expected result or Unknown; each field is limited to 4096 characters');
+    Step:=TJSONObject.Create.AddPair('action',TutorAction.Text.Trim).AddPair('expected_result',TutorExpected.Text.Trim);
+    if FTutorStep<0 then begin
+     if Steps.Count>=100 then begin Step.Free;raise EArgumentException.Create('A task may contain at most 100 steps');end;
+     Elements.Add(Step);FTutorStep:=Elements.Count-1;
+    end else begin V:=Elements[FTutorStep];Elements[FTutorStep]:=Step;V.Free;end;
+    Steps.SetElements(Elements);Elements:=nil;FTutorStepDirty:=False;
+   end else if (FTutorStep>=0) and (FTutorStep<Steps.Count) then begin
+    if Sender=TutorRemoveStep then begin V:=Elements[FTutorStep];Elements.Delete(FTutorStep);Steps.SetElements(Elements);Elements:=nil;V.Free;FTutorStep:=Min(FTutorStep,Steps.Count-1);end
+    else begin Target:=FTutorStep;if Sender=TutorStepUp then Dec(Target) else if Sender=TutorStepDown then Inc(Target);
+     if (Target>=0) and (Target<Elements.Count) then begin Elements.Exchange(FTutorStep,Target);Steps.SetElements(Elements);Elements:=nil;FTutorStep:=Target;end;
+    end;
+   end;
+  finally Elements.Free;end;
+  FBinding:=True;
+  try TutorSteps.Items.Clear;for I:=0 to Steps.Count-1 do TutorSteps.Items.Add(IntToStr(I+1)+'. '+Steps.Items[I].GetValue<string>('action'));TutorSteps.ItemIndex:=FTutorStep;finally FBinding:=False;end;
+  FKnowledgeEdited:=True;TutorStepSelection(nil);
+ except on E:Exception do StatusLabel.Text:=E.Message;end;
+end;
+procedure TDPHMainForm.TaskCancelClick(Sender:TObject);
+begin
+ if FBusy or (FTaskDraft=nil) then Exit;DiscardKnowledgeClick(nil);WorkspaceTabs.ActiveTab:=TaskTab;
+end;
+procedure TDPHMainForm.TaskSaveClick(Sender:TObject);
+var Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) or (FTaskDraft=nil) then Exit;
+ try
+  if FTutorStepDirty then raise EArgumentException.Create('Keep the current step or undo its edit before saving');
+  Fields:=FTaskDraft.GetValue<TJSONObject>('fields');
+  for Key in DPHLessonKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Tutor_'+Key) as TMemo).Text.Trim);end;
+  TDPHWorkspaceView.ValidateLearningLesson(FTaskDraft);
+  if (TutorAuthor.Text.Trim='') or SameText(TutorAuthor.Text.Trim,'Unknown') then raise EArgumentException.Create('Enter the person supplying these instructions');
+  FBinding:=True;
+  try
+   KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=TutorAuthor.Text.Trim;
+   KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+   KnowledgeBodyMemo.Text:=TDPHWorkspaceView.LearningLessonBody(FTaskDraft);FKnowledgeStructuredJSON:=FTaskDraft.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
+   KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('user_help');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('user');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
+  finally FBinding:=False;end;
+  FStructuredEditorPending:=False;FTaskSavingID:=FTaskDraft.GetValue<string>('lesson_id');Submit('save_knowledge');
+  if FBusy then begin TaskEditorScroll.Enabled:=False;TaskEditorToolbar.Enabled:=False;end else FTaskSavingID:='';
+ except on E:Exception do StatusLabel.Text:=E.Message;end;
 end;
 procedure TDPHMainForm.SetupClick(Sender: TObject);
 begin WorkspaceTabs.ActiveTab:=SetupTab; end;
@@ -1177,6 +1399,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
@@ -1204,12 +1427,14 @@ begin
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
+  FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
   FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
   FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Open Runtime observations and click Refresh saved records.';
+  FreeAndNil(FTaskDraft);FTutorStepDirty:=False;
   FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:=''; FTerminologyJSON:='';
   TranslationStatus.Text:='Select a saved Knowledge revision, then refresh or translate it here.';
@@ -1249,9 +1474,28 @@ begin
       FPendingEntry:=''; FPendingDatabase:='';
       if FView=nil then HelpClick(nil);
     end;
+    if not R.Busy and (FTaskSavingID<>'') then begin
+      TaskEditorScroll.Enabled:=True;TaskEditorToolbar.Enabled:=True;
+      if R.Failed then FTaskSavingID:='';
+    end;
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON) then FKnowledgeEdited:=False;
-      LoadKnowledge(R.Knowledge); R.Knowledge:=nil; end;
+      LoadKnowledge(R.Knowledge); R.Knowledge:=nil;
+      if FTaskSavingID<>'' then begin
+        for var SavedTaskRow in FKnowledge do
+          if TDPHWorkspaceView.IsLearningLesson(SavedTaskRow as TJSONObject) then begin
+            var SavedTaskValue:=TJSONObject.ParseJSONValue(SavedTaskRow.GetValue<string>('structured_json')) as TJSONObject;
+            try if SavedTaskValue.GetValue<string>('lesson_id')=FTaskSavingID then begin TaskFilter.Text:=SavedTaskRow.GetValue<string>('title');Break;end;finally SavedTaskValue.Free;end;
+          end;
+        TaskFilterChange(nil);
+        for var TaskIndex:=0 to FTaskRows.Count-1 do
+          if TDPHWorkspaceView.IsLearningLesson(FTaskRows[TaskIndex]) then begin
+            var SavedLesson:=TJSONObject.ParseJSONValue(FTaskRows[TaskIndex].GetValue<string>('structured_json')) as TJSONObject;
+            try if SavedLesson.GetValue<string>('lesson_id')=FTaskSavingID then begin TaskList.ItemIndex:=TaskIndex;TaskSelectionChange(nil);Break;end;finally SavedLesson.Free;end;
+          end;
+        FTaskSavingID:='';WorkspaceTabs.ActiveTab:=TaskTab;
+      end;
+    end;
     if (R.Comparison<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadComparison(R.Comparison); R.Comparison:=nil; end;
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
@@ -3911,7 +4155,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -3957,6 +4201,7 @@ end;
 procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
+  FreeAndNil(FTaskDraft);FTutorStepDirty:=False;
   FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;FStructuredEditorPending:=False;FStructuredEditorID:='';
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';

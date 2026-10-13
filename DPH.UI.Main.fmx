@@ -25,6 +25,7 @@ Margins.Right = 12
 Items.Strings = (
 'Getting started'
 'Learn the project'
+'Learn a task'
 'Form designs'
 'Screenshots'
 'Explain'
@@ -284,6 +285,7 @@ Items.Strings = (
 'Rename review'
 'Search project'
 'Learn the project'
+'Learn a task'
 'Explain'
 'Source'
 'Graphs'
@@ -295,6 +297,7 @@ Items.Strings = (
 'Source quality'
 'Revision comparison'
 'Saved explanations'
+'Prepare a task'
 'Business glossary'
 'Keyboard and focus'
 'Menus and commands'
@@ -400,6 +403,373 @@ Width = 170
 Height = 28
 OnClick = RelocateClick
 end
+end
+end
+end
+object TaskTab: TTabItem
+Text = 'Learn a task'
+object TaskPurposeLabel: TLabel
+Align = Top
+Margins.Left = 12
+Margins.Right = 12
+Height = 64
+WordWrap = True
+Text = 'Learn one task step by step. Read what must be ready, follow each action, and check the expected result. DPH presents instructions without running the selected application.'
+end
+object TaskToolbar: THorzScrollBox
+Align = Top
+Height = 44
+object TaskNew: TButton
+Position.X = 8
+Position.Y = 6
+Width = 170
+Height = 30
+Text = 'Prepare a new task'
+OnClick = TaskEditClick
+end
+object TaskEdit: TButton
+Position.X = 186
+Position.Y = 6
+Width = 150
+Height = 30
+Text = 'Edit instructions'
+OnClick = TaskEditClick
+end
+object TaskNotes: TButton
+Position.X = 344
+Position.Y = 6
+Width = 150
+Height = 30
+Text = 'Notes and review'
+OnClick = TaskOpenNotes
+end
+end
+object TaskPicker: TLayout
+Align = Left
+Margins.Left = 12
+Width = 240
+object TaskPickerLabel: TLabel
+Align = Top
+Height = 32
+WordWrap = True
+Text = 'Choose a saved task'
+end
+object TaskFilter: TEdit
+Align = Top
+Height = 34
+TextPrompt = 'Find task instructions'
+OnChange = TaskFilterChange
+end
+object TaskNextPage: TButton
+Align = Bottom
+Height = 32
+Text = 'More tasks'
+OnClick = TaskFilterChange
+end
+object TaskList: TListBox
+Align = Client
+OnChange = TaskSelectionChange
+end
+end
+object TaskReaderPanel: TLayout
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+object TaskNavigation: THorzScrollBox
+Align = Bottom
+Height = 44
+object TaskPrevious: TButton
+Position.X = 8
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Previous step'
+OnClick = TaskNavigate
+end
+object TaskNext: TButton
+Position.X = 146
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Next step'
+OnClick = TaskNavigate
+end
+object TaskRestart: TButton
+Position.X = 284
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Start again'
+OnClick = TaskNavigate
+end
+end
+object TaskReaderScroll: TVertScrollBox
+Align = Client
+object TaskReaderTitle: TLabel
+TextSettings.Font.Size = 20
+Position.Y = 0
+Align = Top
+Height = 38
+WordWrap = True
+Text = 'Choose a task to learn'
+end
+object TaskContextMemo: TMemo
+Position.Y = 38
+Align = Top
+Height = 110
+WordWrap = True
+ReadOnly = True
+ShowScrollBars = True
+end
+object TaskStepLabel: TLabel
+Position.Y = 148
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'Step instructions'
+end
+object TaskResultMemo: TMemo
+Position.Y = 358
+Align = Top
+Height = 120
+WordWrap = True
+ReadOnly = True
+ShowScrollBars = True
+end
+object TaskActionMemo: TMemo
+Position.Y = 178
+Align = Top
+Height = 180
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+TextSettings.Font.Size = 17
+end
+end
+end
+end
+object TaskEditorTab: TTabItem
+Text = 'Prepare a task'
+object TaskEditorPurpose: TLabel
+Align = Top
+Margins.Left = 12
+Margins.Right = 12
+Height = 70
+WordWrap = True
+Text = 'Prepare instructions for this selected application. Supply a purpose, prerequisites, ordered actions and expected results. Keep each step, then Save task. Do not invent outcomes; enter Unknown where a result needs confirmation.'
+end
+object TaskEditorToolbar: THorzScrollBox
+Align = Top
+Height = 80
+object TutorAuthorLabel: TLabel
+Position.X = 12
+Position.Y = 0
+Width = 220
+Height = 24
+Text = 'Person supplying these instructions'
+end
+object TutorAuthor: TEdit
+Position.X = 12
+Position.Y = 30
+Width = 220
+Height = 30
+OnChange = TaskEditorChanged
+end
+object TutorSave: TButton
+Position.X = 244
+Position.Y = 30
+Width = 130
+Height = 30
+Text = 'Save task'
+OnClick = TaskSaveClick
+end
+object TutorCancel: TButton
+Position.X = 382
+Position.Y = 30
+Width = 150
+Height = 30
+Text = 'Cancel changes'
+OnClick = TaskCancelClick
+end
+end
+object TaskEditorScroll: TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+object Tutor_name_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'Task name'
+end
+object Tutor_name: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object Tutor_purpose_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'What the learner will accomplish'
+end
+object Tutor_purpose: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object Tutor_prerequisites_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'Before the learner begins'
+end
+object Tutor_prerequisites: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object Tutor_expected_result_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'Expected result of the whole task'
+end
+object Tutor_expected_result: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object Tutor_troubleshooting_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'If something goes wrong'
+end
+object Tutor_troubleshooting: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object Tutor_practice_label: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'Practice and check your understanding'
+end
+object Tutor_practice: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TaskEditorChanged
+end
+object TutorStepsLabel: TLabel
+Align = Top
+Height = 32
+WordWrap = True
+Text = 'Steps in the order the learner follows'
+end
+object TutorSteps: TListBox
+Align = Top
+Height = 150
+OnChange = TutorStepSelection
+end
+object TutorStepToolbar: THorzScrollBox
+Align = Top
+Height = 44
+object TutorNewStep: TButton
+Position.X = 8
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'New step'
+OnClick = TutorStepAction
+end
+object TutorKeepStep: TButton
+Position.X = 146
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Keep step'
+OnClick = TutorStepAction
+end
+object TutorDiscardStep: TButton
+Position.X = 284
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Undo step edit'
+OnClick = TutorStepAction
+end
+object TutorRemoveStep: TButton
+Position.X = 422
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Remove step'
+OnClick = TutorStepAction
+end
+object TutorStepUp: TButton
+Position.X = 560
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Move up'
+OnClick = TutorStepAction
+end
+object TutorStepDown: TButton
+Position.X = 698
+Position.Y = 6
+Width = 130
+Height = 30
+Text = 'Move down'
+OnClick = TutorStepAction
+end
+end
+object TutorActionLabel: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'What the learner does in this step'
+end
+object TutorAction: TMemo
+Align = Top
+Height = 100
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TutorStepChanged
+end
+object TutorExpectedLabel: TLabel
+Align = Top
+Height = 30
+WordWrap = True
+Text = 'What the learner should see after this step'
+end
+object TutorExpected: TMemo
+Align = Top
+Height = 90
+WordWrap = True
+ReadOnly = False
+ShowScrollBars = True
+OnChange = TutorStepChanged
 end
 end
 end

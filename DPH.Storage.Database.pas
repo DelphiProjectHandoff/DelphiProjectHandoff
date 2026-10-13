@@ -840,6 +840,17 @@ begin
           try for ActionIdentityField in ['action_id','target','target_key'] do if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Action purpose target identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''action_purpose'' AND lower(json_extract(r.structured_json,''$.fields.action_id''))=lower(:identity)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.action_id')])<>0 then raise EDPHStorage.Create('A purpose record already exists for this target; refresh and edit it. Retired identities remain reserved.');
+      end else if StructuredValue.GetValue<string>('record_type','')='learning_lesson' then begin
+        TDPHWorkspaceView.ValidateLearningLesson(StructuredValue as TJSONObject);
+        if (AKind<>'user_help') or (DocumentKind<>'user') or (Audience<>'all') or (AEntityKey<>'') then raise EDPHStorage.Create('Task instructions must preserve their selected-project learning scope');
+        if ATitle<>StructuredValue.GetValue<string>('fields.name').Trim then raise EDPHStorage.Create('Task title must match its supplied name');
+        if ABody<>TDPHWorkspaceView.LearningLessonBody(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit task instructions through their preparation page');
+        if SameText(AEditor.Trim,'Unknown') then raise EDPHStorage.Create('Enter the task contributor name');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('lesson_id','')<>StructuredValue.GetValue<string>('lesson_id','') then raise EDPHStorage.Create('Saved task identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''learning_lesson'' AND json_extract(r.structured_json,''$.lesson_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('lesson_id')])<>0 then raise EDPHStorage.Create('This task already exists; edit its current version');
       end else if StructuredValue.GetValue<string>('record_type','')='data_retention' then begin
         TDPHWorkspaceView.ValidateDataRetentionRecord(StructuredValue as TJSONObject);
         if SameText(ATitle.Trim,'Retention policy: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive retention policy title before saving');

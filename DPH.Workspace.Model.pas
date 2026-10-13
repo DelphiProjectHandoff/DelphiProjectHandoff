@@ -9,6 +9,7 @@ const DPHWorkflowKeys:array[0..4] of string = ('name','owner','scope','trigger',
 
 const DPHBusinessRuleKeys:array[0..8] of string = ('rule_code','name','scope','conditions','outcomes','exceptions','owner','approval','unknowns');
 const DPHCalculationKeys:array[0..11] of string = ('name','meaning','formula','inputs','outputs','units','rounding','assumptions','exceptions','examples','owner','unknowns');
+const DPHLessonKeys:array[0..5] of string = ('name','purpose','prerequisites','expected_result','troubleshooting','practice');
 type
   TDPHWorkspaceView = class
   private
@@ -48,6 +49,10 @@ type
     class function IsBusinessProcess(ARow:TJSONObject):Boolean;static;
     class function DescribeBusinessProcess(ARow:TJSONObject):string;static;
     class function NewCalculation:TJSONObject;static;
+    class function NewLearningLesson:TJSONObject;static;
+    class procedure ValidateLearningLesson(ARecord:TJSONObject);static;
+    class function LearningLessonBody(ARecord:TJSONObject):string;static;
+    class function IsLearningLesson(ARow:TJSONObject):Boolean;static;
     class procedure ValidateCalculation(ARecord:TJSONObject);static;
     class function CalculationBody(ARecord:TJSONObject):string;static;
     class function IsCalculation(ARow:TJSONObject):Boolean;static;
@@ -267,6 +272,56 @@ begin
  if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then Result:=Result+sLineBreak+'Current revision author: '+Value.GetValue<string>('editor','unknown');
 end;
 
+class function TDPHWorkspaceView.NewLearningLesson:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','learning_lesson').AddPair('lesson_id',TGUID.NewGuid.ToString);
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);Result.AddPair('steps',TJSONArray.Create);
+ for Key in DPHLessonKeys do Fields.AddPair(Key,'Unknown');
+end;
+class procedure TDPHWorkspaceView.ValidateLearningLesson(ARecord:TJSONObject);
+var Fields,Step:TJSONObject;Steps:TJSONArray;Pair:TJSONPair;V:TJSONValue;Key:string;ID:TGUID;
+begin
+ if (ARecord=nil) or (ARecord.Count<>4) or (ARecord.GetValue<string>('record_type','')<>'learning_lesson') then raise EArgumentException.Create('Expected task instructions');
+ if not (ARecord.GetValue('lesson_id') is TJSONString) then raise EArgumentException.Create('Task identity must be text');
+ try ID:=StringToGUID(ARecord.GetValue<string>('lesson_id'));except raise EArgumentException.Create('Invalid task identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('lesson_id') then raise EArgumentException.Create('Invalid canonical task identity');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>Length(DPHLessonKeys)) then raise EArgumentException.Create('Complete the six task fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Task fields must be text');
+ for Key in DPHLessonKeys do begin
+  if Fields.GetValue<string>(Key,'').Trim='' then raise EArgumentException.Create('Complete '+Key+' or explicitly enter Unknown');
+  if Length(Fields.GetValue<string>(Key))>4096 then raise EArgumentException.Create('Task field exceeds 4096 characters: '+Key);
+ end;
+ if SameText(Fields.GetValue<string>('name').Trim,'Unknown') or (Length(Fields.GetValue<string>('name'))>200) then raise EArgumentException.Create('Enter a descriptive task name of at most 200 characters');
+ if SameText(Fields.GetValue<string>('purpose').Trim,'Unknown') then raise EArgumentException.Create('Explain what this task helps the learner accomplish');
+ if not ARecord.TryGetValue<TJSONArray>('steps',Steps) or (Steps.Count=0) or (Steps.Count>100) then raise EArgumentException.Create('Supply between one and 100 task steps');
+ for V in Steps do begin
+  if not (V is TJSONObject) then raise EArgumentException.Create('Each step needs an action and expected result');
+  Step:=V as TJSONObject;
+  if (Step.Count<>2) or not (Step.GetValue('action') is TJSONString) or not (Step.GetValue('expected_result') is TJSONString) then raise EArgumentException.Create('Each step needs only action and expected result text');
+  for Key in ['action','expected_result'] do if (Step.GetValue<string>(Key).Trim='') or (Length(Step.GetValue<string>(Key))>4096) then raise EArgumentException.Create('Complete the step '+Key+' within 4096 characters');
+  if SameText(Step.GetValue<string>('action').Trim,'Unknown') then raise EArgumentException.Create('Explain the action for each step');
+ end;
+ if Length(ARecord.ToJSON)>65536 then raise EArgumentException.Create('Task instructions exceed 64 KiB');
+end;
+class function TDPHWorkspaceView.LearningLessonBody(ARecord:TJSONObject):string;
+const Labels:array[0..5] of string = ('Task','Purpose','Before you begin','Expected final result','If something goes wrong','Practice and check your understanding');
+var Fields:TJSONObject;I:Integer;V:TJSONValue;
+begin
+ ValidateLearningLesson(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');Result:='TASK WALKTHROUGH'+sLineBreak;
+ for I:=0 to High(DPHLessonKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHLessonKeys[I])+sLineBreak;
+ I:=0;for V in ARecord.GetValue<TJSONArray>('steps') do begin Inc(I);
+  Result:=Result+sLineBreak+IntToStr(I)+'. '+V.GetValue<string>('action')+sLineBreak+'Expected after this step: '+V.GetValue<string>('expected_result')+sLineBreak;
+ end;
+ Result:=Result+sLineBreak+'Instructions supplied by a contributor; review status is recorded separately. DPH presents these steps without executing the selected application. Unknown results need an answer from the author.';
+end;
+class function TDPHWorkspaceView.IsLearningLesson(ARow:TJSONObject):Boolean;
+var V:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ V:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try if V is TJSONObject then Result:=(ARow.GetValue<string>('kind','')='user_help') and (V.GetValue<string>('record_type','')='learning_lesson');finally V.Free;end;
+end;
 class function TDPHWorkspaceView.NewCalculation:TJSONObject;
 var Fields:TJSONObject;Key:string;
 begin
