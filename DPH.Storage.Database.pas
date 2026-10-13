@@ -870,6 +870,16 @@ begin
           try if PriorRecord.GetValue<string>('process_id','')<>StructuredValue.GetValue<string>('process_id','') then raise EDPHStorage.Create('Business process identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''business_process'' AND json_extract(r.structured_json,''$.process_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('process_id')])<>0 then raise EDPHStorage.Create('This business process identity already exists; refresh and edit its current revision');
+      end else if StructuredValue.GetValue<string>('record_type','')='departmental_workflow' then begin
+        TDPHWorkspaceView.ValidateDepartmentalWorkflow(StructuredValue as TJSONObject);
+        if ATitle<>StructuredValue.GetValue<string>('fields.name').Trim then raise EDPHStorage.Create('Workflow title must match its structured name');
+        if (AKind<>'business_rule') or (DocumentKind<>'maintenance') or (Audience<>'maintainer') or (AEntityKey<>'') then raise EDPHStorage.Create('Departmental workflow must preserve its project scope, business rule kind and maintenance audience');
+        if ABody<>TDPHWorkspaceView.DepartmentalWorkflowBody(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit the structured fields on Departmental workflows');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('workflow_id','')<>StructuredValue.GetValue<string>('workflow_id','') then raise EDPHStorage.Create('Departmental workflow identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''departmental_workflow'' AND json_extract(r.structured_json,''$.workflow_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('workflow_id')])<>0 then raise EDPHStorage.Create('This departmental workflow identity already exists; refresh and edit its current revision');
       end else if StructuredValue.GetValue<string>('record_type','')='data_quality' then begin
         TDPHWorkspaceView.ValidateDataQualityRecord(StructuredValue as TJSONObject);
         if SameText(ATitle.Trim,'Quality check: enter descriptive data scope') then raise EDPHStorage.Create('Enter a descriptive data quality rule title before saving');

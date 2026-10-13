@@ -4,6 +4,9 @@ interface
 uses System.SysUtils, System.JSON, System.Generics.Collections,
   DPH.Project.Analysis, DPH.Analysis.Model;
 const DPHBusinessProcessKeys:array[0..7] of string = ('name','owner','department','trigger','inputs','outputs','steps','unknowns');
+const DPHWorkflowKeys:array[0..4] of string = ('name','owner','scope','trigger','unknowns');
+ DPHWorkflowStepKeys:array[0..8] of string = ('step_id','department','role','action','inputs','outputs','handoff','exception_handling','exception_target');
+
 type
   TDPHWorkspaceView = class
   private
@@ -30,6 +33,13 @@ type
     class procedure ValidateDataRetentionRecord(ARecord:TJSONObject);static;
     class function IsDataRetentionPolicy(ARow:TJSONObject):Boolean;static;
     class function DescribeDataRetentionPolicy(ARow:TJSONObject):string;static;
+    class function NewDepartmentalWorkflow:TJSONObject;static;
+    class function NewWorkflowStep:TJSONObject;static;
+    class procedure ValidateWorkflowStep(AStep:TJSONObject);static;
+    class procedure ValidateDepartmentalWorkflow(ARecord:TJSONObject);static;
+    class function DepartmentalWorkflowBody(ARecord:TJSONObject):string;static;
+    class function IsDepartmentalWorkflow(ARow:TJSONObject):Boolean;static;
+    class function DescribeDepartmentalWorkflow(ARow:TJSONObject):string;static;
     class function NewBusinessProcess:TJSONObject;static;
     class procedure ValidateBusinessProcess(ARecord:TJSONObject);static;
     class function BusinessProcessBody(ARecord:TJSONObject):string;static;
@@ -107,6 +117,88 @@ begin
  if ARow.TryGetValue<TJSONArray>('rich_links',Links) then Result:=Result+'Explicit implementation/evidence links: '+IntToStr(Links.Count)+sLineBreak;
  Result:=Result+sLineBreak+ARow.GetValue<string>('body')+sLineBreak+sLineBreak+
   'Open policy to edit, save and review it. Implementation links opens the exact saved links and link editor. Unknown text remains unresolved even when a contributor has reviewed the record. Source links identify captured objects, not successful runtime jobs.';
+end;
+
+class function TDPHWorkspaceView.NewDepartmentalWorkflow:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','departmental_workflow').AddPair('workflow_id',TGUID.NewGuid.ToString);
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);Result.AddPair('steps',TJSONArray.Create);
+ for Key in DPHWorkflowKeys do Fields.AddPair(Key,'Unknown');
+end;
+class function TDPHWorkspaceView.NewWorkflowStep:TJSONObject;
+var Key:string;
+begin
+ Result:=TJSONObject.Create;
+ for Key in DPHWorkflowStepKeys do if Key='step_id' then Result.AddPair(Key,TGUID.NewGuid.ToString) else Result.AddPair(Key,'Unknown');
+end;
+class procedure TDPHWorkspaceView.ValidateWorkflowStep(AStep:TJSONObject);
+var Key:string;Pair:TJSONPair;ID:TGUID;
+begin
+ if (AStep=nil) or (AStep.Count<>Length(DPHWorkflowStepKeys)) then raise EArgumentException.Create('Step requires its nine structured fields');
+ for Pair in AStep do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Step fields must be text');
+ for Key in DPHWorkflowStepKeys do if (AStep.GetValue<string>(Key,'').Trim='') or (Length(AStep.GetValue<string>(Key))>2048) then raise EArgumentException.Create('Complete '+Key+' or enter Unknown; maximum 2048 characters');
+ try ID:=StringToGUID(AStep.GetValue<string>('step_id'));except raise EArgumentException.Create('Invalid step identity');end;
+ if ID.ToString<>AStep.GetValue<string>('step_id') then raise EArgumentException.Create('Use canonical step identity');
+ if SameText(AStep.GetValue<string>('action').Trim,'Unknown') then raise EArgumentException.Create('Enter a descriptive step action');
+end;
+class procedure TDPHWorkspaceView.ValidateDepartmentalWorkflow(ARecord:TJSONObject);
+var Fields:TJSONObject;Steps:TJSONArray;V:TJSONValue;Pair:TJSONPair;Key,Target:string;ID:TGUID;IDs:TList<string>;
+begin
+ if (ARecord=nil) or (ARecord.Count<>4) or (ARecord.GetValue<string>('record_type','')<>'departmental_workflow') then raise EArgumentException.Create('Expected a structured departmental workflow');
+ if Length(ARecord.ToJSON)>65536 then raise EArgumentException.Create('Workflow exceeds 64 KiB; split it into explicitly linked workflows');
+ try ID:=StringToGUID(ARecord.GetValue<string>('workflow_id',''));except raise EArgumentException.Create('Invalid workflow identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('workflow_id') then raise EArgumentException.Create('Use canonical workflow identity');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>Length(DPHWorkflowKeys)) then raise EArgumentException.Create('Workflow requires its five fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Workflow fields must be text');
+ for Key in DPHWorkflowKeys do if (Fields.GetValue<string>(Key,'').Trim='') or (Length(Fields.GetValue<string>(Key))>4096) then raise EArgumentException.Create('Complete '+Key+' or enter Unknown; maximum 4096 characters');
+ if SameText(Fields.GetValue<string>('name').Trim,'Unknown') or (Length(Fields.GetValue<string>('name'))>200) then raise EArgumentException.Create('Enter a descriptive workflow name of at most 200 characters');
+ if not ARecord.TryGetValue<TJSONArray>('steps',Steps) or (Steps.Count<1) or (Steps.Count>64) then raise EArgumentException.Create('Workflow requires 1 through 64 ordered steps');
+ IDs:=TList<string>.Create;
+ try
+  for V in Steps do begin
+   if not (V is TJSONObject) then raise EArgumentException.Create('Step must be an object');
+   ValidateWorkflowStep(V as TJSONObject);Key:=V.GetValue<string>('step_id');
+   if IDs.Contains(Key) then raise EArgumentException.Create('Duplicate workflow step identity');IDs.Add(Key);
+  end;
+  for V in Steps do begin Target:=V.GetValue<string>('exception_target');
+   if (Target<>'Unknown') and (Target<>'End') and not IDs.Contains(Target) then raise EArgumentException.Create('Exception destination is absent from this workflow');
+  end;
+ finally IDs.Free;end;
+end;
+class function TDPHWorkspaceView.DepartmentalWorkflowBody(ARecord:TJSONObject):string;
+const Labels:array[0..4] of string=('Workflow name','Accountable workflow owner','Departments and business scope','Trigger and prerequisites','Unknowns and responsible maintainer');
+ StepLabels:array[0..8] of string=('Stable step identity','Department','Responsible role','Step action','Inputs and origin','Outputs and recipient','Handoff to next department or role','Exception handling and recovery','Exception destination');
+var I,J:Integer;Fields,Step:TJSONObject;Steps:TJSONArray;Target,V:string;
+begin
+ ValidateDepartmentalWorkflow(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');Steps:=ARecord.GetValue<TJSONArray>('steps');
+ Result:='DEPARTMENTAL WORKFLOW'+sLineBreak;
+ for I:=0 to High(DPHWorkflowKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHWorkflowKeys[I])+sLineBreak;
+ Result:=Result+sLineBreak+'ORDERED STEPS AND DEPARTMENT HANDOFFS'+sLineBreak;
+ for I:=0 to Steps.Count-1 do begin Step:=Steps.Items[I] as TJSONObject;
+  Result:=Result+sLineBreak+'Step '+IntToStr(I+1)+': '+Step.GetValue<string>('action')+sLineBreak;
+  for J:=1 to High(DPHWorkflowStepKeys)-1 do Result:=Result+StepLabels[J]+': '+Step.GetValue<string>(DPHWorkflowStepKeys[J])+sLineBreak;
+  if I+1<Steps.Count then V:='Step '+IntToStr(I+2) else V:='End';Result:=Result+'Normal authored sequence: '+V+sLineBreak;
+  Target:=Step.GetValue<string>('exception_target');V:=Target;
+  for J:=0 to Steps.Count-1 do if Steps.Items[J].GetValue<string>('step_id')=Target then V:='Step '+IntToStr(J+1)+': '+Steps.Items[J].GetValue<string>('action');
+  Result:=Result+'Exception destination: '+V+sLineBreak;
+ end;
+ Result:=Result+sLineBreak+'Attributed workflow; Unknown remains unresolved. Ordered steps and exception destinations are supplied by a contributor. DPH never executes this workflow. Content review is separate from business authorization or observed success. Use exact Knowledge links for business-process, source and procedure evidence.';
+end;
+class function TDPHWorkspaceView.IsDepartmentalWorkflow(ARow:TJSONObject):Boolean;
+var V:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;V:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try if V is TJSONObject then Result:=(ARow.GetValue<string>('kind','')='business_rule') and (V.GetValue<string>('record_type','')='departmental_workflow');finally V.Free;end;
+end;
+class function TDPHWorkspaceView.DescribeDepartmentalWorkflow(ARow:TJSONObject):string;
+var History:TJSONArray;V:TJSONValue;
+begin
+ Result:='No saved workflow selected. New workflow opens structured fields and ordered steps. Empty results do not establish absent workflows.';
+ if not IsDepartmentalWorkflow(ARow) then Exit;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner')+sLineBreak+'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+'Explicit implementation/evidence links: '+IntToStr(ARow.GetValue<TJSONArray>('rich_links').Count)+sLineBreak;
+ if ARow.TryGetValue<TJSONArray>('history',History) then for V in History do if V.GetValue<string>('revision')=ARow.GetValue<string>('revision') then Result:=Result+'Current revision author: '+V.GetValue<string>('editor')+sLineBreak;
+ Result:=Result+sLineBreak+ARow.GetValue<string>('body');
 end;
 
 class function TDPHWorkspaceView.NewBusinessProcess:TJSONObject;

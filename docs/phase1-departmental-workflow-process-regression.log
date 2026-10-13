@@ -1,0 +1,92 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.BusinessProcess.Workflow.dpr(69) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+18939 lines, 2.27 seconds, 10759160 bytes code, 349120 bytes data.
+PASS 1: Structured process inputs rendered
+PASS 2: Structured process outputs rendered
+PASS 3: Accountable owner rendered separately from contributor
+PASS 4: Structured ordered steps rendered
+PASS 5: Missing department remains explicitly unknown
+PASS 6: Business process qualification retained
+PASS 7: Anonymous process author rejected
+PASS 8: Placeholder title rejected
+PASS 9: Removed process heading rejected
+PASS 10: Incorrect process kind rejected
+PASS 11: Incorrect process audience rejected
+PASS 12: Invalid stable process identity rejected
+PASS 13: Unknown process metadata rejected
+PASS 14: Empty structured inputs rejected; Unknown must be explicit
+PASS 15: Numeric owner rejected
+PASS 16: Oversized structured field rejected
+PASS 17: Noncanonical GUID spelling rejected to prevent duplicate identities
+PASS 18: Actual captured semantic implementation routine available
+PASS 19: Typed persisted process recognized
+PASS 20: Named contributor persists
+PASS 21: Saved process remains pending review
+PASS 22: Routine and exact procedure-revision links persist
+PASS 23: Structured process inputs persist
+PASS 24: Unresolved fields stay explicit
+PASS 25: Inspector distinguishes resolved link count
+PASS 26: Duplicate process identity rejected
+PASS 27: Typed metadata cannot be discarded
+PASS 28: Saved process identity cannot change
+PASS 29: Anonymous process review rejected
+PASS 30: Named reviewer persists
+PASS 31: Review appends immutable history
+PASS 32: Review retains exact implementation links
+PASS 33: Stale process edit rejected
+PASS 34: Process edits reopen review
+PASS 35: Prior reviewed process retained
+PASS 36: Process revision preserves implementation links
+PASS 37: Changed structured output persists
+PASS 38: Structured process body cannot diverge from fields
+PASS 39: Process database integrity valid
+PASS 40: Maintainer publication includes authored process
+PASS 41: Canonical handoff preserves typed process identity
+PASS 42: Business process handoff passes full bundle validation
+PASS 43: Published HTML includes structured inputs
+PASS 44: Business process survives database close and reopen
+PASS 45: Exact structured fields survive reopening
+PASS 46: Immutable review and edit history survives reopening
+PASS 47: Exact source and procedure links survive reopening
+PASS 48: Native register includes process and excludes unrelated procedure
+PASS 49: Native inspector shows current contributor
+PASS 50: Open plan enters saved Knowledge workflow
+PASS 51: Saved structured body protected from free text edits
+PASS 52: Saved stable title protected
+PASS 53: Saved process kind protected
+PASS 54: Implementation links opens exact link workflow
+PASS 55: Native exact implementation links available
+PASS 56: Saved implementation routine opens captured explanation
+PASS 57: Edit opens native structured fields
+PASS 58: Native editor restores persisted input
+PASS 59: Saved process name remains stable
+PASS 60: Compact editor commands scroll horizontally
+PASS 61: Unknowns field retains editable height
+PASS 62: Apply prepares Knowledge draft
+PASS 63: Native structured edit generates canonical body
+PASS 64: Unsaved structured draft protected from selection
+PASS 65: Unsaved structured draft protected from replacement
+PASS 66: New process opens structured editor
+PASS 67: New process name editable
+PASS 68: Anonymous contributor keeps process in editor
+PASS 69: New native process canonical body prepared
+PASS 70: Canonical draft body protected
+PASS 71: Review-state filter respects pending edit
+PASS 72: Process text search finds authored input
+PASS 73: Empty register explains unresolved obligations
+PASS 74: Empty results disable opening
+PASS 75: Compact process detail remains readable
+PASS 76: Compact commands and long policies scroll
+PASS 77: Large register first page bounded
+PASS 78: Large register next page accessible
+PASS 79: Remaining process rows accessible
+PASS 80: Clearing loaded knowledge removes prior process rows
+PASS 81: No capture disables new process
+PASS 82: Process workflow leaves captured workspace unchanged
+PASS 83: Target source unchanged
+PASS 84: Owner catalog unchanged

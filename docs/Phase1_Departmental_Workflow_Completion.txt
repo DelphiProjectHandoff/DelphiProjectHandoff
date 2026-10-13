@@ -1,0 +1,24 @@
+DPH REQUIREMENT 06.02 COMPLETION: DEPARTMENTAL WORKFLOWS
+Last changed: 12 October 2026
+
+Native workflow register and ordered step editor support departments, roles,
+actions, handoffs and stable exception destinations. Exact source and process
+links persist with typed identities, review and immutable history.
+Controls remain IDE-editable; no helper unit, migration or target execution.
+
+Validation PASS: 104 focused + 348 regression = 452 checks.
+Actual application and FMX baseline PASS. Normal/compact native renders reviewed.
+All 74 guide pages covered: 64 pixel-identical previously reviewed pages and 10
+changed pages inspected. 58 source hashes and 122 TOC destinations verified.
+Editable DOCX and PDF guides and explicit run/test directions updated.
+Directions: docs/guides/Departmental_Workflow_Run_and_Test.txt
+
+Attributed departmental workflows preserve ordered department steps, responsible roles, actions, inputs, outputs, handoffs, exception handling and stable exception destinations. Native fields, step add/remove/reorder, exact implementation links, named review and immutable history persist through database reopening and canonical publication. Unknown remains unresolved; an authored workflow does not prove execution, authorization or business outcomes. One workflow supports 1 to 64 steps with explicit field and structured JSON limits. Process diagrams remain a separate unfinished requirement.
+
+Pre-change backup: H:\DPH Backups\DepartmentalWorkflows_PreChange_20261012_194558
+9630 files, 3174576638 bytes; every SHA256 verified. No post-change backup.
+
+Only 06.02 promoted; all 533 original IDs and texts preserved.
+195 implemented; 23 implemented_manual_capture; 226 partial; 89 missing.
+315 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.03 End-to-end process diagrams.

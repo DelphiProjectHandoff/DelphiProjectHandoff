@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business process inventory 06.01 implemented as attributed manual capture; 316 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Departmental workflows 06.02 implemented as attributed manual capture; 315 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2602,15 +2602,29 @@
       "id": "06.02",
       "domain": "DPH-06",
       "requirement": "Departmental workflows",
-      "implementation": "missing",
+      "implementation": "implemented_manual_capture",
       "evidence": [
+        "DPH.Workspace.Model.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "tests/DPH.Tests.DepartmentalWorkflow.dpr",
+        "tools/build-departmental-workflow.cmd",
+        "docs/phase1-departmental-workflow-validation.json",
+        "docs/phase1-departmental-workflow-validation.log",
+        "docs/guides/Departmental_Workflow_Run_and_Test.txt"
       ],
-      "limitation": "Add attributed workflow steps, roles, handoffs and exception paths.",
+      "limitation": "Attributed departmental workflows preserve ordered department steps, responsible roles, actions, inputs, outputs, handoffs, exception handling and stable exception destinations. Native fields, step add/remove/reorder, exact implementation links, named review and immutable history persist through database reopening and canonical publication. Unknown remains unresolved; an authored workflow does not prove execution, authorization or business outcomes. One workflow supports 1 to 64 steps with explicit field and structured JSON limits. Process diagrams remain a separate unfinished requirement.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 3,
+        "finding": "Native departmental workflow register and ordered step editor persist roles, handoffs, exception handling and stable exception destinations with exact source/business-process links, named review and immutable history. Canonical publication retains the structured workflow.",
+        "remaining_work": "",
+        "purpose": "Departmental workflows",
+        "evidence_group": "knowledge",
+        "verification": "104 focused plus 348 regression checks pass; application/FMX pass. Real database reopening preserves fields/history/links. All 74 guide pages covered by visual review: 64 pixel-identical previously reviewed pages and 10 changed pages inspected. 58 source hashes and 122 TOC destinations verified. "
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 3,
         "finding": "Department text is available in profiles, but departmental workflows are not modeled.",
@@ -2618,6 +2632,12 @@
         "purpose": "Departmental workflows",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Departmental workflows",
+        "validation": "docs/phase1-departmental-workflow-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12911,23 +12931,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Business process inventory",
+    "completed_batch": "Departmental workflows",
     "completed_requirement_ids": [
-      "06.01"
+      "06.02"
     ],
     "counts": {
-      "implemented_manual_capture": 22,
+      "implemented_manual_capture": 23,
       "partial": 226,
       "implemented": 195,
-      "missing": 90
+      "missing": 89
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 316,
-    "completion_record": "docs/Phase1_Business_Process_Completion.txt",
+    "incomplete_requirement_records": 315,
+    "completion_record": "docs/Phase1_Departmental_Workflow_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "06.02",
-      "title": "Departmental workflows",
-      "scope": "Add attributed workflow steps, roles, handoffs and exception paths."
+      "requirement": "06.03",
+      "title": "End-to-end process diagrams",
+      "scope": "Add a process-step graph connected to reviewed business-process records."
     }
   }
 }

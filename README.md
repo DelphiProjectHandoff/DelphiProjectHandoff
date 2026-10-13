@@ -140,3 +140,5 @@ Requirement 05.19 adds Target data quality: attributed rules, thresholds, owners
 Requirement 05.20 adds Target backup and restore: attributed requirements, recovery objectives, operational responsibility, exact source/procedure links and recovery-test evidence. See docs/guides/Target_Recovery_Run_and_Test.txt. Target jobs never execute.
 
 Requirement 06.01 adds Business processes with a native structured editor for owner, inputs, outputs, trigger, roles, steps and unknowns, plus stable identity, exact source/procedure links and named review/history. See docs/guides/Business_Process_Run_and_Test.txt.
+
+Requirement 06.02 adds Departmental workflows with native ordered step editing, roles, handoffs, explicit exception destinations, named review/history and exact source/procedure links. See docs/guides/Departmental_Workflow_Run_and_Test.txt. Save now refuses unapplied structured editor fields.

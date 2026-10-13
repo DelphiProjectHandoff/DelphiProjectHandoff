@@ -1,0 +1,120 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(142) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(215) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(223) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(225) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(231) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(239) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(247) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(282) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.DepartmentalWorkflow.dpr(342) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+19416 lines, 1.62 seconds, 10765196 bytes code, 349172 bytes data.
+PASS 1: Step input rendered
+PASS 2: Departmental handoff rendered
+PASS 3: Step role rendered
+PASS 4: Explicit ordered sequence rendered
+PASS 5: Exception destination resolves stable step identity
+PASS 6: Unresolved business fields remain explicit
+PASS 7: Anonymous process author rejected
+PASS 8: Placeholder title rejected
+PASS 9: Removed process heading rejected
+PASS 10: Incorrect process kind rejected
+PASS 11: Incorrect process audience rejected
+PASS 12: Invalid stable process identity rejected
+PASS 13: Unknown process metadata rejected
+PASS 14: Empty structured scope rejected; Unknown must be explicit
+PASS 15: Numeric owner rejected
+PASS 16: Oversized structured field rejected
+PASS 17: Noncanonical GUID spelling rejected to prevent duplicate identities
+PASS 18: Dangling exception destination rejected
+PASS 19: Duplicate step identity rejected
+PASS 20: Non-text step role rejected
+PASS 21: Unnamed step action rejected
+PASS 22: Oversized step field rejected
+PASS 23: More than 64 workflow steps rejected
+PASS 24: Actual captured semantic implementation routine available
+PASS 25: Typed persisted process recognized
+PASS 26: Named contributor persists
+PASS 27: Saved process remains pending review
+PASS 28: Routine and exact procedure-revision links persist
+PASS 29: Departmental handoff persists
+PASS 30: Unresolved fields stay explicit
+PASS 31: Inspector distinguishes resolved link count
+PASS 32: Duplicate process identity rejected
+PASS 33: Typed metadata cannot be discarded
+PASS 34: Saved process identity cannot change
+PASS 35: Anonymous process review rejected
+PASS 36: Named reviewer persists
+PASS 37: Review appends immutable history
+PASS 38: Review retains exact implementation links
+PASS 39: Stale process edit rejected
+PASS 40: Workflow edits reopen review
+PASS 41: Prior reviewed process retained
+PASS 42: Workflow revision preserves implementation links
+PASS 43: Changed structured output persists
+PASS 44: Structured process body cannot diverge from fields
+PASS 45: Workflow database integrity valid
+PASS 46: Maintainer publication includes authored process
+PASS 47: Canonical handoff preserves typed process identity
+PASS 48: Business process handoff passes full bundle validation
+PASS 49: Published HTML includes structured inputs
+PASS 50: Business process survives database close and reopen
+PASS 51: Exact structured fields survive reopening
+PASS 52: Immutable review and edit history survives reopening
+PASS 53: Exact source and procedure links survive reopening
+PASS 54: Native register includes process and excludes unrelated procedure
+PASS 55: Native inspector shows current contributor
+PASS 56: Open plan enters saved Knowledge workflow
+PASS 57: Saved structured body protected from free text edits
+PASS 58: Saved stable title protected
+PASS 59: Saved process kind protected
+PASS 60: Implementation links opens exact link workflow
+PASS 61: Native exact implementation links available
+PASS 62: Saved implementation routine opens captured explanation
+PASS 63: Edit opens native workflow editor
+PASS 64: Saved ordered steps restored
+PASS 65: Saved workflow name protected
+PASS 66: Save refuses unapplied workflow editor
+PASS 67: Native selected step restores role
+PASS 68: Native selected step restores handoff
+PASS 69: Referring exception prevents removal of its target
+PASS 70: Dirty step prevents workflow apply
+PASS 71: Dirty step prevents replacement
+PASS 72: Apply edited step preserves count
+PASS 73: Move down keeps selected step identity
+PASS 74: Move down changes authored order
+PASS 75: Move up restores authored order
+PASS 76: New structured step appended
+PASS 77: Apply workflow prepares canonical Knowledge draft
+PASS 78: Edited step output enters canonical body
+PASS 79: Added step enters canonical body
+PASS 80: Unsaved workflow draft protected from selection
+PASS 81: Unsaved workflow draft protected from replacement
+PASS 82: New workflow opens editor
+PASS 83: New workflow starts without invented steps
+PASS 84: New workflow name editable
+PASS 85: Empty workflow cannot apply
+PASS 86: New authored step applies to draft
+PASS 87: Anonymous workflow contributor rejected
+PASS 88: New workflow canonical body generated
+PASS 89: Structured workflow body protected
+PASS 90: Review-state filter respects pending edit
+PASS 91: Workflow text search finds authored input
+PASS 92: Empty register explains unresolved obligations
+PASS 93: Empty results disable opening
+PASS 94: Compact workflow commands scroll
+PASS 95: Compact workflow detail remains readable
+PASS 96: Compact commands and long policies scroll
+PASS 97: Large register first page bounded
+PASS 98: Large register next page accessible
+PASS 99: Remaining workflow rows accessible
+PASS 100: Clearing loaded knowledge removes prior workflow rows
+PASS 101: No capture disables new workflow
+PASS 102: Workflow workflow leaves captured workspace unchanged
+PASS 103: Target source unchanged
+PASS 104: Owner catalog unchanged

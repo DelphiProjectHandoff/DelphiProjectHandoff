@@ -196,6 +196,36 @@ type
     BusinessProcessFirst,BusinessProcessNext,BusinessProcessNew,BusinessProcessOpen,BusinessProcessLinks:TButton;
     BusinessProcessList:TListBox;
     BusinessProcessMemo:TMemo;
+    DepartmentalWorkflowTab:TTabItem;
+    DepartmentalWorkflowPurpose,DepartmentalWorkflowStatus,DepartmentalWorkflowEvidenceLabel:TLabel;
+    DepartmentalWorkflowToolbar:THorzScrollBox;
+    DepartmentalWorkflowFilter:TEdit;
+    DepartmentalWorkflowState:TComboBox;
+    DepartmentalWorkflowFirst,DepartmentalWorkflowNext,DepartmentalWorkflowNew,DepartmentalWorkflowOpen,DepartmentalWorkflowLinks:TButton;
+    DepartmentalWorkflowList:TListBox;
+    DepartmentalWorkflowMemo:TMemo;
+    DepartmentalWorkflowEdit:TButton;
+    WorkflowEditorTab:TTabItem;
+    WorkflowEditorPurpose,WorkflowAuthorLabel,WorkflowStepsLabel,WorkflowExceptionLabel:TLabel;
+    WorkflowEditorToolbar,WorkflowStepToolbar:THorzScrollBox;
+    WorkflowAuthor:TEdit;
+    WorkflowApply,WorkflowCancel,WorkflowNewStep,WorkflowSaveStep,WorkflowDiscardStep,WorkflowRemoveStep,WorkflowStepUp,WorkflowStepDown:TButton;
+    WorkflowEditorScroll:TVertScrollBox;
+    WorkflowSteps:TListBox;
+    WorkflowExceptionTarget:TComboBox;
+    Workflow_name_Row:TLayout;Workflow_name_Label:TLabel;Workflow_name:TMemo;
+    Workflow_owner_Row:TLayout;Workflow_owner_Label:TLabel;Workflow_owner:TMemo;
+    Workflow_scope_Row:TLayout;Workflow_scope_Label:TLabel;Workflow_scope:TMemo;
+    Workflow_trigger_Row:TLayout;Workflow_trigger_Label:TLabel;Workflow_trigger:TMemo;
+    Workflow_unknowns_Row:TLayout;Workflow_unknowns_Label:TLabel;Workflow_unknowns:TMemo;
+    Step_step_id_Row:TLayout;Step_step_id_Label:TLabel;Step_step_id:TMemo;
+    Step_department_Row:TLayout;Step_department_Label:TLabel;Step_department:TMemo;
+    Step_role_Row:TLayout;Step_role_Label:TLabel;Step_role:TMemo;
+    Step_action_Row:TLayout;Step_action_Label:TLabel;Step_action:TMemo;
+    Step_inputs_Row:TLayout;Step_inputs_Label:TLabel;Step_inputs:TMemo;
+    Step_outputs_Row:TLayout;Step_outputs_Label:TLabel;Step_outputs:TMemo;
+    Step_handoff_Row:TLayout;Step_handoff_Label:TLabel;Step_handoff:TMemo;
+    Step_exception_handling_Row:TLayout;Step_exception_handling_Label:TLabel;Step_exception_handling:TMemo;
     BusinessProcessEdit:TButton;
     BusinessProcessEditorTab:TTabItem;
     BusinessProcessEditorPurpose,BusinessProcessAuthorLabel:TLabel;
@@ -470,6 +500,18 @@ type
     procedure BusinessProcessNewClick(Sender:TObject);
     procedure BusinessProcessOpenClick(Sender:TObject);
 
+    procedure DepartmentalWorkflowFilterChange(Sender:TObject);
+    procedure DepartmentalWorkflowSelectionChange(Sender:TObject);
+    procedure DepartmentalWorkflowNewClick(Sender:TObject);
+    procedure DepartmentalWorkflowOpenClick(Sender:TObject);
+
+    procedure DepartmentalWorkflowEditClick(Sender:TObject);
+    procedure WorkflowApplyClick(Sender:TObject);
+    procedure StructuredEditorChange(Sender:TObject);
+    procedure WorkflowStepClick(Sender:TObject);
+    procedure WorkflowStepChange(Sender:TObject);
+    procedure WorkflowStepAction(Sender:TObject);
+    procedure RefreshWorkflowSteps;
     procedure BusinessProcessEditClick(Sender:TObject);
     procedure BusinessProcessApplyClick(Sender:TObject);
     procedure DataQualityFilterChange(Sender:TObject);
@@ -594,6 +636,13 @@ type
     FFileFormats:TJSONObject;
     FDataQualityRows:TList<TJSONObject>;
     FDataQualityOffset:Integer;
+    FDepartmentalWorkflowRows:TList<TJSONObject>;
+    FDepartmentalWorkflowOffset:Integer;
+    FWorkflowDraft:TJSONObject;
+    FWorkflowStepIndex:Integer;
+    FWorkflowStepDirty:Boolean;
+    FStructuredEditorPending:Boolean;
+    FStructuredEditorID:string;
     FBusinessProcessRows:TList<TJSONObject>;
     FBusinessProcessOffset:Integer;
     FTargetRecoveryRows:TList<TJSONObject>;
@@ -685,7 +734,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FDepartmentalWorkflowRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -712,7 +761,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil);
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -736,7 +785,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FDataQualityRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
+  FDataQualityRows.Free;FWorkflowDraft.Free;FDepartmentalWorkflowRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -1058,6 +1107,7 @@ begin
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
   FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Open Runtime observations and click Refresh saved records.';
+  FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:=''; FTerminologyJSON:='';
   TranslationStatus.Text:='Select a saved Knowledge revision, then refresh or translate it here.';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
@@ -1068,7 +1118,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -2510,6 +2560,52 @@ begin
  end;
 end;
 
+procedure TDPHMainForm.DepartmentalWorkflowFilterChange(Sender:TObject);
+var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
+begin
+ if FDepartmentalWorkflowRows=nil then Exit;
+ if Sender=DepartmentalWorkflowNext then Inc(FDepartmentalWorkflowOffset,250) else FDepartmentalWorkflowOffset:=0;
+ FDepartmentalWorkflowRows.Clear;DepartmentalWorkflowList.Items.Clear;DepartmentalWorkflowNext.Enabled:=False;DepartmentalWorkflowNew.Enabled:=FView<>nil;
+ DepartmentalWorkflowSelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin DepartmentalWorkflowStatus.Text:='Open a captured project, then New workflow to record its departmental workflow.';Exit;end;
+ Query:=DepartmentalWorkflowFilter.Text.Trim;StateFilter:='';if DepartmentalWorkflowState.ItemIndex>0 then StateFilter:=DepartmentalWorkflowState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsDepartmentalWorkflow(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeDepartmentalWorkflow(Row),Query) then Continue;
+  if (Count>=FDepartmentalWorkflowOffset) and (FDepartmentalWorkflowRows.Count<250) then begin
+   FDepartmentalWorkflowRows.Add(Row);DepartmentalWorkflowList.Items.Add('['+Row.GetValue<string>('state')+'] '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ DepartmentalWorkflowNext.Enabled:=Count>FDepartmentalWorkflowOffset+FDepartmentalWorkflowRows.Count;
+ DepartmentalWorkflowStatus.Text:=IntToStr(Count)+' saved workflows match; '+IntToStr(FDepartmentalWorkflowRows.Count)+' shown from '+IntToStr(FDepartmentalWorkflowOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if DepartmentalWorkflowList.Count>0 then DepartmentalWorkflowList.ItemIndex:=0;
+ DepartmentalWorkflowSelectionChange(nil);
+end;
+procedure TDPHMainForm.DepartmentalWorkflowSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FDepartmentalWorkflowRows<>nil) and (DepartmentalWorkflowList.ItemIndex>=0) and (DepartmentalWorkflowList.ItemIndex<FDepartmentalWorkflowRows.Count) then Row:=FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex];
+ DepartmentalWorkflowEdit.Enabled:=Row<>nil;DepartmentalWorkflowOpen.Enabled:=Row<>nil;DepartmentalWorkflowLinks.Enabled:=Row<>nil;
+ DepartmentalWorkflowMemo.Text:=TDPHWorkspaceView.DescribeDepartmentalWorkflow(Row);
+end;
+procedure TDPHMainForm.DepartmentalWorkflowNewClick(Sender:TObject);
+begin DepartmentalWorkflowEditClick(DepartmentalWorkflowNew);end;
+procedure TDPHMainForm.DepartmentalWorkflowOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another workflow.';Exit;end;
+ if (DepartmentalWorkflowList.ItemIndex<0) or (DepartmentalWorkflowList.ItemIndex>=FDepartmentalWorkflowRows.Count) then Exit;
+ Row:=FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=DepartmentalWorkflowLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
 procedure TDPHMainForm.BusinessProcessEditClick(Sender:TObject);
 var RecordValue,Fields:TJSONObject;Key:string;
 begin
@@ -2523,7 +2619,7 @@ begin
   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_process') then begin RecordValue.Free;Exit;end;
  end;
  try
-  FKnowledgeStructuredJSON:=RecordValue.ToJSON;Fields:=RecordValue.GetValue<TJSONObject>('fields');
+  FKnowledgeStructuredJSON:=RecordValue.ToJSON;FStructuredEditorID:=RecordValue.GetValue<string>('process_id');FStructuredEditorPending:=True;Fields:=RecordValue.GetValue<TJSONObject>('fields');
   for Key in DPHBusinessProcessKeys do (FindComponent('Process_'+Key) as TMemo).Text:=Fields.GetValue<string>(Key,'Unknown');
   Process_name.ReadOnly:=FKnowledgeID<>0;BusinessProcessAuthor.Text:=KnowledgeAuthorEdit.Text;
  finally RecordValue.Free;end;
@@ -2537,7 +2633,7 @@ begin
  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
  try
   try
-   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_process') then raise EArgumentException.Create('Start or edit a process first');
+   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_process') or (RecordValue.GetValue<string>('process_id','')<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this process with Edit fields before applying');
    Fields:=RecordValue.GetValue<TJSONObject>('fields');
    for Key in DPHBusinessProcessKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Process_'+Key) as TMemo).Text.Trim);end;
    TDPHWorkspaceView.ValidateBusinessProcess(RecordValue);
@@ -2550,9 +2646,145 @@ begin
     KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
     FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
    finally FBinding:=False;end;
-   WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Process draft prepared. Click Save to persist. Add exact source links on Knowledge links, Save again and review separately.';
+   FStructuredEditorPending:=False;WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Process draft prepared. Click Save to persist. Add exact source links on Knowledge links, Save again and review separately.';
   except on E:Exception do StatusLabel.Text:=E.Message;end;
  finally RecordValue.Free;end;
+end;
+
+procedure TDPHMainForm.DepartmentalWorkflowEditClick(Sender:TObject);
+var Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before editing a workflow.';Exit;end;
+ if Sender=DepartmentalWorkflowNew then begin NewKnowledgeClick(nil);FWorkflowDraft:=TDPHWorkspaceView.NewDepartmentalWorkflow;end
+ else begin
+  if DepartmentalWorkflowList.ItemIndex<0 then Exit;
+  DepartmentalWorkflowOpenClick(nil);FreeAndNil(FWorkflowDraft);
+  FWorkflowDraft:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+  if (FWorkflowDraft=nil) or (FWorkflowDraft.GetValue<string>('record_type','')<>'departmental_workflow') then begin FreeAndNil(FWorkflowDraft);Exit;end;
+ end;
+ FBinding:=True;
+ try
+  Fields:=FWorkflowDraft.GetValue<TJSONObject>('fields');
+  for Key in DPHWorkflowKeys do (FindComponent('Workflow_'+Key) as TMemo).Text:=Fields.GetValue<string>(Key,'Unknown');
+  Workflow_name.ReadOnly:=FKnowledgeID<>0;WorkflowAuthor.Text:=KnowledgeAuthorEdit.Text;
+  FWorkflowStepIndex:=-1;FWorkflowStepDirty:=False;
+ finally FBinding:=False;end;
+ FKnowledgeStructuredJSON:=FWorkflowDraft.ToJSON;FStructuredEditorID:=FWorkflowDraft.GetValue<string>('workflow_id');FStructuredEditorPending:=True;FKnowledgeEdited:=True;RefreshWorkflowSteps;WorkspaceTabs.ActiveTab:=WorkflowEditorTab;
+ StatusLabel.Text:='Complete workflow fields and add ordered steps. Apply step keeps it in this draft; Apply workflow prepares Knowledge. Save and review separately.';
+end;
+procedure TDPHMainForm.RefreshWorkflowSteps;
+var Steps:TJSONArray;V:TJSONValue;I:Integer;
+begin
+ if FWorkflowDraft=nil then Exit;
+ Steps:=FWorkflowDraft.GetValue<TJSONArray>('steps');FBinding:=True;
+ try
+  WorkflowSteps.Items.Clear;WorkflowExceptionTarget.Items.Clear;WorkflowExceptionTarget.Items.Add('Unknown');WorkflowExceptionTarget.Items.Add('End');
+  I:=0;for V in Steps do begin Inc(I);WorkflowSteps.Items.Add(IntToStr(I)+'. '+V.GetValue<string>('department')+' | '+V.GetValue<string>('role')+' | '+V.GetValue<string>('action'));WorkflowExceptionTarget.Items.Add('Step '+IntToStr(I)+': '+V.GetValue<string>('action'));end;
+  WorkflowSteps.ItemIndex:=FWorkflowStepIndex;
+ finally FBinding:=False;end;
+ WorkflowStepClick(nil);
+end;
+procedure TDPHMainForm.WorkflowStepClick(Sender:TObject);
+var Steps:TJSONArray;Step:TJSONObject;Key,Target:string;I:Integer;
+begin
+ if FBinding or (FWorkflowDraft=nil) then Exit;
+ if FWorkflowStepDirty then begin FBinding:=True;try WorkflowSteps.ItemIndex:=FWorkflowStepIndex;finally FBinding:=False;end;StatusLabel.Text:='Apply step or discard step changes before selecting another step.';Exit;end;
+ Steps:=FWorkflowDraft.GetValue<TJSONArray>('steps');FWorkflowStepIndex:=WorkflowSteps.ItemIndex;Step:=nil;
+ if (FWorkflowStepIndex>=0) and (FWorkflowStepIndex<Steps.Count) then Step:=Steps.Items[FWorkflowStepIndex] as TJSONObject;
+ FBinding:=True;
+ try
+  for Key in DPHWorkflowStepKeys do if Key<>'exception_target' then begin
+   (FindComponent('Step_'+Key) as TMemo).Text:='';if Step<>nil then (FindComponent('Step_'+Key) as TMemo).Text:=Step.GetValue<string>(Key);
+  end;
+  WorkflowExceptionTarget.ItemIndex:=0;
+  if Step<>nil then begin Target:=Step.GetValue<string>('exception_target');if Target='End' then WorkflowExceptionTarget.ItemIndex:=1;
+   for I:=0 to Steps.Count-1 do if Steps.Items[I].GetValue<string>('step_id')=Target then WorkflowExceptionTarget.ItemIndex:=I+2;
+  end;
+ finally FBinding:=False;end;
+end;
+procedure TDPHMainForm.StructuredEditorChange(Sender:TObject);
+var RecordValue:TJSONValue;ID:string;
+begin
+ if FBinding or (FView=nil) or (FStructuredEditorID='') then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON);
+ try
+  if not (RecordValue is TJSONObject) then Exit;
+  ID:=RecordValue.GetValue<string>('process_id',RecordValue.GetValue<string>('workflow_id',''));
+  if ID<>FStructuredEditorID then begin StatusLabel.Text:='Reopen the record with Edit fields before changing these fields.';Exit;end;
+  FStructuredEditorPending:=True;FKnowledgeEdited:=True;
+ finally RecordValue.Free;end;
+end;
+procedure TDPHMainForm.WorkflowStepChange(Sender:TObject);
+begin if not FBinding and (FWorkflowDraft<>nil) then begin StructuredEditorChange(Sender);if FStructuredEditorPending then FWorkflowStepDirty:=True;end;end;
+procedure TDPHMainForm.WorkflowStepAction(Sender:TObject);
+var Steps:TJSONArray;Step:TJSONObject;Key,Target:string;V:TJSONValue;Index,I:Integer;Elements:TList<TJSONValue>;
+begin
+ if FBusy or (FView=nil) or (FWorkflowDraft=nil) or not FKnowledgeEdited then Exit;
+ FStructuredEditorPending:=True;
+ Steps:=FWorkflowDraft.GetValue<TJSONArray>('steps');
+ try
+  if Sender=WorkflowDiscardStep then begin FWorkflowStepDirty:=False;WorkflowStepClick(nil);Exit;end;
+  if (Sender<>WorkflowSaveStep) and FWorkflowStepDirty then raise EArgumentException.Create('Apply step or discard step changes first');
+  if Sender=WorkflowNewStep then begin
+   if Steps.Count>=64 then raise EArgumentException.Create('Workflow is limited to 64 steps');
+   Step:=TDPHWorkspaceView.NewWorkflowStep;
+   try FBinding:=True;try for Key in DPHWorkflowStepKeys do if Key<>'exception_target' then (FindComponent('Step_'+Key) as TMemo).Text:=Step.GetValue<string>(Key);WorkflowExceptionTarget.ItemIndex:=0;WorkflowSteps.ItemIndex:=-1;FWorkflowStepIndex:=-1;finally FBinding:=False;end;finally Step.Free;end;
+   FWorkflowStepDirty:=True;StatusLabel.Text:='Complete the new step action, department, role, inputs, outputs, handoff and exception path; then Apply step.';Exit;
+  end;
+  if Sender=WorkflowSaveStep then begin
+   if not FWorkflowStepDirty then Exit;
+   Step:=TJSONObject.Create;
+   try
+    for Key in DPHWorkflowStepKeys do if Key<>'exception_target' then Step.AddPair(Key,(FindComponent('Step_'+Key) as TMemo).Text.Trim);
+    Target:='Unknown';Index:=WorkflowExceptionTarget.ItemIndex;
+    if Index=1 then Target:='End' else if (Index>=2) and (Index-2<Steps.Count) then Target:=Steps.Items[Index-2].GetValue<string>('step_id');
+    Step.AddPair('exception_target',Target);TDPHWorkspaceView.ValidateWorkflowStep(Step);
+    if FWorkflowStepIndex<0 then begin Steps.AddElement(Step.Clone as TJSONObject);FWorkflowStepIndex:=Steps.Count-1;end
+    else begin
+     Elements:=TList<TJSONValue>.Create;
+     for I:=0 to Steps.Count-1 do if I=FWorkflowStepIndex then Elements.Add(Step.Clone as TJSONObject) else Elements.Add(Steps.Items[I]);
+     V:=Steps.Items[FWorkflowStepIndex];Steps.SetElements(Elements);V.Free;
+    end;
+   finally Step.Free;end;
+   FWorkflowStepDirty:=False;RefreshWorkflowSteps;StatusLabel.Text:='Step applied to workflow draft. Apply workflow and Save to persist.';Exit;
+  end;
+  if (FWorkflowStepIndex<0) or (FWorkflowStepIndex>=Steps.Count) then Exit;
+  if Sender=WorkflowRemoveStep then begin
+   Target:=Steps.Items[FWorkflowStepIndex].GetValue<string>('step_id');
+   for V in Steps do if (V.GetValue<string>('step_id')<>Target) and (V.GetValue<string>('exception_target')=Target) then raise EArgumentException.Create('Change the referring exception destination before removing this step');
+   Steps.Remove(FWorkflowStepIndex).Free;FWorkflowStepIndex:=-1;
+  end else begin Index:=FWorkflowStepIndex;
+   if Sender=WorkflowStepUp then Dec(Index) else if Sender=WorkflowStepDown then Inc(Index) else Exit;
+   if (Index<0) or (Index>=Steps.Count) then Exit;
+   Elements:=TList<TJSONValue>.Create;for I:=0 to Steps.Count-1 do Elements.Add(Steps.Items[I]);
+   Elements.Exchange(FWorkflowStepIndex,Index);Steps.SetElements(Elements);FWorkflowStepIndex:=Index;
+  end;
+  RefreshWorkflowSteps;
+ except on E:Exception do StatusLabel.Text:=E.Message;end;
+end;
+procedure TDPHMainForm.WorkflowApplyClick(Sender:TObject);
+var Fields:TJSONObject;Key:string;Current:TJSONValue;
+begin
+ if FBusy or (FView=nil) or (FWorkflowDraft=nil) or not FKnowledgeEdited then Exit;
+ try
+  Current:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON);
+  try if not (Current is TJSONObject) or (Current.GetValue<string>('workflow_id','')<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this workflow with Edit fields before applying');finally Current.Free;end;
+  if FWorkflowDraft.GetValue<string>('workflow_id')<>FStructuredEditorID then raise EArgumentException.Create('Reopen this workflow with Edit fields before applying');
+  if FWorkflowStepDirty then raise EArgumentException.Create('Apply step or discard step changes before applying the workflow');
+  Fields:=FWorkflowDraft.GetValue<TJSONObject>('fields');
+  for Key in DPHWorkflowKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Workflow_'+Key) as TMemo).Text.Trim);end;
+  TDPHWorkspaceView.ValidateDepartmentalWorkflow(FWorkflowDraft);
+  if WorkflowAuthor.Text.Trim='' then raise EArgumentException.Create('Enter a named contributor');
+  FBinding:=True;
+  try
+   KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=WorkflowAuthor.Text.Trim;KnowledgeBodyMemo.Text:=TDPHWorkspaceView.DepartmentalWorkflowBody(FWorkflowDraft);
+   KnowledgeTitleEdit.ReadOnly:=True;KnowledgeBodyMemo.ReadOnly:=True;
+   KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+   KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;FKnowledgeStructuredJSON:=FWorkflowDraft.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
+  finally FBinding:=False;end;
+  FStructuredEditorPending:=False;WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Workflow draft prepared. Save, add exact business-process/source/procedure links, Save again and review separately.';
+ except on E:Exception do StatusLabel.Text:=E.Message;end;
 end;
 
 procedure TDPHMainForm.DataQualityFilterChange(Sender:TObject);
@@ -3237,7 +3469,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -3283,6 +3515,7 @@ end;
 procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
+  FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;FStructuredEditorPending:=False;FStructuredEditorID:='';
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';
     FKnowledgeQuestionJSON:='';
@@ -3295,7 +3528,10 @@ begin
     FKnowledgeEdited:=False; FKnowledgeLink:=FSelected; finally FBinding:=False; end;
 end;
 procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
-begin Submit('save_knowledge'); end;
+begin
+ if FStructuredEditorPending then begin StatusLabel.Text:='Apply the structured editor to Knowledge or discard its draft before Save.';Exit;end;
+ Submit('save_knowledge');
+end;
 procedure TDPHMainForm.GlossaryFilterChange(Sender: TObject);
 var Value: TJSONValue; Row: TJSONObject; Filter: string;
 begin

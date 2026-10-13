@@ -126,7 +126,10 @@ See Phase1_Target_Recovery_Completion.txt.
 Business process inventory completed as attributed manual capture (06.01).
 84 focused and 264 regression checks passed; actual app/FMX passed.
 See Phase1_Business_Process_Completion.txt.
-Current live backlog: 316 incomplete requirement records; 0 unassessed.
+Departmental workflows completed as attributed manual capture (06.02).
+104 focused and 348 regression checks passed; actual app/FMX passed.
+See Phase1_Departmental_Workflow_Completion.txt.
+Current live backlog: 315 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

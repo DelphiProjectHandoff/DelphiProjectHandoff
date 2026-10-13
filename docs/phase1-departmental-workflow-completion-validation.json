@@ -1,0 +1,99 @@
+{
+  "result": "PASS",
+  "requirement": "06.02",
+  "status": "implemented_manual_capture",
+  "checks": 104,
+  "regression_checks": 348,
+  "requirements_preserved": 533,
+  "only_promoted_record": "06.02",
+  "counts": {
+    "implemented_manual_capture": 23,
+    "partial": 226,
+    "implemented": 195,
+    "missing": 89
+  },
+  "incomplete_requirement_records": 315,
+  "unassessed": 0,
+  "guides": {
+    "guide_sources_verified": 58,
+    "guides": [
+      {
+        "name": "DPH_User_Guide",
+        "pages": 39,
+        "toc_entries": 65,
+        "new_chapter_pages": [
+          3,
+          36
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      },
+      {
+        "name": "DPH_Engineering_Guide",
+        "pages": 35,
+        "toc_entries": 57,
+        "new_chapter_pages": [
+          3,
+          33
+        ],
+        "blank_pages": 0,
+        "toc_numbers_verified": true
+      }
+    ]
+  },
+  "guide_visual_review": "74 pages covered: 64 pixel-identical previously reviewed pages and 10 changed pages inspected, No clipping or broken TOC destinations observed.",
+  "backup": {
+    "path": "H:\\DPH Backups\\DepartmentalWorkflows_PreChange_20261012_194558",
+    "files": 9630,
+    "bytes": 3174576638,
+    "sha256_verified": true
+  },
+  "qualification": "Attributed departmental workflows preserve ordered department steps, responsible roles, actions, inputs, outputs, handoffs, exception handling and stable exception destinations. Native fields, step add/remove/reorder, exact implementation links, named review and immutable history persist through database reopening and canonical publication. Unknown remains unresolved; an authored workflow does not prove execution, authorization or business outcomes. One workflow supports 1 to 64 steps with explicit field and structured JSON limits. Process diagrams remain a separate unfinished requirement.",
+  "evidence_hashes": {
+    "DPH.Workspace.Model.pas": "be03c357c96bbdb828d63c347a6bd7d5bc5ba3ecbf161cf67853299a4aca23b5",
+    "DPH.Storage.Database.pas": "ec6318b2608e97063f8f3ad7e404ededd1dc017c67540870b3c0e43ef286c852",
+    "DPH.UI.Main.pas": "d0d07d94b568cbbe1a51fb00d7eb6ba618a97fc4b1349cf5247e9a9f5ede49c0",
+    "DPH.UI.Main.fmx": "e65647f974ea2b81593c20c5d15d49e7518e3092275709ad25aab12970158b7e",
+    "tests/DPH.Tests.DepartmentalWorkflow.dpr": "8c9b5c4444f629e2593260e17f86d1af4e363e8a56229b934f89768a3cead1ac",
+    "tools/build-departmental-workflow.cmd": "e857408502f750c9345a75eac857207ad8646ff9597f9abc340d9087c608cb6e",
+    "docs/phase1-departmental-workflow-validation.json": "61cf56f685471774b135dec964cd6a98a963f299f74750f9559a5b838d41ccb5",
+    "docs/phase1-departmental-workflow-validation.log": "53299c28f5af41dcd50e4c41e6882dcd847759cdefdbcb0c23514505851abf66",
+    "docs/guides/Departmental_Workflow_Run_and_Test.txt": "d1578fb33f21ad95cf76ecce8445f1da59ccde7d51896848ce0868f4210ecc23",
+    "tools/build-guides.py": "93a078a9d79c5a1d2ae1072b083ea5694e866cc9a8f9e5ddafc9926e09f06a5c",
+    "README.md": "3234ac925eb34de8c8f9d4c1c731caa91ee7f51d164b8e27708c7365d008c196",
+    "help/index.html": "dee4310f8cae0776b906b90d75d0f0acded2064b9ceadf9f146b70125102d5be",
+    "docs/guide-source-validation.json": "81ff46c676e10d6d5dc91ec2359e1f25920d9c369a47cbc28e05b30c9bca8f63",
+    "docs/guides/DPH_User_Guide.docx": "6787760b78bc8cd0e4204473a1c77461c803bde4c41361950800fac42c802cbd",
+    "docs/guides/DPH_Engineering_Guide.docx": "951f4e7b7eb156ce3b55e41629c5444856db376aaae9dd1be8593eaf1af51a7a",
+    "docs/pdf/DPH_User_Guide.pdf": "a82349deb3770d56f36464bfd89f3c20aadea202feb10498e8fcb95886270e9d",
+    "docs/pdf/DPH_Engineering_Guide.pdf": "749b33a2109a5b8e62ebb71fbe6d9277fe39135a43c0615b2cb1fce6a8a3428d",
+    "docs/Phase1_Departmental_Workflow_Completion.txt": "5992b3bd6b95d0a425b775a1536eba852be39cc80b190f88a0fa2d4bca060bb8",
+    "docs/Phase1_Requirements_Traceability.json": "c2dc60adbbeeaaf25479378a7ca83ae0cd6fb47403247581514bf06f73e83d80",
+    "docs/Phase1_Implementation_Backlog.csv": "f70554aad9037d0baf4ba8c19899e8b930e6a55f76b9f4321f47c927dacc5708",
+    "docs/Implementation_Completion_Tracker.txt": "441973af4bfc21e9373735991f653302681a5856b3b265090344606d5cc2314c",
+    "docs/phase1-departmental-workflow-build.log": "aa07f7b0232538146c987a36c317c58fd58cb1fe8baee08ba2d370a5e28659f2",
+    "docs/phase1-departmental-workflow-compact.png": "0c2187d4ac6b7a4e62883cd97ee94c627fe6844429bd68e6a3dbfd3e7ed88a8d",
+    "docs/phase1-departmental-workflow-editor-compact.png": "7df090eca219fe5d5545854f070d486ca1f1921412013fe5ff861c82c383d977",
+    "docs/phase1-departmental-workflow-editor.png": "d118677208e20c3d966f4cfc4b0d2d01a1f9bb118a2e3b17c890eb21efa041a2",
+    "docs/phase1-departmental-workflow-exception-editor.png": "e81ed20b5c2c35ead46f85eb9f49fef735b41eec9314463bff34d2123cc3b19e",
+    "docs/phase1-departmental-workflow-guide-review.json": "820b0feb6cb0d0adb0aa373bea3ef6e24fbf786dc47431f3b6c8a7d6b1d21e7d",
+    "docs/phase1-departmental-workflow-knowledge-regression-validation.json": "ba0d90c78d8bbff140aa27a4ec8a6a5891e55a502a1970a4227876340aeb50be",
+    "docs/phase1-departmental-workflow-knowledge-regression.log": "bdc77d727133bec942effb022c7e332b240d87f62ba72e27e1c4797c31deeaac",
+    "docs/phase1-departmental-workflow-process-regression-compact.png": "4ab301193fe9670f6c7c5c1d06a31906c102e64468943586561d9120fc4e2655",
+    "docs/phase1-departmental-workflow-process-regression-editor-bottom.png": "9d95e1d0704e7891208eff06f91ea5b2eacfb041c83ef9aa30c99ea4d08752c5",
+    "docs/phase1-departmental-workflow-process-regression-editor-compact.png": "1290918c9ba38aa233899ccfc5ee1fa96a2f93e0fb515d91e82483bfa85a84c4",
+    "docs/phase1-departmental-workflow-process-regression-editor.png": "c9d431c56c079340e553b563a5590d05358a056d3a53ec7ad59736663c480629",
+    "docs/phase1-departmental-workflow-process-regression-validation.json": "ae919159a6ba88c6aad6ec16c64577fcab2d529e5f059cf48aaa015fba6ffb73",
+    "docs/phase1-departmental-workflow-process-regression-workspace.png": "4ab301193fe9670f6c7c5c1d06a31906c102e64468943586561d9120fc4e2655",
+    "docs/phase1-departmental-workflow-process-regression.log": "3e14779cb5b0161bc5a10afc16ad9793146755d17f4b5515fe67186a3ef138f6",
+    "docs/phase1-departmental-workflow-publishing-regression-canonical-fixture.json": "b8c63b08e02e27d3b5c9e3a3e52557a8b15d186577caa031c7d957e9534f94dd",
+    "docs/phase1-departmental-workflow-publishing-regression-validation.json": "1f9504d0994870a325d269c488207038ddea2512c5bbf49d215fa49c7532eadb",
+    "docs/phase1-departmental-workflow-publishing-regression.log": "cd0757315b7111ca340517474e15e3f1144c792fa6801f96794662ab63a97325",
+    "docs/phase1-departmental-workflow-quality-regression-compact.png": "e7f32fb91c862e0fe214be1cf83f33e131f766451fa4258dc41c71e1bbcc2983",
+    "docs/phase1-departmental-workflow-quality-regression-validation.json": "87cf521f17afab91853a6ef1b7ea4056e762a105e30184cbcb6336472bb5b763",
+    "docs/phase1-departmental-workflow-quality-regression-workspace.png": "8957911233ba2a7fefb7ebdd16370a7c3db4166f19f73ecec4ba031421735be9",
+    "docs/phase1-departmental-workflow-quality-regression.log": "ae68eb36c88989ecd1204090b621146e344bb2e0333b1fca86280a8305b21ed1",
+    "docs/phase1-departmental-workflow-step-editor.png": "c1f342be3b2472ab49804258269bf1ef6cf4fe89e9478268f03a2b4cbba6f077",
+    "docs/phase1-departmental-workflow-workspace.png": "0c2187d4ac6b7a4e62883cd97ee94c627fe6844429bd68e6a3dbfd3e7ed88a8d"
+  }
+}

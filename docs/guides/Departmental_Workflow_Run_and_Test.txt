@@ -1,0 +1,62 @@
+DPH DEPARTMENTAL WORKFLOWS
+Last changed 12 October 2026
+
+RUN AND RECORD
+1. In File Explorer open C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug.
+   Double-click DelphiProjectHandoff.exe. Attach the application's project and
+   save its proposed database under Databases, or Open cache for its .dphdb.
+2. Wait for analysis. Choose Departmental workflows in the upper-right page
+   selector. Click New workflow. Enter a named contributor, descriptive name,
+   accountable owner, department scope, trigger and unknowns in Workflow fields.
+3. Scroll down to Ordered steps. Click New step. Complete department, role,
+   action, inputs, outputs, handoff and exception handling. Enter Unknown where
+   facts are unavailable. Choose Exception destination: Unknown, End or a named
+   existing step. Click Apply step. Repeat for each ordered step.
+4. Select a saved-in-draft step to edit it; click Apply step. Move up / Move
+   down changes normal order and preserves exact exception targets. Remove step
+   refuses removal of another step's exception target: change that reference
+   first. Apply or Discard step edits before selecting/replacing another step.
+5. Scroll command bars sideways in narrow windows and fields vertically.
+   Click Apply workflow to draft. Choose Knowledge and click Save. Apply alone
+   does not save. Save refuses an unapplied editor; Cancel discards its draft.
+6. Choose Knowledge links. For an existing business-process or procedure record
+   choose section, enter its title, Find targets, select its exact revision,
+   choose cites and Add link. For an implementing routine choose entity, search
+   its name, select the captured result, choose depends_on and Add link.
+   Return to Knowledge and Save. A name in prose alone is not an exact link.
+7. Enter a named reviewer and verify only after checking the business account
+   and evidence. Review does not grant business authorization or prove success.
+8. Return to Departmental workflows. Open record shows Knowledge and history;
+   Edit fields restores a workflow for revision. Apply steps, Apply workflow,
+   Save and review again. Filter by department, role, action or state. First
+   page / Next page exposes more than 250 records. Implementation links opens
+   the saved exact links. Save or discard a draft before opening another record.
+
+REPEATABLE PRACTICE
+Use a disposable documentation database. Create Order fulfilment workflow, owner
+Operations manager. Add Check approved order in Sales with role Order clerk,
+input Approved order and handoff Validated order to Warehouse. Apply step.
+Add Dispatch order in Warehouse with role Dispatch operator and exception
+handling Return missing approval to Sales. Choose Check approved order as its
+exception destination. Apply step, Apply workflow and Save. Link the relevant
+actual source routine and saved business-process/procedure revisions; Save and
+review. Close/reopen the database and confirm ordered fields, links and history.
+Edit fields: moving the first step down must keep the exception destination
+attached to its named step. Removing the referenced step must be refused until
+you change its referring exception destination. Cancel this practice edit or
+Apply workflow and Save it as another pending-review revision. Publish to a new
+folder with maintenance/all audience and inspect ordered steps in index.html.
+Do not insert unchecked practice claims into production documentation.
+
+LIMITS AND CHECKS
+One workflow has 1 to 64 steps and at most 64 KiB structured JSON. Name allows
+200 characters, workflow fields 4096 each, and step fields 2048 each. Split larger
+accounts into explicitly linked workflows. No JSON editing is required.
+
+Open an elevated Command Prompt and run:
+  cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+  tools\build-departmental-workflow.cmd
+A nonzero exit or FAIL is a failure. Inspect docs\phase1-departmental-workflow-validation.log
+and docs\phase1-departmental-workflow-validation.json. Fixed ignored fixtures reside under
+bin\departmental-workflow-validation. Run tools\build-wp0.cmd for actual app and
+FMX checks. No selected target executable, SQL, service or job is executed.

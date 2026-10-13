@@ -55,6 +55,8 @@ Items.Strings = (
 'Target data retention'
 'Target backup and restore'
 'Business processes'
+'Departmental workflows'
+'Workflow fields'
 'Process fields'
 'Target data quality'
 'Knowledge links'
@@ -1912,6 +1914,441 @@ WordWrap = True
 ShowScrollBars = True
 end
 end
+object DepartmentalWorkflowTab: TTabItem
+Text = 'Business workflows'
+object DepartmentalWorkflowPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Document ordered departmental steps, responsible roles, handoffs and exception destinations. New workflow and Edit fields open the native editor. Apply steps, Apply workflow, Save and review separately.'
+end
+object DepartmentalWorkflowToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object DepartmentalWorkflowState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = DepartmentalWorkflowFilterChange
+end
+object DepartmentalWorkflowFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find workflow, department, role or action'
+OnChange = DepartmentalWorkflowFilterChange
+end
+object DepartmentalWorkflowFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = DepartmentalWorkflowFilterChange
+end
+object DepartmentalWorkflowNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = DepartmentalWorkflowFilterChange
+end
+object DepartmentalWorkflowNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New workflow'
+OnClick = DepartmentalWorkflowNewClick
+end
+object DepartmentalWorkflowOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open record'
+OnClick = DepartmentalWorkflowOpenClick
+end
+object DepartmentalWorkflowLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = DepartmentalWorkflowOpenClick
+end
+object DepartmentalWorkflowEdit:TButton
+Position.X = 983
+Width = 110
+Height = 28
+Text = 'Edit fields'
+OnClick = DepartmentalWorkflowEditClick
+end
+end
+object DepartmentalWorkflowStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object DepartmentalWorkflowList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = DepartmentalWorkflowSelectionChange
+end
+object DepartmentalWorkflowEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved departmental workflow and review evidence'
+end
+object DepartmentalWorkflowMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object WorkflowEditorTab:TTabItem
+Text = 'Workflow fields'
+object WorkflowEditorPurpose:TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Complete workflow fields and ordered steps. Apply step updates this draft; Apply workflow prepares Knowledge. Save persists it. Unknown remains unresolved. Cancel discards the entire draft.'
+end
+object WorkflowEditorToolbar:THorzScrollBox
+Align = Top
+Height = 80
+ShowScrollBars = True
+object WorkflowAuthorLabel:TLabel
+Position.X = 12
+Width = 200
+Height = 24
+Text = 'Named contributor'
+end
+object WorkflowAuthor:TEdit
+Position.X = 12
+Position.Y = 28
+Width = 200
+Height = 28
+OnChange = StructuredEditorChange
+end
+object WorkflowApply:TButton
+Position.X = 220
+Position.Y = 28
+Width = 180
+Height = 28
+Text = 'Apply workflow to draft'
+OnClick = WorkflowApplyClick
+end
+object WorkflowCancel:TButton
+Position.X = 220
+Width = 150
+Height = 24
+Text = 'Cancel / discard draft'
+OnClick = DiscardKnowledgeClick
+end
+end
+object WorkflowEditorScroll:TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+object Workflow_name_Row:TLayout
+Align = Top
+Height = 100
+object Workflow_name_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Workflow name'
+end
+object Workflow_name:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Workflow_owner_Row:TLayout
+Align = Top
+Height = 100
+object Workflow_owner_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Accountable workflow owner'
+end
+object Workflow_owner:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Workflow_scope_Row:TLayout
+Align = Top
+Height = 100
+object Workflow_scope_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Departments and business scope'
+end
+object Workflow_scope:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Workflow_trigger_Row:TLayout
+Align = Top
+Height = 100
+object Workflow_trigger_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Trigger and prerequisites'
+end
+object Workflow_trigger:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Workflow_unknowns_Row:TLayout
+Align = Top
+Height = 100
+object Workflow_unknowns_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Unknowns and responsible maintainer'
+end
+object Workflow_unknowns:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object WorkflowStepsLabel:TLabel
+Align = Top
+Height = 32
+WordWrap = True
+Text = 'Ordered steps - select a step to edit'
+end
+object WorkflowSteps:TListBox
+Align = Top
+Height = 132
+OnChange = WorkflowStepClick
+end
+object WorkflowStepToolbar:THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object WorkflowNewStep:TButton
+Position.X = 0
+Width = 132
+Height = 28
+Text = 'New step'
+OnClick = WorkflowStepAction
+end
+object WorkflowSaveStep:TButton
+Position.X = 140
+Width = 132
+Height = 28
+Text = 'Apply step'
+OnClick = WorkflowStepAction
+end
+object WorkflowDiscardStep:TButton
+Position.X = 280
+Width = 132
+Height = 28
+Text = 'Discard step edits'
+OnClick = WorkflowStepAction
+end
+object WorkflowRemoveStep:TButton
+Position.X = 420
+Width = 132
+Height = 28
+Text = 'Remove step'
+OnClick = WorkflowStepAction
+end
+object WorkflowStepUp:TButton
+Position.X = 560
+Width = 132
+Height = 28
+Text = 'Move up'
+OnClick = WorkflowStepAction
+end
+object WorkflowStepDown:TButton
+Position.X = 700
+Width = 132
+Height = 28
+Text = 'Move down'
+OnClick = WorkflowStepAction
+end
+end
+object Step_step_id_Row:TLayout
+Align = Top
+Height = 100
+Visible = False
+object Step_step_id_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Stable step identity'
+end
+object Step_step_id:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+ReadOnly = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_department_Row:TLayout
+Align = Top
+Height = 100
+object Step_department_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Department'
+end
+object Step_department:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_role_Row:TLayout
+Align = Top
+Height = 100
+object Step_role_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Responsible role'
+end
+object Step_role:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_action_Row:TLayout
+Align = Top
+Height = 100
+object Step_action_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Step action'
+end
+object Step_action:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_inputs_Row:TLayout
+Align = Top
+Height = 100
+object Step_inputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Inputs and origin'
+end
+object Step_inputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_outputs_Row:TLayout
+Align = Top
+Height = 100
+object Step_outputs_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Outputs and recipient'
+end
+object Step_outputs:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_handoff_Row:TLayout
+Align = Top
+Height = 100
+object Step_handoff_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Handoff to next department or role'
+end
+object Step_handoff:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object Step_exception_handling_Row:TLayout
+Align = Top
+Height = 100
+object Step_exception_handling_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Exception handling and recovery'
+end
+object Step_exception_handling:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = WorkflowStepChange
+end
+end
+object WorkflowExceptionLabel:TLabel
+Align = Top
+Height = 30
+Text = 'Exception destination: Unknown, End or a named step'
+WordWrap = True
+end
+object WorkflowExceptionTarget:TComboBox
+Align = Top
+Height = 32
+Items.Strings = ('Unknown' 'End')
+ItemIndex = 0
+OnChange = WorkflowStepChange
+end
+end
+end
 object BusinessProcessEditorTab:TTabItem
 Text = 'Process fields'
 object BusinessProcessEditorPurpose:TLabel
@@ -1937,6 +2374,7 @@ Position.X = 12
 Position.Y = 28
 Width = 200
 Height = 28
+OnChange = StructuredEditorChange
 end
 object BusinessProcessApply:TButton
 Position.X = 220
@@ -1972,6 +2410,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_owner_Row:TLayout
@@ -1987,6 +2426,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_department_Row:TLayout
@@ -2002,6 +2442,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_trigger_Row:TLayout
@@ -2017,6 +2458,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_inputs_Row:TLayout
@@ -2032,6 +2474,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_outputs_Row:TLayout
@@ -2047,6 +2490,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_steps_Row:TLayout
@@ -2062,6 +2506,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 object Process_unknowns_Row:TLayout
@@ -2077,6 +2522,7 @@ Align = Client
 Margins.Bottom = 8
 WordWrap = True
 ShowScrollBars = True
+OnChange = StructuredEditorChange
 end
 end
 end
