@@ -1,0 +1,33 @@
+DPH STOPPING POINT
+Recorded: 2026-10-12
+Status: STOPPED at the user's explicit request. Do not resume without instruction.
+
+Last completed requirement: 06.06 - Calculations and formulas.
+Implementation commit: 10daccda9d0b516012b0b558b95c14e558020ef7
+This implementation was committed and pushed to both public and private remotes.
+Validation: 116 focused checks plus 696 regression checks (812 total); application
+build and native form baseline passed. Engineering and User Guides are version 39.
+Evidence: docs/Phase1_Calculation_Completion.txt and
+          docs/phase1-calculation-completion-validation.json
+Directions: docs/guides/Calculation_Run_and_Test.txt
+
+Requirement ledger: 533 assessed records, zero unassessed.
+196 implemented; 25 implemented_manual_capture; 224 partial; 88 missing.
+312 records remain incomplete (partial or missing). Project is not complete.
+
+Next requirement: 06.07 - Business approval and authorization workflow.
+No implementation, tests, documentation or ledger changes for 06.07 were made.
+Only preliminary read-only design consideration occurred.
+
+The BusinessApprovals pre-change backup to H: was interrupted at the user's stop
+request. It is incomplete/unverified and must not be treated as a valid backup.
+Before resuming implementation, obtain a new verified pre-change backup on H:.
+H: is the user's selected USB backup drive; allow at least 60 seconds to wake.
+Last verified backup:
+H:\DPH Backups\Calculations_PreChange_20261012_205718
+
+The existing project goal is paused. Preserve both untracked owner PDF copies:
+docs/pdf/DPH_Engineering_Guide - Copy.pdf
+docs/pdf/DPH_User_Guide - Copy.pdf
+
+This note records the pause only; it does not authorize further development.
