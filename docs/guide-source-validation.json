@@ -1,5 +1,5 @@
 {
-  "guide_version": 36,
+  "guide_version": 37,
   "sources": [
     {
       "path": "DPH.Analysis.Async.pas",
@@ -7,7 +7,7 @@
     },
     {
       "path": "DPH.Analysis.Explanations.pas",
-      "sha256": "43244ca3544edffabbf8a52af92a5f8081794894db0fd88fdd67fd1dbab560fb"
+      "sha256": "8e4a430daf51b5f1d5c0e4e8a939862dd8b80123bd7333597b949ad054f85f06"
     },
     {
       "path": "DPH.Analysis.Flow.pas",
@@ -91,11 +91,11 @@
     },
     {
       "path": "DPH.Publish.Export.pas",
-      "sha256": "0a36aa00c6c9591521d53977e2a4985b4cb390dfa79c7dcbc337c74ff306c39e"
+      "sha256": "ac49dff7e08016db2f8c720de3bac0749e52de82ccc4e7aa2b328f8032ceebe4"
     },
     {
       "path": "DPH.Publish.Model.pas",
-      "sha256": "532727b11c1245adceaab9e43a6f16d4bce573cf1f31c148978a78457462039f"
+      "sha256": "7068252c58364ae224e263ecc5fbf83bdb406943979f3ad752f4ca9f877de9d2"
     },
     {
       "path": "DPH.Publish.Translation.pas",
@@ -131,7 +131,7 @@
     },
     {
       "path": "DPH.UI.Main.pas",
-      "sha256": "d0d07d94b568cbbe1a51fb00d7eb6ba618a97fc4b1349cf5247e9a9f5ede49c0"
+      "sha256": "41b056a1db563ef504731a7fa647e8c45aa5c9334d5ce0805799b94998fb4be4"
     },
     {
       "path": "DPH.UI.ProjectProfile.pas",
@@ -175,7 +175,7 @@
     },
     {
       "path": "DPH.Workspace.Graphs.pas",
-      "sha256": "6fd8b84644df65a0746aaad3598dad9406fa2d55e637e1e30f2175cefd1be911"
+      "sha256": "1d2985c6fa30e72a7ddb7c55f41a2a774e6e1517d5056507efb2666f18b47804"
     },
     {
       "path": "DPH.Workspace.Keyboard.pas",
@@ -203,7 +203,7 @@
     },
     {
       "path": "DPH.UI.Main.fmx",
-      "sha256": "e65647f974ea2b81593c20c5d15d49e7518e3092275709ad25aab12970158b7e"
+      "sha256": "a383ef8a6bc9a655629d8a19f73dd6dbfad80072b3430f42e9dfe92284d1a451"
     },
     {
       "path": "DPH.UI.ProjectProfile.fmx",

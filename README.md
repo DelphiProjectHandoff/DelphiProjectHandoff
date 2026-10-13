@@ -142,3 +142,5 @@ Requirement 05.20 adds Target backup and restore: attributed requirements, recov
 Requirement 06.01 adds Business processes with a native structured editor for owner, inputs, outputs, trigger, roles, steps and unknowns, plus stable identity, exact source/procedure links and named review/history. See docs/guides/Business_Process_Run_and_Test.txt.
 
 Requirement 06.02 adds Departmental workflows with native ordered step editing, roles, handoffs, explicit exception destinations, named review/history and exact source/procedure links. See docs/guides/Departmental_Workflow_Run_and_Test.txt. Save now refuses unapplied structured editor fields.
+
+Requirement 06.03 adds Process diagram to Departmental workflows: actual SVG and native step diagrams, normal handoffs, stable exception routes, explicit Unknown destinations and exact reviewed process links. Publication retains and validates the projection. See docs/guides/Process_Diagram_Run_and_Test.txt.

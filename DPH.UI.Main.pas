@@ -204,7 +204,7 @@ type
     DepartmentalWorkflowFirst,DepartmentalWorkflowNext,DepartmentalWorkflowNew,DepartmentalWorkflowOpen,DepartmentalWorkflowLinks:TButton;
     DepartmentalWorkflowList:TListBox;
     DepartmentalWorkflowMemo:TMemo;
-    DepartmentalWorkflowEdit:TButton;
+    DepartmentalWorkflowEdit,DepartmentalWorkflowDiagram:TButton;
     WorkflowEditorTab:TTabItem;
     WorkflowEditorPurpose,WorkflowAuthorLabel,WorkflowStepsLabel,WorkflowExceptionLabel:TLabel;
     WorkflowEditorToolbar,WorkflowStepToolbar:THorzScrollBox;
@@ -502,6 +502,7 @@ type
 
     procedure DepartmentalWorkflowFilterChange(Sender:TObject);
     procedure DepartmentalWorkflowSelectionChange(Sender:TObject);
+    procedure DepartmentalWorkflowDiagramClick(Sender:TObject);
     procedure DepartmentalWorkflowNewClick(Sender:TObject);
     procedure DepartmentalWorkflowOpenClick(Sender:TObject);
 
@@ -2026,7 +2027,7 @@ begin
   except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
-var Directory,Fragment: string; P,I: Integer; V: TJSONValue; S: TJSONObject;
+var Directory,Fragment,NodeKey: string; P,I: Integer; V: TJSONValue; S: TJSONObject;
 begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
@@ -2040,10 +2041,25 @@ begin
     end;
     Exit;
   end;
+  P:=Pos('#knowledge_revision_',AURL);
+  if (Sender=FlowBrowser) and (P>0) and (FKnowledge<>nil) then begin
+   ACancel:=True;Fragment:=Copy(AURL,P+20,MaxInt);
+   for V in FKnowledge do begin
+    for I:=0 to V.GetValue<TJSONArray>('history').Count-1 do begin S:=V.GetValue<TJSONArray>('history').Items[I] as TJSONObject;
+     if S.GetValue<string>('revision')<>Fragment then Continue;
+     FreeAndNil(FDetails);FDetails:=TJSONArray.Create;DetailsList.Items.Clear;DetailsMemo.Text:=V.GetValue<string>('title')+sLineBreak+'Exact linked revision '+Fragment+' | '+S.GetValue<string>('verification_state')+' | reviewer '+S.GetValue<string>('reviewer')+sLineBreak+S.GetValue<string>('body');WorkspaceTabs.ActiveTab:=DetailsTab;Exit;
+    end;
+   end;
+   Exit;
+  end;
   P:=Pos('#s_',AURL); if (P=0) or (FView=nil) then Exit; ACancel:=True; Fragment:=Copy(AURL,P+3,MaxInt);
-  if (Sender=FlowBrowser) and (FGraph<>nil) and (FGraph.GetValue<string>('kind')='Data lineage') then begin
-   for I:=0 to FGraph.GetValue<TJSONArray>('nodes').Count-1 do if SameText(THashSHA2.GetHashString(FGraph.GetValue<TJSONArray>('nodes').Items[I].GetValue<string>('id')),Fragment) then begin
-    GraphMouseDown(GraphPaint,TMouseButton.mbLeft,[],GraphRect(I).CenterPoint.X,GraphRect(I).CenterPoint.Y);Break;
+  if (Sender=FlowBrowser) and (FGraph<>nil) and MatchText(FGraph.GetValue<string>('kind'),['Data lineage','Business process']) then begin
+   for I:=0 to FGraph.GetValue<TJSONArray>('nodes').Count-1 do begin
+    NodeKey:=FGraph.GetValue<TJSONArray>('nodes').Items[I].GetValue<string>('id');
+    if FGraph.GetValue<string>('kind')='Business process' then NodeKey:=FGraph.GetValue<string>('workflow_id')+'|'+NodeKey;
+    if SameText(THashSHA2.GetHashString(NodeKey),Fragment) then begin
+     GraphMouseDown(GraphPaint,TMouseButton.mbLeft,[],GraphRect(I).CenterPoint.X,GraphRect(I).CenterPoint.Y);Break;
+    end;
    end;Exit;
   end;
   for V in FView.Document.GetValue<TJSONArray>('semantics.symbols') do begin S:=V as TJSONObject;
@@ -2586,8 +2602,28 @@ procedure TDPHMainForm.DepartmentalWorkflowSelectionChange(Sender:TObject);
 var Row:TJSONObject;
 begin
  Row:=nil;if (FDepartmentalWorkflowRows<>nil) and (DepartmentalWorkflowList.ItemIndex>=0) and (DepartmentalWorkflowList.ItemIndex<FDepartmentalWorkflowRows.Count) then Row:=FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex];
- DepartmentalWorkflowEdit.Enabled:=Row<>nil;DepartmentalWorkflowOpen.Enabled:=Row<>nil;DepartmentalWorkflowLinks.Enabled:=Row<>nil;
+ DepartmentalWorkflowDiagram.Enabled:=Row<>nil;DepartmentalWorkflowEdit.Enabled:=Row<>nil;DepartmentalWorkflowOpen.Enabled:=Row<>nil;DepartmentalWorkflowLinks.Enabled:=Row<>nil;
  DepartmentalWorkflowMemo.Text:=TDPHWorkspaceView.DescribeDepartmentalWorkflow(Row);
+end;
+procedure TDPHMainForm.DepartmentalWorkflowDiagramClick(Sender:TObject);
+var Row:TJSONObject;HTML,GraphPath:string;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening a saved workflow diagram.';Exit;end;
+ if (DepartmentalWorkflowList.ItemIndex<0) or (DepartmentalWorkflowList.ItemIndex>=FDepartmentalWorkflowRows.Count) then Exit;
+ Row:=FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex];
+ try
+  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Business process');
+  FreeAndNil(FGraph);FGraph:=TDPHGraphProjection.Workflow(Row,FKnowledge,FView.Document.GetValue<Int64>('generation_id'));
+  GraphGroupingCombo.Enabled:=False;
+  GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
+  GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);GraphPaint.Repaint;
+  HTML:=FExplanations.GraphHTML(FGraph);GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  if not FPreviewPages.Contains(GraphPath) then begin TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(GraphPath);end;
+  WorkspaceTabs.ActiveTab:=GraphTab;FlowBrowser.Visible:=False;
+  try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;FlowBrowser.Navigate('file://'+GraphPath);FlowBrowser.Visible:=True;
+  except on E:Exception do StatusLabel.Text:='Browser diagram unavailable; the native diagram remains available: '+E.Message;end;
+ except on E:Exception do begin FreeAndNil(FGraph);StatusLabel.Text:=E.Message;end;end;
 end;
 procedure TDPHMainForm.DepartmentalWorkflowNewClick(Sender:TObject);
 begin DepartmentalWorkflowEditClick(DepartmentalWorkflowNew);end;
@@ -3298,19 +3334,27 @@ const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data f
 var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
-  FlowBrowser.Visible:=False;
+  FlowBrowser.Visible:=False;GraphPaint.Height:=4500;
   IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
   GraphLegend.Text:='Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence';
   Limit:=120; GraphGroupingCombo.Enabled:=(GraphCombo.ItemIndex<>1) and not IsLineage;
   if (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then Limit:=1000;
-  if IsLineage then begin
+  if (GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Business process') then begin
+   GraphGroupingCombo.Enabled:=False;
+   GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
+   if FKnowledgeEdited then StatusLabel.Text:='Save or discard the current Knowledge draft before opening a saved workflow diagram.'
+   else if (DepartmentalWorkflowList.ItemIndex>=0) and (DepartmentalWorkflowList.ItemIndex<FDepartmentalWorkflowRows.Count) then
+    FGraph:=TDPHGraphProjection.Workflow(FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex],FKnowledge,FView.Document.GetValue<Int64>('generation_id'));
+   if FGraph<>nil then GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);
+  end
+  else if IsLineage then begin
    Seed:=FLineageSeed;if Seed='' then Seed:=FSelected;Direction:=FLineageDirection;if Direction='' then Direction:='both';
    if FDatabaseInventory<>nil then FGraph:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,Seed,Direction);
    GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
   end
   else if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
-  if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (GraphGroupingCombo.ItemIndex>0) then begin
+  if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
   end;
   if (FGraph<>nil) and (FExplanations<>nil) then begin
@@ -3367,25 +3411,43 @@ end;
 function TDPHMainForm.GraphRect(AIndex: Integer): TRectF;
 var Columns: Integer; W,H: Single;
 begin
+  if (FGraph<>nil) and (FGraph.GetValue<string>('kind')='Business process') then Exit(TRectF.Create(170,40+AIndex*190,770,160+AIndex*190));
   W:=GraphNodeStyle.Width+GraphNodeStyle.Margins.Right; H:=GraphNodeStyle.Height+GraphNodeStyle.Margins.Bottom;
   Columns:=Max(1,Trunc(GraphPaint.Width/W)); Result:=TRectF.Create(10+(AIndex mod Columns)*W,10+(AIndex div Columns)*H,10+(AIndex mod Columns)*W+GraphNodeStyle.Width,10+(AIndex div Columns)*H+GraphNodeStyle.Height);
 end;
 procedure TDPHMainForm.GraphPaintPaint(Sender: TObject; Canvas: TCanvas);
-var Nodes,Edges: TJSONArray; V: TJSONValue; E,N: TJSONObject; I,A,B: Integer; R: TRectF;
+var Nodes,Edges: TJSONArray; V: TJSONValue; E,N: TJSONObject; I,A,B: Integer; R,FromRect,ToRect: TRectF;RouteX:Single;
 begin
   if FGraph=nil then Exit; Nodes:=FGraph.GetValue<TJSONArray>('nodes'); Edges:=FGraph.GetValue<TJSONArray>('edges');
   for V in Edges do begin E:=V as TJSONObject; A:=-1; B:=-1;
     for I:=0 to Nodes.Count-1 do begin N:=Nodes.Items[I] as TJSONObject;
       if N.GetValue('id').Value=E.GetValue('from').Value then A:=I; if N.GetValue('id').Value=E.GetValue('to').Value then B:=I;
     end;
-  Canvas.Stroke.Assign(GraphNodeStyle.Stroke); if E.GetValue<string>('resolution','')<>'confirmed_static' then begin Canvas.Stroke.Color:=HeaderStyle.Fill.Color; Canvas.Stroke.Dash:=TStrokeDash.Dash; end;
-    if (A>=0) and (B>=0) then begin Canvas.DrawLine(GraphRect(A).CenterPoint,GraphRect(B).CenterPoint,1);
+  Canvas.Stroke.Assign(GraphNodeStyle.Stroke); if ((FGraph.GetValue<string>('kind')='Business process') and (E.GetValue<string>('kind')='exception')) or ((FGraph.GetValue<string>('kind')<>'Business process') and (E.GetValue<string>('resolution','')<>'confirmed_static')) then begin Canvas.Stroke.Color:=HeaderStyle.Fill.Color; Canvas.Stroke.Dash:=TStrokeDash.Dash; end;
+    if (A>=0) and (B>=0) and (FGraph.GetValue<string>('kind')='Business process') then begin
+     FromRect:=GraphRect(A);ToRect:=GraphRect(B);
+     if E.GetValue<string>('kind')='normal' then begin
+      Canvas.DrawLine(TPointF.Create(FromRect.CenterPoint.X,FromRect.Bottom),TPointF.Create(ToRect.CenterPoint.X,ToRect.Top),1);
+      Canvas.DrawLine(TPointF.Create(ToRect.CenterPoint.X,ToRect.Top),TPointF.Create(ToRect.CenterPoint.X-6,ToRect.Top-8),1);
+      Canvas.DrawLine(TPointF.Create(ToRect.CenterPoint.X,ToRect.Top),TPointF.Create(ToRect.CenterPoint.X+6,ToRect.Top-8),1);
+     end else begin
+      RouteX:=820+(A mod 8)*22;
+      Canvas.DrawLine(TPointF.Create(FromRect.Right,FromRect.Top+70),TPointF.Create(RouteX,FromRect.Top+70),1);
+      Canvas.DrawLine(TPointF.Create(RouteX,FromRect.Top+70),TPointF.Create(RouteX,ToRect.Top+30),1);
+      Canvas.DrawLine(TPointF.Create(RouteX,ToRect.Top+30),TPointF.Create(ToRect.Right,ToRect.Top+30),1);
+      Canvas.DrawLine(TPointF.Create(ToRect.Right,ToRect.Top+30),TPointF.Create(ToRect.Right+8,ToRect.Top+24),1);
+      Canvas.DrawLine(TPointF.Create(ToRect.Right,ToRect.Top+30),TPointF.Create(ToRect.Right+8,ToRect.Top+36),1);
+     end;
+    end
+    else if (A>=0) and (B>=0) then begin Canvas.DrawLine(GraphRect(A).CenterPoint,GraphRect(B).CenterPoint,1);
       Canvas.DrawLine(GraphRect(B).CenterPoint,TPointF.Create(GraphRect(B).CenterPoint.X-6,GraphRect(B).CenterPoint.Y-8),1);
       Canvas.DrawLine(GraphRect(B).CenterPoint,TPointF.Create(GraphRect(B).CenterPoint.X+6,GraphRect(B).CenterPoint.Y-8),1); end;
   end;
   for I:=0 to Nodes.Count-1 do begin N:=Nodes.Items[I] as TJSONObject; R:=GraphRect(I);
     Canvas.Fill.Assign(GraphNodeStyle.Fill); Canvas.FillRect(R,4,4,AllCorners,1); Canvas.Stroke.Assign(GraphNodeStyle.Stroke); Canvas.DrawRect(R,4,4,AllCorners,1);
-    Canvas.Fill.Color:=GraphNodeStyle.Stroke.Color; Canvas.FillText(R,Copy(N.GetValue<string>('label'),1,160),True,1,[],TTextAlign.Center,TTextAlign.Center);
+    Canvas.Fill.Color:=GraphNodeStyle.Stroke.Color; if FGraph.GetValue<string>('kind')='Business process' then
+     Canvas.FillText(R,Copy(N.GetValue<string>('label'),1,160)+sLineBreak+Copy(N.GetValue<string>('department','')+' | '+N.GetValue<string>('role',''),1,120),True,1,[],TTextAlign.Center,TTextAlign.Center)
+    else Canvas.FillText(R,Copy(N.GetValue<string>('label'),1,160),True,1,[],TTextAlign.Center,TTextAlign.Center);
   end;
 end;
 procedure TDPHMainForm.GraphMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Single);
@@ -3393,7 +3455,10 @@ var I: Integer; N,Row: TJSONObject; Nodes: TJSONArray;
 begin
   if FGraph=nil then Exit; Nodes:=FGraph.GetValue<TJSONArray>('nodes');
   for I:=0 to Nodes.Count-1 do if GraphRect(I).Contains(TPointF.Create(X,Y)) then begin N:=Nodes.Items[I] as TJSONObject;
-    if FGraph.GetValue<string>('kind')='Data lineage' then begin
+    if FGraph.GetValue<string>('kind')='Business process' then begin
+     FreeAndNil(FDetails);FDetails:=TJSONArray.Create;DetailsList.Items.Clear;DetailsMemo.Text:=N.GetValue<string>('label')+sLineBreak+N.GetValue<string>('detail')+sLineBreak+FGraph.GetValue<string>('qualification');WorkspaceTabs.ActiveTab:=DetailsTab;
+    end
+    else if FGraph.GetValue<string>('kind')='Data lineage' then begin
      if N.GetValue<Boolean>('inventory') then begin
       FDatabaseInventoryTargets.Clear;FDatabaseInventoryTargets.Add(N.GetValue<string>('id'));
       DatabaseInventoryLinks.Items.Clear;DatabaseInventoryLinks.Items.Add(N.GetValue<string>('label'));DatabaseInventoryLinks.ItemIndex:=0;
@@ -3469,7 +3534,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows; if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

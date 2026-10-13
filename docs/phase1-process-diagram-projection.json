@@ -1,0 +1,91 @@
+﻿{
+    "kind": "Business process",
+    "generation_id": 1,
+    "workflow_id": "{AF3F8626-BFCB-410F-9558-CC1246FBC456}",
+    "knowledge_id": "3",
+    "revision": "6",
+    "title": "Order fulfilment workflow",
+    "state": "needs_review",
+    "author": "Workflow author",
+    "reviewer": "",
+    "source_generation": "1",
+    "runtime_trace": false,
+    "truncated": false,
+    "qualification": "Attributed end-to-end workflow. Blue arrows: authored normal sequence; orange routes: authored exceptions. Review approves content, not execution or authorization. Unknown remains unresolved. Process links identify exact historical revisions, not current business approval.",
+    "nodes": [
+        {
+            "id": "{BC48F797-700B-4019-B793-33F550B6808D}",
+            "label": "Step 1: Check approved order",
+            "kind": "workflow_step",
+            "detail": "step_id: {BC48F797-700B-4019-B793-33F550B6808D}\r\ndepartment: Sales\r\nrole: Order clerk\r\naction: Check approved order\r\ninputs: Approved order from sales\r\noutputs: Validated order and tracking number\r\nhandoff: Sales sends validated order to Warehouse\r\nexception_handling: Unknown\r\nexception_target: Unknown\r\n",
+            "department": "Sales",
+            "role": "Order clerk"
+        },
+        {
+            "id": "{8AC3DB65-D581-46C3-8982-5EB3BE500FF7}",
+            "label": "Step 2: Dispatch order",
+            "kind": "workflow_step",
+            "detail": "step_id: {8AC3DB65-D581-46C3-8982-5EB3BE500FF7}\r\ndepartment: Warehouse\r\nrole: Dispatch operator\r\naction: Dispatch order\r\ninputs: Unknown\r\noutputs: Unknown\r\nhandoff: Unknown\r\nexception_handling: Return missing approval to Sales for correction\r\nexception_target: {BC48F797-700B-4019-B793-33F550B6808D}\r\n",
+            "department": "Warehouse",
+            "role": "Dispatch operator"
+        },
+        {
+            "id": "End",
+            "label": "End",
+            "kind": "workflow_end",
+            "detail": "End of this authored workflow; successful runtime completion is unobserved."
+        },
+        {
+            "id": "unknown|{BC48F797-700B-4019-B793-33F550B6808D}",
+            "label": "Unknown exception destination for step 1",
+            "kind": "unresolved",
+            "detail": "Resolve the exception route with the responsible maintainer."
+        }
+    ],
+    "edges": [
+        {
+            "from": "{BC48F797-700B-4019-B793-33F550B6808D}",
+            "to": "{8AC3DB65-D581-46C3-8982-5EB3BE500FF7}",
+            "kind": "normal",
+            "label": "Sales sends validated order to Warehouse",
+            "resolution": "attributed_manual",
+            "rule": "saved_workflow_sequence_not_runtime_trace"
+        },
+        {
+            "from": "{BC48F797-700B-4019-B793-33F550B6808D}",
+            "to": "unknown|{BC48F797-700B-4019-B793-33F550B6808D}",
+            "kind": "exception",
+            "label": "Unknown",
+            "resolution": "attributed_manual",
+            "rule": "saved_workflow_sequence_not_runtime_trace"
+        },
+        {
+            "from": "{8AC3DB65-D581-46C3-8982-5EB3BE500FF7}",
+            "to": "End",
+            "kind": "normal",
+            "label": "Unknown",
+            "resolution": "attributed_manual",
+            "rule": "saved_workflow_sequence_not_runtime_trace"
+        },
+        {
+            "from": "{8AC3DB65-D581-46C3-8982-5EB3BE500FF7}",
+            "to": "{BC48F797-700B-4019-B793-33F550B6808D}",
+            "kind": "exception",
+            "label": "Return missing approval to Sales for correction",
+            "resolution": "attributed_manual",
+            "rule": "saved_workflow_sequence_not_runtime_trace"
+        }
+    ],
+    "process_links": [
+        {
+            "knowledge_id": "2",
+            "title": "Reviewed order process",
+            "revision": "3",
+            "process_id": "{173B5EAF-E558-47EB-899A-C660167952D1}",
+            "state": "verified",
+            "reviewer": "Process reviewer",
+            "reviewed": true,
+            "link_role": "cites"
+        }
+    ]
+}

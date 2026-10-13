@@ -1,0 +1,54 @@
+DPH END-TO-END PROCESS DIAGRAMS
+Last changed 12 October 2026
+
+RUN AND INSPECT
+1. In File Explorer open C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug.
+   Double-click DelphiProjectHandoff.exe. Attach the intended target project or
+   Open cache for its saved .dphdb. DPH does not execute the selected application.
+2. In the upper-right page selector choose Departmental workflows. Select a
+   saved workflow. If none exists, follow Departmental_Workflow_Run_and_Test.txt
+   to create its ordered steps and Save it. Save or discard any other draft.
+3. Click Process diagram in the workflow command bar. At narrower widths, scroll
+   that bar horizontally to reach the button. Graphs now selects Business process.
+4. Read the workflow revision, contributor, review state, reviewer and generation.
+   Scroll the SVG diagram vertically and horizontally. Blue arrows follow authored
+   normal order; orange dashed routes are authored exceptions. Unknown destinations
+   have explicit unresolved nodes. End means the authored boundary, not proven success.
+5. Select a step to read all fields. The browser diagram also has Full steps and
+   routes below it. Long text remains complete there. A browser failure retains the
+   native scrollable diagram and selection details; no WebView installation is
+   necessary to inspect its native nodes.
+6. In Linked business processes, click an exact revision link. DPH shows immutable
+   content and its review evidence. Reviewed linked revision requires a named
+   reviewer on that historical revision. It does not claim current business approval.
+7. To add a process connection, return to Departmental workflows, select the same
+   workflow and click Implementation links. Choose section as target kind, search
+   the intended reviewed business process, select its exact revision and Add link.
+   Return to Knowledge and Save. Review this new workflow revision separately.
+8. Return to the workflow and Process diagram. Verify the connected process title,
+   exact revision and review evidence. Unknown fields remain unresolved after review.
+
+PUBLISH AND CHECK
+Publish to a NEW output folder with maintenance/all audience. Open its index.html,
+find the workflow article, inspect the SVG and follow its exact process-revision
+links. Canonical JSON and indexes/knowledge.jsonl preserve the same projection.
+User-only publication excludes maintainer workflows. Source exclusions and scope
+also constrain links. Bundle validation recomputes the derived diagram.
+
+SAFE PRACTICE
+Use a disposable example database. Record Sales checking an approved order, then
+Warehouse dispatching it. Set Warehouse's exception destination to the Sales step.
+Save, add a reviewed business-process link and inspect Process diagram. Reorder the
+steps through Edit fields, Apply workflow, Save: the normal sequence changes while
+its exception still targets the same stable Sales step. Set a route to Unknown to
+see its unresolved node. Do not claim this exercise proves production behavior.
+
+AUTOMATED VALIDATION
+Open an elevated Command Prompt and run:
+ cd /d "C:\New Delphi Projects\Delphi Project Handoff"
+ tools\build-process-diagram.cmd
+Any nonzero exit or FAIL is a failure. Inspect:
+ docs\phase1-process-diagram-validation.log
+ docs\phase1-process-diagram-validation.json
+Run tools\build-wp0.cmd for the actual app and serialized FMX binding checks.
+Fixtures stay in bin\process-diagram-validation; no selected target code is run.

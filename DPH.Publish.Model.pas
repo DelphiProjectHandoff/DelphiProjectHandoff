@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-9';
+const DPHPublishVersion = 'DPH-LEARNING-10';
 type
   TDPHDocumentModel = class
   private
@@ -19,7 +19,7 @@ type
     property LocalDisplay: Boolean read FLocalDisplay;
   end;
 implementation
-uses System.Classes, System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations;
+uses System.Classes, System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations, DPH.Workspace.Graphs;
 class function TDPHDocumentModel.HTML(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
 class function TDPHDocumentModel.Redact(const AText: string): string;
@@ -250,6 +250,12 @@ begin
         LinkedRow.AddPair('omitted_rich_links',TJSONNumber.Create(Omitted));
       end;
     finally LinkRecords.Free; end;
+    for V in Knowledge do begin J:=V as TJSONObject;
+     QuestionMetadata:=J.GetValue<TJSONObject>('structured_record',nil);
+     if (QuestionMetadata<>nil) and (QuestionMetadata.GetValue<string>('record_type','')='departmental_workflow') then
+      J.AddPair('process_diagram',TDPHGraphProjection.Workflow(J,Knowledge,Generation));
+    end;
+
     Links:=TJSONArray.Create; FDocument.AddPair('diagnostics',Links);
     for V in S.GetValue<TJSONArray>('diagnostics') do begin R:=V as TJSONObject;
       Path:=R.GetValue<string>('range.source',''); IncludeRow:=Path='';

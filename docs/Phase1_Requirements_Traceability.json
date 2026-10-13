@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Departmental workflows 06.02 implemented as attributed manual capture; 315 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. End-to-end process diagrams 06.03 implemented; 314 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2644,15 +2644,31 @@
       "id": "06.03",
       "domain": "DPH-06",
       "requirement": "End-to-end process diagrams",
-      "implementation": "missing",
+      "implementation": "implemented",
       "evidence": [
-        "DPH.Analysis.Flow.pas",
-        "DPH.Workspace.Model.pas",
+        "DPH.Workspace.Graphs.pas",
         "DPH.Analysis.Explanations.pas",
-        "tests/DPH.Tests.Semantics.dpr"
+        "DPH.Publish.Model.pas",
+        "DPH.Publish.Export.pas",
+        "DPH.UI.Main.pas",
+        "DPH.UI.Main.fmx",
+        "tests/DPH.Tests.ProcessDiagram.dpr",
+        "tools/build-process-diagram.cmd",
+        "docs/phase1-process-diagram-validation.json",
+        "docs/phase1-process-diagram-validation.log",
+        "docs/guides/Process_Diagram_Run_and_Test.txt"
       ],
-      "limitation": "Add a process-step graph connected to reviewed business-process records.",
+      "limitation": "Derived end-to-end diagrams show every saved departmental workflow step, normal handoff, stable exception route, End boundary and explicit unknown destination. Actual SVG, selectable native fallback and full step/route text preserve detail. Exact in-scope business-process history links distinguish reviewed revisions and named reviewers. Current workflow state, contributor and source generation remain visible. Published canonical knowledge and HTML retain the projection; validation rejects missing or divergent diagrams. Workflow-specific node anchors avoid collisions. Native controls remain IDE-editable. One workflow has at most 64 steps; no target application or business action is executed, and content review does not establish business authorization or runtime success.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 4,
+        "finding": "Business-process diagrams derive ordered steps, handoffs and exception routes from saved departmental workflows, connect exact reviewed business-process revisions, provide SVG and selectable native views and retain a validated canonical publication projection.",
+        "remaining_work": "",
+        "purpose": "End-to-end process diagrams",
+        "evidence_group": "flow",
+        "verification": "147 focused and 579 regression checks pass, including full bundle rejection of missing and divergent diagrams; actual application/FMX pass. Native and SVG renders visually reviewed. All 75 guide pages covered by pixel identity or individual changed-page inspection; 58 source hashes and 124 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 4,
         "finding": "Technical call/CFG diagrams are not end-to-end business-process diagrams.",
@@ -2660,6 +2676,12 @@
         "purpose": "End-to-end process diagrams",
         "evidence_group": "flow",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "End-to-end process diagrams",
+        "validation": "docs/phase1-process-diagram-validation.json",
+        "prior_audit_status": "missing"
       }
     },
     {
@@ -12931,23 +12953,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "Departmental workflows",
+    "completed_batch": "End-to-end process diagrams",
     "completed_requirement_ids": [
-      "06.02"
+      "06.03"
     ],
     "counts": {
       "implemented_manual_capture": 23,
       "partial": 226,
-      "implemented": 195,
-      "missing": 89
+      "implemented": 196,
+      "missing": 88
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 315,
-    "completion_record": "docs/Phase1_Departmental_Workflow_Completion.txt",
+    "incomplete_requirement_records": 314,
+    "completion_record": "docs/Phase1_Process_Diagram_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "06.03",
-      "title": "End-to-end process diagrams",
-      "scope": "Add a process-step graph connected to reviewed business-process records."
+      "requirement": "06.04",
+      "title": "Business-rule catalog",
+      "scope": "Add rule identifiers, applicability, conditions, outcomes and a dedicated rule catalog/filter."
     }
   }
 }

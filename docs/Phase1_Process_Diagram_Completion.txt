@@ -1,0 +1,18 @@
+DPH REQUIREMENT 06.03 COMPLETION: END-TO-END PROCESS DIAGRAMS
+Last changed: 12 October 2026
+
+Derived end-to-end diagrams show every saved departmental workflow step, normal handoff, stable exception route, End boundary and explicit unknown destination. Actual SVG, selectable native fallback and full step/route text preserve detail. Exact in-scope business-process history links distinguish reviewed revisions and named reviewers. Current workflow state, contributor and source generation remain visible. Published canonical knowledge and HTML retain the projection; validation rejects missing or divergent diagrams. Workflow-specific node anchors avoid collisions. Native controls remain IDE-editable. One workflow has at most 64 steps; no target application or business action is executed, and content review does not establish business authorization or runtime success.
+
+Validation PASS: 147 focused + 579 regression = 726 checks.
+Actual application and FMX baseline PASS. Native normal/compact and SVG renders reviewed.
+All 75 guide pages reviewed: 65 pixel-identical previously reviewed pages and 10 changed pages inspected. 58 source hashes and 124 TOC destinations verified.
+Editable DOCX/PDF guides, HTML help and explicit run/test directions updated.
+Directions: docs/guides/Process_Diagram_Run_and_Test.txt
+
+Pre-change backup: H:\DPH Backups\ProcessDiagrams_PreChange_20261012_200847
+10305 files, 3258462206 bytes; every SHA256 verified. No post-change backup.
+
+Only 06.03 promoted; all 533 original IDs and texts preserved.
+196 implemented; 23 implemented_manual_capture; 226 partial; 88 missing.
+314 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.04 Business-rule catalog.

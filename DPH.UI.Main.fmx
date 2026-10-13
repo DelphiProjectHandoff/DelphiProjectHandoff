@@ -939,6 +939,7 @@ Items.Strings = (
 'Data flow'
 'Change impact'
 'Data lineage'
+'Business process'
 )
 ItemIndex = 0
 OnChange = ViewChange
@@ -1984,6 +1985,13 @@ Width = 110
 Height = 28
 Text = 'Edit fields'
 OnClick = DepartmentalWorkflowEditClick
+end
+object DepartmentalWorkflowDiagram:TButton
+Position.X = 1101
+Width = 130
+Height = 28
+Text = 'Process diagram'
+OnClick = DepartmentalWorkflowDiagramClick
 end
 end
 object DepartmentalWorkflowStatus: TLabel

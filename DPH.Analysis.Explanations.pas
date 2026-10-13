@@ -30,7 +30,7 @@ type
     class function TopicTitle(AIndex: Integer): string; static;
   end;
 implementation
-uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.Defaults;
+uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.Defaults, DPH.Workspace.Graphs;
 
 class function TDPHExplanationModel.Encode(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
@@ -373,6 +373,7 @@ var Nodes,Edges: TJSONArray; Indices: TDictionary<string,Integer>;
     end;
   end;
 begin
+  if AGraph.GetValue<string>('kind')='Business process' then Exit(Page('Business process diagram',TDPHGraphProjection.WorkflowSVG(AGraph)));
   Nodes:=AGraph.GetValue<TJSONArray>('nodes'); Edges:=AGraph.GetValue<TJSONArray>('edges');
   if Nodes.Count=0 then Exit(Page(AGraph.GetValue<string>('kind'),'<section class="card"><h2>No supported graph objects</h2><p>Select an Explorer object or use Whole program, All forms or Project data. Review coverage gaps before inferring that behavior is absent.</p></section>'));
   Indices:=TDictionary<string,Integer>.Create; Links:=TObjectDictionary<Integer,TList<Integer>>.Create([doOwnsValues]); Queue:=TQueue<Integer>.Create; Text:=TStringBuilder.Create;

@@ -9,7 +9,7 @@ type
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
 var Archive: TZipFile; Document,Body,Headings: string; V,W,L: TJSONValue; R: TJSONObject; I: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
   procedure Part(const Name,Text: string);
@@ -265,6 +265,7 @@ begin
         ' | reviewer '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewer')='','unassigned',R.GetValue<string>('reviewer')))+
         ' | last reviewed '+TDPHDocumentModel.HTML(IfThen(R.GetValue<string>('reviewed_at')='','never',R.GetValue<string>('reviewed_at')))+
         '</p><pre>'+TDPHDocumentModel.HTML(R.GetValue<string>('body'))+'</pre>');
+      if R.GetValue('process_diagram')<>nil then Page.Append(TDPHGraphProjection.WorkflowSVG(R.GetValue<TJSONObject>('process_diagram')));
       for RevisionValue in R.GetValue<TJSONArray>('history') do begin
         Page.Append('<details id="knowledge_revision_'+RevisionValue.GetValue<string>('revision')+'"><summary>Revision '+RevisionValue.GetValue<string>('revision')+
           ' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('verification_state'))+' | '+TDPHDocumentModel.HTML(RevisionValue.GetValue<string>('editor'))+'</summary><p>'+
@@ -582,6 +583,16 @@ begin
         raise EReadError.Create('Configuration index differs from canonical model');
       CheckJSONL('indexes/files.jsonl','files',[]);
     end else CheckJSONL('indexes/configuration.jsonl','files',[]);
+    for V in Canonical.GetValue<TJSONArray>('knowledge') do begin
+     Row:=(V as TJSONObject).GetValue<TJSONObject>('structured_record',nil);
+     if (Row<>nil) and (Row.GetValue<string>('record_type','')='departmental_workflow') and
+       (Canonical.GetValue<string>('template_version')=DPHPublishVersion) and ((V as TJSONObject).GetValue('process_diagram')=nil) then
+       raise EReadError.Create('Workflow process diagram is missing');
+    end;
+    for V in Canonical.GetValue<TJSONArray>('knowledge') do if (V as TJSONObject).GetValue('process_diagram')<>nil then begin
+     Row:=TDPHGraphProjection.Workflow(V as TJSONObject,Canonical.GetValue<TJSONArray>('knowledge'),Generation);
+     try if Row.ToJSON<>V.GetValue<TJSONObject>('process_diagram').ToJSON then raise EReadError.Create('Process diagram differs from authored canonical workflow');finally Row.Free;end;
+    end;
     CheckJSONL('indexes/knowledge.jsonl','knowledge',[]);
     if (Canonical.GetValue<string>('template_version')=DPHPublishVersion) or TFile.Exists(TPath.Combine(Root,'indexes/glossary.jsonl')) then
       CheckJSONL('indexes/glossary.jsonl','knowledge',['glossary']);
