@@ -445,7 +445,7 @@ begin
     '.card{break-inside:avoid}}</style></head><body><header><h1>'+Encode(ATitle)+'</h1><p>'+
     Encode(FFacts.GetValue<string>('project'))+'</p></header><main>'+
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+ABody+
-    '<details class="card"><summary>About this lesson</summary><p>Prepared from the selected source files; the application was not run. Source capture '+FFacts.GetValue('generation_id').Value+'; '+Encode(FFacts.GetValue<string>('configuration'))+' / '+Encode(FFacts.GetValue<string>('platform'))+'.</p></details></main></body></html>';
+    '<details class="card"><summary>How this lesson was prepared</summary><p>DPH read the selected Delphi project and its saved form designs. Where a local project guide is quoted, its name appears beside the passage. These materials describe the application, but DPH has not run it or checked the outcome of a user action.</p><p><small>Source capture '+FFacts.GetValue('generation_id').Value+'; '+Encode(FFacts.GetValue<string>('configuration'))+' / '+Encode(FFacts.GetValue<string>('platform'))+'.</small></p></details></main></body></html>';
 end;
 function TDPHExplanationModel.ObjectHTML(const AKey: string): string;
 var S,R: TJSONObject; Body,Kind,Key: string; Text: TStringBuilder; Rows: TList<TJSONObject>; Count,Pass: Integer; V,W: TJSONValue; Linked: Boolean;
@@ -997,13 +997,15 @@ var
   V,W: TJSONValue;
   R,S,Control,Metadata,Fields: TJSONObject;
   TaskRecords: TList<TJSONObject>;
-  ProjectName,ActionName,ControlName,EventName,Caption,Handler: string;
+  ProjectName,ActionName,ControlName,EventName,Caption,Handler,Source,GuideTitle,GuideBody: string;
+  Guides,GuideSections: TJSONArray; Guide,GuideSection: TJSONObject;
   Count,TaskIndex,TaskTotal,ActionIndex,P: Integer;
   HasPurpose: Boolean;
 begin
   if not (AIndex in [0..3]) then
     Exit(Page('Learn this app','<p>Choose a learning step for the selected application.</p>'));
   ProjectName:=FFacts.GetValue<string>('project','the selected application');
+  Guides:=FFacts.GetValue<TJSONArray>('project_guides',nil);
   Body:=TStringBuilder.Create;
   TaskRecords:=TList<TJSONObject>.Create;
   try
@@ -1034,7 +1036,7 @@ begin
     end));
     TaskTotal:=TaskRecords.Count;
     Body.Append('<section class="card"><p><strong>Selected application:</strong> '+Encode(ProjectName)+
-      '. These pages use its captured files and its own saved explanations. DPH has not run the application.</p></section>');
+      '. Follow the forms, visible labels and actions found in this project. Supplied explanations and local project guides add context where available.</p></section>');
     case AIndex of
       0: begin
         Body.Append('<section class="card"><h2>What is this application for?</h2>');
@@ -1057,7 +1059,18 @@ begin
             HasPurpose:=True; Break;
           finally Metadata.Free; end;
         end;
-        if not HasPurpose then Body.Append('<p>No application-purpose explanation has been supplied. The project name alone cannot tell a learner who uses it or why. Ask a knowledgeable person to add its purpose in Prepare lessons.</p>');
+        if not HasPurpose and (Guides<>nil) then for V in Guides do begin
+          Guide:=V as TJSONObject; GuideSections:=Guide.GetValue<TJSONArray>('sections');
+          for W in GuideSections do begin
+            GuideSection:=W as TJSONObject; GuideTitle:=GuideSection.GetValue<string>('heading','');
+            if not ContainsText(GuideTitle,'purpose') then Continue;
+            GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
+            if GuideBody='' then Continue;
+            Body.Append('<p><strong>From the project guide:</strong> '+Encode(GuideBody).Replace(sLineBreak,'<br>')+'</p><p><small>Source: '+Encode(Guide.GetValue<string>('source'))+'. This is supplied documentation, not a run-time check.</small></p>');
+            HasPurpose:=True; Break;
+          end;
+          if HasPurpose then Break;
+        end;
         if not HasPurpose then for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
           R:=V as TJSONObject;
           if MatchText(R.GetValue<string>('state',''),['retired','rejected']) or
@@ -1067,17 +1080,44 @@ begin
             '; review status: '+Encode(R.GetValue<string>('state','not recorded'))+'.</small></p>');
           Break;
         end;
-        Body.Append('</section><section class="card"><h2>Screens found in the saved design</h2>');
-        Count:=0;
-        for V in FFacts.GetValue<TJSONArray>('relationships') do begin
-          R:=V as TJSONObject;
-          if R.GetValue<string>('kind','')<>'represents' then Continue;
-          if not FSymbols.TryGetValue(R.GetValue<string>('from',''),S) then Continue;
-          Body.Append('<p>'+Link(S.GetValue<string>('key'))+
-            ' &mdash; a saved form design. Its actual appearance and first-screen order need confirmation.</p>');
-          Inc(Count); if Count>=8 then Break;
+        if not HasPurpose then begin
+          Caption:=''; Source:='';
+          for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+            S:=V as TJSONObject;
+            if (S.GetValue<string>('kind','')<>'component') or
+              not MatchText(ExtractFileExt(S.GetValue<string>('range.source','')),['.fmx','.dfm']) or
+              not ContainsText(S.GetValue<string>('name',''),'hero') or
+              (S.GetValue<TJSONArray>('serialized_properties',nil)=nil) then Continue;
+            for W in S.GetValue<TJSONArray>('serialized_properties') do
+              if MatchText(W.GetValue<string>('name',''),['Text','Caption']) and
+                (Length(Trim(W.GetValue<string>('value','')))>8) then begin
+                Caption:=W.GetValue<string>('value'); Source:=S.GetValue<string>('range.source'); Break; end;
+            if Caption<>'' then Break;
+          end;
+          if Caption<>'' then Body.Append('<p><strong>Prominent title in a saved form design:</strong> '+Encode(Caption)+
+            '. <small>Found in '+Encode(Source)+'. This identifies the application, while its intended users and complete purpose still need confirmation.</small></p>')
+          else Body.Append('<p>The saved form captions below offer a first clue to what this application does. They do not establish its intended users or every business rule.</p>');
         end;
-        if Count=0 then Body.Append('<p>No supported form design was captured. Ask which screen a new user sees first.</p>');
+        Body.Append('</section><section class="card"><h2>Forms found in the selected project</h2>');
+        Count:=0;
+        for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+          S:=V as TJSONObject; Source:=S.GetValue<string>('range.source','');
+          if (S.GetValue<string>('kind','')<>'component') or
+            not MatchText(ExtractFileExt(Source),['.fmx','.dfm']) or
+            not StartsText(Source+'.',S.GetValue<string>('name','')) or
+            (Pos('.',Copy(S.GetValue<string>('name',''),Length(Source)+2,MaxInt))>0) then Continue;
+          Caption:='';
+          if S.GetValue<TJSONArray>('serialized_properties',nil)<>nil then
+            for W in S.GetValue<TJSONArray>('serialized_properties') do
+              if SameText(W.GetValue<string>('name',''),'Caption') then begin Caption:=W.GetValue<string>('value',''); Break; end;
+          Body.Append('<p>'+Link(S.GetValue<string>('key')));
+          if (Caption<>'') and not SameText(Caption,ExtractFileName(Source)) then
+            Body.Append(' &mdash; saved window title: <strong>'+Encode(Caption)+'</strong>');
+          Body.Append(' <small>('+Encode(Source)+')</small></p>');
+          Inc(Count);
+        end;
+        if Count=0 then Body.Append('<p>No form design was captured in the selected files. Ask which screen a new user sees first.</p>')
+        else Body.Append('<p>'+IntToStr(Count)+' saved form design(s) found. These are project resources; the first window shown when the application runs may differ.</p>');
         if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then
           Body.Append('<p>No actual screenshot has been supplied for this application. Form designs are reconstructions, not screenshots.</p>')
         else Body.Append('<p>'+IntToStr(FFacts.GetValue<TJSONArray>('screenshots').Count)+
@@ -1117,11 +1157,34 @@ begin
           finally Metadata.Free; end;
         end;
         if (AIndex=1) and (Count=0) then
-          Body.Append('<p>No complete task instructions have been supplied for '+Encode(ProjectName)+
-            '. The source-connected action below is a starting point, not a verified operating procedure. Ask the app owner for the user role, required inputs, correct result and safe recovery steps.</p>');
+          Body.Append('<p>Begin by learning a visible action from this application. The project materials below can explain its screen and purpose; only a tested walkthrough can establish the exact steps and expected result.</p>');
         if (AIndex=2) and (Count=0) then
           Body.Append('<p>No additional task walkthroughs have been supplied. The actions below are candidates to explain, not instructions to perform.</p>');
         Body.Append('</section>');
+        if (Guides<>nil) and (Guides.Count>0) then begin
+          Body.Append('<section class="card"><h2>Read this application’s own guide</h2><p>These passages come from files beside the selected project. Read them alongside the saved forms; check an operating procedure with the application owner before following it.</p>');
+          Count:=0;
+          for V in Guides do begin
+            Guide:=V as TJSONObject;
+            for W in Guide.GetValue<TJSONArray>('sections') do begin
+              GuideSection:=W as TJSONObject; GuideTitle:=GuideSection.GetValue<string>('heading','');
+              GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
+              if (GuideBody='') or not
+                (ContainsText(GuideTitle,'start') or ContainsText(GuideTitle,'using') or
+                 ContainsText(GuideTitle,'main form') or ContainsText(GuideTitle,'playlist') or
+                 ContainsText(GuideTitle,'responsibilit') or
+                 ContainsText(GuideTitle,'editing') or ContainsText(GuideTitle,'schedule') or
+                 ContainsText(GuideTitle,'operation') or ContainsText(GuideTitle,'quick reference')) then Continue;
+              if AIndex=1 then begin
+                if Count>=8 then Break;
+              end else if Count>=8 then Break;
+              Body.Append('<details class="card"><summary>'+Encode(GuideTitle)+'</summary><pre>'+Encode(GuideBody)+'</pre><small>From '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
+              Inc(Count);
+            end;
+          end;
+          if Count=0 then Body.Append('<p>The local guides do not have a clearly labeled getting-started or task section. Explore their headings below and use the forms and actions in this route.</p>');
+          Body.Append('</section>');
+        end;
         if (AIndex=2) or (TaskTotal=0) then begin
           Body.Append('<section class="card"><h2>Actions found in this application</h2>');
           Count:=0; ActionIndex:=0;
@@ -1132,10 +1195,7 @@ begin
             ActionName:=S.GetValue<string>('name',''); P:=LastDelimiter('.',ActionName);
             if P=0 then Continue;
             EventName:=Copy(ActionName,P+1,MaxInt);
-            if not MatchText(EventName,['OnClick','OnExecute','OnChange','OnDblClick','OnKeyDown','OnTap']) then Continue;
-            Inc(ActionIndex);
-            if (AIndex=2) and (TaskTotal=0) and (ActionIndex=1) then Continue;
-            if (AIndex=1) and (ActionIndex>1) then Break;
+            if not MatchText(EventName,['OnClick','OnExecute','OnDblClick','OnTap']) then Continue;
             ControlName:=Copy(ActionName,1,P-1); Caption:='';
             for W in FFacts.GetValue<TJSONArray>('symbols') do begin
               Control:=W as TJSONObject;
@@ -1148,16 +1208,56 @@ begin
               Break;
             end;
             Handler:=R.GetValue<string>('to','');
-            Body.Append('<h3>'+Encode(ControlName)+'</h3>');
-            if Caption<>'' then Body.Append('<p><strong>Saved display text:</strong> '+Encode(Caption)+'</p>');
-            Body.Append('<p>The saved '+Encode(EventName)+' connection points to '+Link(Handler)+
-              '. This identifies a possible action path, but does not prove what the user should do or what result is correct.</p>');
+            if Caption='' then Continue;
+            Inc(ActionIndex);
+            if (AIndex=2) and (TaskTotal=0) and (ActionIndex=1) then Continue;
+            if (AIndex=1) and (ActionIndex>1) then Break;
+            Body.Append('<h3>'+Encode(Caption)+'</h3><p>This control is saved on '+Encode(R.GetValue<string>('range.source','a form'))+
+              '. Its '+Encode(EventName)+' event is recorded in the form design. ');
+            if (Handler<>'') and FSymbols.ContainsKey(Handler) then
+              Body.Append('Follow '+Link(Handler)+' to learn what the captured source says about this action. ')
+            else Body.Append('The corresponding code was not readable in this capture. ');
+            Body.Append('The expected result still needs confirmation if the guide or a reviewed lesson does not describe it.</p>');
             Inc(Count); if (AIndex=1) or (Count>=8) then Break;
           end;
-          if Count=0 then Body.Append('<p>No further supported user-action connection was found in the selected files. Ask the owner to identify a common task and its starting screen.</p>');
+          if Count=0 then begin
+            Body.Append('<p>No labeled click action could be connected to readable code. These saved interface labels still help you choose a screen to explore:</p><ul>');
+            Count:=0;
+            for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+              S:=V as TJSONObject;
+              if (S.GetValue<string>('kind','')<>'component') or
+                not MatchText(ExtractFileExt(S.GetValue<string>('range.source','')),['.fmx','.dfm']) or
+                (S.GetValue<TJSONArray>('serialized_properties',nil)=nil) then Continue;
+              Caption:='';
+              for W in S.GetValue<TJSONArray>('serialized_properties') do
+                if MatchText(W.GetValue<string>('name',''),['Text','Caption']) and
+                  (Length(Trim(W.GetValue<string>('value','')))>3) then begin
+                  Caption:=W.GetValue<string>('value'); Break; end;
+              if (Caption='') or SameText(Caption,S.GetValue<string>('name','')) then Continue;
+              Body.Append('<li>'+Encode(Caption)+' <small>('+Encode(S.GetValue<string>('range.source',''))+')</small></li>');
+              Inc(Count); if Count>=8 then Break;
+            end;
+            if Count=0 then Body.Append('<li>No descriptive labels were saved in the captured forms.</li>');
+            Body.Append('</ul>');
+          end;
           Body.Append('</section>');
         end;
         if AIndex=2 then begin
+          if (Guides<>nil) and (Guides.Count>0) then begin
+            Body.Append('<section class="card"><h2>More from the project’s documentation</h2><p>Open a topic to read the corresponding passage from the selected application’s own guide.</p>');
+            for V in Guides do begin
+              Guide:=V as TJSONObject;
+              Body.Append('<h3>'+Encode(Guide.GetValue<string>('source'))+'</h3>');
+              for W in Guide.GetValue<TJSONArray>('sections') do begin
+                GuideSection:=W as TJSONObject;
+                GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
+                if GuideBody='' then Continue;
+                Body.Append('<details class="card"><summary>'+Encode(GuideSection.GetValue<string>('heading','Topic'))+
+                  '</summary><pre>'+Encode(GuideBody)+'</pre></details>');
+              end;
+            end;
+            Body.Append('</section>');
+          end;
           Body.Append('<section class="card"><h2>Supplied explanations and worked examples</h2>');
           Count:=0;
           for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
@@ -1218,10 +1318,20 @@ begin
             if (Metadata<>nil) and (Metadata.GetValue<string>('record_type','')='project_profile') then HasPurpose:=True;
           finally Metadata.Free; end;
         end;
-        if not HasPurpose then Body.Append('<li>The application purpose, intended users and starting screen need an attributed explanation.</li>');
+        if not HasPurpose and (Guides<>nil) then
+          for V in Guides do begin
+            Guide:=V as TJSONObject;
+            for W in Guide.GetValue<TJSONArray>('sections') do
+              if ContainsText(W.GetValue<string>('heading',''),'purpose') and
+                (Trim(W.GetValue<string>('text',''))<>'') then begin HasPurpose:=True; Break; end;
+            if HasPurpose then Break;
+          end;
+        if not HasPurpose then
+          Body.Append('<li>The form captions provide a starting clue, but the intended users, purpose and first screen need confirmation.</li>')
+        else Body.Append('<li>Confirm the intended users and first screen with someone who operates this application.</li>');
         if TaskTotal=0 then Body.Append('<li>No reviewed task walkthrough provides ordered actions, required inputs and expected results.</li>');
         if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then Body.Append('<li>No actual screenshot has been supplied to confirm a screen or output.</li>');
-        Body.Append('<li>Reading source cannot verify the running behavior, business rules, permissions or a correct result. Confirm these with the application owner.</li></ul>');
+        Body.Append('<li>Confirm the results of important actions, permissions and recovery steps by using the application with its owner.</li></ul>');
         Count:=0;
         for V in FFacts.GetValue<TJSONArray>('author_questions') do begin
           R:=V as TJSONObject;

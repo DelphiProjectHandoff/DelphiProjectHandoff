@@ -297,7 +297,7 @@ var Document: IXMLDocument; IR: TDPHParseResult; XMLPosition: Integer;
     begin Complete:=False; Diagnostics.Report('PROJECT_CONDITION_UNKNOWN',Condition,ASource.Range(0,0)); end;
   end;
   procedure Walk(Node: IXMLNode; Depth: Integer);
-  var I: Integer; Child: IXMLNode; Name,Value,Path,Symbol,PropertyName: string; Input: TDPHSource;
+  var I: Integer; Child: IXMLNode; Name,Value,Path,Symbol,PropertyName,ResourceName: string; Input: TDPHSource;
   begin
     if Depth>DPHMaxNesting then raise EReadError.Create('Project XML nesting limit');
     if not Enabled(Node) then Exit;
@@ -346,7 +346,19 @@ var Document: IXMLDocument; IR: TDPHParseResult; XMLPosition: Integer;
       if Value.Contains('$(') then
       begin Complete:=False; Diagnostics.Report('PROJECT_PATH_MACRO','Referenced path requires explicit resolved input: '+Value,ASource.Range(0,0)); end
       else
-      begin Input:=Capture(ASource.RelativePath,Value); if Assigned(Input) then Discover(Input,ADepth+1); end;
+      begin
+        Input:=Capture(ASource.RelativePath,Value); if Assigned(Input) then Discover(Input,ADepth+1);
+        // A form resource remains useful even if its referenced Pascal unit needs a legacy code page.
+        if SameText(Name,'DCCReference') and SameText(ExtractFileExt(Value),'.pas') then begin
+          ResourceName:=ChangeFileExt(Value,'.fmx');
+          if not TFile.Exists(TPath.GetFullPath(TPath.Combine(ExtractFileDir(ASource.Path),ResourceName))) then
+            ResourceName:=ChangeFileExt(Value,'.dfm');
+          if TFile.Exists(TPath.GetFullPath(TPath.Combine(ExtractFileDir(ASource.Path),ResourceName))) then begin
+            Input:=Capture(ASource.RelativePath,ResourceName);
+            if Assigned(Input) then Discover(Input,ADepth+1);
+          end;
+        end;
+      end;
     end;
     if SameText(Name,'Import') then
       Diagnostics.Report('IMPORT_NOT_EXECUTED','Build imports are not executed or acquired',ASource.Range(0,0),'info');

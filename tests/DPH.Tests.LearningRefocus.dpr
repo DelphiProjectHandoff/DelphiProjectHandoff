@@ -94,16 +94,40 @@ begin
                 not ContainsText(FlowText,'OrderPractice'),'Each main learning step belongs to the selected application');
             end;
             Check(ContainsText(Explain.ApplicationRouteHTML(0),'MainForm') and
-              ContainsText(Explain.ApplicationRouteHTML(0),'No application-purpose explanation'),
-              'App introduction uses its captured form and identifies a missing human purpose');
-            Check(ContainsText(Explain.ApplicationRouteHTML(1),'btnConvert') and
-              ContainsText(Explain.ApplicationRouteHTML(1),'not a verified operating procedure'),
-              'Without authored instructions, a real app action remains an explicitly incomplete task');
+              ContainsText(Explain.ApplicationRouteHTML(0),'Forms found in the selected project'),
+              'App introduction shows captured form designs without inventing a purpose');
+            Check(ContainsText(Explain.ApplicationRouteHTML(1),'Begin by learning a visible action') and
+              ContainsText(Explain.ApplicationRouteHTML(1),'only a tested walkthrough'),
+              'Without authored instructions, the route distinguishes clues from a tested task');
             Check(ContainsText(Explain.ApplicationRouteHTML(3),'No reviewed task walkthrough'),
               'Unknowns page identifies the missing task instead of inventing a result');
             Check(ContainsText(Explain.ApplicationRouteHTML(2),'<title>Explore related tasks: Semantic.dproj</title>') and
               ContainsText(Explain.ApplicationRouteHTML(2),'<h1>Explore related tasks: Semantic.dproj</h1>'),
               'App-specific page title uses a plain ASCII separator');
+            var GuideFacts:=Model.Document.Clone as TJSONObject;
+            try
+              GuideFacts.GetValue<TJSONArray>('symbols').AddElement(
+                TJSONObject.Create.AddPair('key','unlinked-form-design').AddPair('kind','component')
+                  .AddPair('name','Extra.fmx.ExtraForm')
+                  .AddPair('range',TJSONObject.Create.AddPair('source','Extra.fmx'))
+                  .AddPair('serialized_properties',TJSONArray.Create(TJSONObject.Create.AddPair('name','Caption').AddPair('value','Extra learning screen'))));
+              var GuideSections:=TJSONArray.Create;
+              GuideSections.AddElement(TJSONObject.Create.AddPair('heading','1. Purpose').AddPair('text','A source-supplied purpose for this application.'));
+              GuideSections.AddElement(TJSONObject.Create.AddPair('heading','2. Getting started').AddPair('text','Begin with its own saved controls.'));
+              GuideFacts.AddPair('project_guides',TJSONArray.Create(TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
+              var GuideModel:=TDPHExplanationModel.Create(GuideFacts);
+              try
+                Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'A source-supplied purpose for this application.') and
+                  ContainsText(GuideModel.ApplicationRouteHTML(0),'docs/Application_Guide.md'),
+                  'Selected project guide supplies an attributed purpose');
+                Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'Extra learning screen') and
+                  ContainsText(GuideModel.ApplicationRouteHTML(0),'2 saved form design(s)'),
+                  'A form design appears even when no class-link relationship was resolved');
+                Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'Begin with its own saved controls.') and
+                  ContainsText(GuideModel.ApplicationRouteHTML(2),'Getting started'),
+                  'Application guide enriches the first task and related topics');
+              finally GuideModel.Free;end;
+            finally GuideFacts.Free;end;
             var FAQFacts:=Model.Document.Clone as TJSONObject;
             try
               var FAQRecord:=TJSONObject.Create.AddPair('title','Answer: Which task first?').AddPair('body','Begin with the supplied example option.').AddPair('owner','Named application teacher').AddPair('state','needs_review').AddPair('question_metadata',TJSONObject.Create.AddPair('prompt','Which task should a newcomer learn first?'));
@@ -385,7 +409,7 @@ begin
           try
             FlowText:=Explain.ApplicationRouteHTML(1);
             Check(ContainsText(FlowText,'OrderPractice.dproj') and ContainsText(FlowText,'Calculate total') and
-              not ContainsText(FlowText,'Semantic.dproj') and ContainsText(FlowText,'not a verified operating procedure'),
+              not ContainsText(FlowText,'Semantic.dproj') and ContainsText(FlowText,'only a tested walkthrough'),
               'A second selected project yields its own action and no imported practice lesson');
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
@@ -451,6 +475,62 @@ begin
             Check(not Model.Document.GetValue<Boolean>('analysis_complete'),'Learning does not clear partial reference coverage');
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
+      end;
+      var LegacyRoot:=TPath.Combine(Work,'legacy-form');
+      TDirectory.CreateDirectory(LegacyRoot);
+      TFile.WriteAllText(TPath.Combine(LegacyRoot,'Legacy.dproj'),
+        '<Project><ItemGroup><DCCReference Include="Legacy.pas"><Form>LegacyForm</Form></DCCReference></ItemGroup></Project>',TEncoding.UTF8);
+      TFile.WriteAllBytes(TPath.Combine(LegacyRoot,'Legacy.pas'),TBytes.Create($FF,$41,$42));
+      TFile.WriteAllText(TPath.Combine(LegacyRoot,'Legacy.fmx'),'object LegacyForm: TLegacyForm'+sLineBreak+
+        '  Caption = ''Legacy learning screen'''+sLineBreak+'end',TEncoding.UTF8);
+      Analyzer:=TDPHAnalyzer.Create;
+      try
+        Scan:=Analyzer.Scan(TPath.Combine(LegacyRoot,'Legacy.dproj'),'Debug','Win32',[],[]);
+        try Check(Scan.Inventory.Sources.ContainsKey('legacy.fmx'),
+          'A project-listed form resource is captured even when its Pascal unit is undecodable');
+        finally Scan.Free;end;
+      finally Analyzer.Free;end;
+      if (ParamCount>=4) and TFile.Exists(ParamStr(3)) then begin
+        Analyzer:=TDPHAnalyzer.Create;
+        try
+          Scan:=Analyzer.Scan(ParamStr(3),'Debug','Win64',[],[]);
+          try
+            var FormCount:=0;
+            for var CapturedPath in Scan.Inventory.Sources.Keys do
+              if MatchText(TPath.GetExtension(CapturedPath),['.fmx','.dfm']) then Inc(FormCount);
+            Check(FormCount>=StrToInt(ParamStr(4)),
+              'Selected project captures '+IntToStr(FormCount)+' form designs, including resources of undecodable units');
+            Semantic:=TDPHSemanticAnalyzer.Create;
+            try
+              Graph:=Semantic.Analyze(Scan);
+              try
+                View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,Graph,1,
+                  TPath.GetFileName(ParamStr(3)),'Debug','Win64',[],[]));
+                try
+                  Form:=TDPHMainForm.Create(nil);
+                  try
+                    Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False;
+                    Form.LoadView(View.Document.Clone as TJSONObject);
+                    Check((Form.FormCombo.Items.Count>=StrToInt(ParamStr(4))) and
+                      ContainsText(Form.OverviewMemo.Text,IntToStr(FormCount)+' saved form design(s)'),
+                      'The learner sees the captured form count in the actual DPH form');
+                    Check(ContainsText(Form.OverviewMemo.Text,'portable FireMonkey desktop application') and
+                      ContainsText(Form.OverviewMemo.Text,'Westminster_Chimes_and_Carillon_Bells_8_1_Application_Guide.md'),
+                      'The actual Carillon guide supplies purpose and attribution in the learner view');
+                    Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil);
+                    Check(ContainsText(Form.OverviewMemo.Text,'Read this application') and
+                      ContainsText(Form.OverviewMemo.Text,'playlist form is responsible for'),
+                      'The task route retains selected-project guide substance in its text fallback');
+                    Form.LearningTopics.ItemIndex:=3; Form.LearningClick(nil);
+                    Check(not ContainsText(Form.OverviewMemo.Text,'purpose and first screen need confirmation') and
+                      ContainsText(Form.OverviewMemo.Text,'Confirm the intended users and first screen'),
+                      'Unknowns acknowledge purpose evidence while asking only for unresolved operating facts');
+                  finally Form.Free;end;
+                finally View.Free;end;
+              finally Graph.Free;end;
+            finally Semantic.Free;end;
+          finally Scan.Free;end;
+        finally Analyzer.Free;end;
       end;
       Report:=TJSONObject.Create; try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('work',Work); Report.AddPair('reference_cache',ReferenceDB); Report.AddPair('human_acceptance','not_run'); Report.AddPair('guides_review','Manual review and rendered-guide verification are recorded separately from this native learning suite');
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));

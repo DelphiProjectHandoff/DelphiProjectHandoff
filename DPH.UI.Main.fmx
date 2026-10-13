@@ -51,7 +51,7 @@ Width = 130
 Margins.Right = 12
 Margins.Top = 12
 Margins.Bottom = 12
-Text = 'Getting started'
+Text = 'Start here'
 OnClick = HelpClick
 end
 object BaselineLabel: TLabel
@@ -59,7 +59,7 @@ Text = 'Delphi Project Handoff'
 Align = Client
 Margins.Left = 16
 StyledSettings = []
-TextSettings.Font.Size = 24
+TextSettings.Font.Size = 25
 TextSettings.FontColor = xFF146CB4
 end
 end
