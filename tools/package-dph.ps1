@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.5.1')
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.5.2')
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem

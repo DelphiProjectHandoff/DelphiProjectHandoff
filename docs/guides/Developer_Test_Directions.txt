@@ -1,18 +1,26 @@
 DEVELOPER BUILD AND CHECK DIRECTIONS
 
 Open an elevated Windows Command Prompt and change to the source root that
-contains DelphiProjectHandoff.dproj. Run the following commands in order:
+contains DelphiProjectHandoff.dproj. Run the following commands in order.
+The SET line makes a fresh directory name under your Windows Temp folder;
+MKDIR creates that directory before the test writes its lesson database:
 
 tools\build-wp0.cmd
 tools\build-learning-refocus.cmd
-tools\build-guided-tasks.cmd "%CD%\bin\fresh-task-check\fixture.dphdb"
+set "DPH_TEST_DIR=%TEMP%\DPH-GuidedTasks-%RANDOM%-%RANDOM%"
+mkdir "%DPH_TEST_DIR%"
+tools\build-guided-tasks.cmd "%DPH_TEST_DIR%\fixture.dphdb"
+echo %DPH_TEST_DIR%
 tools\build-phase1.cmd
 tools\build-wp6.cmd
 
-Use a new disposable folder name if fresh-task-check already exists. Do not
-reuse an owner database for the task test. Each suite must end with PASS and a
-zero process exit code. Run the relevant analyzer/storage suites when changing
-those contracts. These checks do not replace a first-time learner exercise.
+Do not reuse an owner database for the task test. Each suite must end with
+PASS and a zero process exit code. Run the relevant analyzer/storage suites
+when changing those contracts. These checks do not replace a first-time
+learner exercise. After checking the results, you may remove only the exact
+disposable Temp folder printed by ECHO %DPH_TEST_DIR%; keep useful failure
+evidence until the problem is understood. If MKDIR says the folder already
+exists, run the SET line again to choose a different name before testing.
 
 To run this source build:
 bin\Win32\Debug\DelphiProjectHandoff.exe
@@ -27,12 +35,21 @@ actual native screen. It runs only the supplied teaching example, never a
 customer application. Rebuilding those pictures requires checking the hashes
 in samples\OrderPractice\lessons.json before the practice import.
 
-tools\build-practice.cmd "<new disposable absolute folder>" validates the
-practice button, actual source-linked explanations, ordered tasks, progress
-and offline teaching edition. Run with a disposable workspace catalog and
-restore any original preferences afterward; do not use owner lesson databases.
+To validate the practice button, actual source-linked explanations, ordered
+tasks, progress and offline teaching edition, run these two commands:
 
-The revised learning scope is recorded in docs\Learning_Requirements_Reconciliation.json
+set "DPH_PRACTICE_DIR=%TEMP%\DPH-Practice-%RANDOM%-%RANDOM%"
+tools\build-practice.cmd "%DPH_PRACTICE_DIR%"
+echo %DPH_PRACTICE_DIR%
+
+The test creates its lesson database in that disposable Temp folder. Do not
+use an owner lesson database. If the new database appears in DPH's recent
+projects after the test, use Forget in Open saved lessons to remove only that
+catalog entry; Forget does not delete the database.
+The test creates its work folder. After checking the results, you may remove
+only the folder printed by ECHO %DPH_PRACTICE_DIR%.
+
+The revised learning scope is recorded in docs\requirements\Learning_Requirements_Reconciliation.json
 and its CSV and text companions. The original requirement ledger remains
 unchanged. Scope decisions are distinct from implementation of old technical
 requirements. Human learning acceptance remains separately reported.
