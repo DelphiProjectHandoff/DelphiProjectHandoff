@@ -1,4 +1,4 @@
-﻿DPH STOPPING POINT
+DPH STOPPING POINT
 Recorded: 2026-10-12
 Historical pause: superseded by the owner's 12 October 2026 resume and learning-refocus instruction.
 
@@ -55,3 +55,7 @@ substitute automated checks or resume the old administrative backlog as if the
 owner's learning-only instruction had not occurred.
 Older technical guide files remain in the repository after automatic approval
 review rejected their bulk deletion. They are excluded from the current package.
+
+CURRENT DELIVERY: 13 October 2026. The revised learning implementation is complete.
+The historical pause and next-technical-requirement instruction above are obsolete.
+See Learning_Refocus_Status.txt and learning-distribution-validation.json.

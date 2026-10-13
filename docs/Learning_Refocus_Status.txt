@@ -1,165 +1,46 @@
-DPH LEARNING REFOCUS - ACTIVE WORK
-Owner direction received: 12 October 2026
+DPH LEARNING DELIVERY - 13 OCTOBER 2026
 
-Controlling purpose
-DPH teaches a newcomer about one selected Delphi application: its purpose,
-screens, user tasks, responding operations, decisions, information and results.
-The owner's latest instruction supersedes the previous broad implementation
-order. Do not resume marching through the 312 technical backlog records.
-Every further feature must contribute directly to learning that application.
-Source identity and storage remain supporting mechanisms, not the learning route.
+The revised beginner-learning implementation and delivery are complete.
+No remaining implementation items in the revised teaching contract.
+All 533 original records were reconciled individually, including the 312
+historically incomplete records. Zero unreconciled. The historical ledger
+remains unchanged: superseded technical obligations are not relabeled complete.
+See Learning_Requirements_Reconciliation.txt, .csv and .json for each decision.
 
-First correction implemented
-- Nine learner destinations replace the nearly fifty-page main selector.
-- Compiler options, encoding and advanced preparation pages are separate.
-- Guided lessons use the available width; selection panes appear for object work.
-- Twelve beginner topics cover purpose, startup, screens, actions, decisions,
-  information, program organization, changes, questions, terms and user tasks.
-- Screen/action lessons derive their controls and handlers from the selected
-  source. Decisions use actual captured expressions. Connections are selectable.
-- Purpose explanations preserve contributor and review status. Missing author
-  knowledge is a visible question, not invented behavior.
-- User/help/troubleshooting instructions appear in Task walkthroughs, with their
-  expected outcomes when supplied and links to related source objects.
-- Object explanations introduce role, relevant authored purpose and a bounded
-  set of understandable connections. Source walkthroughs are optional details.
-- Unlinked global notes no longer appear as the purpose of every object.
-- Fingerprint and generation dumps are absent from ordinary learner topics.
-- Form reconstructions remain distinguished from supplied screenshots.
+Delivered learning features
+- Application orientation and twelve plain-language learning topics.
+- Source-linked screen/action/decision explanations, with deeper code optional.
+- Learning library for fields, errors, FAQs, rules, outputs, roles and settings.
+- Ordered tasks, prerequisites, role filters, learning paths and saved progress.
+- Attributed teaching explanations, glossary, author answers and review history.
+- Supplied pictures and sample outputs with anchored numbered explanations.
+- Search and shared offline lessons from the same selected-application records.
+- Practice example: four First day tasks, fourteen teaching cards and two actual
+  native images, with worked answers and safe error-recovery instruction.
 
-Verification
-82 focused learning checks (including actual FMX/WebView2 interaction).
-19 project-profile checks; 114 publishing regression checks.
-Application build and IDE-serialized form baseline passed.
-Actual native screenshots are docs/learning-refocus-*.png; their selected program
-is a test fixture, not a screenshot of a customer's selected application.
-Native compact lesson layout was visually inspected and corrected.
-These results establish this correction only, not final product acceptance.
+Validation
+645 implementation/regression checks passed. The extracted desktop package
+passed 27 further practice-route checks and actual executable startup/close.
+A fresh extraction of the source ZIP built and passed serialized form bindings.
+The final 16-page User Guide and 10-page Engineering Guide were rendered and
+visually reviewed, with populated editable contents and local HTML help.
+Original inputs, reference source, fixtures, historical ledger and both owner
+PDF copies were preserved. Independent first-time learner acceptance has not
+been performed; this is a reported observation, not an implementation blocker.
 
-Backup
-H:\DPH Backups\LearningRefocus_PreChange_20261012_213753
-Verified pre-change backup: 13,281 files, 3,645,233,928 bytes.
-The user's H: instruction overrides the older D: directive.
+Run
+Open bin\distribution\DPH-0.5.0-experimental-Win32 and double-click
+DelphiProjectHandoff.exe. Click Try practice example to begin.
+Explicit steps: docs\guides\Run_And_Test.txt.
+Desktop ZIP: export\DPH-0.5.0-experimental-Win32.zip.
+Source ZIP: source distributions\DPH-0.5.0-experimental-source.zip.
+Current guides: docs\guides (.docx), docs\pdf (.pdf); HTML help: help\index.html.
 
-Documentation hold
-Do not read or act on C:\Users\marti\OneDrive\Desktop\DPH Guides Review.txt yet.
-Existing guides, guide generator, PDF/DOCX manuals and help assets are deferred
-until the application work is finished. Their previous wording may describe
-the old technical interface; do not present them as updated instructions.
+Evidence
+learning-completion-validation.json, learning-completion-guides-validation.json,
+learning-distribution-validation.json and corresponding learning-completion logs.
+Pre-change backup: H:\DPH Backups\LearningCompletion_PreChange_20261013_073811.
+6,330 files and 3,061,051,852 bytes verified before this completion phase.
 
-Continuation
-Continue simplifying and completing the actual learner workflow. Validate it
-against real selected-project controls, actions, explanations and user tasks.
-Review remaining legacy pages for a direct learning purpose before retaining
-them as preparation tools. Complete useful instruction capture and retrieval,
-screen/field explanations and task learning without adding generic administrative
-systems. Then perform the documentation review and rewrite, last.
-Do not mark historical partial/missing records implemented merely by hiding
-pages, renaming requirements, or changing their status. Scope changes and actual
-implementation are distinct. Final delivery must demonstrate a usable learning
-tool, not a count of technical records or a claim of full source understanding.
-
-Development is active under the owner's resume instruction; no further phase
-approval is required for authorized learning-focused corrections.
-
-Guided task checkpoint: 12 October 2026
-Learn a task now presents contributor-supplied prerequisites, ordered actions,
-expected results, troubleshooting and practice. Previous, Next and Start again
-operate on the saved sequence. Prepare a new task saves directly to that reader.
-The native, IDE-editable editor supports editing, reordering, removing and undoing
-steps. Existing free-text instructions remain readable without inventing steps.
-Blank instructions, contradictory structured text, duplicate task identities and
-unnamed contributors are rejected. All content remains in the selected DPH database.
-No selected application code is executed or modified by task instruction editing.
-
-Pre-change backup: H:\DPH Backups\GuidedTasks_PreChange_20261012_220915
-13,853 files; 3,673,741,959 bytes; individually SHA256 verified.
-36 guided-task checks; 82 native learning checks; 19 profile checks; 114 publishing
-checks passed. Application build and serialized-form baseline passed.
-Native task reader and preparation screenshots: docs/guided-tasks-*.png.
-These show DPH with a synthetic Delphi fixture, not customer application screenshots.
-Documentation review remains deferred. The historical requirement ledger is unchanged.
-Continue simplifying the preparation menu, completing useful screen/field instruction
-and checking the complete newcomer learning route before rewriting the guides.
-
-Lesson preparation checkpoint: 12 October 2026
-Preparation now offers eleven lesson-related destinations. Describe this application
-and Prepare task instructions open their actual native editors. Source settings
-start collapsed. Field lessons explain saved labels, typing guidance, input limits
-and availability. Linked purpose records display human fields without identity
-metadata. Questions and answers includes attributed saved answers and direct links
-to the question workflow. Operation lessons explain actual choices before optional
-source details. The plain-text fallback now contains the same beginner lesson.
-Hidden preparation reports build only when requested. Reference lesson opening
-measured 5305 ms after this change, versus 21,848 ms before it.
-118 native learning/reference, 39 task, 19 profile and 114 publishing checks passed;
-application and serialized form baseline passed. All 2430 reference files and 62
-original inputs, fixtures, guides/help files remain unchanged.
-Verified backup: H:\DPH Backups\LessonPreparation_PreChange_20261012_223858
-14432 files; 3700072819 bytes; individual SHA256 verification.
-Actual native evidence is docs/lesson-preparation-*.png. Synthetic fixture images
-and pinned reference images are labeled by filename. Human acceptance remains
-unperformed. Guides review is still unread; documentation remains deferred.
-Next: finish learner sharing and the newcomer route, then review documentation last.
-
-Learner sharing checkpoint: 12 October 2026
-Shared editions now start at learning.html with the twelve beginner topics,
-saved questions/answers, real ordered task instructions and expected results,
-supplied screenshots and business terms. Object links open the beginner
-explanation with optional deeper details. Native Preview lessons opens this route.
-Optional publication settings start collapsed. Exports remain read-only and
-attributed, with the existing scoped redaction and integrity checks.
-120 native learning/reference, 43 guided task/export, 19 profile and 121 publishing
-checks passed; application build and serialized form baseline passed. All 475
-local links across a 28-page scoped fixture edition resolved without external
-navigation. Native browser evidence: learner-sharing-learning-shared-lessons.png.
-Verified pre-change backup: H:\DPH Backups\LearnerSharing_PreChange_20261012_233617
-14765 files; 3835987679.0 bytes. All 62 original input/guide/help
-files and 2,430 pinned reference files remain unchanged.
-The learning application corrections have reached their final documentation
-pass. Read the owner review only now, fix the guides and app-generated editable
-learning guide, and provide explicit run/test directions. Independent beginner
-acceptance has not occurred; do not claim it or complete historical parser gaps.
-
-Final documentation pass: 13 October 2026
-The owner review was read only after the application learning corrections.
-DPH User Guide is rewritten as ten learning chapters, with procedures, two actual
-native screenshots, troubleshooting and a repeatable learning exercise. It has
-13 pages. The Engineering Guide has eight chapters and ten pages covering the
-actual architecture, build, test, deployment and maintenance workflow.
-Both editable contents fields are populated. All 23 final pages were rendered
-with LibreOffice and visually inspected. No personal paths, development history
-or personal author metadata remain in these current manuals. Owner PDF copies
-and all 2,430 pinned reference files were preserved.
-The app-generated selected-application User Guide uses beginner topics and
-subsections instead of technical evidence dumps. Learner questions use plain
-operating questions; full source questions remain in preparation. Decision
-examples are explained and source-ordered. Repeated information connections
-are collapsed in the learner topic. Historical requirement statuses are unchanged.
-121 learning/reference, 43 task/export, 19 profile and 124 publishing checks
-passed. Application build and serialized form baseline passed.
-Current directions: docs/guides/Run_And_Test.txt, Workspace_Operations.txt and
-Developer_Test_Directions.txt. HTML help matches the current User Guide and
-uses the approved optional GTranslate widget and bilingual selector helper.
-Verified backup: H:\DPH Backups\LearningGuides_PreChange_20261012_235331
-6,158 files; 2,995,322,801 bytes, each SHA256 verified before changes.
-Automatic review rejected broad deletion of all text guides. Older feature
-instructions remain in the repository; packaging selects only current guides.
-Independent beginner acceptance has not been performed. Package launch and
-privacy/integrity verification are the final delivery checks.
-
-Delivery verification: 13 October 2026
-DPH 0.4.0 experimental desktop and source ZIPs were created. The desktop ZIP
-was extracted, checksum-checked, launched as a new instance with an empty
-temporary catalog, found responsive and closed normally. Owner preferences
-were restored. The extracted source ZIP built successfully and passed the
-native form baseline. Package text was checked for personal paths and
-development-history leakage; owner databases and PDF copies are excluded.
-Disposable extraction and test directories were removed after validation.
-Ready-to-run folder: bin/distribution/DPH-0.4.0-experimental-Win32
-Desktop ZIP: export/DPH-0.4.0-experimental-Win32.zip
-Source ZIP: source distributions/DPH-0.4.0-experimental-source.zip
-Start DelphiProjectHandoff.exe. Follow docs/guides/Run_And_Test.txt for the
-repeatable first session. Current PDF and editable guides are in docs/pdf and
-docs/guides. Independent human learning acceptance remains unperformed.
-This refocus does not relabel the old technical requirement ledger complete.
+These notes supersede the earlier active-work checkpoints and documentation hold.
+The owner's learning-only direction remains controlling.

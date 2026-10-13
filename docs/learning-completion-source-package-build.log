@@ -1,0 +1,19 @@
+  Embarcadero Delphi for Win32 compiler version 37.0
+  Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34): warning W1002: Symbol 'GetFinalPathNameByHandle' is specific to a platform [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+DPH.Workspace.Worker.pas(293): Hint warning H2077: Value assigned to 'Cached' never used [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+DPH.Workspace.Worker.pas(293): Hint warning H2077: Value assigned to 'Document' never used [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(92): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(121): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+DPH.Workspace.Catalog.pas(122): Hint warning H2443: Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list [C:\New Delphi Projects\Delphi Project Handoff\bin\learning-completion\source-package-831505d1ff854b5ba46a08c9894e2d29\DelphiProjectHandoff.dproj]
+  20849 lines, 2.73 seconds, 10969748 bytes code, 349216 bytes data.
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+20833 lines, 1.61 seconds, 10969864 bytes code, 349212 bytes data.
+PASS WP0-TEST: FMX resource instantiation and component binding
