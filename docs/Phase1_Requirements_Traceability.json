@@ -7,7 +7,7 @@
   "expansions": 94,
   "scope_rules": 12,
   "database_rules": 40,
-  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. End-to-end process diagrams 06.03 implemented; 314 partial or missing records remain.",
+  "completion": "RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business-rule catalog 06.04 implemented; 313 partial or missing records remain.",
   "requirements": [
     {
       "id": "01.01",
@@ -2688,15 +2688,29 @@
       "id": "06.04",
       "domain": "DPH-06",
       "requirement": "Business-rule catalog",
-      "implementation": "partial",
+      "implementation": "implemented_manual_capture",
       "evidence": [
+        "DPH.Workspace.Model.pas",
         "DPH.Storage.Database.pas",
-        "DPH.Storage.Database.pas",
+        "DPH.UI.Main.pas",
         "DPH.UI.Main.fmx",
-        "tests/DPH.Tests.Knowledge.dpr"
+        "tests/DPH.Tests.BusinessRule.dpr",
+        "tools/build-business-rule.cmd",
+        "docs/phase1-business-rule-validation.json",
+        "docs/phase1-business-rule-validation.log",
+        "docs/guides/Business_Rule_Run_and_Test.txt"
       ],
-      "limitation": "Add rule identifiers, applicability, conditions, outcomes and a dedicated rule catalog/filter.",
+      "limitation": "Structured attributed business-rule catalog provides unique immutable human identifiers, applicability, conditions, outcomes, exceptions, accountable owners, approval responsibilities and explicit unknowns. Native IDE-editable fields, state/text filters, bounded 250-row pages, exact implementation/procedure links, named review/history and publication preserve evidence. Original unstructured business-rule notes remain distinguishable with their attribution; other typed knowledge kinds are excluded. No target execution or business authorization is performed.",
       "reconciliation": {
+        "state": "reconciled",
+        "batch": 4,
+        "finding": "Dedicated attributed rule catalog captures unique stable identifiers, applicability, conditions, outcomes, exceptions, owners and approval responsibilities, with exact links, immutable review/history and native typed editing. Original unstructured notes remain available and clearly labeled.",
+        "remaining_work": "",
+        "purpose": "Business-rule catalog",
+        "evidence_group": "knowledge",
+        "verification": "97 focused and 599 regression checks pass; actual application/FMX pass. Native normal/compact renders reviewed. All 76 guide pages covered by pixel identity or individual changed-page inspection; 58 source hashes and 126 TOC destinations verified."
+      },
+      "audit_at_reconciliation": {
         "state": "reconciled",
         "batch": 4,
         "finding": "business_rule is a supported attributed, reviewed knowledge kind.",
@@ -2704,6 +2718,12 @@
         "purpose": "Business-rule catalog",
         "evidence_group": "knowledge",
         "verification": "Source/form/schema and existing test-definition review; no application build, test execution or independent acceptance performed in this audit."
+      },
+      "implementation_update": {
+        "date": "2026-10-12",
+        "batch": "Business-rule catalog",
+        "validation": "docs/phase1-business-rule-validation.json",
+        "prior_audit_status": "partial"
       }
     },
     {
@@ -12953,23 +12973,23 @@
   },
   "current_implementation": {
     "date": "2026-10-12",
-    "completed_batch": "End-to-end process diagrams",
+    "completed_batch": "Business-rule catalog",
     "completed_requirement_ids": [
-      "06.03"
+      "06.04"
     ],
     "counts": {
-      "implemented_manual_capture": 23,
-      "partial": 226,
+      "implemented_manual_capture": 24,
+      "partial": 225,
       "implemented": 196,
       "missing": 88
     },
     "unassessed": 0,
-    "incomplete_requirement_records": 314,
-    "completion_record": "docs/Phase1_Process_Diagram_Completion.txt",
+    "incomplete_requirement_records": 313,
+    "completion_record": "docs/Phase1_Business_Rule_Completion.txt",
     "next_bounded_batch": {
-      "requirement": "06.04",
-      "title": "Business-rule catalog",
-      "scope": "Add rule identifiers, applicability, conditions, outcomes and a dedicated rule catalog/filter."
+      "requirement": "06.06",
+      "title": "Calculations and formulas",
+      "scope": "Add a calculation/formula inventory and reviewed business meaning/unit/input/output definitions."
     }
   }
 }

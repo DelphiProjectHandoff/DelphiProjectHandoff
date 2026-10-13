@@ -870,6 +870,18 @@ begin
           try if PriorRecord.GetValue<string>('process_id','')<>StructuredValue.GetValue<string>('process_id','') then raise EDPHStorage.Create('Business process identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''business_process'' AND json_extract(r.structured_json,''$.process_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('process_id')])<>0 then raise EDPHStorage.Create('This business process identity already exists; refresh and edit its current revision');
+      end else if StructuredValue.GetValue<string>('record_type','')='business_rule_definition' then begin
+        TDPHWorkspaceView.ValidateBusinessRule(StructuredValue as TJSONObject);
+        if ATitle<>StructuredValue.GetValue<string>('fields.name').Trim then raise EDPHStorage.Create('Rule title must match its structured name');
+        if (AKind<>'business_rule') or (DocumentKind<>'maintenance') or (Audience<>'maintainer') or (AEntityKey<>'') then raise EDPHStorage.Create('Business rule must preserve its project scope, business rule kind and maintenance audience');
+        if ABody<>TDPHWorkspaceView.BusinessRuleBody(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit the structured fields on Business rules');
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('fields.rule_code','')<>StructuredValue.GetValue<string>('fields.rule_code','') then raise EDPHStorage.Create('Saved rule identifier cannot change; retire and create a separately linked replacement');
+          if PriorRecord.GetValue<string>('rule_id','')<>StructuredValue.GetValue<string>('rule_id','') then raise EDPHStorage.Create('Business rule identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''business_rule_definition'' AND json_extract(r.structured_json,''$.rule_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('rule_id')])<>0 then raise EDPHStorage.Create('This business rule identity already exists; refresh and edit its current revision');
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''business_rule_definition'' AND lower(json_extract(r.structured_json,''$.fields.rule_code''))=lower(:code)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.rule_code')])<>0 then raise EDPHStorage.Create('This rule identifier already exists, including retired rules; refresh and edit its current revision');
       end else if StructuredValue.GetValue<string>('record_type','')='departmental_workflow' then begin
         TDPHWorkspaceView.ValidateDepartmentalWorkflow(StructuredValue as TJSONObject);
         if ATitle<>StructuredValue.GetValue<string>('fields.name').Trim then raise EDPHStorage.Create('Workflow title must match its structured name');

@@ -144,3 +144,5 @@ Requirement 06.01 adds Business processes with a native structured editor for ow
 Requirement 06.02 adds Departmental workflows with native ordered step editing, roles, handoffs, explicit exception destinations, named review/history and exact source/procedure links. See docs/guides/Departmental_Workflow_Run_and_Test.txt. Save now refuses unapplied structured editor fields.
 
 Requirement 06.03 adds Process diagram to Departmental workflows: actual SVG and native step diagrams, normal handoffs, stable exception routes, explicit Unknown destinations and exact reviewed process links. Publication retains and validates the projection. See docs/guides/Process_Diagram_Run_and_Test.txt.
+
+Requirement 06.04 adds Business rules with stable unique rule identifiers, applicability, conditions, outcomes, exceptions, accountable owners and approval responsibilities. Native editing, exact implementation links, review/history and clearly distinguished original notes are available. See docs/guides/Business_Rule_Run_and_Test.txt.

@@ -196,6 +196,30 @@ type
     BusinessProcessFirst,BusinessProcessNext,BusinessProcessNew,BusinessProcessOpen,BusinessProcessLinks:TButton;
     BusinessProcessList:TListBox;
     BusinessProcessMemo:TMemo;
+    BusinessRuleTab:TTabItem;
+    BusinessRulePurpose,BusinessRuleStatus,BusinessRuleEvidenceLabel:TLabel;
+    BusinessRuleToolbar:THorzScrollBox;
+    BusinessRuleFilter:TEdit;
+    BusinessRuleState:TComboBox;
+    BusinessRuleFirst,BusinessRuleNext,BusinessRuleNew,BusinessRuleOpen,BusinessRuleLinks:TButton;
+    BusinessRuleList:TListBox;
+    BusinessRuleMemo:TMemo;
+    BusinessRuleEdit:TButton;
+    BusinessRuleEditorTab:TTabItem;
+    BusinessRuleEditorPurpose,BusinessRuleAuthorLabel:TLabel;
+    BusinessRuleEditorToolbar:THorzScrollBox;
+    BusinessRuleAuthor:TEdit;
+    BusinessRuleApply,BusinessRuleCancel:TButton;
+    BusinessRuleEditorScroll:TVertScrollBox;
+    Rule_rule_code_Row:TLayout;Rule_rule_code_Label:TLabel;Rule_rule_code:TMemo;
+    Rule_name_Row:TLayout;Rule_name_Label:TLabel;Rule_name:TMemo;
+    Rule_scope_Row:TLayout;Rule_scope_Label:TLabel;Rule_scope:TMemo;
+    Rule_conditions_Row:TLayout;Rule_conditions_Label:TLabel;Rule_conditions:TMemo;
+    Rule_outcomes_Row:TLayout;Rule_outcomes_Label:TLabel;Rule_outcomes:TMemo;
+    Rule_exceptions_Row:TLayout;Rule_exceptions_Label:TLabel;Rule_exceptions:TMemo;
+    Rule_owner_Row:TLayout;Rule_owner_Label:TLabel;Rule_owner:TMemo;
+    Rule_approval_Row:TLayout;Rule_approval_Label:TLabel;Rule_approval:TMemo;
+    Rule_unknowns_Row:TLayout;Rule_unknowns_Label:TLabel;Rule_unknowns:TMemo;
     DepartmentalWorkflowTab:TTabItem;
     DepartmentalWorkflowPurpose,DepartmentalWorkflowStatus,DepartmentalWorkflowEvidenceLabel:TLabel;
     DepartmentalWorkflowToolbar:THorzScrollBox;
@@ -500,6 +524,13 @@ type
     procedure BusinessProcessNewClick(Sender:TObject);
     procedure BusinessProcessOpenClick(Sender:TObject);
 
+    procedure BusinessRuleFilterChange(Sender:TObject);
+    procedure BusinessRuleSelectionChange(Sender:TObject);
+    procedure BusinessRuleNewClick(Sender:TObject);
+    procedure BusinessRuleOpenClick(Sender:TObject);
+
+    procedure BusinessRuleEditClick(Sender:TObject);
+    procedure BusinessRuleApplyClick(Sender:TObject);
     procedure DepartmentalWorkflowFilterChange(Sender:TObject);
     procedure DepartmentalWorkflowSelectionChange(Sender:TObject);
     procedure DepartmentalWorkflowDiagramClick(Sender:TObject);
@@ -644,6 +675,7 @@ type
     FWorkflowStepDirty:Boolean;
     FStructuredEditorPending:Boolean;
     FStructuredEditorID:string;
+    FBusinessRuleRows:TList<TJSONObject>;FBusinessRuleOffset:Integer;
     FBusinessProcessRows:TList<TJSONObject>;
     FBusinessProcessOffset:Integer;
     FTargetRecoveryRows:TList<TJSONObject>;
@@ -735,7 +767,7 @@ begin
   FDynamicRows:=TList<TJSONObject>.Create;
   FActionPurposeRows:=TList<TJSONObject>.Create;
   FHistoryRows:=TList<TJSONObject>.Create;
-  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FDepartmentalWorkflowRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
+  FFileFormatRows:=TList<TJSONObject>.Create;FDataRetentionRows:=TList<TJSONObject>.Create;FTargetRecoveryRows:=TList<TJSONObject>.Create;FBusinessProcessRows:=TList<TJSONObject>.Create;FBusinessRuleRows:=TList<TJSONObject>.Create;FDepartmentalWorkflowRows:=TList<TJSONObject>.Create;FDataQualityRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaRows:=TList<TJSONObject>.Create;
   FDatabaseSchemaTargets:=TList<string>.Create;
   FDatabaseInventoryRows:=TList<TJSONObject>.Create;
@@ -762,7 +794,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
   HelpClick(nil);
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
   if ParamCount=0 then
   begin
@@ -786,7 +818,7 @@ begin
   FActionPurposeRows.Free;FActionPurposes.Free;
   FHistoryRows.Free;FScreenHistory.Free;
   FDatabaseER.Free;
-  FDataQualityRows.Free;FWorkflowDraft.Free;FDepartmentalWorkflowRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
+  FDataQualityRows.Free;FWorkflowDraft.Free;FDepartmentalWorkflowRows.Free;FBusinessRuleRows.Free;FBusinessProcessRows.Free;FTargetRecoveryRows.Free;FDataRetentionRows.Free;FFileFormatRows.Free;FFileFormats.Free;
   FDatabaseSchemaRows.Free;FDatabaseSchema.Free;
   FDatabaseSchemaTargets.Free;
   FDatabaseInventoryRows.Free;FDatabaseInventoryTargets.Free;FDatabaseInventory.Free;
@@ -1119,7 +1151,7 @@ begin
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
-  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
+  DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.FullScanClick(Sender: TObject);
@@ -2576,6 +2608,54 @@ begin
  end;
 end;
 
+procedure TDPHMainForm.BusinessRuleFilterChange(Sender:TObject);
+var V:TJSONValue;Row,RecordValue:TJSONObject;Count:Integer;Query,StateFilter,Code:string;
+begin
+ if FBusinessRuleRows=nil then Exit;
+ if Sender=BusinessRuleNext then Inc(FBusinessRuleOffset,250) else FBusinessRuleOffset:=0;
+ FBusinessRuleRows.Clear;BusinessRuleList.Items.Clear;BusinessRuleNext.Enabled:=False;BusinessRuleNew.Enabled:=FView<>nil;
+ BusinessRuleSelectionChange(nil);
+ if (FView=nil) or (FKnowledge=nil) then begin BusinessRuleStatus.Text:='Open a captured project, then New rule to record its business rule.';Exit;end;
+ Query:=BusinessRuleFilter.Text.Trim;StateFilter:='';if BusinessRuleState.ItemIndex>0 then StateFilter:=BusinessRuleState.Selected.Text;Count:=0;
+ for V in FKnowledge do begin Row:=V as TJSONObject;
+  if not TDPHWorkspaceView.IsBusinessRule(Row) then Continue;
+  if (StateFilter<>'') and (Row.GetValue<string>('state')<>StateFilter) then Continue;
+  if (Query<>'') and not ContainsText(TDPHWorkspaceView.DescribeBusinessRule(Row),Query) then Continue;
+  if (Count>=FBusinessRuleOffset) and (FBusinessRuleRows.Count<250) then begin
+   RecordValue:=TJSONObject.ParseJSONValue(Row.GetValue<string>('structured_json','{}')) as TJSONObject;
+   try Code:=RecordValue.GetValue<string>('fields.rule_code','Unstructured');finally RecordValue.Free;end;
+   FBusinessRuleRows.Add(Row);BusinessRuleList.Items.Add('['+Row.GetValue<string>('state')+'] '+Code+' | '+Row.GetValue<string>('title')+' | '+Row.GetValue<string>('owner'));
+  end;Inc(Count);
+ end;
+ BusinessRuleNext.Enabled:=Count>FBusinessRuleOffset+FBusinessRuleRows.Count;
+ BusinessRuleStatus.Text:=IntToStr(Count)+' saved rules match; '+IntToStr(FBusinessRuleRows.Count)+' shown from '+IntToStr(FBusinessRuleOffset)+'. Review state is a human assessment; unknown fields remain unresolved.';
+ if BusinessRuleList.Count>0 then BusinessRuleList.ItemIndex:=0;
+ BusinessRuleSelectionChange(nil);
+end;
+procedure TDPHMainForm.BusinessRuleSelectionChange(Sender:TObject);
+var Row:TJSONObject;
+begin
+ Row:=nil;if (FBusinessRuleRows<>nil) and (BusinessRuleList.ItemIndex>=0) and (BusinessRuleList.ItemIndex<FBusinessRuleRows.Count) then Row:=FBusinessRuleRows[BusinessRuleList.ItemIndex];
+ BusinessRuleEdit.Enabled:=(Row<>nil);if Row<>nil then BusinessRuleEdit.Enabled:=Row.GetValue<string>('structured_json','{}')<>'{}';BusinessRuleOpen.Enabled:=Row<>nil;BusinessRuleLinks.Enabled:=Row<>nil;
+ BusinessRuleMemo.Text:=TDPHWorkspaceView.DescribeBusinessRule(Row);
+end;
+procedure TDPHMainForm.BusinessRuleNewClick(Sender:TObject);
+begin BusinessRuleEditClick(BusinessRuleNew);end;
+procedure TDPHMainForm.BusinessRuleOpenClick(Sender:TObject);
+var Row:TJSONObject;ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening another rule.';Exit;end;
+ if (BusinessRuleList.ItemIndex<0) or (BusinessRuleList.ItemIndex>=FBusinessRuleRows.Count) then Exit;
+ Row:=FBusinessRuleRows[BusinessRuleList.ItemIndex];ID:=Row.GetValue<string>('id');
+ PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+ for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin
+  KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);WorkspaceTabs.ActiveTab:=KnowledgeTab;
+  if Sender=BusinessRuleLinks then begin WorkspaceTabs.ActiveTab:=KnowledgeLinksTab;StatusLabel.Text:='Select a saved link and Open target, or search a captured routine/procedure and Add link. Return to Knowledge and Save edits.';end;
+  Exit;
+ end;
+end;
+
 procedure TDPHMainForm.DepartmentalWorkflowFilterChange(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;Count:Integer;Query,StateFilter:string;
 begin
@@ -2687,6 +2767,51 @@ begin
  finally RecordValue.Free;end;
 end;
 
+procedure TDPHMainForm.BusinessRuleEditClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before editing a rule.';Exit;end;
+ if Sender=BusinessRuleNew then begin NewKnowledgeClick(nil);RecordValue:=TDPHWorkspaceView.NewBusinessRule;end
+ else begin
+  if BusinessRuleList.ItemIndex<0 then Exit;
+  BusinessRuleOpenClick(nil);
+  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+  if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_rule_definition') then begin RecordValue.Free;Exit;end;
+ end;
+ try
+  FKnowledgeStructuredJSON:=RecordValue.ToJSON;FStructuredEditorID:=RecordValue.GetValue<string>('rule_id');FStructuredEditorPending:=True;Fields:=RecordValue.GetValue<TJSONObject>('fields');
+  for Key in DPHBusinessRuleKeys do (FindComponent('Rule_'+Key) as TMemo).Text:=Fields.GetValue<string>(Key,'Unknown');
+  Rule_name.ReadOnly:=FKnowledgeID<>0;Rule_rule_code.ReadOnly:=FKnowledgeID<>0;BusinessRuleAuthor.Text:=KnowledgeAuthorEdit.Text;
+ finally RecordValue.Free;end;
+ FKnowledgeEdited:=True;WorkspaceTabs.ActiveTab:=BusinessRuleEditorTab;
+ StatusLabel.Text:='Complete the rule fields, enter a named contributor and Apply to Knowledge draft. Then Save, add source links and review.';
+end;
+procedure TDPHMainForm.BusinessRuleApplyClick(Sender:TObject);
+var RecordValue,Fields:TJSONObject;Key:string;
+begin
+ if FBusy or (FView=nil) or not FKnowledgeEdited then Exit;
+ RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+ try
+  try
+   if (RecordValue=nil) or (RecordValue.GetValue<string>('record_type','')<>'business_rule_definition') or (RecordValue.GetValue<string>('rule_id','')<>FStructuredEditorID) then raise EArgumentException.Create('Reopen this rule with Edit fields before applying');
+   Fields:=RecordValue.GetValue<TJSONObject>('fields');
+   for Key in DPHBusinessRuleKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Rule_'+Key) as TMemo).Text.Trim);end;
+   TDPHWorkspaceView.ValidateBusinessRule(RecordValue);
+   if BusinessRuleAuthor.Text.Trim='' then raise EArgumentException.Create('Enter a named contributor');
+   FBinding:=True;
+   try
+    KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=BusinessRuleAuthor.Text.Trim;
+    KnowledgeBodyMemo.Text:=TDPHWorkspaceView.BusinessRuleBody(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;
+    KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('business_rule');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('maintenance');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('maintainer');
+    KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
+    FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeLink:='';FKnowledgeQuestionJSON:='';
+   finally FBinding:=False;end;
+   FStructuredEditorPending:=False;WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Rule draft prepared. Click Save to persist. Add exact source links on Knowledge links, Save again and review separately.';
+  except on E:Exception do StatusLabel.Text:=E.Message;end;
+ finally RecordValue.Free;end;
+end;
+
 procedure TDPHMainForm.DepartmentalWorkflowEditClick(Sender:TObject);
 var Fields:TJSONObject;Key:string;
 begin
@@ -2746,7 +2871,7 @@ begin
  RecordValue:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON);
  try
   if not (RecordValue is TJSONObject) then Exit;
-  ID:=RecordValue.GetValue<string>('process_id',RecordValue.GetValue<string>('workflow_id',''));
+  ID:=RecordValue.GetValue<string>('process_id',RecordValue.GetValue<string>('workflow_id',RecordValue.GetValue<string>('rule_id','')));
   if ID<>FStructuredEditorID then begin StatusLabel.Text:='Reopen the record with Edit fields before changing these fields.';Exit;end;
   FStructuredEditorPending:=True;FKnowledgeEdited:=True;
  finally RecordValue.Free;end;
@@ -3534,7 +3659,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
+begin FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil); if FView<>nil then begin FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end; end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);

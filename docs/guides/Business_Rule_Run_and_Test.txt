@@ -1,0 +1,53 @@
+DPH REQUIREMENT 06.04 BUSINESS RULE CATALOG
+Last changed: 12 October 2026
+
+RUN THE APPLICATION
+1. Open File Explorer and enter:
+   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
+2. Double-click DelphiProjectHandoff.exe.
+3. Click Open cache for an existing selected-project .dphdb database, or
+   Attach project to capture the intended external Delphi application.
+4. In the upper-right page selector choose Business rules.
+
+CREATE AND REVIEW A RULE
+1. Click New rule. In Rule fields enter Rule identifier BR-PRACTICE-001,
+   Rule name Practice credit approval and your name in Named contributor.
+   Use a different identifier if this one already exists.
+2. Enter applicability, conditions, outcomes, exceptions, accountable owner,
+   approval authority and unknowns. Enter Unknown for unavailable evidence.
+   The named contributor records the statement. Business owner, approval
+   authority and DPH reviewer are separately recorded responsibilities.
+3. Click Apply to Knowledge draft. On Knowledge click Save.
+   Apply alone does not save. Saved identifier and name cannot change.
+4. Choose Business rules again. Select the saved rule. Click Implementation
+   links. Search a captured routine or saved procedure on Knowledge links,
+   select it and click Add link. Return to Knowledge and Save edits.
+5. Follow the exact links and compare the statement with its evidence.
+   On Knowledge enter a named reviewer and perform the appropriate review.
+   Review is a human assessment, not business transaction authorization.
+
+CHECK EDITING AND FINDING RECORDS
+1. Choose Business rules, type BR-PRACTICE-001 in the search field and confirm
+   the rule remains. Change the state selector to check reviewed/pending rows.
+2. Click Edit fields. Change an outcome or unknown; Apply, then Save.
+   Confirm the identifier/name stayed fixed and the new revision needs review.
+3. Click Open record and inspect History for earlier text and named review.
+4. Original free-text notes display Unstructured. Open record retains their
+   original text and attribution. Edit fields is disabled for those notes.
+   Create a separate typed rule and link the original note to formalize it.
+5. In a narrow window scroll the command toolbar horizontally. Scroll the
+   field editor vertically for approval responsibilities and unknowns.
+   First page and Next page expose catalogs exceeding 250 matching records.
+6. Publish a bundle with an audience including the rule. Open index.html,
+   locate its text and links, then run Validate bundle using the trusted
+   opened capture fingerprint. No business rule or target code is executed.
+
+DEVELOPER VALIDATION
+Open an elevated PowerShell window. Enter each line separately:
+ Set-Location 'C:\New Delphi Projects\Delphi Project Handoff'
+ cmd /c tools\build-business-rule.cmd
+ cmd /c tools\build-wp0.cmd
+Both commands must finish with exit code 0. Inspect:
+ docs\phase1-business-rule-validation.log
+ docs\phase1-business-rule-validation.json
+The fixed ignored fixture is bin\business-rule-validation.

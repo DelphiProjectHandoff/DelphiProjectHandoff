@@ -1,0 +1,18 @@
+DPH REQUIREMENT 06.04 COMPLETION: BUSINESS RULE CATALOG
+Last changed: 12 October 2026
+
+Structured attributed business-rule catalog provides unique immutable human identifiers, applicability, conditions, outcomes, exceptions, accountable owners, approval responsibilities and explicit unknowns. Native IDE-editable fields, state/text filters, bounded 250-row pages, exact implementation/procedure links, named review/history and publication preserve evidence. Original unstructured business-rule notes remain distinguishable with their attribution; other typed knowledge kinds are excluded. No target execution or business authorization is performed.
+
+Validation PASS: 97 focused + 599 regression = 696 checks.
+Actual application and FMX baseline PASS. Native normal/compact editor and catalog renders reviewed.
+All 76 guide pages reviewed: 66 pixel-identical previously reviewed pages and 10 changed pages inspected. 58 source hashes and 126 TOC destinations verified.
+Editable DOCX/PDF guides, HTML help and explicit run/test directions updated.
+Directions: docs/guides/Business_Rule_Run_and_Test.txt
+
+Pre-change backup: H:\DPH Backups\BusinessRuleCatalog_PreChange_20261012_203544
+11845 files, 3393084150 bytes; every SHA256 verified. No post-change backup.
+
+Only 06.04 promoted; all 533 original IDs and texts preserved.
+196 implemented; 24 implemented_manual_capture; 225 partial; 88 missing.
+313 incomplete; zero unassessed. Product implementation remains incomplete.
+Next: 06.06 Calculations and formulas. Requirement 06.05 is already implemented_manual_capture.

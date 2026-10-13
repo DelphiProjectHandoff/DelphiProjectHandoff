@@ -7,6 +7,7 @@ const DPHBusinessProcessKeys:array[0..7] of string = ('name','owner','department
 const DPHWorkflowKeys:array[0..4] of string = ('name','owner','scope','trigger','unknowns');
  DPHWorkflowStepKeys:array[0..8] of string = ('step_id','department','role','action','inputs','outputs','handoff','exception_handling','exception_target');
 
+const DPHBusinessRuleKeys:array[0..8] of string = ('rule_code','name','scope','conditions','outcomes','exceptions','owner','approval','unknowns');
 type
   TDPHWorkspaceView = class
   private
@@ -45,6 +46,11 @@ type
     class function BusinessProcessBody(ARecord:TJSONObject):string;static;
     class function IsBusinessProcess(ARow:TJSONObject):Boolean;static;
     class function DescribeBusinessProcess(ARow:TJSONObject):string;static;
+    class function NewBusinessRule:TJSONObject;static;
+    class procedure ValidateBusinessRule(ARecord:TJSONObject);static;
+    class function BusinessRuleBody(ARecord:TJSONObject):string;static;
+    class function IsBusinessRule(ARow:TJSONObject):Boolean;static;
+    class function DescribeBusinessRule(ARow:TJSONObject):string;static;
     class function NewTargetRecoveryPlan:string;static;
     class procedure ValidateTargetRecoveryRecord(ARecord:TJSONObject);static;
     class function IsTargetRecoveryPlan(ARow:TJSONObject):Boolean;static;
@@ -199,6 +205,58 @@ begin
  Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner')+sLineBreak+'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+'Explicit implementation/evidence links: '+IntToStr(ARow.GetValue<TJSONArray>('rich_links').Count)+sLineBreak;
  if ARow.TryGetValue<TJSONArray>('history',History) then for V in History do if V.GetValue<string>('revision')=ARow.GetValue<string>('revision') then Result:=Result+'Current revision author: '+V.GetValue<string>('editor')+sLineBreak;
  Result:=Result+sLineBreak+ARow.GetValue<string>('body');
+end;
+
+class function TDPHWorkspaceView.NewBusinessRule:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','business_rule_definition').AddPair('rule_id',TGUID.NewGuid.ToString);
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);
+ for Key in DPHBusinessRuleKeys do Fields.AddPair(Key,'Unknown');
+end;
+class procedure TDPHWorkspaceView.ValidateBusinessRule(ARecord:TJSONObject);
+var Fields:TJSONObject;Pair:TJSONPair;Key:string;ID:TGUID;
+begin
+ if (ARecord=nil) or (ARecord.Count<>3) or (ARecord.GetValue<string>('record_type','')<>'business_rule_definition') then raise EArgumentException.Create('Expected a structured business rule');
+ if not (ARecord.GetValue('rule_id') is TJSONString) or (Length(ARecord.GetValue<string>('rule_id',''))<>38) then raise EArgumentException.Create('Invalid rule identity');
+ try ID:=StringToGUID(ARecord.GetValue<string>('rule_id'));except raise EArgumentException.Create('Invalid rule identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('rule_id') then raise EArgumentException.Create('Rule identity must use its canonical GUID representation');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>Length(DPHBusinessRuleKeys)) then raise EArgumentException.Create('Rule requires its nine structured fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Rule fields must be text');
+ for Key in DPHBusinessRuleKeys do begin
+  if Fields.GetValue<string>(Key,'').Trim='' then raise EArgumentException.Create('Complete '+Key+' or explicitly enter Unknown');
+  if Length(Fields.GetValue<string>(Key))>4096 then raise EArgumentException.Create('Rule field exceeds 4096 characters: '+Key);
+ end;
+ if SameText(Fields.GetValue<string>('name').Trim,'Unknown') or (Length(Fields.GetValue<string>('name'))>200) then raise EArgumentException.Create('Enter a descriptive rule name of at most 200 characters');
+ if not TRegEx.IsMatch(Fields.GetValue<string>('rule_code'),'^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}\z') or SameText(Fields.GetValue<string>('rule_code'),'Unknown') then raise EArgumentException.Create('Enter a rule identifier: 1 to 100 ASCII letters, digits, dot, underscore, slash or hyphen; Unknown is unresolved');
+end;
+class function TDPHWorkspaceView.BusinessRuleBody(ARecord:TJSONObject):string;
+const Labels:array[0..8] of string = ('Rule identifier (unique and stable)','Rule name (stable after saving)','Applicability and affected operations','Conditions and prerequisites','Expected outcomes and consequences','Business exceptions and recovery','Accountable business owner','Approval authority and change responsibilities','Unresolved questions and responsible maintainer');
+var I:Integer;Fields:TJSONObject;
+begin
+ ValidateBusinessRule(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');
+ Result:='BUSINESS RULE'+sLineBreak;
+ for I:=0 to High(DPHBusinessRuleKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHBusinessRuleKeys[I])+sLineBreak;
+ Result:=Result+sLineBreak+'Attributed business description; Unknown remains unresolved. Source links identify captured code, not observed execution. Business owner and approval authority are distinct from the contributor and DPH content reviewer. Saving and named review do not grant business authorization or prove outcomes.';
+end;
+class function TDPHWorkspaceView.IsBusinessRule(ARow:TJSONObject):Boolean;
+var V:TJSONValue;
+begin
+ Result:=False;if ARow=nil then Exit;
+ V:=TJSONObject.ParseJSONValue(ARow.GetValue<string>('structured_json','{}'));
+ try if V is TJSONObject then Result:=(ARow.GetValue<string>('kind','')='business_rule') and ((V.GetValue<string>('record_type','')='business_rule_definition') or ((V as TJSONObject).Count=0));finally V.Free;end;
+end;
+class function TDPHWorkspaceView.DescribeBusinessRule(ARow:TJSONObject):string;
+var History:TJSONArray;Value:TJSONValue;
+begin
+ Result:='No saved rule selected. New rule opens structured fields. Empty results do not prove the application has no business rules.';
+ if not IsBusinessRule(ARow) then Exit;
+ if ARow.GetValue<string>('structured_json','{}')='{}' then begin Result:='Unstructured business-rule note. Rule identifier, applicability, conditions, outcomes and accountable owner have not been separately captured. Open record to inspect original text or New rule to create a separately attributed structured record. Preserve the original and link it as exact evidence.'+sLineBreak+ARow.GetValue<string>('title')+sLineBreak+'Contributor: '+ARow.GetValue<string>('owner')+' | review state: '+ARow.GetValue<string>('state')+sLineBreak+ARow.GetValue<string>('body');Exit;end;
+ Result:=ARow.GetValue<string>('title')+sLineBreak+'Original contributor: '+ARow.GetValue<string>('owner','unknown')+sLineBreak+
+ 'Review state: '+ARow.GetValue<string>('state')+' | revision '+ARow.GetValue<string>('revision')+sLineBreak+
+ 'Reviewer: '+IfThen(ARow.GetValue<string>('reviewer','')='','not supplied',ARow.GetValue<string>('reviewer',''))+sLineBreak+
+ 'Explicit implementation/evidence links: '+IntToStr(ARow.GetValue<TJSONArray>('rich_links').Count)+sLineBreak+ARow.GetValue<string>('body');
+ if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then Result:=Result+sLineBreak+'Current revision author: '+Value.GetValue<string>('editor','unknown');
 end;
 
 class function TDPHWorkspaceView.NewBusinessProcess:TJSONObject;

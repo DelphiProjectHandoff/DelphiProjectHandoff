@@ -132,7 +132,10 @@ See Phase1_Departmental_Workflow_Completion.txt.
 End-to-end process diagrams completed (06.03).
 147 focused and 579 regression checks passed; actual app/FMX passed.
 See Phase1_Process_Diagram_Completion.txt.
-Current live backlog: 314 incomplete requirement records; 0 unassessed.
+Business-rule catalog completed (06.04).
+97 focused and 599 regression checks passed; actual app/FMX passed.
+See Phase1_Business_Rule_Completion.txt.
+Current live backlog: 313 incomplete requirement records; 0 unassessed.
 
 1.1 Implemented: design-time Projects page; persistent catalog; legacy preferences
     migration; missing entries; removal without deleting data. Seven checks pass.

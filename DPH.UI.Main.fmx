@@ -1,4 +1,4 @@
-object DPHMainForm: TDPHMainForm
+﻿object DPHMainForm: TDPHMainForm
   Caption = 'Delphi Project Handoff - Experimental Software'
   ClientWidth = 1400
   ClientHeight = 850
@@ -55,6 +55,8 @@ Items.Strings = (
 'Target data retention'
 'Target backup and restore'
 'Business processes'
+'Business rules'
+'Rule fields'
 'Departmental workflows'
 'Workflow fields'
 'Process fields'
@@ -2526,6 +2528,304 @@ Height = 26
 Text = 'Unknowns and responsible maintainer'
 end
 object Process_unknowns:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+end
+end
+object BusinessRuleTab: TTabItem
+Text = 'Business rules'
+object BusinessRulePurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Catalog rules by identifier, scope, conditions and outcomes. Choose New rule or Edit fields; Apply, then Save in Knowledge. Open record also preserves original unstructured notes.'
+end
+object BusinessRuleToolbar: THorzScrollBox
+Align = Top
+Height = 44
+ShowScrollBars = True
+object BusinessRuleState: TComboBox
+Position.X = 12
+Width = 150
+Height = 28
+Items.Strings = ('All' 'needs_review' 'verified' 'inferred' 'rejected' 'retired')
+ItemIndex = 0
+OnChange = BusinessRuleFilterChange
+end
+object BusinessRuleFilter: TEdit
+Position.X = 170
+Width = 230
+Height = 28
+TextPrompt = 'Find rule identifier, scope, condition or owner'
+OnChange = BusinessRuleFilterChange
+end
+object BusinessRuleFirst: TButton
+Position.X = 408
+Width = 85
+Height = 28
+Text = 'First page'
+OnClick = BusinessRuleFilterChange
+end
+object BusinessRuleNext: TButton
+Position.X = 501
+Width = 85
+Height = 28
+Text = 'Next page'
+OnClick = BusinessRuleFilterChange
+end
+object BusinessRuleNew: TButton
+Position.X = 594
+Width = 105
+Height = 28
+Text = 'New rule'
+OnClick = BusinessRuleNewClick
+end
+object BusinessRuleOpen: TButton
+Position.X = 707
+Width = 110
+Height = 28
+Text = 'Open record'
+OnClick = BusinessRuleOpenClick
+end
+object BusinessRuleLinks: TButton
+Position.X = 825
+Width = 150
+Height = 28
+Text = 'Implementation links'
+OnClick = BusinessRuleOpenClick
+end
+object BusinessRuleEdit:TButton
+Position.X = 983
+Width = 110
+Height = 28
+Text = 'Edit fields'
+OnClick = BusinessRuleEditClick
+end
+end
+object BusinessRuleStatus: TLabel
+Align = Top
+Height = 48
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Open a captured project to begin.'
+end
+object BusinessRuleList: TListBox
+Align = Top
+Height = 56
+Margins.Left = 12
+Margins.Right = 12
+OnChange = BusinessRuleSelectionChange
+end
+object BusinessRuleEvidenceLabel: TLabel
+Align = Top
+Height = 26
+Margins.Left = 12
+Margins.Right = 12
+Text = 'Saved business rule and review evidence'
+end
+object BusinessRuleMemo: TMemo
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+end
+end
+object BusinessRuleEditorTab:TTabItem
+Text = 'Rule fields'
+object BusinessRuleEditorPurpose:TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Describe one selected-application business rule. Name and rule identifier are stable after saving. Enter Unknown where evidence is unavailable. Apply prepares a Knowledge draft; Save persists it. Cancel discards the current draft.'
+end
+object BusinessRuleEditorToolbar:THorzScrollBox
+Align = Top
+Height = 80
+ShowScrollBars = True
+object BusinessRuleAuthorLabel:TLabel
+Position.X = 12
+Width = 200
+Height = 24
+Text = 'Named contributor'
+end
+object BusinessRuleAuthor:TEdit
+Position.X = 12
+Position.Y = 28
+Width = 200
+Height = 28
+OnChange = StructuredEditorChange
+end
+object BusinessRuleApply:TButton
+Position.X = 220
+Position.Y = 28
+Width = 180
+Height = 28
+Text = 'Apply to Knowledge draft'
+OnClick = BusinessRuleApplyClick
+end
+object BusinessRuleCancel:TButton
+Position.X = 220
+Width = 150
+Height = 24
+Text = 'Cancel / discard draft'
+OnClick = DiscardKnowledgeClick
+end
+end
+object BusinessRuleEditorScroll:TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+Margins.Bottom = 12
+object Rule_rule_code_Row:TLayout
+Align = Top
+Height = 112
+object Rule_rule_code_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Rule identifier (unique and stable)'
+end
+object Rule_rule_code:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_name_Row:TLayout
+Align = Top
+Height = 112
+object Rule_name_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Rule name (stable after saving)'
+end
+object Rule_name:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_scope_Row:TLayout
+Align = Top
+Height = 112
+object Rule_scope_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Applicability and affected operations'
+end
+object Rule_scope:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_conditions_Row:TLayout
+Align = Top
+Height = 112
+object Rule_conditions_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Conditions and prerequisites'
+end
+object Rule_conditions:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_outcomes_Row:TLayout
+Align = Top
+Height = 112
+object Rule_outcomes_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Expected outcomes and consequences'
+end
+object Rule_outcomes:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_exceptions_Row:TLayout
+Align = Top
+Height = 112
+object Rule_exceptions_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Business exceptions and recovery'
+end
+object Rule_exceptions:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_owner_Row:TLayout
+Align = Top
+Height = 112
+object Rule_owner_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Accountable business owner'
+end
+object Rule_owner:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_approval_Row:TLayout
+Align = Top
+Height = 112
+object Rule_approval_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Approval authority and change responsibilities'
+end
+object Rule_approval:TMemo
+Align = Client
+Margins.Bottom = 8
+WordWrap = True
+ShowScrollBars = True
+OnChange = StructuredEditorChange
+end
+end
+object Rule_unknowns_Row:TLayout
+Align = Top
+Height = 112
+object Rule_unknowns_Label:TLabel
+Align = Top
+Height = 26
+Text = 'Unresolved questions and responsible maintainer'
+end
+object Rule_unknowns:TMemo
 Align = Client
 Margins.Bottom = 8
 WordWrap = True

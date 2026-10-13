@@ -1,0 +1,81 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(16) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(42) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(65) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(74) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(100) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(107) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(107) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(109) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(109) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(109) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(112) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(112) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\DPH.Tests.Knowledge.RuleRegression.dpr(132) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\bin\DPH.Tests.Knowledge.RuleRegression.dpr(133) Hint: H2077 Value assigned to 'Revision' never used
+19351 lines, 1.48 seconds, 10802716 bytes code, 349096 bytes data.
+PASS 1: Fixture generation publishes
+PASS 2: Runtime claim import requires named attribution
+PASS 3: Runtime claim cannot link an absent captured object
+PASS 4: Observation retains its generation and cannot silently verify runtime claims
+PASS 5: Observation pins both contributed bytes and the actual linked source revision
+PASS 6: Log content stays literal text rather than executed script
+PASS 7: Explicit portable backup inventory includes observation content
+PASS 8: Damaged observation is rejected before display
+PASS 9: Non-UTF-8 observation input is rejected rather than silently replaced
+PASS 10: Whitespace-only observation cannot become evidence
+PASS 11: Verified portable backup/restore retains observation content and contributor
+PASS 12: Anonymous authorship is rejected
+PASS 13: Captured entity target is offered by bounded link search
+PASS 14: Captured relationship target is offered by bounded link search
+PASS 15: Captured evidence target is offered by bounded link search
+PASS 16: New rule remains pending explicit review
+PASS 17: Rule links to stable identity and multiple evidence targets
+PASS 18: First authored revision retained
+PASS 19: Multiple typed links persist on exact authored revision
+PASS 20: Unavailable rich target rolls back entire authored revision
+PASS 21: Separate project review flag is set
+PASS 22: Authored section persists stable ID, document, audience and source generation
+PASS 23: Anonymous reviewer is rejected
+PASS 24: Explicit named review verifies human content
+PASS 25: Reviewer attribution persists
+PASS 26: Verification appends rather than overwrites history
+PASS 27: Resolved review queue clears its own flag
+PASS 28: Review revision preserves document section metadata
+PASS 29: Named review preserves immutable rich links
+PASS 30: Stale editor revision cannot overwrite reviewed content
+PASS 31: Authored edit reopens human review
+PASS 32: Document reassignment retains prior revision metadata
+PASS 33: Old source generation cannot approve changed inputs
+PASS 34: Changed source generation publishes
+PASS 35: Review task compares last verified source generation with current capture
+PASS 36: Review task identifies affected canonical entity and before/after presence
+PASS 37: Review task exposes prior and current authored content for comparison
+PASS 38: IDE-editable task comparison labels before and after generations
+PASS 39: Review queue offers affected source object selection
+PASS 40: Parser publication never approves human explanation
+PASS 41: Rescan retains authored text
+PASS 42: Rescan preserves all human revisions
+PASS 43: Historical rich links block approval in a newer generation
+PASS 44: Configuration change invalidates review without source-byte change
+PASS 45: Controlled rename publishes a distinct identity
+PASS 46: Missing or renamed entity cannot inherit verified knowledge
+PASS 47: Historical link is not reassigned to a renamed method
+PASS 48: Obsolete knowledge can be retired with history
+PASS 49: Retirement resolves the pending task
+PASS 50: FMX knowledge list shows curated records
+PASS 51: Editor loads selected authored revision
+PASS 52: Inspector exposes prior reviewer attribution
+PASS 53: Pending filter excludes resolved retired knowledge
+PASS 54: Background knowledge refresh preserves unsaved edits
+PASS 55: Close cannot silently discard authored text
+PASS 56: Displayed unsaved edit cannot approve a different persisted revision
+PASS 57: Explicit discard clears the edit
+PASS 58: Knowledge edits preserve SQLite integrity
+PASS 59: Backup/restore retains full immutable review and rich-link history
+PASS WP5: 59 checks
