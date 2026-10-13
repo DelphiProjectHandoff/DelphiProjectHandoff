@@ -779,7 +779,7 @@ type
     FView: TDPHWorkspaceView;
     FGraph,FScreen: TJSONObject;
     FExplorerKeys,FRelationKeys,FHistory,FBookmarks,FExpandedKeys: TList<string>;
-    FHierarchyVisible: Boolean;
+    FHierarchyVisible,FShowingBookmarks: Boolean;
     FDetails: TJSONArray;
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
     FPendingEntry,FPendingDatabase: string;
@@ -1373,6 +1373,12 @@ begin
       if WorkspaceTabs.Tabs[Index].Text=Choice.Items[Choice.ItemIndex] then begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
       end;
+    if (Sender=LessonPageCombo) and (WorkspaceTabs.ActiveTab=ExplainTab) and (FView<>nil) then begin
+      FSelected:=''; FShowingBookmarks:=False; FScope:=''; FPage:=0;
+      FBinding:=True;
+      try SearchEdit.Text:=''; KindCombo.ItemIndex:=0; finally FBinding:=False; end;
+      RefreshExplorer; ShowExplanation;
+    end;
   end;
   if WorkspaceTabs.ActiveTab<>nil then begin
     FBinding:=True;
@@ -1667,7 +1673,7 @@ begin
   TranslationStatus.Text:='Select a saved Knowledge revision, then refresh or translate it here.';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
-  FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear;
+  FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FShowingBookmarks:=False;
   FExpandedKeys.Clear; FHierarchyVisible:=False;
   FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object in Explorer to inspect its statements, serialized properties and evidence.';
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
@@ -1825,7 +1831,7 @@ begin
   FDynamicRows.Clear;FreeAndNil(FDynamic);DynamicFilterChange(nil);
   FreeAndNil(FProjectMembers);ProjectMembersList.Items.Clear;ProjectMemberMemo.Text:='';
   InspectorMemo.Text:=''; SourceMemo.Text:='Select an object to inspect source from this generation.';
-  if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; end
+  if not SameProject then begin FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FExpandedKeys.Clear; FShowingBookmarks:=False; end
   else begin
     for Index:=FHistory.Count-1 downto 0 do if FView.Symbol(FHistory[Index])=nil then FHistory.Delete(Index);
     for Index:=FBookmarks.Count-1 downto 0 do if FView.Symbol(FBookmarks[Index])=nil then FBookmarks.Delete(Index);
@@ -2611,7 +2617,8 @@ procedure TDPHMainForm.ShowExplanation;
 var HTML,PreviewPath,Fallback: string;
 begin
   if FExplanations=nil then Exit;
-  HTML:=FExplanations.ObjectLessonHTML(FSelected);
+  if FSelected='' then HTML:=FExplanations.ProjectMapHTML
+  else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
@@ -2629,6 +2636,31 @@ begin
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=FLearningDirectory;
   ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,True); if ACancel then Exit;
+  if EndsText('#open_forms',AURL) then begin
+    ACancel:=True;
+    if FormCombo.Items.Count=0 then StatusLabel.Text:='No saved form design was captured for this application.'
+    else WorkspaceTabs.ActiveTab:=ScreenTab;
+    Exit;
+  end;
+  P:=Pos('#form_',AURL);
+  if P>0 then begin
+    ACancel:=True; Fragment:=Copy(AURL,P+6,MaxInt);
+    for I:=0 to FormCombo.Items.Count-1 do
+      if SameText(THashSHA2.GetHashString(FormCombo.Items[I]),Fragment) then begin
+        FormCombo.ItemIndex:=I; WorkspaceTabs.ActiveTab:=ScreenTab; RefreshGraphics; Exit;
+      end;
+    StatusLabel.Text:='That saved form design is not available in this capture.'; Exit;
+  end;
+  if EndsText('#open_screenshots',AURL) then begin ACancel:=True; WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit; end;
+  if EndsText('#all_objects',AURL) or (Pos('#kind_',AURL)>0) then begin
+    ACancel:=True; FBinding:=True;
+    try
+      SearchEdit.Text:=''; KindCombo.ItemIndex:=0;
+      if Pos('#kind_',AURL)>0 then KindCombo.ItemIndex:=KindCombo.Items.IndexOf(Copy(AURL,Pos('#kind_',AURL)+6,MaxInt));
+    finally FBinding:=False; end;
+    FSelected:=''; FScope:=''; FPage:=0; FShowingBookmarks:=False;
+    RefreshExplorer; ShowExplanation; WorkspaceTabs.ActiveTab:=ExplainTab; Exit;
+  end;
   if EndsText('#task_reader',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=TaskTab;Exit;end;
   if EndsText('#ask_author',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=QuestionsTab;Exit;end;
   P:=Pos('#lesson_',AURL);
@@ -4078,29 +4110,47 @@ procedure TDPHMainForm.RefreshExplorer;
 var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,LabelText,Prefix: string; Depth: Integer;
 begin
   if FView=nil then Exit; Kind:=''; if KindCombo.ItemIndex>0 then Kind:=KindCombo.Items[KindCombo.ItemIndex];
+  if FShowingBookmarks then begin
+    FHierarchyVisible:=False; ExplorerExpandButton.Enabled:=False; NextPageButton.Enabled:=False;
+    ExplorerList.Items.Clear; FExplorerKeys.Clear;
+    for LabelText in FBookmarks do begin
+      S:=FView.Symbol(LabelText);
+      if S<>nil then begin ExplorerList.Items.Add(S.GetValue<string>('kind')+'  '+S.GetValue<string>('name'));
+        FExplorerKeys.Add(LabelText); end;
+    end;
+    BreadcrumbLabel.Text:='Saved places for this application ('+IntToStr(FExplorerKeys.Count)+')';
+    Exit;
+  end;
   FHierarchyVisible:=(Trim(SearchEdit.Text)='') and (Kind='') and (FScope='');
   ExplorerExpandButton.Enabled:=FHierarchyVisible;
-  if FHierarchyVisible then Rows:=FView.Hierarchy(FExpandedKeys.ToArray,FPage,250)
-  else Rows:=FView.Search(SearchEdit.Text,Kind,FScope,FPage,250);
+  if FHierarchyVisible then Rows:=FView.Hierarchy(FExpandedKeys.ToArray,FPage,251)
+  else Rows:=FView.Search(SearchEdit.Text,Kind,FScope,FPage,251);
   if (Rows.Count=0) and (FPage>0) then begin Rows.Free; FPage:=0; RefreshExplorer; Exit; end;
   try
     ExplorerList.Items.BeginUpdate;
     try ExplorerList.Items.Clear; FExplorerKeys.Clear;
-      for V in Rows do begin S:=V as TJSONObject; LabelText:=S.GetValue<string>('name'); Prefix:='';
+      for V in Rows do begin
+        if FExplorerKeys.Count>=250 then Break;
+        S:=V as TJSONObject; LabelText:=S.GetValue<string>('name'); Prefix:='';
+        if S.GetValue<string>('kind','')='routine' then
+          if S.GetValue<string>('type','')<>'' then LabelText:='function '+LabelText
+          else LabelText:='procedure '+LabelText;
         if FHierarchyVisible then begin
           Depth:=S.GetValue<Integer>('depth'); Prefix:=StringOfChar(' ',Min(Depth,20)*2);
           if S.GetValue<Boolean>('has_children') then begin if S.GetValue<Boolean>('expanded') then Prefix:=Prefix+'[-] ' else Prefix:=Prefix+'[+] '; end
           else Prefix:=Prefix+'    ';
           if Depth>0 then LabelText:=Copy(LabelText,LastDelimiter('.',LabelText)+1,MaxInt);
         end;
+        if S.GetValue<string>('type','')<>'' then LabelText:=LabelText+' : '+S.GetValue<string>('type');
         ExplorerList.Items.Add(Prefix+S.GetValue<string>('kind')+'  '+LabelText); FExplorerKeys.Add(S.GetValue<string>('key'));
       end;
     finally ExplorerList.Items.EndUpdate; end;
     BreadcrumbLabel.Text:='Learning '+TPath.GetFileNameWithoutExtension(FView.Document.GetValue<string>('entry'));
+    NextPageButton.Enabled:=Rows.Count>250;
   finally Rows.Free; end;
 end;
 procedure TDPHMainForm.SearchChange(Sender: TObject);
-begin if FBinding then Exit; FScope:=''; FPage:=0; RefreshExplorer; end;
+begin if FBinding then Exit; FShowingBookmarks:=False; FScope:=''; FPage:=0; RefreshExplorer; end;
 procedure TDPHMainForm.ExplorerClick(Sender: TObject);
 begin if (ExplorerList.ItemIndex>=0) and (ExplorerList.ItemIndex<FExplorerKeys.Count) then begin SelectSymbol(FExplorerKeys[ExplorerList.ItemIndex]); WorkspaceTabs.ActiveTab:=ExplainTab; end; end;
 procedure TDPHMainForm.ExplorerExpandClick(Sender: TObject);
@@ -4162,9 +4212,11 @@ begin
   if FSelected<>AKey then FLineageSeed:='';
   FWholeGraph:=False;
   if AHistory and (FSelected<>'') and (FSelected<>AKey) then FHistory.Add(FSelected); FSelected:=AKey;
+  BackButton.Enabled:=FHistory.Count>0;
   InspectorMemo.Text:=S.GetValue<string>('name')+sLineBreak+sLineBreak+
     'This is a '+S.GetValue<string>('kind')+' in the selected application.'+sLineBreak+sLineBreak+
-    'Read Explain to understand its connections and the steps behind it. A routine is a named operation; an event connects an action to that operation.'+sLineBreak+sLineBreak+
+    IfThen(S.GetValue<string>('type','')<>'','Declared type: '+S.GetValue<string>('type')+sLineBreak+sLineBreak,'')+
+    'Read Project map to understand its connections and the steps behind it. A routine is a named operation; an event connects an action to that operation.'+sLineBreak+sLineBreak+
     'Source location: '+S.GetValue<string>('range.source')+':'+S.GetValue<Integer>('range.line').ToString+sLineBreak+sLineBreak+
     'Use Learn the project for the guided route. Source details remain available through Prepare lessons.';
   RelationsList.Items.Clear; FRelationKeys.Clear;
@@ -4201,21 +4253,54 @@ procedure TDPHMainForm.RelationsClick(Sender: TObject);
 begin if (RelationsList.ItemIndex>=0) and (RelationsList.ItemIndex<FRelationKeys.Count) then SelectSymbol(FRelationKeys[RelationsList.ItemIndex]); end;
 procedure TDPHMainForm.BackClick(Sender: TObject);
 var Key: string;
-begin if FHistory.Count=0 then Exit; Key:=FHistory.Last; FHistory.Delete(FHistory.Count-1); SelectSymbol(Key,False); end;
-procedure TDPHMainForm.ParentClick(Sender: TObject);
-var P: Integer;
-begin P:=LastDelimiter('.',FScope); if P=0 then FScope:='' else FScope:=Copy(FScope,1,P-1); FPage:=0; RefreshExplorer; end;
-procedure TDPHMainForm.NextPageClick(Sender: TObject);
-begin Inc(FPage,250); RefreshExplorer; end;
-procedure TDPHMainForm.BookmarkClick(Sender: TObject);
-begin if (FSelected<>'') and not FBookmarks.Contains(FSelected) then FBookmarks.Add(FSelected); end;
-procedure TDPHMainForm.BookmarksClick(Sender: TObject);
-var Key: string; S: TJSONObject;
 begin
-  FHierarchyVisible:=False; ExplorerExpandButton.Enabled:=False;
-  ExplorerList.Items.Clear; FExplorerKeys.Clear; if FView=nil then Exit;
-  for Key in FBookmarks do begin S:=FView.Symbol(Key); if S<>nil then begin ExplorerList.Items.Add(S.GetValue<string>('name')); FExplorerKeys.Add(Key); end; end;
-  BreadcrumbLabel.Text:='Bookmarks for this captured generation';
+  if FView=nil then begin StatusLabel.Text:='Choose an application before browsing its project map.'; Exit; end;
+  if FHistory.Count=0 then begin StatusLabel.Text:='There is no earlier selection yet. Choose an object in Project map first.'; WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
+  Key:=FHistory.Last; FHistory.Delete(FHistory.Count-1); SelectSymbol(Key,False);
+  WorkspaceTabs.ActiveTab:=ExplainTab; StatusLabel.Text:='Returned to the previous object.';
+end;
+procedure TDPHMainForm.ParentClick(Sender: TObject);
+var Rows: TJSONArray; V: TJSONValue; R: TJSONObject; ParentKey: string;
+begin
+  if FView=nil then begin StatusLabel.Text:='Choose an application before browsing its project map.'; Exit; end;
+  ParentKey:='';
+  if FSelected<>'' then begin
+    Rows:=FView.Neighbors(FSelected,'reverse');
+    try for V in Rows do begin R:=V as TJSONObject;
+      if R.GetValue<string>('kind','')='owns' then begin ParentKey:=R.GetValue<string>('from',''); Break; end;
+    end; finally Rows.Free; end;
+  end;
+  FShowingBookmarks:=False; FScope:=''; FPage:=0;
+  if ParentKey<>'' then begin SelectSymbol(ParentKey); StatusLabel.Text:='Opened the containing project object.'; end
+  else begin FSelected:=''; ShowExplanation; StatusLabel.Text:='At the top of the project map.'; end;
+  RefreshExplorer; WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.NextPageClick(Sender: TObject);
+begin
+  if FView=nil then begin StatusLabel.Text:='Choose an application before browsing its project map.'; Exit; end;
+  if FShowingBookmarks or not NextPageButton.Enabled then begin
+    StatusLabel.Text:='There are no further objects in this list.'; WorkspaceTabs.ActiveTab:=ExplainTab; Exit;
+  end;
+  Inc(FPage,250); RefreshExplorer; WorkspaceTabs.ActiveTab:=ExplainTab;
+  StatusLabel.Text:='Showing the next page of project objects.';
+end;
+procedure TDPHMainForm.BookmarkClick(Sender: TObject);
+begin
+  if FView=nil then begin StatusLabel.Text:='Choose an application before saving a place.'; Exit; end;
+  if FSelected='' then begin StatusLabel.Text:='Select an object in Project map, then choose Save place.';
+    WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
+  if FBookmarks.Contains(FSelected) then StatusLabel.Text:='This object is already in Saved places.'
+  else begin FBookmarks.Add(FSelected); StatusLabel.Text:='Saved this object in Saved places.'; end;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+  if FShowingBookmarks then RefreshExplorer;
+end;
+procedure TDPHMainForm.BookmarksClick(Sender: TObject);
+begin
+  if FView=nil then begin StatusLabel.Text:='Choose an application before opening Saved places.'; Exit; end;
+  FShowingBookmarks:=True; FSelected:=''; RefreshExplorer; ShowExplanation;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+  if FBookmarks.Count=0 then StatusLabel.Text:='No saved places yet. Select an object and choose Save place.'
+  else StatusLabel.Text:='Select a saved place from the list on the left.';
 end;
 procedure TDPHMainForm.ViewChange(Sender: TObject);
 begin

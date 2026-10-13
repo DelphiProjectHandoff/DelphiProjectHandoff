@@ -60,6 +60,12 @@ begin
             Check((Model.Document.GetValue<TJSONArray>('project_guides').Count>0) and
               ContainsText(Explain.ApplicationRouteHTML(0),'This example application teaches'),
               'The selected project README supplies cited app-specific orientation');
+            Check(ContainsText(Explain.ProjectMapHTML,'Pascal units (.pas)') and
+              ContainsText(Explain.ProjectMapHTML,'Procedures and functions') and
+              ContainsText(Explain.ProjectMapHTML,'Main.pas') and
+              ContainsText(Explain.ProjectMapHTML,'Example.contract.json') and
+              ContainsText(Explain.ProjectMapHTML,'#open_forms'),
+              'Project map groups source, a related contract and searchable objects');
             Check(ContainsText(Explain.ObjectText(Key),'Worker.PublicWork'),'Object explanation identifies a real cross-unit dependency');
             Check(ContainsText(Explain.ObjectText(Key),'Sender > 0'),'Explanation carries the actual branch condition');
             Check(ContainsText(Explain.TraceHTML(Key),'possible_dynamic'),'Execution trace preserves asynchronous or dispatch uncertainty');
@@ -291,7 +297,7 @@ begin
               Check((Form.LessonPageCombo.Items.Count=11) and (Form.LessonPageCombo.Items.IndexOf('Learning library')>=0) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation includes the teaching library and excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
               Form.SetupClick(nil); Check(Form.WorkspaceTabs.ActiveTab=Form.SetupTab,'Prepare lessons opens its separate setup page');
-              Check((Form.WorkspacePageCombo.Items.Count=12) and (Form.WorkspacePageCombo.Items.IndexOf('Learning library')>=0) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu contains lesson material and teaching explanations rather than database administration');
+              Check((Form.WorkspacePageCombo.Items.Count=13) and (Form.WorkspacePageCombo.Items.IndexOf('Project map')>=0) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu includes the project map without database administration');
               Check(not Form.AnalysisSettingsExpander.IsExpanded and (Form.AnalysisSettingsExpander.Height<50),'Source reading settings start collapsed');
               Form.AnalysisSettingsExpander.IsExpanded:=True;Application.ProcessMessages;
               Check(Form.AnalysisSettingsExpander.Height>390,'Native expander exposes the IDE-editable source settings when requested');
@@ -306,6 +312,35 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Check((Form.DatabaseInventoryList.Count=0) and (Form.QualityList.Count=0) and (Form.ActionPurposeList.Count=0),'Opening a lesson leaves unrequested preparation reports unloaded');
               Check(not Form.ExplorerLayout.Visible and not Form.InspectorLayout.Visible,'Guided lessons reserve width for learning instead of technical side panels');
+              Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Project map');
+              Form.WorkspacePageChange(Form.LessonPageCombo);
+              WaitHTML(Form.ExplainBrowser,'document.body.innerText','Files captured from this project');
+              WaitHTML(Form.ExplainBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
+              Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and Form.ExplorerLayout.Visible and
+                (Form.ExplorerList.Count>0) and (Form.KindCombo.Items.IndexOf('variable')>=0),
+                'Project map exposes the indexed object tree and variable filter');
+              Form.BookmarkClick(nil);
+              Check(ContainsText(Form.StatusLabel.Text,'Select an object'),
+                'Save place explains why it cannot act before an object is selected');
+              Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil); Form.BookmarkClick(nil);
+              Form.BookmarksClick(nil);
+              Check((Form.WorkspaceTabs.ActiveTab=Form.ExplainTab) and (Form.ExplorerList.Count=1) and
+                ContainsText(Form.BreadcrumbLabel.Text,'Saved places'),
+                'Saved places opens its visible list in Project map');
+              Form.ParentClick(nil);
+              Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Up one level remains visible in Project map');
+              Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#open_forms',Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenTab),
+                'Project map opens the saved form designs directly');
+              Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+
+                '#form_'+THashSHA2.GetHashString(Form.FormCombo.Items[0]),Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenTab) and
+                (Form.FormCombo.ItemIndex=0),
+                'A linked screen opens its specific saved form design');
+              Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#open_screenshots',Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab),
+                'Project map opens the actual-screenshot page directly');
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               Form.LoadKnowledge(Store.KnowledgeJSON);
               Form.WorkspaceTabs.ActiveTab:=Form.ActionPurposeTab;Form.WorkspacePageChange(nil);
               Check(Form.ActionPurposeList.Count>0,'Requesting action purposes builds their real preparation report');

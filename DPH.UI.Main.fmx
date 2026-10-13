@@ -27,9 +27,9 @@ Items.Strings = (
 'Learn the project'
 'Learn a task'
 'Learning library'
+'Project map'
 'Form designs'
 'Screenshots'
-'Explain'
 'Graphs'
 'Business glossary'
 'Search project'
@@ -106,42 +106,42 @@ Height = 28
 OnClick = BackClick
 end
 object ParentButton: TButton
-Text = 'Parent'
+Text = 'Up one level'
 Position.X = 96
 Position.Y = 42
-Width = 80
+Width = 100
 Height = 28
 OnClick = ParentClick
 end
 object BookmarkButton: TButton
-Text = 'Bookmark'
-Position.X = 184
+Text = 'Save place'
+Position.X = 204
 Position.Y = 42
 Width = 100
 Height = 28
 OnClick = BookmarkClick
 end
 object BookmarksButton: TButton
-Text = 'Bookmarks'
-Position.X = 292
+Text = 'Saved places'
+Position.X = 312
 Position.Y = 42
-Width = 100
+Width = 110
 Height = 28
 OnClick = BookmarksClick
 end
 object NextPageButton: TButton
-Text = 'Next page'
-Position.X = 400
+Text = 'Next results'
+Position.X = 430
 Position.Y = 42
-Width = 100
+Width = 110
 Height = 28
 OnClick = NextPageClick
 end
 object BreadcrumbLabel: TLabel
 Text = 'Choose the application you want to learn, or open its saved lessons.'
-Position.X = 516
+Position.X = 556
 Position.Y = 42
-Width = 620
+Width = 580
 Height = 40
 end
 
@@ -184,6 +184,8 @@ Items.Strings = (
 'field'
 'property'
 'local'
+'variable'
+'parameter'
 'resource'
 'definition'
 'async_operation'
@@ -235,7 +237,7 @@ Height = 80
 Margins.Left = 8
 Margins.Right = 8
 WordWrap = True
-Text = 'Select something on the left to learn what it is. Explain describes its role and connections. Begin with Learn the project if you are new to this application.'
+Text = 'Select something on the left to learn what it is, its declared type, and its connections. Begin with Learn the project if you are new to this application.'
 end
 object InspectorMemo: TMemo
 Align = Client
@@ -555,6 +557,7 @@ Items.Strings = (
 'Learn the project'
 'Learn a task'
 'Learning library'
+'Project map'
 'Action purposes'
 'Screenshots'
 'Business glossary'
@@ -1722,7 +1725,7 @@ OnShouldLoadURL = LearningShouldLoad
 end
 end
 object ExplainTab: TTabItem
-Text = 'Explain'
+Text = 'Project map'
 object ExplainFallback: TMemo
 Align = Client
 ReadOnly = True

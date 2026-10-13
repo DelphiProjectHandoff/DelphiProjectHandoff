@@ -17,7 +17,7 @@ uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.Str
 
 class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject);
 var
-  Guides,Screens,Sections,Nodes,Files: TJSONArray;
+  Guides,Screens,Sections,Nodes,Files,Assets: TJSONArray;
   FileRow,Node,Child,Screen,Guide,Section: TJSONObject;
   Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title: string;
   Paths: TStringList;
@@ -37,28 +37,38 @@ var
     Result:=(Attr<>INVALID_FILE_ATTRIBUTES) and ((Attr and FILE_ATTRIBUTE_REPARSE_POINT)=0);
   end;
   procedure Visit(const AFolder: string; ADepth: Integer);
-  var Entry,Base,LowerName: string;
+  var Entry,Base,LowerName: string; FileEntries,FolderEntries: TArray<string>;
   begin
-    if (ADepth>4) or (Paths.Count>=300) or not SafeFolder(AFolder) then Exit;
-    for Entry in TDirectory.GetFiles(AFolder) do begin
-      if Paths.Count>=300 then Break;
+    if (ADepth>4) or (Assets.Count>=2000) or not SafeFolder(AFolder) then Exit;
+    try FileEntries:=TDirectory.GetFiles(AFolder); FolderEntries:=TDirectory.GetDirectories(AFolder);
+    except on E: Exception do Exit; end;
+    for Entry in FileEntries do begin
+      if Assets.Count>=2000 then Break;
       Ext:=LowerCase(TPath.GetExtension(Entry));
-      if not MatchText(Ext,['.md','.txt','.html','.htm','.docx','.pdf']) then Continue;
       LowerName:=LowerCase(TPath.GetFileName(Entry));
       if ContainsText(LowerName,'secret') or ContainsText(LowerName,'credential') or
         ContainsText(LowerName,'.env') or ContainsText(LowerName,'private') then Continue;
+      if (GetFileAttributes(PChar(Entry)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then Continue;
+      if MatchText(Ext,['.pas','.dpr','.dproj','.groupproj','.fmx','.dfm',
+        '.md','.txt','.html','.htm','.docx','.pdf','.rtf','.json','.xml',
+        '.ini','.config','.yml','.yaml','.sql','.contract','.schema',
+        '.png','.jpg','.jpeg','.svg','.bmp','.rc','.res']) then begin
+        Assets.AddElement(TJSONObject.Create.AddPair('source',
+          Entry.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/'))
+          .AddPair('format',Ext));
+      end;
+      if not MatchText(Ext,['.md','.txt','.html','.htm','.docx','.pdf']) or (Paths.Count>=300) then Continue;
       if not (ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
         ContainsText(LowerName,'notes') or ContainsText(LowerName,'getting start') or
         ContainsText(AFolder,'docs') or ContainsText(AFolder,'help')) then Continue;
-      if (GetFileAttributes(PChar(Entry)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then Continue;
       if TFile.GetSize(Entry)<=1048576 then Paths.Add(Entry);
     end;
-    for Entry in TDirectory.GetDirectories(AFolder) do begin
+    for Entry in FolderEntries do begin
       Base:=LowerCase(TPath.GetFileName(Entry));
       if MatchText(Base,['.git','bin','dcu','database','databases','samples',
         'export','logs','log','tests','tools','source distributions',
-        'images and icons','node_modules','vendor']) then Continue;
+        'node_modules','vendor','dependencies']) then Continue;
       Visit(Entry,ADepth+1);
     end;
   end;
@@ -71,8 +81,9 @@ var
     Result:=TRegEx.Replace(Result,'[ \t]+',' ');
   end;
 begin
-  Guides:=TJSONArray.Create; Screens:=TJSONArray.Create;
+  Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create;
   AFacts.AddPair('project_guides',Guides); AFacts.AddPair('project_screens',Screens);
+  AFacts.AddPair('project_assets',Assets);
   Root:=AWorkspace.GetValue<string>('root','');
   Files:=AWorkspace.GetValue<TJSONArray>('syntax.files',nil);
   if Files<>nil then for V in Files do begin

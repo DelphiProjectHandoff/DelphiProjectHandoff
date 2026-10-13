@@ -26,6 +26,7 @@ type
     function TopicHTML(AIndex: Integer): string;
     function LessonHTML(AIndex: Integer): string;
     function ApplicationRouteHTML(AIndex: Integer): string;
+    function ProjectMapHTML: string;
     function FlowSVG(const AKey: string): string;
     function FlowHTML(const AKey: string): string;
     function GraphHTML(AGraph: TJSONObject): string;
@@ -532,7 +533,15 @@ begin
     else if Kind='event' then Body.Append('<p>This is an event: the connection between an action and the operation that responds to it.</p>')
     else if MatchText(Kind,['routine','anonymous']) then Body.Append('<p>This is an operation in the application. A procedure performs work; a function also returns a result. Read its connections below to see the part it plays.</p>')
     else if Kind='unit' then Body.Append('<p>This is a unit: a source file grouping related definitions and operations.</p>')
+    else if MatchText(Kind,['field','variable','local','parameter','property']) then
+      Body.Append('<p>This is a '+Encode(Kind)+' that holds or exposes information used by the application.</p>')
     else Body.Append('<p>This '+Encode(Kind)+' is part of the selected application. Its connections help explain where it fits.</p>');
+    if S.GetValue<string>('type','')<>'' then
+      Body.Append('<p><strong>Declared type:</strong> <code>'+Encode(S.GetValue<string>('type'))+'</code></p>');
+    if S.GetValue<string>('signature','')<>'' then
+      Body.Append('<p><strong>Declaration:</strong> <code>'+Encode(S.GetValue<string>('signature'))+'</code></p>');
+    Body.Append('<p><small>Source: '+Encode(S.GetValue<string>('range.source',''))+':'+
+      IntToStr(S.GetValue<Integer>('range.line',0))+'</small></p>');
     Body.Append('</section>');
     if (Kind='component') and (S.GetValue('serialized_properties')<>nil) then begin
       Body.Append('<section class="card"><h2>What the learner sees and can enter</h2>');Found:=False;
@@ -626,6 +635,7 @@ begin
       if P>0 then DetailHTML:=Copy(DetailHTML,1,P-1);
       Body.Append('<details class="card"><summary>Optional: read the code walkthrough and source details</summary>'+DetailHTML+'</details>');
     end;
+    Body.Append('<section class="card"><p><a href="#all_objects">Return to the full Project map</a></p></section>');
     Result:=Page(S.GetValue<string>('name'),Body.ToString);
   finally Body.Free; end;
 end;
@@ -991,6 +1001,130 @@ begin
     Result:=Page(TopicTitle(AIndex),Body.ToString);
   finally Body.Free; end;
 end;
+function TDPHExplanationModel.ProjectMapHTML: string;
+const Kinds: array[0..11] of string =
+  ('unit','type','routine','component','event','field','property','variable',
+   'local','parameter','resource','definition');
+var Body: TStringBuilder; V: TJSONValue; Row: TJSONObject;
+    Kind,Path,GroupName,LabelText,UnitKey: string;
+    I,Count,Total,OtherCount: Integer; FileGroups: array[0..3] of TStringBuilder;
+    OtherGroups: array[0..2] of TStringBuilder;
+    Counts: TDictionary<string,Integer>; UnitKeys: TDictionary<string,string>;
+    KnownPaths: TDictionary<string,Boolean>;
+begin
+  Body:=TStringBuilder.Create; Counts:=TDictionary<string,Integer>.Create;
+  UnitKeys:=TDictionary<string,string>.Create;
+  KnownPaths:=TDictionary<string,Boolean>.Create;
+  for I:=0 to 3 do FileGroups[I]:=TStringBuilder.Create;
+  for I:=0 to 2 do OtherGroups[I]:=TStringBuilder.Create;
+  try
+    for V in FFacts.GetValue<TJSONArray>('symbols') do begin
+      Row:=V as TJSONObject; Kind:=Row.GetValue<string>('kind','');
+      if Counts.TryGetValue(Kind,Count) then Counts[Kind]:=Count+1 else Counts.Add(Kind,1);
+      if Kind='unit' then UnitKeys.AddOrSetValue(LowerCase(Row.GetValue<string>('range.source','')),Row.GetValue<string>('key'));
+    end;
+    Body.Append('<section class="card"><h2>Find your way around this application</h2>'+
+      '<p>The left-hand list contains the captured units, types, operations, screen controls and data values. '
+      +'Choose a group below, search by name, or expand a unit. Select an item to see its type, source and connections.</p>'+
+      '<p><a href="#all_objects">Show all objects</a> &nbsp; <a href="#open_forms">Open form designs</a> &nbsp; '
+      +'<a href="#open_screenshots">Open supplied screenshots</a></p></section>');
+    if FFacts.GetValue<TJSONArray>('project_screens',nil)<>nil then begin
+      Body.Append('<section class="card"><h2>Screens</h2><p>'+IntToStr(FFacts.GetValue<TJSONArray>('project_screens').Count)+
+        ' saved form designs are available in <a href="#open_forms">Form designs</a>. ' +
+        IntToStr(FFacts.GetValue<TJSONArray>('screenshots').Count)+
+        ' actual screenshots are available in <a href="#open_screenshots">Screenshots</a>. '
+        +'Form designs reproduce saved controls and layout; they are not photographs of a running application.</p><ul>');
+      for V in FFacts.GetValue<TJSONArray>('project_screens') do begin
+        Row:=V as TJSONObject; Path:=Row.GetValue<string>('source','');
+        LabelText:=Row.GetValue<string>('title',''); if LabelText='' then LabelText:=Row.GetValue<string>('name',Path);
+        Body.Append('<li><a href="#form_'+THashSHA2.GetHashString(Path)+'">'+Encode(LabelText)+
+          '</a> <small>('+Encode(Path)+')</small></li>');
+      end;
+      Body.Append('</ul></section>');
+    end;
+    Body.Append('<section class="card"><h2>Objects in the project</h2><p>Choose a category to filter the list on the left.</p>');
+    for Kind in Kinds do begin
+      if not Counts.TryGetValue(Kind,Count) or (Count=0) then Continue;
+      LabelText:=Kind;
+      if Kind='routine' then LabelText:='Procedures and functions';
+      if Kind='unit' then LabelText:='Pascal units';
+      if Kind='component' then LabelText:='Screen controls';
+      if Kind='variable' then LabelText:='Unit variables';
+      if Kind='local' then LabelText:='Local variables';
+      if Kind='field' then LabelText:='Fields';
+      if Kind='parameter' then LabelText:='Parameters';
+      Body.Append('<p><a href="#kind_'+Kind+'">'+Encode(LabelText)+'</a> ('+IntToStr(Count)+')</p>');
+    end;
+    Body.Append('</section>');
+    Total:=0;
+    for V in FFacts.GetValue<TJSONArray>('files') do begin
+      Row:=V as TJSONObject; Path:=Row.GetValue<string>('path','');
+      KnownPaths.AddOrSetValue(LowerCase(Path),True);
+      Kind:=LowerCase(ExtractFileExt(Path)); I:=3;
+      if MatchText(Kind,['.dpr','.dproj','.groupproj']) then I:=0
+      else if Kind='.pas' then I:=1
+      else if MatchText(Kind,['.fmx','.dfm']) then I:=2;
+      UnitKey:='';
+      if I=1 then UnitKeys.TryGetValue(LowerCase(Path),UnitKey);
+      FileGroups[I].Append('<li>');
+      if UnitKey<>'' then FileGroups[I].Append(Link(UnitKey)+' &mdash; ');
+      FileGroups[I].Append('<code>'+Encode(Path)+'</code></li>');
+      Inc(Total);
+    end;
+    Body.Append('<section class="card"><h2>Files captured from this project</h2><p>'+IntToStr(Total)+
+      ' files are indexed. Open a group to see the complete captured list; select a linked unit to explore its members.</p>');
+    for I:=0 to 3 do begin
+      case I of
+        0: GroupName:='Project and startup files';
+        1: GroupName:='Pascal units (.pas)';
+        2: GroupName:='Saved form designs (.fmx and .dfm)';
+      else GroupName:='Other captured files'; end;
+      Body.Append('<details class="card"><summary>'+GroupName+'</summary><ul>'+FileGroups[I].ToString+'</ul></details>');
+    end;
+    Body.Append('</section>');
+    OtherCount:=0;
+    if FFacts.GetValue<TJSONArray>('project_assets',nil)<>nil then
+      for V in FFacts.GetValue<TJSONArray>('project_assets') do begin
+        Row:=V as TJSONObject; Path:=Row.GetValue<string>('source','');
+        if KnownPaths.ContainsKey(LowerCase(Path)) then Continue;
+        Kind:=Row.GetValue<string>('format',''); I:=2;
+        if MatchText(Kind,['.md','.txt','.html','.htm','.docx','.pdf','.rtf',
+          '.contract','.schema','.json','.xml','.ini','.config','.yml','.yaml']) or
+          ContainsText(Path,'contract') or ContainsText(Path,'spec') then I:=0
+        else if MatchText(Kind,['.png','.jpg','.jpeg','.svg','.bmp','.rc','.res']) then I:=1;
+        OtherGroups[I].Append('<li><code>'+Encode(Path)+'</code></li>'); Inc(OtherCount);
+      end;
+    if OtherCount>0 then begin
+      Body.Append('<section class="card"><h2>Other files found in the application folder</h2>'+
+        '<p>These files were found beside the project. A filename alone does not establish their role.</p>');
+      for I:=0 to 2 do begin
+        case I of
+          0: GroupName:='Documents, contracts and configuration';
+          1: GroupName:='Images and resources';
+        else GroupName:='Other source and data files'; end;
+        if OtherGroups[I].Length>0 then Body.Append('<details class="card"><summary>'+GroupName+
+          '</summary><ul>'+OtherGroups[I].ToString+'</ul></details>');
+      end;
+      Body.Append('</section>');
+    end;
+    if FFacts.GetValue<TJSONArray>('project_guides',nil)<>nil then begin
+      Body.Append('<section class="card"><h2>Documents found beside the project</h2>');
+      Count:=0;
+      for V in FFacts.GetValue<TJSONArray>('project_guides') do begin
+        Row:=V as TJSONObject;
+        Body.Append('<p><code>'+Encode(Row.GetValue<string>('source',''))+'</code></p>'); Inc(Count);
+      end;
+      if Count=0 then Body.Append('<p>No matching guide, README, help file or note was found in the scanned project folders.</p>');
+      Body.Append('<p><a href="#lesson_2">Read extracted passages in Explore related tasks</a>.</p></section>');
+    end;
+    Result:=Page('Project map: '+FFacts.GetValue<string>('project','selected application'),Body.ToString);
+  finally
+    for I:=0 to 3 do FileGroups[I].Free;
+    for I:=0 to 2 do OtherGroups[I].Free;
+    KnownPaths.Free; UnitKeys.Free; Counts.Free;
+    Body.Free;
+  end;
+end;
 function TDPHExplanationModel.ApplicationRouteHTML(AIndex: Integer): string;
 var
   Body: TStringBuilder;
@@ -1127,7 +1261,8 @@ begin
         if Screens<>nil then for V in Screens do begin
           Screen:=V as TJSONObject;
           Body.Append('<p><strong>'+Encode(Screen.GetValue<string>('title',Screen.GetValue<string>('name','Screen')))+
-            '</strong>');
+            '</strong> &mdash; <a href="#form_'+THashSHA2.GetHashString(Screen.GetValue<string>('source',''))+
+            '">open this form design</a>');
           for W in FFacts.GetValue<TJSONArray>('symbols') do begin
             S:=W as TJSONObject;
             if (S.GetValue<string>('kind','')='component') and
@@ -1141,11 +1276,13 @@ begin
           Inc(Count);
         end;
         if Count=0 then Body.Append('<p>No saved form design was captured in the selected project files.</p>')
-        else Body.Append('<p>'+IntToStr(Count)+' saved screen design(s) found. Open Screens to inspect their layouts and controls.</p>');
+        else Body.Append('<p>'+IntToStr(Count)+' saved screen design(s) found. '
+          +'<a href="#open_forms">Open their layouts and controls</a>.</p>');
         if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then
-          Body.Append('<p>No actual screenshot has been supplied for this application. Form designs are reconstructions, not screenshots.</p>')
+          Body.Append('<p>No actual screenshot has been supplied for this application. Form designs are reconstructions, not screenshots. '
+            +'<a href="#open_screenshots">Open Screenshots</a> to see what is available.</p>')
         else Body.Append('<p>'+IntToStr(FFacts.GetValue<TJSONArray>('screenshots').Count)+
-          ' actual picture(s) were supplied separately; open Screenshots to inspect their captions and attribution.</p>');
+          ' actual picture(s) were supplied separately; <a href="#open_screenshots">open Screenshots</a> to inspect their captions and attribution.</p>');
         Body.Append('</section><section class="card"><p><a href="#lesson_1">Next: learn a task in '+Encode(ProjectName)+
           '</a></p></section>');
       end;
