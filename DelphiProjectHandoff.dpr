@@ -32,6 +32,8 @@ uses
   DPH.Publish.Translation in 'DPH.Publish.Translation.pas',
   DPH.Publish.BrowserPolicy in 'DPH.Publish.BrowserPolicy.pas';
 
+{$R *.res}
+
 begin
   Application.Initialize;
   Application.CreateForm(TDPHMainForm, DPHMainForm);

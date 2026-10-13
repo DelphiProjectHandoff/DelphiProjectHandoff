@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="860" viewBox="0 0 800 860" role="img" aria-labelledby="title desc">
+  <title id="title">Delphi Project Handoff stacked logo</title>
+  <desc id="desc">An open-book app mark above the Delphi Project Handoff wordmark.</desc>
+  <g transform="translate(144 24)">
+    <rect x="16" y="16" width="480" height="480" rx="96" fill="#146CB4"/>
+    <path d="M104 156 Q174 143 241 176 L241 384 Q174 350 104 362 Z" fill="#FFFFFF"/>
+    <path d="M271 176 Q338 143 408 156 L408 362 Q338 350 271 384 Z" fill="#FFFFFF"/>
+    <path d="M171 272 H331" fill="none" stroke="#F28C28" stroke-width="24" stroke-linecap="round"/>
+    <path d="M306 239 L345 272 L306 305" fill="none" stroke="#F28C28" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="400" y="670" text-anchor="middle" fill="#146CB4" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="600">Delphi Project</text>
+  <text x="400" y="770" text-anchor="middle" fill="#F28C28" font-family="Segoe UI, Arial, sans-serif" font-size="94" font-weight="700">Handoff</text>
+</svg>
