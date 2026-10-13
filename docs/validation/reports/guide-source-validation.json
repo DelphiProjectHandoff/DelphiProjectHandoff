@@ -1,5 +1,5 @@
 {
-  "guide_version": 43,
+  "guide_version": 44,
   "last_changed": "2026-10-13",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -68,7 +68,7 @@
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
     "docs/guides/source/DPH_Engineering_Guide.txt": "1fa53b28e9d612b76e7a51248af1ad08483524103b77f101d09e26eae492db85",
-    "docs/guides/source/DPH_User_Guide.txt": "35374c3b521cb021a17599af7042b0fba7a50bb49c5ecb60e23afd2c8bf28174",
+    "docs/guides/source/DPH_User_Guide.txt": "a8e5dd4de4f32df46817c90c0c14ebe4fe4797647d4c9e377da629a443a916c8",
     "DelphiProjectHandoff.dproj": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d"
   },
   "content": {
@@ -76,7 +76,7 @@
       "parts": 6,
       "chapters": 27,
       "subsections": 119,
-      "words": 13374,
+      "words": 14410,
       "figures": 3
     },
     "Engineering": {
