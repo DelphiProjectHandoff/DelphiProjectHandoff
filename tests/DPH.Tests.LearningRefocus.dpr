@@ -101,6 +101,9 @@ begin
               'Without authored instructions, a real app action remains an explicitly incomplete task');
             Check(ContainsText(Explain.ApplicationRouteHTML(3),'No reviewed task walkthrough'),
               'Unknowns page identifies the missing task instead of inventing a result');
+            Check(ContainsText(Explain.ApplicationRouteHTML(2),'<title>Explore related tasks: Semantic.dproj</title>') and
+              ContainsText(Explain.ApplicationRouteHTML(2),'<h1>Explore related tasks: Semantic.dproj</h1>'),
+              'App-specific page title uses a plain ASCII separator');
             var FAQFacts:=Model.Document.Clone as TJSONObject;
             try
               var FAQRecord:=TJSONObject.Create.AddPair('title','Answer: Which task first?').AddPair('body','Begin with the supplied example option.').AddPair('owner','Named application teacher').AddPair('state','needs_review').AddPair('question_metadata',TJSONObject.Create.AddPair('prompt','Which task should a newcomer learn first?'));
@@ -140,7 +143,7 @@ begin
                 try Check(RoundTripPurpose.GetValue<string>('fields.action_id')=ActionFields.GetValue<string>('action_id'),'Simpler editor preserves the saved identity');finally RoundTripPurpose.Free;end;
                 Bitmap:=TBitmap.Create(PurposeEditor.ClientWidth,PurposeEditor.ClientHeight);try
                   if Bitmap.Canvas.BeginScene then try PurposeEditor.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
-                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-purpose-editor.png'));
+                  Bitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-purpose-editor.png'));
                 finally Bitmap.Free;end;
                 PurposeEditor.Hide;
               finally PurposeEditor.Free;end;
@@ -254,7 +257,7 @@ begin
               WaitHTML(Form.HelpBrowser,'document.body.innerText','Your first ten minutes');
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
 
               Check((Form.LessonPageCombo.Items.Count=11) and (Form.LessonPageCombo.Items.IndexOf('Learning library')>=0) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation includes the teaching library and excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
@@ -266,7 +269,7 @@ begin
               Form.AnalysisSettingsExpander.IsExpanded:=False;
               Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
                 if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
-                Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-preparation.png'));
+                Bitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-preparation.png'));
               finally Bitmap.Free;end;
               Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Learn the project'); Form.WorkspacePageChange(Form.LessonPageCombo);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'Learner page selector returns from preparation to learning');
@@ -290,16 +293,18 @@ begin
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               WaitHTML(Form.LearningBrowser,'document.body.innerText','What still needs a person to explain?');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Other tasks and actions');
+              WaitHTML(Form.LearningBrowser,'document.title','Explore related tasks: Semantic.dproj');
+              Check(True,'Native browser shows the app-specific title without damaged punctuation');
               Check(ContainsText(Form.OverviewMemo.Text,'Other tasks and actions') and not ContainsText(Form.OverviewMemo.Text,'Source capture'),'Text fallback presents the same app-specific route without technical capture metadata');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
               Form.WindowState:=TWindowState.wsNormal; Form.ClientWidth:=960;Form.ClientHeight:=600;Application.ProcessMessages;
               WaitHTML(Form.LearningBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-screen-compact.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-screen-compact.png')); finally BrowserBitmap.Free; end;
               Form.ClientWidth:=1600;Form.ClientHeight:=900;Application.ProcessMessages;
               Check(Form.LearningBrowser.Width>1000,'Wide lesson page uses the available main window');
               Form.SearchEdit.Text:='TMain.Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
@@ -308,14 +313,14 @@ begin
               Check(ContainsText(Form.ExplainFallback.Text,'Understand this selection') and not ContainsText(Form.ExplainFallback.Text,'FORM PROPERTIES') and not ContainsText(Form.ExplainFallback.Text,'Source SHA256'),'Text fallback keeps the learning explanation and excludes optional technical dumps');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               Check(BrowserBitmap<>nil,'Native WebView2 image capture is available for visual QA');
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-explain-browser.png'));
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-explain-browser.png'));
               Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
                 if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);
                   Bitmap.Canvas.SetMatrix(TMatrix.Identity);
                   var BrowserBounds:=Form.ExplainBrowser.AbsoluteRect;
                   Bitmap.Canvas.DrawBitmap(BrowserBitmap,TRectF.Create(0,0,BrowserBitmap.Width,BrowserBitmap.Height),BrowserBounds,1);
                 finally Bitmap.Canvas.EndScene; end;
-                Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-learning-workspace.png'));
+                Bitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-learning-workspace.png'));
               finally Bitmap.Free; end;
               finally BrowserBitmap.Free; end;
               Form.GraphGroupingCombo.ItemIndex:=2; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(nil);
@@ -328,7 +333,7 @@ begin
                 WaitHTML(Form.FlowBrowser,'(()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");if(!graph)return "WAIT";graph.scrollIntoView();return "GRAPH_VISIBLE";})()','GRAPH_VISIBLE');
                 Application.ProcessMessages; TThread.Sleep(200);
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
               Form.WorkspaceTabs.ActiveTab:=Form.PublishTab;
               Check(not Form.PublishSettingsExpander.IsExpanded and (Form.PublishSettingsExpander.Height<50),'Sharing starts with plain instructions and collapsed optional settings');
               Form.PublishBrowser.OnShouldLoadURL:=nil;
@@ -338,7 +343,7 @@ begin
               WaitHTML(Form.PublishBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Actual native browser renders the saved learning edition without horizontal overflow');
               BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-shared-lessons.png'));finally BrowserBitmap.Free;end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-shared-lessons.png'));finally BrowserBitmap.Free;end;
               Form.PublishBrowser.OnShouldLoadURL:=Form.BrowserShouldLoad;
               Form.Hide;
             finally Form.Free; end;
@@ -407,24 +412,24 @@ begin
               WaitHTML(Form.ExplainBrowser,'document.body.innerText','Understand this selection');
               Check(ContainsText(Form.ExplainFallback.Text,'btnConvertClick'),'Reference object explanation works in the actual FMX form');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-reference-explain.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-explain.png')); finally BrowserBitmap.Free; end;
               WaitHTML(Form.ExplainBrowser,'(()=>{for(const d of document.querySelectorAll("details")){if(d.querySelector("summary")?.textContent.includes("Optional:"))d.open=true;}const h=Array.from(document.querySelectorAll("h2")).find(x=>x.textContent==="Follow the work"); if(!h||!h.offsetHeight)return "WAIT"; h.scrollIntoView();return "TRACE_READY";})()','TRACE_READY');
               Check(True,'Reference execution trace is present in the actual rendered explanation');
               Application.ProcessMessages; TThread.Sleep(100);
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-reference-trace.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-trace.png')); finally BrowserBitmap.Free; end;
               Form.GraphCombo.ItemIndex:=1; Form.WorkspaceTabs.ActiveTab:=Form.GraphTab; Form.ViewChange(nil);
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Control-flow diagram');
               Check(True,'Reference procedure CFG renders labeled captured edges');
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-reference-flow.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-flow.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Start with a task');
               Check(True,'Reference application renders its own task starting point');
               WaitHTML(Form.LearningBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Narrow learning view wraps long source citations without horizontal overflow');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-reference-startup.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-startup.png')); finally BrowserBitmap.Free; end;
               ReferenceBundle:=TPath.Combine(TPath.GetDirectoryName(ReferenceDB),'reference-task');
               if TFile.Exists(TPath.Combine(ReferenceBundle,'source-navigation.json')) then begin
                 Row:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(ReferenceBundle,'source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
@@ -439,7 +444,7 @@ begin
                 WaitHTML(Form.PublishBrowser,'(()=>{const line=document.querySelector("pre span[id^=L]");if(!line)return "WAIT";line.scrollIntoView();return "SOURCE_LINES_READY";})()','SOURCE_LINES_READY');
                 Application.ProcessMessages; TThread.Sleep(200);
                 BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
-                try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-source-lines-browser.png')); finally BrowserBitmap.Free; end;
+                try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-source-lines-browser.png')); finally BrowserBitmap.Free; end;
               end;
               Form.Hide;
             finally Form.Free; end;

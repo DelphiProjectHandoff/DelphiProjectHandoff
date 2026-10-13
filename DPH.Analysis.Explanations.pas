@@ -1233,7 +1233,7 @@ begin
         Body.Append('<p><a href="#ask_author">Open Author questions</a> to record a named answer. Use Prepare lessons to add a purpose, task, explanation or actual screenshot for '+Encode(ProjectName)+'.</p></section>');
       end;
     end;
-    Result:=Page(ApplicationRouteTitle(AIndex)+' - '+ProjectName,Body.ToString);
+    Result:=Page(ApplicationRouteTitle(AIndex)+': '+ProjectName,Body.ToString);
   finally TaskRecords.Free; Body.Free; end;
 end;
 function TDPHExplanationModel.TopicHTML(AIndex: Integer): string;
