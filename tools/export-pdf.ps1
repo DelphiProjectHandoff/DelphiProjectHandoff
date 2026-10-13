@@ -17,7 +17,7 @@ while ($pending.Count) {
     }
 }
 if (-not (Test-Path -LiteralPath (Join-Path $bundleRoot 'manifest.json'))) { throw 'Select an existing DPH export bundle' }
-$pythonPath = 'C:\Users\marti\AppData\Local\Microsoft\WindowsApps\python.exe'
+$pythonPath = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\python.exe'
 $officePath = 'C:\Program Files\LibreOffice\program\soffice.com'
 if (-not (Test-Path -LiteralPath $officePath)) { throw 'LibreOffice is required for optional PDF conversion' }
 $checksumPath = Join-Path $bundleRoot 'validation\manifest-sha256.json'

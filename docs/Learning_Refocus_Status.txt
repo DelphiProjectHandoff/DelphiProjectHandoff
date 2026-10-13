@@ -120,3 +120,46 @@ The learning application corrections have reached their final documentation
 pass. Read the owner review only now, fix the guides and app-generated editable
 learning guide, and provide explicit run/test directions. Independent beginner
 acceptance has not occurred; do not claim it or complete historical parser gaps.
+
+Final documentation pass: 13 October 2026
+The owner review was read only after the application learning corrections.
+DPH User Guide is rewritten as ten learning chapters, with procedures, two actual
+native screenshots, troubleshooting and a repeatable learning exercise. It has
+13 pages. The Engineering Guide has eight chapters and ten pages covering the
+actual architecture, build, test, deployment and maintenance workflow.
+Both editable contents fields are populated. All 23 final pages were rendered
+with LibreOffice and visually inspected. No personal paths, development history
+or personal author metadata remain in these current manuals. Owner PDF copies
+and all 2,430 pinned reference files were preserved.
+The app-generated selected-application User Guide uses beginner topics and
+subsections instead of technical evidence dumps. Learner questions use plain
+operating questions; full source questions remain in preparation. Decision
+examples are explained and source-ordered. Repeated information connections
+are collapsed in the learner topic. Historical requirement statuses are unchanged.
+121 learning/reference, 43 task/export, 19 profile and 124 publishing checks
+passed. Application build and serialized form baseline passed.
+Current directions: docs/guides/Run_And_Test.txt, Workspace_Operations.txt and
+Developer_Test_Directions.txt. HTML help matches the current User Guide and
+uses the approved optional GTranslate widget and bilingual selector helper.
+Verified backup: H:\DPH Backups\LearningGuides_PreChange_20261012_235331
+6,158 files; 2,995,322,801 bytes, each SHA256 verified before changes.
+Automatic review rejected broad deletion of all text guides. Older feature
+instructions remain in the repository; packaging selects only current guides.
+Independent beginner acceptance has not been performed. Package launch and
+privacy/integrity verification are the final delivery checks.
+
+Delivery verification: 13 October 2026
+DPH 0.4.0 experimental desktop and source ZIPs were created. The desktop ZIP
+was extracted, checksum-checked, launched as a new instance with an empty
+temporary catalog, found responsive and closed normally. Owner preferences
+were restored. The extracted source ZIP built successfully and passed the
+native form baseline. Package text was checked for personal paths and
+development-history leakage; owner databases and PDF copies are excluded.
+Disposable extraction and test directories were removed after validation.
+Ready-to-run folder: bin/distribution/DPH-0.4.0-experimental-Win32
+Desktop ZIP: export/DPH-0.4.0-experimental-Win32.zip
+Source ZIP: source distributions/DPH-0.4.0-experimental-source.zip
+Start DelphiProjectHandoff.exe. Follow docs/guides/Run_And_Test.txt for the
+repeatable first session. Current PDF and editable guides are in docs/pdf and
+docs/guides. Independent human learning acceptance remains unperformed.
+This refocus does not relabel the old technical requirement ledger complete.

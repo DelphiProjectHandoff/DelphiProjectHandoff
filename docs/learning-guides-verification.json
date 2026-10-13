@@ -1,0 +1,71 @@
+{
+  "result": "PASS current manuals; package deployment and independent learning acceptance are separate",
+  "backup": "H:\\DPH Backups\\LearningGuides_PreChange_20261012_235331",
+  "backup_files": 6158,
+  "backup_bytes": 2995322801.0,
+  "manuals": [
+    {
+      "guide": "User",
+      "pages": 13,
+      "headings": [
+        "Getting started",
+        "Choose an application",
+        "Read the learning route",
+        "Follow an action",
+        "Learn a task",
+        "Explore screens and terms",
+        "Prepare useful lessons",
+        "Ask questions and review answers",
+        "Share and preserve lessons",
+        "Solve problems and check learning"
+      ],
+      "docx_sha256": "9a6186a3f11ee99d5d741deaa8ad7c3b9ffc05c8b0a321069cf991048afdbb03",
+      "pdf_sha256": "574fbe771a36e7d549fb9f384668fbf78ae2c0fa833dcc8dc42d9df62707bc0e",
+      "visual_review": "Every final rendered page inspected; readable without clipping or overlap",
+      "metadata": "No personal author or local development paths"
+    },
+    {
+      "guide": "Engineering",
+      "pages": 10,
+      "headings": [
+        "Purpose and architecture",
+        "Source and storage boundaries",
+        "Native interface and lesson generation",
+        "Build and run DPH",
+        "Validate a change",
+        "Package and deploy",
+        "Publication and privacy",
+        "Maintain the learning product"
+      ],
+      "docx_sha256": "630d2589ddf48a422523815dd934819fcd0ae8fcf5a2c50bc6aeea94d710dd54",
+      "pdf_sha256": "de6b2bee3cc60007b3e23c65647ebbbd6c3bb961bb27233f4c0efc9c55f5e500",
+      "visual_review": "Every final rendered page inspected; readable without clipping or overlap",
+      "metadata": "No personal author or local development paths"
+    }
+  ],
+  "unchanged_inputs_and_owner_copies": [
+    "DPH_CODEX_HANDOFF.txt",
+    "DPH_Master_Development_Specification_v1.md",
+    "DPH_PHASE1_MASTER_REQUIREMENTS.md",
+    "docs/pdf/DPH_Engineering_Guide - Copy.pdf",
+    "docs/pdf/DPH_User_Guide - Copy.pdf",
+    "tests/fixtures/Conditional.pas",
+    "tests/fixtures/Malformed.pas",
+    "tests/fixtures/semantics/Main.fmx",
+    "tests/fixtures/semantics/Main.pas",
+    "tests/fixtures/semantics/Semantic.dpr",
+    "tests/fixtures/semantics/Semantic.dproj",
+    "tests/fixtures/semantics/Worker.pas",
+    "tests/fixtures/syntax/expected-ir.json",
+    "tests/fixtures/syntax/expected.json",
+    "tests/fixtures/syntax/Fixture.dpr",
+    "tests/fixtures/syntax/Fixture.dproj",
+    "tests/fixtures/syntax/Model.fmx",
+    "tests/fixtures/syntax/Model.pas",
+    "tests/fixtures/syntax/Options.inc"
+  ],
+  "unchanged_reference_files": 2430,
+  "review_used": "DPH Guides Review.txt, read only at the final documentation phase",
+  "historical_requirement_ledger": "unchanged; not relabeled complete",
+  "independent_beginner_acceptance": "not performed"
+}

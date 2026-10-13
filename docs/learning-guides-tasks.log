@@ -1,0 +1,53 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(292) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learner-sharing\DPH.Tests.GuidedTasks.dpr(48) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learner-sharing\DPH.Tests.GuidedTasks.dpr(55) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+20462 lines, 1.77 seconds, 10934552 bytes code, 349300 bytes data.
+PASS 1: A blank template cannot masquerade as task instructions
+PASS 2: A task needs an explicit purpose and a real action
+PASS 3: Canonical instructions preserve the action and expected outcome
+PASS 4: SQLite returns the saved typed lesson
+PASS 5: Free-text edits cannot silently contradict the structured instructions
+PASS 6: A task cannot be duplicated under the same identity
+PASS 7: Task contribution requires a named person
+PASS 8: Incomplete step structure is rejected
+PASS 9: Project opening protects lesson drafts until the candidate is accepted
+PASS 10: Saved task is returned through the actual background save/open pipeline: Initial task / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 11: Accepted project restores normal lesson interaction
+PASS 12: Learner reads the actual supplied first action
+PASS 13: Learner sees the expected result beside the action
+PASS 14: Legacy text remains readable without fabricated step boundaries
+PASS 15: Task editor controls are serialized in the native form
+PASS 16: Prepare lessons opens a real new task draft
+PASS 17: Native preparation retains two explicitly authored steps
+PASS 18: An in-flight save protects the supplied instructions from lost edits
+PASS 19: Saved task is returned through the actual background save/open pipeline: Choose an option / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 20: One Save task returns directly to the learner
+PASS 21: Saved task starts with its first step
+PASS 22: Last step shows the overall expected result
+PASS 23: Reader prevents moving beyond the last step
+PASS 24: Learner can return to the earlier action
+PASS 25: Start again resets the learning sequence
+PASS 26: Task reader has no unrelated technical side panels
+PASS 27: Reopening instructions restores their ordered steps
+PASS 28: Cancel returns to learning without saving a replacement
+PASS 29: Canceled edits preserve the stored purpose
+PASS 30: Editing preserves the saved task identity
+PASS 31: Replacing a step keeps the replacement in its original position
+PASS 32: Moving a step down preserves both instructions
+PASS 33: Moving a step up restores the order
+PASS 34: Removing a step preserves the other steps
+PASS 35: Undo step restores the kept action
+PASS 36: Saved task is returned through the actual background save/open pipeline: Choose an option / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 37: Edited purpose and reordered steps persist together
+PASS 38: Reopening the saved revision restores the replacement step
+PASS 39: Sharing preserves the saved task revision and its purpose
+PASS 40: Offline tasks contain real ordered steps and per-step expected results
+PASS 41: Offline task retains practice, final result and named contributor
+PASS 42: Offline instructions distinguish the read-only edition from the native step reader
+PASS 43: Selected application source remains unchanged
+PASS guided task learning: 43 checks

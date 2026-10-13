@@ -1,0 +1,25 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+bin\learner-sharing\DPH.Tests.Phase1.dpr(14) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+7028 lines, 0.88 seconds, 9210800 bytes code, 325308 bytes data.
+PASS 1: Empty profile cannot claim a documented purpose
+PASS 2: Profile requires attribution and evidence context
+PASS 3: Unwritten project metadata is explicitly unknown
+PASS 4: Unknown typed field is rejected
+PASS 5: Profile fixture generation publishes
+PASS 6: Profile is attributed, revision-pinned and awaiting human review
+PASS 7: Exact structured fields survive SQLite publication
+PASS 8: Readable body and typed fields agree (stored 1343, expected 1343)
+PASS 9: Only one profile can belong to the selected project
+PASS 10: Text cannot diverge silently from structured profile fields
+PASS 11: Ordinary text editing cannot discard typed profile data
+PASS 12: Named review preserves structured fields in a new immutable revision
+PASS 13: A stale profile editor cannot overwrite newer review
+PASS 14: Editing reviewed ownership preserves history and reopens review
+PASS 15: Authored project profile participates in project search
+PASS 16: Typed profile updates preserve database integrity
+PASS 17: Reopened database retains exact profile fields
+PASS 18: IDE-designed profile fields validate and produce an attributed draft
+PASS 19: Native editor round-trips the saved owner field
+PASS Phase1 profile: 19 checks

@@ -34,3 +34,24 @@ This note records the pause only; it does not authorize further development.
 
 CURRENT: Development resumed. See docs/Learning_Refocus_Status.txt.
 The old next-item order (06.07 onward) is superseded by the owner's learning-only direction.
+
+CURRENT DELIVERY CHECKPOINT - 13 October 2026
+The learning refocus, guided tasks, preparation simplification and current manuals
+are built and validated. DPH 0.4.0 is ready in:
+bin/distribution/DPH-0.4.0-experimental-Win32/DelphiProjectHandoff.exe
+Desktop and source ZIPs are in export and source distributions.
+Current directions: docs/guides/Run_And_Test.txt.
+User Guide: 13 pages; Engineering Guide: 10 pages. Both have editable populated
+contents and PDF companions. Every final manual page was visually inspected.
+121 learning/reference, 43 task/export, 19 profile and 124 publication checks
+passed; application, native form baseline, extracted application launch and
+extracted source build passed. Owner PDFs and reference sources were preserved.
+See docs/learning-delivery-validation.json and docs/Learning_Refocus_Status.txt.
+
+The historical 533-record technical ledger has not been relabeled complete.
+Independent beginner learning acceptance has not been performed. The next
+acceptance activity is the actual learner exercise in Run_And_Test.txt; do not
+substitute automated checks or resume the old administrative backlog as if the
+owner's learning-only instruction had not occurred.
+Older technical guide files remain in the repository after automatic approval
+review rejected their bulk deletion. They are excluded from the current package.

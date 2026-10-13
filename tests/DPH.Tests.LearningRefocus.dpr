@@ -160,6 +160,7 @@ begin
               finally ControlLesson.Free;end;
             finally ControlFacts.Free;end;
             Check(ContainsText(Explain.LessonHTML(4),'Sender &gt; 0'),'Decisions lesson teaches an actual application condition');
+            Check(ContainsText(Explain.LessonHTML(4),'A true result takes one branch') and not ContainsText(Explain.LessonHTML(9),'possible_dynamic'),'Learner decisions explain their alternatives and author questions omit analyzer jargon');
             Check(ContainsText(Explain.LessonHTML(11),'Practice choosing a mode') and ContainsText(Explain.LessonHTML(11),'Expected result: identify both branch alternatives.') and ContainsText(Explain.LessonHTML(11),'Named task author'),'Task lesson displays selected-application instructions, expected outcome and named author');
             Check(not ContainsText(Explain.LessonHTML(11),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Task lesson excludes unrelated engineering notes');
             var PurposeFacts:=Model.Document.Clone as TJSONObject;
@@ -418,7 +419,7 @@ begin
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
       end;
-      Report:=TJSONObject.Create; try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('work',Work); Report.AddPair('reference_cache',ReferenceDB); Report.AddPair('human_acceptance','not_run'); Report.AddPair('guides_review','deferred by owner; guides and help assets unchanged');
+      Report:=TJSONObject.Create; try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('work',Work); Report.AddPair('reference_cache',ReferenceDB); Report.AddPair('human_acceptance','not_run'); Report.AddPair('guides_review','Manual review and rendered-guide verification are recorded separately from this native learning suite');
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));
         TFile.WriteAllText(TPath.Combine(Root,'docs\learning-refocus-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;

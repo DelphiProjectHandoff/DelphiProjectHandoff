@@ -1,0 +1,21 @@
+DEVELOPER BUILD AND CHECK DIRECTIONS
+
+Open an elevated Windows Command Prompt and change to the source root that
+contains DelphiProjectHandoff.dproj. Run the following commands in order:
+
+tools\build-wp0.cmd
+tools\build-learning-refocus.cmd
+tools\build-guided-tasks.cmd "%CD%\bin\fresh-task-check\fixture.dphdb"
+tools\build-phase1.cmd
+tools\build-wp6.cmd
+
+Use a new disposable folder name if fresh-task-check already exists. Do not
+reuse an owner database for the task test. Each suite must end with PASS and a
+zero process exit code. Run the relevant analyzer/storage suites when changing
+those contracts. These checks do not replace a first-time learner exercise.
+
+To run this source build:
+bin\Win32\Debug\DelphiProjectHandoff.exe
+
+Keep WebView2Loader.dll beside the executable and migrations in the source root.
+Use Debug and Win32 in RAD Studio. The User Guide describes deployed operation.

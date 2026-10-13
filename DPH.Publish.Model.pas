@@ -1,7 +1,7 @@
 unit DPH.Publish.Model;
 interface
 uses System.SysUtils, System.JSON, DPH.Workspace.Model;
-const DPHPublishVersion = 'DPH-LEARNING-11';
+const DPHPublishVersion = 'DPH-LEARNING-12';
 type
   TDPHDocumentModel = class
   private

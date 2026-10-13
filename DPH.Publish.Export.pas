@@ -9,9 +9,9 @@ type
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.RegularExpressions, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.RegularExpressions, System.NetEncoding, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
-var Archive: TZipFile; Document,Body,Headings: string; V,W,L: TJSONValue; R: TJSONObject; I: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
+var Archive: TZipFile; Document,Body,Headings,Lesson: string; V,W,L: TJSONValue; R: TJSONObject; I,StartAt,EndAt: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
   procedure Part(const Name,Text: string);
   var Stream: TBytesStream;
   begin Stream:=TBytesStream.Create(TEncoding.UTF8.GetBytes(Text)); try Archive.Add(Stream,Name); finally Stream.Free; end; end;
@@ -24,6 +24,35 @@ begin
     '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+P('Contents','Title')+
     '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-1" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
   Headings:='';
+  if AUser then begin
+    Body:=P(ATitle,'Title')+P('Learn '+AModel.Document.GetValue<string>('project'),'Normal')+
+      P('Last changed '+AModel.Document.GetValue<string>('captured_utc','not recorded'),'Normal')+
+      P('Start with the application purpose, follow a screen action and read the supplied task instructions. This guide presents source-derived explanations and named contributions. It does not run the application. Open learning.html in this edition to use the object links and supplied images mentioned in these lessons.','Normal')+
+      '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+P('Contents','Title')+
+      '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-1" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
+    Explanations:=TDPHExplanationModel.Create(AModel.Document);
+    try
+      for I:=0 to 11 do begin
+        Body:=Body+P(TDPHExplanationModel.TopicTitle(I),'Normal');
+        Headings:=Headings+P(TDPHExplanationModel.TopicTitle(I),'Heading1');
+        Lesson:=Explanations.LessonHTML(I);StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
+        Lesson:=Copy(Lesson,StartAt+6,EndAt-StartAt-6);
+        Lesson:=TRegEx.Replace(Lesson,'(?s)<details class="card"><summary>About this lesson</summary>.*?</details>','');
+        Lesson:=Lesson.Replace('<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','');
+        Lesson:=TRegEx.Replace(Lesson,'(?is)<h[23]>(.*?)</h[23]>',sLineBreak+'[[HEADING]]$1'+sLineBreak);
+        Lesson:=TRegEx.Replace(Lesson,'(?i)</(?:p|h[1-6]|li|section)>|<br\s*/?>',sLineBreak);
+        Lesson:=TNetEncoding.HTML.Decode(TRegEx.Replace(Lesson,'<[^>]+>',''));
+        Lesson:=Lesson.Replace('Open Learn a task to follow the prepared steps one at a time, with Previous, Next and Start again.','The saved task instructions follow below. The DPH application also provides a reader that presents one step at a time.');
+        Lesson:=Lesson.Replace('Open Author questions to record a named reply.','Record replies in DPH through Prepare lessons, Author questions.');
+        for Paragraph in Lesson.Split([sLineBreak]) do if Trim(Paragraph)<>'' then begin
+          if StartsText('[[HEADING]]',Trim(Paragraph)) then Headings:=Headings+P(Copy(Trim(Paragraph),12,MaxInt),'Heading2')
+          else Headings:=Headings+P(Trim(Paragraph),'Normal');
+        end;
+      end;
+    finally Explanations.Free;end;
+    Body:=Body+P('Continue learning','Normal')+'<w:p><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p><w:p><w:r><w:br w:type="page"/></w:r></w:p>'+Headings;
+    Body:=Body+P('Continue learning','Heading1')+P('Open learning.html in this edition for linked explanations, supplied screenshots and business terms. To add or change instructions, open the project in DPH and choose Prepare lessons.','Normal');
+  end else begin
   for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject;
     if AUser and not MatchText(R.GetValue<string>('id'),['overview','user','troubleshooting','orientation','help']) then Continue;
     Body:=Body+P(R.GetValue<string>('title'),'Normal');
@@ -58,6 +87,7 @@ begin
   end;
   finally Explanations.Free; end;
   Body:=Body+P('Known unknowns','Heading1')+P(AModel.Document.GetValue<string>('known_unknowns'),'Normal');
+  end;
   Document:='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+Body+
     '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>';
   Archive:=TZipFile.Create;

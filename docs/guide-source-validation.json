@@ -1,238 +1,64 @@
 {
-  "guide_version": 39,
-  "sources": [
-    {
-      "path": "DPH.Analysis.Async.pas",
-      "sha256": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153"
-    },
-    {
-      "path": "DPH.Analysis.Explanations.pas",
-      "sha256": "8e4a430daf51b5f1d5c0e4e8a939862dd8b80123bd7333597b949ad054f85f06"
-    },
-    {
-      "path": "DPH.Analysis.Flow.pas",
-      "sha256": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57"
-    },
-    {
-      "path": "DPH.Analysis.Model.pas",
-      "sha256": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035"
-    },
-    {
-      "path": "DPH.Analysis.Persistence.pas",
-      "sha256": "08609c3df54250a8f6712e22e991f7ad8d444352e7103ba0959d2feba4a2b3c7"
-    },
-    {
-      "path": "DPH.Analysis.Quality.pas",
-      "sha256": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82"
-    },
-    {
-      "path": "DPH.Analysis.SQL.pas",
-      "sha256": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e"
-    },
-    {
-      "path": "DPH.Analysis.Symbols.pas",
-      "sha256": "47c187a32ad1a040760bd9459e843d9c6fa7ced7b4ea5843280d2680127cc047"
-    },
-    {
-      "path": "DPH.Knowledge.ActionPurpose.pas",
-      "sha256": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f"
-    },
-    {
-      "path": "DPH.Knowledge.ComponentDependency.pas",
-      "sha256": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe"
-    },
-    {
-      "path": "DPH.Knowledge.Glossary.pas",
-      "sha256": "9c50a06ccf405f786526e206e5e84ea956604eeb42e1a84b9f91c31cced70dcb"
-    },
-    {
-      "path": "DPH.Knowledge.ProjectProfile.pas",
-      "sha256": "e901a58b02c2aafe2cc21df4da7dced2807a9cc8840c325c72d9db64cedc44bd"
-    },
-    {
-      "path": "DPH.Parse.Forms.pas",
-      "sha256": "3cf7d49afd859e2d2749cb30e5fdd76120eaf05ef5223e8fb8bf6eb1a7fcd66c"
-    },
-    {
-      "path": "DPH.Parse.Lexer.pas",
-      "sha256": "6ce5bbc66f8170b17eaeda536b8e500ca9992131477c09bc8e1a33bb6dd1c7f0"
-    },
-    {
-      "path": "DPH.Parse.Model.pas",
-      "sha256": "bdecd758070044593a6a19bfd53b35f9a23286e2542194313222cdfee51d6557"
-    },
-    {
-      "path": "DPH.Parse.Pascal.pas",
-      "sha256": "016adbe9ba24b90d457455722782cdbbc657233bd1a07ba1bcdcd77f3340587e"
-    },
-    {
-      "path": "DPH.Parse.Preprocessor.pas",
-      "sha256": "34b7513019a41bc9911babfda72041addd563959ee54c54d0759b8cc9fa7fefc"
-    },
-    {
-      "path": "DPH.Parse.Resources.pas",
-      "sha256": "f63153edba8656b315956fdd8ccf52e45b1446d8192f9b84c96c153bf676258f"
-    },
-    {
-      "path": "DPH.Project.Analysis.pas",
-      "sha256": "5af3808df19a7c403b456342e45b9e2c8c63195368847b151f3c57ed461b5c2a"
-    },
-    {
-      "path": "DPH.Project.Inventory.pas",
-      "sha256": "061736891f0fab486996ff5d8132af1cf5e25a2f93a74fb3e03ad8fa04e2c266"
-    },
-    {
-      "path": "DPH.Project.Source.pas",
-      "sha256": "8efa444743f0e90831631df963f26a2542561efab63b26f1c5b41fff6b96994e"
-    },
-    {
-      "path": "DPH.Publish.BrowserPolicy.pas",
-      "sha256": "74d2f36c879f1b7b55133241c3e1abc28ce113c4d9f581a5123be83f94d705ce"
-    },
-    {
-      "path": "DPH.Publish.Export.pas",
-      "sha256": "ac49dff7e08016db2f8c720de3bac0749e52de82ccc4e7aa2b328f8032ceebe4"
-    },
-    {
-      "path": "DPH.Publish.Model.pas",
-      "sha256": "7068252c58364ae224e263ecc5fbf83bdb406943979f3ad752f4ca9f877de9d2"
-    },
-    {
-      "path": "DPH.Publish.Translation.pas",
-      "sha256": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20"
-    },
-    {
-      "path": "DPH.Storage.Backup.pas",
-      "sha256": "78e8c8de8af5120f8ce453793f947c5e2918e51dafc66f9e129c964fe28697bc"
-    },
-    {
-      "path": "DPH.Storage.Database.pas",
-      "sha256": "eef95eb1502ac7aedee4186f29a026074d2d77fb3ca404d81531703c99e290e0"
-    },
-    {
-      "path": "DPH.Storage.Types.pas",
-      "sha256": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219"
-    },
-    {
-      "path": "DPH.UI.ActionPurpose.pas",
-      "sha256": "6016874bdc24964ce2371431d77babc68f03a50f045e8d20e222e4989bcbf79d"
-    },
-    {
-      "path": "DPH.UI.ComponentDependency.pas",
-      "sha256": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682"
-    },
-    {
-      "path": "DPH.UI.DatabaseDictionary.pas",
-      "sha256": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b"
-    },
-    {
-      "path": "DPH.UI.Glossary.pas",
-      "sha256": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741"
-    },
-    {
-      "path": "DPH.UI.Main.pas",
-      "sha256": "b5cf95129ccd1ff91ecfbb88d31170f9ec2e35a3e34c0dd590854c0f3390a16b"
-    },
-    {
-      "path": "DPH.UI.ProjectProfile.pas",
-      "sha256": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59"
-    },
-    {
-      "path": "DPH.Workspace.ActionPurposes.pas",
-      "sha256": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4"
-    },
-    {
-      "path": "DPH.Workspace.Catalog.pas",
-      "sha256": "5fed34d1919dfd5b34216be36f92fc1764847a65d62112613b2a0e1d44a05940"
-    },
-    {
-      "path": "DPH.Workspace.Commands.pas",
-      "sha256": "9d737351356cf30b1f5bd6d2dee5c514bcafe16c6fcafe24be82b2f06c1a3d28"
-    },
-    {
-      "path": "DPH.Workspace.Comparison.pas",
-      "sha256": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce"
-    },
-    {
-      "path": "DPH.Workspace.ComponentDependencies.pas",
-      "sha256": "7d57eb7884d6e521414379a24ce9e64aa2816beca6de650b86828a16fc33af2b"
-    },
-    {
-      "path": "DPH.Workspace.DatabaseConnections.pas",
-      "sha256": "37fecd28b258661a57eb1ff955a2bf1f22757508b3925b98daedc0d6b789e1ce"
-    },
-    {
-      "path": "DPH.Workspace.DatabaseSchema.pas",
-      "sha256": "988548013d7465e7a95b4b1729c0fec5938f5d866afda932bfeab22639160bda"
-    },
-    {
-      "path": "DPH.Workspace.DynamicControls.pas",
-      "sha256": "abd5350eab05058b885b95e0c947a1badd54eba33877cbe9a448cac194db25ed"
-    },
-    {
-      "path": "DPH.Workspace.FormInheritance.pas",
-      "sha256": "b771383670720f9503454dc17f7d5e72ddd986a642fc526bc6aeeab6122129f8"
-    },
-    {
-      "path": "DPH.Workspace.Graphs.pas",
-      "sha256": "1d2985c6fa30e72a7ddb7c55f41a2a774e6e1517d5056507efb2666f18b47804"
-    },
-    {
-      "path": "DPH.Workspace.Keyboard.pas",
-      "sha256": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923"
-    },
-    {
-      "path": "DPH.Workspace.LayoutRules.pas",
-      "sha256": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49"
-    },
-    {
-      "path": "DPH.Workspace.Model.pas",
-      "sha256": "c478ad86dae6bf66107412e3f6728d31553f28c486798fdb6fc461f72e6333f1"
-    },
-    {
-      "path": "DPH.Workspace.Screen.pas",
-      "sha256": "68305e6ec36664e76d05b8c9af21416dd51a32116d47ea55156977b4c10855de"
-    },
-    {
-      "path": "DPH.Workspace.ScreenHistory.pas",
-      "sha256": "bd05a76dcae7b4c872345021a56eab0b8b0108d954c1a5c35686321852082161"
-    },
-    {
-      "path": "DPH.Workspace.Worker.pas",
-      "sha256": "d6ac3ffff0c50dbcbb98f0813db1ea47769f0fa8e1f2e9418381c6735cc09953"
-    },
-    {
-      "path": "DPH.UI.Main.fmx",
-      "sha256": "3b13700c44c5839710c306d02edf564500731508ee597c7e1cd459f2ca80f03c"
-    },
-    {
-      "path": "DPH.UI.ProjectProfile.fmx",
-      "sha256": "62e7fef97972fdb29f1a878e70a99d8284b6f7d8cfbddb9f625bb535728c2142"
-    },
-    {
-      "path": "DPH.UI.Glossary.fmx",
-      "sha256": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5"
-    },
-    {
-      "path": "DPH.UI.ComponentDependency.fmx",
-      "sha256": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862"
-    },
-    {
-      "path": "DPH.UI.ActionPurpose.fmx",
-      "sha256": "9eb57da0310277432db54c9a80d8d03be09aa6163acd8895f04fa21f176f8e15"
-    },
-    {
-      "path": "DPH.UI.DatabaseDictionary.fmx",
-      "sha256": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e"
-    },
-    {
-      "path": "DelphiProjectHandoff.dpr",
-      "sha256": "2b922d5561c2ab3e2b65590583f646e29fc12c8b5c36a08fe401a6ebed90d3f9"
-    },
-    {
-      "path": "DelphiProjectHandoff.dproj",
-      "sha256": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d"
-    }
-  ],
-  "last_changed": "2026-10-12"
+  "guide_version": 40,
+  "last_changed": "2026-10-13",
+  "sources": {
+    "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
+    "DPH.Analysis.Explanations.pas": "5893faf1cc5e563c941d9571b212c6153496db9b0325f669b520232630066ec9",
+    "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
+    "DPH.Analysis.Model.pas": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035",
+    "DPH.Analysis.Persistence.pas": "08609c3df54250a8f6712e22e991f7ad8d444352e7103ba0959d2feba4a2b3c7",
+    "DPH.Analysis.Quality.pas": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82",
+    "DPH.Analysis.SQL.pas": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e",
+    "DPH.Analysis.Symbols.pas": "47c187a32ad1a040760bd9459e843d9c6fa7ced7b4ea5843280d2680127cc047",
+    "DPH.Knowledge.ActionPurpose.pas": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f",
+    "DPH.Knowledge.ComponentDependency.pas": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe",
+    "DPH.Knowledge.Glossary.pas": "9c50a06ccf405f786526e206e5e84ea956604eeb42e1a84b9f91c31cced70dcb",
+    "DPH.Knowledge.ProjectProfile.pas": "e901a58b02c2aafe2cc21df4da7dced2807a9cc8840c325c72d9db64cedc44bd",
+    "DPH.Parse.Forms.pas": "3cf7d49afd859e2d2749cb30e5fdd76120eaf05ef5223e8fb8bf6eb1a7fcd66c",
+    "DPH.Parse.Lexer.pas": "6ce5bbc66f8170b17eaeda536b8e500ca9992131477c09bc8e1a33bb6dd1c7f0",
+    "DPH.Parse.Model.pas": "bdecd758070044593a6a19bfd53b35f9a23286e2542194313222cdfee51d6557",
+    "DPH.Parse.Pascal.pas": "016adbe9ba24b90d457455722782cdbbc657233bd1a07ba1bcdcd77f3340587e",
+    "DPH.Parse.Preprocessor.pas": "34b7513019a41bc9911babfda72041addd563959ee54c54d0759b8cc9fa7fefc",
+    "DPH.Parse.Resources.pas": "f63153edba8656b315956fdd8ccf52e45b1446d8192f9b84c96c153bf676258f",
+    "DPH.Project.Analysis.pas": "5af3808df19a7c403b456342e45b9e2c8c63195368847b151f3c57ed461b5c2a",
+    "DPH.Project.Inventory.pas": "061736891f0fab486996ff5d8132af1cf5e25a2f93a74fb3e03ad8fa04e2c266",
+    "DPH.Project.Source.pas": "8efa444743f0e90831631df963f26a2542561efab63b26f1c5b41fff6b96994e",
+    "DPH.Publish.BrowserPolicy.pas": "92dfcec01b4933e8ed79182c7578eaf5e22e386acfa7972c5d497c263cbf17f4",
+    "DPH.Publish.Export.pas": "050e35be0fb48f01c15f2b5da2824bde3dd72ee82467bb6c7d06c7def6ce0699",
+    "DPH.Publish.Model.pas": "860ffb6f36d0fcf3689be43c9267690a8a6e231713e54965cedb7fbe8523a5bf",
+    "DPH.Publish.Translation.pas": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20",
+    "DPH.Storage.Backup.pas": "78e8c8de8af5120f8ce453793f947c5e2918e51dafc66f9e129c964fe28697bc",
+    "DPH.Storage.Database.pas": "941ff51b4a3f984c9154448fe64ba19034d4da667e92169336cf8bac42ca14ad",
+    "DPH.Storage.Types.pas": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219",
+    "DPH.UI.ActionPurpose.pas": "6016874bdc24964ce2371431d77babc68f03a50f045e8d20e222e4989bcbf79d",
+    "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
+    "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
+    "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
+    "DPH.UI.Main.pas": "76dca3a945128dfe144f3bff896e5f90816ca10bf0651f141c86b8c8d058a48e",
+    "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
+    "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
+    "DPH.Workspace.Catalog.pas": "5fed34d1919dfd5b34216be36f92fc1764847a65d62112613b2a0e1d44a05940",
+    "DPH.Workspace.Commands.pas": "9d737351356cf30b1f5bd6d2dee5c514bcafe16c6fcafe24be82b2f06c1a3d28",
+    "DPH.Workspace.Comparison.pas": "d4953d401b70fbe65b8b9b9fe387431cb7e2c84afc5dab5c9170deafe9ceacce",
+    "DPH.Workspace.ComponentDependencies.pas": "7d57eb7884d6e521414379a24ce9e64aa2816beca6de650b86828a16fc33af2b",
+    "DPH.Workspace.DatabaseConnections.pas": "37fecd28b258661a57eb1ff955a2bf1f22757508b3925b98daedc0d6b789e1ce",
+    "DPH.Workspace.DatabaseSchema.pas": "988548013d7465e7a95b4b1729c0fec5938f5d866afda932bfeab22639160bda",
+    "DPH.Workspace.DynamicControls.pas": "abd5350eab05058b885b95e0c947a1badd54eba33877cbe9a448cac194db25ed",
+    "DPH.Workspace.FormInheritance.pas": "b771383670720f9503454dc17f7d5e72ddd986a642fc526bc6aeeab6122129f8",
+    "DPH.Workspace.Graphs.pas": "1d2985c6fa30e72a7ddb7c55f41a2a774e6e1517d5056507efb2666f18b47804",
+    "DPH.Workspace.Keyboard.pas": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923",
+    "DPH.Workspace.LayoutRules.pas": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49",
+    "DPH.Workspace.Model.pas": "b98ad9c730ad82da29863fa22c1192af39f52c73850aeb0c3f16233d46f4a8c1",
+    "DPH.Workspace.Screen.pas": "68305e6ec36664e76d05b8c9af21416dd51a32116d47ea55156977b4c10855de",
+    "DPH.Workspace.ScreenHistory.pas": "bd05a76dcae7b4c872345021a56eab0b8b0108d954c1a5c35686321852082161",
+    "DPH.Workspace.Worker.pas": "d6ac3ffff0c50dbcbb98f0813db1ea47769f0fa8e1f2e9418381c6735cc09953",
+    "DPH.UI.ActionPurpose.fmx": "d3ee151a051a08bd8c7e75b07ca657cdf5ae5ab7c3ba7112e021253329bdf093",
+    "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
+    "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
+    "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
+    "DPH.UI.Main.fmx": "c1ead836f1cb14ee5d288a5534f40c617a549760b9141efe4db833baf27d6efc",
+    "DPH.UI.ProjectProfile.fmx": "62e7fef97972fdb29f1a878e70a99d8284b6f7d8cfbddb9f625bb535728c2142",
+    "DelphiProjectHandoff.dproj": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d"
+  },
+  "basis": "Inspected native controls source and behavior"
 }

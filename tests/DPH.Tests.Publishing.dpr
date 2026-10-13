@@ -178,6 +178,11 @@ begin
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Fixture,'forbidden')); except Failed:=True; end; Check(Failed,'Publishing cannot write into the analyzed source');
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full')); except Failed:=True; end; Check(Failed,'Publishing cannot overwrite an existing folder');
             Archive:=TZipFile.Create; try Archive.Open(TPath.Combine(Work,'full\Engineering_Guide.docx'),zmRead); Archive.Read('word/document.xml',Bytes); Text:=TEncoding.UTF8.GetString(Bytes); Check(Pos(' TOC ',Text)>0,'Editable engineering guide has a changeable TOC field'); Check(Pos('Last changed',Text)>0,'Guide title page records last changed identity'); finally Archive.Free; end;
+            Archive:=TZipFile.Create;try Archive.Open(TPath.Combine(Work,'full\User_Guide.docx'),zmRead);Archive.Read('word/document.xml',Bytes);Text:=TEncoding.UTF8.GetString(Bytes);
+              Check(Text.Contains(' TOC ') and Text.Contains('Task walkthroughs') and Text.Contains('Delphi terms in plain language'),'Selected-application user guide contains an editable contents field and the beginner route');
+              Check(not Text.Contains('SHA256') and not Text.Contains('SOURCE WALKTHROUGH') and not Text.Contains('confirmed_static'),'Selected-application user guide avoids technical evidence dumps');
+              Check(Text.Contains('w:pStyle w:val="Heading2"') and Text.Contains('Meet the interface') and Text.Contains('Open learning.html in this edition'),'Selected-application guide retains lesson subsections and explains where its object links are available');
+            finally Archive.Free;end;
             TFile.AppendAllText(TPath.Combine(Work,'full\indexes\symbols.jsonl'),'tamper',TEncoding.UTF8);
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint')); except Failed:=True; end; Check(Failed,'Modified artifact fails hash validation');
             TFile.WriteAllText(TPath.Combine(Root,'docs\wp6-canonical-fixture.json'),Model.Document.Format(2),TEncoding.UTF8);

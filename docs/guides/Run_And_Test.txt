@@ -1,183 +1,58 @@
-Delphi Project Handoff run and test directions
-Last changed 11 October 2026
+RUN AND TEST DELPHI PROJECT HANDOFF
 
-Run the current source build
-1. Open File Explorer and paste this folder into its address bar:
-   C:\New Delphi Projects\Delphi Project Handoff\bin\Win32\Debug
-2. Double-click DelphiProjectHandoff.exe. It opens maximized. Keep migrations and
-   help in the project root, and WebView2Loader.dll beside the executable.
-   An extracted distribution keeps all three beside the executable. WebView2
-   Runtime enables embedded learning pages; readable native text is the fallback.
-3. Read Getting started. Use the page selector in the upper-right corner to
-   choose a workspace page. Click an object in the left-hand Explorer to inspect
-   it. The labeled Selection details pane is on the right; activity is at the
-   bottom. Drag the dividers to resize panes. A restored narrow window requires
-   horizontal scrolling along its command toolbar to reach all commands.
+START THE SUPPLIED DESKTOP PACKAGE
+1. Extract the ZIP file into a local folder where you can save files.
+2. Open that extracted folder in File Explorer.
+3. Double-click DelphiProjectHandoff.exe. Getting started should appear.
+4. Keep the executable, loader, migrations, help and docs together.
 
-Attach a project and learn one action
-1. Select the intended analysis configuration and platform in the top commands.
-   These describe the selected application; DPH itself currently runs as Win32.
-2. Click Attach project. Select that application's .dproj, .dpr or .groupproj.
-   DPH rejects its own project, including renamed copies retaining its identity.
-3. Save a new .dphdb outside the selected source tree. The picker defaults to
-   Databases under the Handoff application folder. Use one database per project.
-4. Wait for the bottom activity line to finish. Read PARTIAL and other warnings.
-   For the provided reference, select:
-   C:\New Delphi Projects\Delphi Project Handoff\samples\reference-vcl2fmx-v6.0.0\VCL2FMXConverter.dproj
-   Use Debug / Win32 and extra defines MSWINDOWS;WIN32. This reference remains
-   partial; missing dependencies and unsupported syntax are explicit gaps.
-5. Choose Learn the project, then How the program starts. Locate a recognizable
-   control under Screens and user actions. Follow its event into Explain.
-6. Read its contract, incoming/outgoing connections and SOURCE WALKTHROUGH.
-   Inspect one condition and both paths. Use Source to compare matching captured
-   code and Graphs / Procedure CFG to inspect its control flow. Read certainty,
-   line numbers, source hashes and omitted counts with every conclusion.
-7. Choose Coverage to inspect the defined measures and diagnostics. None of the
-   percentages establishes complete business knowledge or successful execution.
+OPEN AN APPLICATION
+5. Click Choose application at the top left.
+6. Select the intended Delphi .dproj or .dpr, or its .groupproj group.
+7. Save its proposed .dphdb in Databases, outside the selected source folder.
+8. Wait for Learn the project to open. Read Start here, then Screens and actions.
+   If lessons already exist, use Open saved lessons and select their .dphdb.
+   Keep the adjacent .dphdb.views folder with the database.
 
-Record the selected application's profile
-1. Open or attach the selected project, then choose Projects in the upper-right
-   page selector. Click Project profile.
-2. Enter the named contributor, the application's purpose and scope, and its
-   attribution/evidence context. Fill ownership, support, environments,
-   criticality, lifecycle, licensing and architecture fields as known. Leave
-   unknown information blank; DPH identifies it as not supplied.
-3. Click Apply to Knowledge draft. Inspect the generated text on Knowledge.
-   Click Save to persist it. Apply alone does not save the database record.
-4. Reopen Project profile to edit these structured fields. A structured profile
-   uses its dedicated editor; its generated Knowledge body is read-only.
-   Saved revisions remain attributed and need human review.
+CHECK AN ACTUAL EXPLANATION
+9. Follow a screen control or event link into Explain. Read the selection role.
+10. Follow its responding operation and read its purpose and next connections.
+11. Read Choices and stopping points if present. Identify an actual condition.
+12. Use Back to return. Keep optional source details closed until you need them.
 
-Inspect source quality candidates
-1. Choose Source quality in the upper-right page selector.
-2. Select Routine metrics, Duplicate bodies, Unreferenced candidates,
-   Unreachable statements or Call cycles. Read the explanation above the list.
-3. Enter an optional name or source filter and click Filter. Click Next 250
-   when enabled to inspect another result page.
-4. Select a result. Read its definition, source locations, hashes, generation
-   and limitations. Click Open explanation to inspect the routine, or the first
-   group member. Its Source and References pages provide further evidence.
-5. Treat these as investigation candidates. They do not prove unused code,
-   equivalent routines, runtime recursion, complete reachability or safe deletion.
-   Structural decision score is not compiler-exact cyclomatic complexity.
-6. If an older cache has no quality report, attach its source and reassess.
-   Detached caches keep their original captured evidence.
+PREPARE AND CHECK A TASK
+13. Click Prepare lessons, then Prepare task instructions.
+14. Enter your contributor name, task name, purpose and prerequisites.
+15. Enter its overall result, recovery guidance and practice exercise.
+16. Scroll to the steps. Click New step, enter an action and expected result,
+    then Keep step. Add a second step in the same way.
+17. Click Save task. Learn a task should open at Step 1 of 2.
+18. Click Next step, Previous step and Start again. Check each displayed action
+    and expected result against what you entered. Scroll the instruction area.
+19. Close and reopen DPH, use Open saved lessons, and check the saved task.
 
-Compare captured revisions
-1. Open the saved project database. Choose Database tools, then click Preview
-   retention. Note the generation ID of the earlier capture you want to compare.
-   A retained workspace cache must exist for both selected generations.
-2. Choose Revision comparison. Enter that earlier ID in Before: saved generation
-   ID. After is the generation currently displayed by DPH.
-3. Optionally enter a name, relative path or change filter. Click Compare.
-4. Select a result. Read Before: saved evidence on the left and After: displayed
-   generation evidence on the right. Drag the divider to resize these panes;
-   scroll within each pane to read captured expressions and relationships.
-5. Click Next 200 when enabled to inspect another page. Changes in analysis
-   configuration or analyzer version are rejected as incomparable contracts.
-6. Source file changed only means this routine's captured structure did not
-   change, although its containing file did. Captured structure changed means
-   declarations, recorded flow expressions or outgoing relationships differ.
-   Missing identities can be moves or renames; comparisons do not approve
-   continuity. Historical source bytes are not recreated from these records.
+CHECK A SAVED ANSWER AND SHARE
+20. In Prepare lessons choose Author questions. Select a question, then Record
+    author answer. Enter the contributor and reply after Answer:, then Save.
+21. In Learn the project choose Questions and answers and find that reply.
+22. In Prepare lessons choose Publish, then Share lessons. Give a NEW folder
+    name outside the selected application's source. Wait, then Preview lessons.
+23. Open learning.html in the edition folder. Check the task, answer and object
+    link. Keep the whole edition folder together when sharing it.
 
-Check persistence and authored explanations
-1. Select an object and choose Knowledge. Click New, enter a stable title, kind,
-   named author and meaningful explanation, then Save.
-2. Close and reopen the saved .dphdb using Open cache. Confirm the project,
-   generation, note text and review state. Cached facts arrive before automatic
-   source verification when the original entry is available; otherwise the
-   workspace remains detached. Keep its adjacent .dphdb.views folder with it.
-3. To approve an actual statement, attach matching source, inspect its evidence
-   and enter a named reviewer. Review tasks shows changed evidence and pending
-   work. Parser success and a source reparse never approve authored text.
-4. Author questions records actual attributed answers to unresolved questions.
-   Screenshots imports existing PNG evidence. Runtime observations imports an
-   existing UTF-8 text/log/JSON extract with contributor and run context.
+EXPECTED RESULT
+You can explain one task, its prerequisites and expected result, follow one
+actual screen action into its operation, and read the same saved instruction
+in the exported learning edition. DPH does not perform the task in the selected
+application. Use owner-approved example data if separately practicing there.
 
-Translate a small practice section
-1. In Knowledge, save a section whose body is exactly Run conversion.
-2. Select that saved revision, then choose Translations. Use source en and target
-   fr and select:
-   C:\New Delphi Projects\Delphi Project Handoff\samples\translation\DPH.fr.sample.json
-3. Compare Run conversion with Exécuter la conversion. The French sample has
-   only three unreviewed phrases. Missing phrases retain labeled source fallback.
-4. Review the source section and resolve its tasks before approving accurate,
-   complete localized wording with a named translation reviewer. Revising its
-   source or terminology invalidates the previous approval.
+IF SOMETHING IS UNAVAILABLE
+No task or purpose supplied means a contributor must add it. Some code could
+not be explained means the preparer must check missing files or source settings.
+If embedded pages fail, check Microsoft WebView2 Runtime and use available
+native text or the exported learning.html. Never delete the last readable
+lesson database as a first troubleshooting step.
 
-Publish and validate a handoff
-1. Choose Publish, select full project or selected object/context, audience and
-   explicit exclusions. Choose a new export folder outside the selected source.
-2. Optional controls are explicit: generated agent boundaries, redacted captured
-   source browsing, and Localized prose locale. Leave the locale blank for normal
-   publication. Enter fr for reviewed French authored-body publication.
-3. Open the exported index.html. Read overview, object explanations, gaps and
-   provenance. Inspect source omissions and localized fallback counts if those
-   options were used. Original source bytes are not copied. Shared task-source
-   lines can include surrounding code. Inspect output before sharing.
-4. Choose Validate bundle in DPH. Paste the trusted captured input fingerprint,
-   or click Use opened capture fingerprint after opening its trusted database.
-5. Click Select manifest and validate bundle and select manifest.json at the
-   export root. Read the entire PASS/FAILED report. Default validation rejects
-   stale/partial exports. Allow historical/partial inspection is a deliberate
-   qualification; an integrity pass is not complete analysis or human approval.
-6. Editable Engineering_Guide.docx and User_Guide.docx accompany the handoff.
-   A requested locale adds Localized_Sections.docx for authored bodies only;
-   titles, generated guidance and technical indexes retain source language.
-7. For optional PDF companions, open an elevated PowerShell window, enter the
-   project directory, and run the following with your actual export folder:
-   powershell -NoProfile -ExecutionPolicy Bypass -File tools\export-pdf.ps1 -BundleDirectory "C:\your\handoff-folder"
-   LibreOffice and the approved Python 3.13 with pypdf are required. This command
-   populates editable TOC page caches and refreshes bundle checksums.
-
-Build and run automated checks
-1. Open Windows Start, type Command Prompt, right-click it and choose
-   Run as administrator. RAD Studio requires this environment access here.
-2. Enter:
-   cd /d "C:\New Delphi Projects\Delphi Project Handoff"
-3. Build the application and validate its IDE form bindings:
-   tools\build-wp0.cmd
-4. Run the serial project/catalog/lifecycle/workspace/knowledge/selection checks:
-   tools\validate-completion-wp1.cmd
-5. Run storage, discovery and publishing checks as needed:
-   tools\build-wp1.cmd
-   tools\build-wp2.cmd no-report
-   tools\build-wp6.cmd
-6. Compile and then explicitly execute semantic checks:
-   tools\build-wp3.cmd
-   bin\Win32\Debug\DPH.Tests.Semantics.exe "C:\New Delphi Projects\Delphi Project Handoff"
-7. Run source lessons and actual WebView2 checks:
-   tools\build-learning.cmd
-   The --no-ui option checks deterministic logic only; it is not a UI pass.
-8. Run pinned end-to-end hardening with source/instruction hash proof:
-   powershell -NoProfile -ExecutionPolicy Bypass -File tools\validate-wp7.ps1
-   Run the new Phase 1 profile, source-quality and revision-comparison checks:
-   tools\build-phase1.cmd
-   Each suite must end with PASS. Current reports are docs\phase1-*-validation.json.
-9. A FAIL, exception or nonzero exit is a failed check. Inspect the named suite's
-   log and validation JSON; previous reports are not proof of the current run.
-   Formal first-time programmer testing uses docs\WP7_Maintenance_Exercise.txt.
-10. After checks finish and their evidence is retained, remove disposable test
-    outputs with:
-    powershell -NoProfile -ExecutionPolicy Bypass -File tools\clear-validation-output.ps1
-    It removes recognized validation outputs under bin and refuses linked paths
-    or running validation processes. It does not delete the owner's databases.
-
-The full DPH User Guide is docs\guides\DPH_User_Guide.docx and its companion PDF
-is docs\pdf\DPH_User_Guide.pdf. The Engineering Guide is in the same folders.
-D: development backups remain suspended. Git and both GitHub remotes remain active.
-
-SELECTED PROJECT CATALOG
-1. Open a captured project or explicitly selected project group.
-2. Choose Projects in the upper-right page selector.
-3. Click Selected project inside Projects.
-4. Select a project/group file or output declaration in the list.
-5. Read its settings, referenced inputs, capture ID, source hash and source lines
-   in the memo below. Missing referenced projects remain visibly marked missing.
-6. A .dproj settings row and its .dpr declaration can describe the same app.
-   Do not count these evidence rows as distinct applications. Output kinds are
-   source declarations, not verification that an executable was built or a
-   service installed. Parent conditions can apply to captured child settings.
-7. Click Known databases to return to the remembered database list and its
-   Project profile button. No unrelated applications are automatically scanned.
+The complete procedures and illustrations are in DPH_User_Guide.docx and its
+PDF companion. Source-build and automated-check directions are in the
+Engineering Guide and Developer_Test_Directions.txt.

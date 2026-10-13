@@ -1,7 +1,7 @@
-DPH knowledge databases
+Delphi Project Handoff saved lessons
 
-Save one .dphdb database per application you want to document.
-The Save knowledge database and Open cache dialogs start in this folder.
+Save one .dphdb lesson database per application you want to learn.
+Choose application proposes a new database here. Open saved lessons starts here.
 Existing databases have not been moved here automatically.
 
 Each database has a managed, adjacent <database filename>.views folder.

@@ -1,0 +1,9 @@
+{
+  "result": "PASS extracted application starts, responds and closes normally",
+  "title": "Delphi Project Handoff - Experimental Software",
+  "new_process_id": 16048,
+  "window_wait_ms": 1263,
+  "owner_workspace": "restored",
+  "source_execution": "none",
+  "user_input": "none"
+}

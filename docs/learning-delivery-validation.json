@@ -1,0 +1,40 @@
+{
+  "result": "PASS refocused learning build and current manuals ready for owner use; no blanket legacy completion claim",
+  "checks": {
+    "learning_with_reference": 121,
+    "guided_tasks_and_export": 43,
+    "profile": 19,
+    "publishing": 124,
+    "application_build": "PASS",
+    "native_form_baseline": "PASS",
+    "extracted_desktop_launch": "PASS",
+    "extracted_source_build": "PASS"
+  },
+  "manuals": {
+    "user_pages": 13,
+    "engineering_pages": 10,
+    "editable_contents": "populated",
+    "all_final_pages_visually_inspected": true,
+    "personal_paths": "absent"
+  },
+  "package": {
+    "version": "0.4.0",
+    "binary": "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.4.0-experimental-Win32.zip",
+    "source": "C:\\New Delphi Projects\\Delphi Project Handoff\\source distributions\\DPH-0.4.0-experimental-source.zip",
+    "binary_sha256": "e51e0e14246eee9a513de74c51bc8120d1670e5afd495659813b84a85c14ac6f",
+    "source_sha256": "b2b76366740ecf5d1cbefcb22b74ed1e6df590a1142c7513b986a7025ef11e9d",
+    "files": 31,
+    "verification_directory": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\distribution-verify-f37f6d69e2a347b881c35d5cf0b0dc40",
+    "result": "PASS package integrity; independent beginner acceptance not performed",
+    "privacy": "PASS current guides/help/directions contain no personal paths or development history; owner database and PDF copies excluded",
+    "source_build": "PASS extracted source package builds and serialized form baseline passes",
+    "source_verification_directory": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\delivery-source-check-a332fab9ac2049dd90ce18a6ae4c2548",
+    "binary_entry_sha256": "eed206ae5a3ecf50eedcee59b3a3a06a1350170e963fe5cfa74072bdd737c479",
+    "disposable_extractions_removed_after_checks": true
+  },
+  "independent_beginner_acceptance": "not performed",
+  "legacy_requirements": "Historical 533-record ledger unchanged; scope and status are not silently rewritten",
+  "older_technical_guides": "Remain in repository following broad-deletion auto-review rejection; excluded from current package",
+  "ready_executable": "bin/distribution/DPH-0.4.0-experimental-Win32/DelphiProjectHandoff.exe",
+  "directions": "docs/guides/Run_And_Test.txt"
+}

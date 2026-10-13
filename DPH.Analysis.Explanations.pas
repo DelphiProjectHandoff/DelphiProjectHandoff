@@ -808,26 +808,43 @@ begin
         end;
         4: begin
           Body.Append('<h2>Understand a decision</h2><p>An if statement chooses between alternatives. A loop repeats work. A try/finally block arranges cleanup even when work leaves early. These are actual decisions found in the selected application.</p>');
-          for V in FFacts.GetValue<TJSONArray>('flow_nodes') do begin
-            R:=V as TJSONObject; Kind:=R.GetValue<string>('kind');
-            if not MatchText(Kind,['if','while','for','repeat','case','try','raise','exit']) then Continue;
-            Body.Append('<p><strong>'+Encode(Kind)+':</strong> '+Encode(R.GetValue<string>('expression'))+'<br>Read it in '+Link(R.GetValue<string>('routine'))+'.</p>');
-            Inc(Count); if Count>=12 then Break;
+          var Decisions:=TList<TJSONObject>.Create;
+          try
+          for V in FFacts.GetValue<TJSONArray>('flow_nodes') do Decisions.Add(V as TJSONObject);
+          Decisions.Sort(TComparer<TJSONObject>.Construct(function(const L,R:TJSONObject):Integer
+          begin Result:=CompareText(L.GetValue<string>('range.source'),R.GetValue<string>('range.source'));
+            if Result=0 then Result:=CompareValue(L.GetValue<Int64>('range.start'),R.GetValue<Int64>('range.start'));end));
+          for R in Decisions do begin
+            Kind:=R.GetValue<string>('kind');
+            if not MatchText(Kind,['if','while','for','repeat','case']) then Continue;
+            Caption:='It makes a choice by testing '+R.GetValue<string>('expression')+'. A true result takes one branch; a false result takes the other.';
+            if Kind='while' then Caption:='It can repeat work while '+R.GetValue<string>('expression')+' is true. The work may run zero times.';
+            if Kind='repeat' then Caption:='It does the repeated work before testing '+R.GetValue<string>('expression')+'. False repeats the work; true stops repeating.';
+            if Kind='for' then Caption:='It repeats work for the range or items described by '+R.GetValue<string>('expression')+'.';
+            if Kind='case' then Caption:='It chooses among alternatives using '+R.GetValue<string>('expression')+'.';
+            Body.Append('<p>'+Encode(Caption)+'<br>Read it in '+Link(R.GetValue<string>('routine'))+'.</p>');
+            Inc(Count); if Count>=6 then Break;
           end;
+          finally Decisions.Free;end;
           if Count=0 then Body.Append('<p>No supported decision was found. This does not establish that the application has no decisions.</p>');
-          if Count>=12 then Body.Append('<p>Twelve examples shown. Search for a particular operation to read its own decisions.</p>');
+          if Count>=6 then Body.Append('<p>Six examples shown. Search for a particular operation to read its own decisions.</p>');
           Body.Append('<h3>Try it</h3><p>Open one operation. Expand its optional walkthrough and explain what happens when one condition is true and when it is false. Work that runs in the background may finish later; its timing needs confirmation.</p>');
         end;
         5: begin
           Body.Append('<h2>Follow the information</h2><p>An operation can read a value, change a value, or prepare an output. These connections provide starting points for learning where information comes from and where it goes.</p>');
+          var SeenConnections:=TDictionary<string,Boolean>.Create;
+          try
           for V in FFacts.GetValue<TJSONArray>('relationships') do begin
             R:=V as TJSONObject; Kind:=R.GetValue<string>('kind');
             if not MatchText(Kind,['reads','writes','renders','output_candidate']) then Continue;
+            Caption:=Kind+#0+R.GetValue<string>('from')+#0+R.GetValue<string>('to','');
+            if SeenConnections.ContainsKey(Caption) then Continue;SeenConnections.Add(Caption,True);
             Caption:='uses'; if Kind='writes' then Caption:='can change';
             if MatchText(Kind,['renders','output_candidate']) then Caption:='may prepare an output associated with';
             Body.Append('<p>'+Link(R.GetValue<string>('from'))+' '+Caption+' '+Link(R.GetValue<string>('to',''))+'.</p>');
             Inc(Count); if Count>=12 then Break;
           end;
+          finally SeenConnections.Free;end;
           if Count=0 then Body.Append('<p>No supported information connections were found. Ask the author for an example of an input and its resulting output.</p>');
           if Count>=12 then Body.Append('<p>Twelve examples shown. Open an operation for its own connections.</p>');
           Body.Append('<h3>Try it</h3><p>Choose one result and ask where its original information came from, what changes it, and where the user sees it. These source connections do not establish actual values or successful delivery.</p>');
@@ -858,11 +875,12 @@ begin
           if Count>=30 then Body.Append('<p>First 30 answers shown. Use Search project to find another answer by its words.</p>');
           Body.Append('<h2>Questions still to ask</h2><p>Use these questions to fill gaps in your understanding. <a href="#ask_author">Open Author questions</a> to record a named reply.</p>');Count:=0;
           for V in FFacts.GetValue<TJSONArray>('author_questions') do begin
-            R:=V as TJSONObject; Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('prompt'))+'</p>');
-            Inc(Count); if Count>=12 then Break;
+            R:=V as TJSONObject;if R.GetValue<string>('answer_kind','')<>'user_help' then Continue;
+            Body.Append('<h3>Prepare a first task</h3><p>Which task should a new user learn first? What inputs and permissions must be ready, how do they recognize success, and what should they do when the result differs?</p>');
+            Inc(Count);Break;
           end;
-          if Count=0 then Body.Append('<p>No automatic questions are available. Ask: what task matters most, how do I recognize a correct result, and what mistakes should I avoid?</p>');
-          if Count>=12 then Body.Append('<p>Twelve questions shown. The person preparing lessons can inspect the full question list.</p>');
+          if Count=0 then Body.Append('<p>Ask which task matters most and whether its supplied instructions cover the expected result and common mistakes.</p>');
+          Body.Append('<h3>Understand an unfamiliar result</h3><p>Which examples show correct and incorrect outcomes? What information would help someone explain a result that differs?</p><h3>Learn the important rules</h3><p>Which mistakes should a newcomer avoid, and what business rule explains why?</p>');
         end;
         10: Body.Append('<h2>Delphi terms in plain language</h2><p><strong>Form:</strong> a screen or window.</p>'+
           '<p><strong>Control:</strong> something on a screen, such as a button or input box.</p>'+

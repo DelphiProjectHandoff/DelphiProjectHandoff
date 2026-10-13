@@ -1,111 +1,79 @@
-$ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path -Parent $PSScriptRoot
-Set-Location -LiteralPath $projectRoot
-$version = 'DPH-0.3.0-experimental-Win32'
-$packageRoot = Join-Path $projectRoot ('bin\distribution\' + $version)
-if (Test-Path -LiteralPath $packageRoot) { throw 'Package staging already exists; use a new version or review existing contents' }
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.4.0')
+$ErrorActionPreference='Stop'
+$projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
+$packageName='DPH-'+$Version+'-experimental-Win32'
+$packageRoot=Join-Path $projectRoot ('bin\distribution\'+$packageName)
+if (Test-Path -LiteralPath $packageRoot) {throw 'Package staging already exists; choose a fresh version'}
 [IO.Directory]::CreateDirectory($packageRoot) | Out-Null
-$files = @('bin\Win32\Debug\DelphiProjectHandoff.exe','bin\Win32\Debug\DPH.ValidateHandoff.exe','tools\WebView2\Win32\WebView2Loader.dll')
-foreach ($path in $files) { Copy-Item -LiteralPath (Join-Path $projectRoot $path) -Destination $packageRoot }
-foreach ($directory in @('migrations','help','docs\guides','docs\pdf')) {
-    $destination = Join-Path $packageRoot $directory
-    [IO.Directory]::CreateDirectory($destination) | Out-Null
-    Get-ChildItem -LiteralPath (Join-Path $projectRoot $directory) -File | Where-Object Name -ne '.gitkeep' | Copy-Item -Destination $destination
+foreach ($name in @('DelphiProjectHandoff.exe','DPH.ValidateHandoff.exe','WebView2Loader.dll')) {
+ Copy-Item -LiteralPath (Join-Path $projectRoot ('bin\Win32\Debug\'+$name)) -Destination $packageRoot
 }
-[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'Databases')) | Out-Null
-# Ship the folder instructions only; never package the owner's databases or views.
-Copy-Item -LiteralPath (Join-Path $projectRoot 'Databases\README.txt') -Destination (Join-Path $packageRoot 'Databases')
-foreach ($name in @('Implementation_Completion_Tracker.txt','Completion_Acceptance.txt','completion-acceptance-matrix.json','completion-hardening-validation.json','completion-hardening.log','completion-input-validation.json','completion-regression-validation.json','completion-manuals-validation.json','completion-localized-publication-validation.json','rework-wp3-reference-validation.json','rework-wp3-validation.json','WP7_Security_and_Limits.txt','WP7_Maintenance_Exercise.txt','WP6_WebView2_Provenance.txt')) {
-    Copy-Item -LiteralPath (Join-Path $projectRoot ('docs\'+$name)) -Destination (Join-Path $packageRoot 'docs')
+foreach ($directory in @('migrations','help')) {
+ Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
+}
+foreach ($relative in @('docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
+ $destination=Join-Path $packageRoot $relative
+ [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
+ Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $destination
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\WebView2\LICENSE.txt') -Destination (Join-Path $packageRoot 'WebView2-LICENSE.txt')
-[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'samples\translation')) | Out-Null
-Get-ChildItem -LiteralPath (Join-Path $projectRoot 'samples\translation') -File | Copy-Item -Destination (Join-Path $packageRoot 'samples\translation')
-[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'licenses\DelphiAppTranslation')) | Out-Null
-foreach ($name in @('LICENSE','README.txt','SNAPSHOT.json')) {
-    Copy-Item -LiteralPath (Join-Path $projectRoot ('dependencies\DelphiAppTranslation\'+$name)) -Destination (Join-Path $packageRoot 'licenses\DelphiAppTranslation')
+foreach ($name in @('LICENSE','SNAPSHOT.json')) {
+ $destination=Join-Path $packageRoot ('licenses\DelphiAppTranslation\'+$name)
+ [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
+ Copy-Item -LiteralPath (Join-Path $projectRoot ('dependencies\DelphiAppTranslation\'+$name)) -Destination $destination
 }
-[IO.Directory]::CreateDirectory((Join-Path $packageRoot 'tools')) | Out-Null
-foreach ($name in @('export-pdf.ps1','finalize-guide.py')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $packageRoot 'tools') }
 @'
-Delphi Project Handoff 0.3.0 experimental Windows Win32 build
+Delphi Project Handoff
+Experimental Windows desktop learning application
 
-Extract this folder to a writable local location and run DelphiProjectHandoff.exe.
-DPH rejects its own source project and self-analysis caches. A rejected selection
-keeps the current workspace. The Save knowledge database and Open cache dialogs
-default to Databases beside this executable. Existing databases are not moved;
-browse to their current location if needed. Keep each .dphdb.views folder with its
-database. The shipped Databases folder contains instructions, not project data.
-This build opens maximized. Selection details on the right identifies the object
-you click in the far-left list. Choose Explain in the upper-right page selector
-for behavior. Read activity on the bottom status line. Choose Coverage for static
-measures, or Learn the project then Coverage and troubleshooting for guidance.
-Keep help, migrations and WebView2Loader.dll beside the application. Read the
-Getting started page at launch, then Learn the project and Explain. The executable is
-the validated Win32 Debug build. Microsoft WebView2 Runtime is required only for
-embedded preview; no runtime installer is run automatically. Offline exported
-HTML can also be inspected independently. LibreOffice and Python 3.13 with pypdf
-are optional prerequisites for tools/export-pdf.ps1, not for normal analysis.
+1. Extract this whole folder to a writable local location.
+2. Double-click DelphiProjectHandoff.exe.
+3. Read Getting started, then click Choose application or Open saved lessons.
+4. Use Learn the project and Learn a task in the upper-right selector.
+5. Open docs\guides\Run_And_Test.txt for a repeatable first-session check.
 
-DPH reads an explicitly selected Delphi project without compiling or executing
-it. Store each knowledge database outside its selected source tree. Copy a cache
-with its adjacent .dphdb.views folder. Use Relocate verified source for an exact
-source move; unrelated or changed inputs cannot claim identity continuity.
+The User Guide is in docs\pdf\DPH_User_Guide.pdf and docs\guides as an
+editable document. The Engineering Guide covers building and maintaining DPH.
+Keep all supplied files together. Microsoft WebView2 Runtime is needed for
+embedded pages; its supplied loader is a separate file.
 
-Read docs/Completion_Acceptance.txt, Implementation_Completion_Tracker.txt and the guides
-before relying on analysis. This version adds guided lessons, source-based object
-explanations, callback traces, labeled/collapsed procedure diagrams, imported PNG
-screenshots and richer offline publication. Form designs remain approximate.
-Translations reads explicitly selected DAT offline language packs. The included
-French sample contains three unreviewed phrases, not a full language catalog.
-Publish can include reviewed localized authored bodies, redacted source browsing
-and generated agent boundaries through explicit options. Validate bundle checks
-a selected manifest against a trusted fingerprint without requiring an open database.
-The prior blanket WP7 completion claim is withdrawn. The pinned
-large reference remains partial. Independent first-time-programmer acceptance
-and agreed release performance budgets are outstanding. This is an experimental
-distribution, not a claim that every formal product acceptance gate has passed.
-
-Validate an export with DPH.ValidateHandoff.exe <bundle> <trusted fingerprint>.
-The optional --allow-stale flag permits integrity checks on historical/partial
-exports while retaining their stale status. Unsigned hashes are not signatures.
-
-Atlas, external AI/translation and runtime instrumentation remain disabled.
-The converter reference corpus, knowledge databases, source snapshots and owner
-AGENTS.md are not included in this binary distribution.
+DPH reads source without changing or running the selected application.
+Supplied tasks and answers remain attributed and may require review.
+Form designs are reconstructions; Screenshots contains supplied images.
+This package contains no owner lesson databases or private documents.
 '@ | Set-Content -LiteralPath (Join-Path $packageRoot 'README.txt') -Encoding UTF8
-$hashes = [ordered]@{}
+$hashes=[ordered]@{}
 foreach ($file in Get-ChildItem -LiteralPath $packageRoot -File -Recurse | Sort-Object FullName) {
-    $relative = $file.FullName.Substring($packageRoot.Length+1).Replace('\','/')
-    $hashes[$relative] = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+ if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw 'Reparse package content is not permitted'}
+ $relative=$file.FullName.Substring($packageRoot.Length+1).Replace('\','/')
+ $hashes[$relative]=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 }
-$hashes | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath (Join-Path $packageRoot 'SHA256.json') -Encoding UTF8
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-$binaryZip = Join-Path $projectRoot ('export\' + $version + '.zip')
-if (Test-Path -LiteralPath $binaryZip) { throw 'Distribution already exists; review before replacing' }
+$hashes | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $packageRoot 'SHA256.json') -Encoding UTF8
+$binaryZip=Join-Path $projectRoot ('export\'+$packageName+'.zip')
+if (Test-Path -LiteralPath $binaryZip) {throw 'Binary ZIP already exists'}
 [IO.Compression.ZipFile]::CreateFromDirectory($packageRoot,$binaryZip)
-$sourceZip = Join-Path $projectRoot 'source distributions\DPH-0.3.0-experimental-source.zip'
-if (Test-Path -LiteralPath $sourceZip) { throw 'Source distribution already exists; review before replacing' }
-$sourceFiles = & 'C:\Program Files\Git\cmd\git.exe' ls-files --cached --others --exclude-standard
-if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate intended source files' }
-$archive = [IO.Compression.ZipFile]::Open($sourceZip,[IO.Compression.ZipArchiveMode]::Create)
+$sourceZip=Join-Path $projectRoot ('source distributions\DPH-'+$Version+'-experimental-source.zip')
+if (Test-Path -LiteralPath $sourceZip) {throw 'Source ZIP already exists'}
+$archive=[IO.Compression.ZipFile]::Open($sourceZip,[IO.Compression.ZipArchiveMode]::Create)
 try {
-    foreach ($relative in $sourceFiles) {
-        if ($relative.StartsWith('source distributions/') -or $relative.StartsWith('export/') -or $relative.EndsWith('.gitkeep')) { continue }
-        $path = Join-Path $projectRoot $relative
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
-        if ((Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Reparse source artifact cannot be packaged' }
-        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$path,$relative,[IO.Compression.CompressionLevel]::Optimal) | Out-Null
-    }
-} finally { $archive.Dispose() }
-$verificationRoot = Join-Path $projectRoot ('bin\distribution-verify-' + [Guid]::NewGuid().ToString('N'))
+ foreach ($directory in @('bin/','dcu/','docs/guides/','docs/pdf/','export/','help/','images and icons/','samples/','source distributions/','tools/','Databases/')) {$archive.CreateEntry($directory) | Out-Null}
+ $paths=& 'C:\Program Files\Git\cmd\git.exe' -C $projectRoot ls-files
+ if ($LASTEXITCODE -ne 0) {throw 'Cannot enumerate source files'}
+ foreach ($relative in $paths) {
+  $include=($relative -match '^DPH\..*\.(pas|fmx)$') -or ($relative -match '^DelphiProjectHandoff\.(dpr|dproj|res)$') -or
+   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|samples/translation)/') -or
+   ($relative -in @('docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/lesson-preparation-task-reader-compact.png','docs/learning-guides-prepare-lessons.png','Databases/README.txt'))
+  $source=Join-Path $projectRoot $relative
+  if ($include -and (Test-Path -LiteralPath $source -PathType Leaf)) {
+   [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$source,$relative,[IO.Compression.CompressionLevel]::Optimal) | Out-Null
+  }
+ }
+} finally {$archive.Dispose()}
+$verificationRoot=Join-Path $projectRoot ('bin\distribution-verify-'+[Guid]::NewGuid().ToString('N'))
 [IO.Compression.ZipFile]::ExtractToDirectory($binaryZip,$verificationRoot)
-$recorded = Get-Content -LiteralPath (Join-Path $verificationRoot 'SHA256.json') -Raw | ConvertFrom-Json
-foreach ($property in $recorded.PSObject.Properties) {
-    if ((Get-FileHash -LiteralPath (Join-Path $verificationRoot $property.Name) -Algorithm SHA256).Hash.ToLowerInvariant() -ne $property.Value) { throw 'Relocated binary distribution checksum mismatch' }
+foreach ($property in $hashes.GetEnumerator()) {
+ if ((Get-FileHash -LiteralPath (Join-Path $verificationRoot $property.Key) -Algorithm SHA256).Hash.ToLowerInvariant() -ne $property.Value) {throw 'Extracted package checksum mismatch'}
 }
-[ordered]@{ version=$version; binary=$binaryZip; binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();
-    source=$sourceZip; source_sha256=(Get-FileHash -LiteralPath $sourceZip -Algorithm SHA256).Hash.ToLowerInvariant();
-    extracted_files=@($recorded.PSObject.Properties).Count; validated_utc=[DateTime]::UtcNow.ToString('o'); verification_directory=$verificationRoot;
-    acceptance='experimental expanded implementation; see current item tracker and unresolved human acceptance gates' } | ConvertTo-Json -Depth 4 | Set-Content docs\completion-distribution-validation.json -Encoding UTF8
-Write-Output "PACKAGED and verified $binaryZip and $sourceZip"
+[ordered]@{version=$Version;binary=$binaryZip;source=$sourceZip;binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();source_sha256=(Get-FileHash -LiteralPath $sourceZip -Algorithm SHA256).Hash.ToLowerInvariant();files=$hashes.Count;verification_directory=$verificationRoot;result='PASS package integrity; independent beginner acceptance not performed'} |
+ ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $projectRoot 'docs\learning-distribution-validation.json') -Encoding UTF8
+Write-Output "PACKAGED AND VERIFIED $binaryZip"
