@@ -127,6 +127,9 @@ type
     PublishToolbar: THorzScrollBox;
     PublishScopeCombo: TComboBox;
     PublishAudienceCombo: TComboBox;
+    PublishPurpose: TLabel;
+    PublishSettingsExpander: TExpander;
+    PublishOptionsLayout: TLayout;
     PublishAgentInstructions: TCheckBox;
     PublishSourceNavigation: TCheckBox;
     PublishLocaleLabel: TLabel;
@@ -1568,7 +1571,7 @@ begin
     end;
     if R.RestoredDatabase<>'' then OpenSelection('',R.RestoredDatabase);
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
-      PublishMemo.Text:=R.MessageText+sLineBreak+FExportDirectory+sLineBreak+'Open index.html offline, or inspect canonical.json, indexes and validation. PDF conversion is available through the approved LibreOffice guide tool. Atlas is unconfigured; no external calls were made.'; end;
+      PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
     StatusLabel.Text:=R.MessageText;
     if R.Busy and not R.Failed then StatusLabel.Text:='Preparing the selected application lessons...';
     if (FView<>nil) and not R.Busy and not R.Failed then begin
@@ -4462,8 +4465,8 @@ end;
 procedure TDPHMainForm.PreviewClick(Sender: TObject);
 begin
   if FExportDirectory='' then Exit;
-  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file://'+TPath.Combine(FExportDirectory,'index.html'));
-  except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'The offline index.html remains available in '+FExportDirectory; end; end;
+  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file://'+TPath.Combine(FExportDirectory,'learning.html'));
+  except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'Open learning.html in '+FExportDirectory; end; end;
 end;
 procedure TDPHMainForm.BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
 begin ACancel:=not TDPHBrowserPolicy.Allowed(AURL,FExportDirectory,True); end;

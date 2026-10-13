@@ -43,6 +43,8 @@ begin
     Check(not TDPHBrowserPolicy.Allowed('file:///'+Fixture.Replace('\','/')+'/index.html',Work),'Preview rejects unrelated local files');
     Check(not TDPHBrowserPolicy.Allowed('file:///'+Work.Replace('\','/')+'/%2e%2e/index.html',Work),'Preview rejects encoded traversal');
     Check(not TDPHBrowserPolicy.Allowed('javascript:alert(1)',Work),'Preview rejects script navigation');
+    Check(TDPHBrowserPolicy.Allowed('file:///'+Work.Replace('\','/')+'/learning.html#lesson_11',Work,True),'Publication preview permits its owned learning entry and lesson anchors');
+    Check(not TDPHBrowserPolicy.Allowed('file:///'+Work.Replace('\','/')+'/arbitrary.html',Work,True),'Adding the learning entry does not permit arbitrary local HTML');
     Check(not ContainsText(TDPHDocumentModel.Redact('password := ''two word secret'';'),'two word'),'Pascal quoted credential assignments are fully redacted');
     Check(not ContainsText(TDPHDocumentModel.Redact('Authorization: Bearer abcdefghijklmnop'),'abcdefghijklmnop'),'Bearer authorization tokens are redacted');
     Check(not ContainsText(TDPHDocumentModel.Redact('{"password":"quoted secret words"}'),'quoted secret'),'JSON credential text is redacted');
@@ -97,6 +99,13 @@ begin
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full'));
             TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint'));
             Check(True,'Full handoff passes filename and SHA256 validation');
+            Text:=TFile.ReadAllText(TPath.Combine(Work,'full\learning.html'),TEncoding.UTF8);
+            Check(Text.Contains('id="lesson_11"') and Text.Contains('Delphi terms in plain language') and Text.Contains('Start here'),'Offline learning edition includes the full beginner topic route');
+            Check(not Text.Contains('href="#s_') and Text.Contains('href="objects/'),'Learning links point directly to exported object explanations');
+            Check(not Text.Contains('DO_NOT_EXPORT') and not Text.Contains('<script>alert(1)</script>'),'Learning edition uses the redacted model and escapes authored markup');
+            Text:=TFile.ReadAllText(TPath.Combine(Work,'full\objects\'+THashSHA2.GetHashString(Key)+'.html'),TEncoding.UTF8);
+            Check(Text.Contains('Understand this selection') and Text.Contains('<details class="card"><summary>Optional: read the code walkthrough'),'Exported object starts with the beginner explanation and keeps deeper details optional');
+            Check(not Text.Contains('href="../index.html#s_') and Text.Contains('Return to learning topics'),'Exported object navigation stays on the learning route');
             Check(not TFile.Exists(TPath.Combine(Work,'full\AGENTS.md')),'Owner guardrails and generated agent instructions are excluded by default');
             J:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(Work,'full\source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
             try Check(not J.GetValue<Boolean>('included') and (J.GetValue<TJSONArray>('files').Count=0),'Source browsing is excluded by default'); finally J.Free; end;

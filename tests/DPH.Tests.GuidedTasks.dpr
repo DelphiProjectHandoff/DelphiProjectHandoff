@@ -5,10 +5,11 @@ uses System.SysUtils,System.Classes,System.IOUtils,System.JSON,System.Hash,Syste
   DPH.UI.Main in '..\DPH.UI.Main.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas',DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas',DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
-  DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
+  DPH.Analysis.Model in '..\DPH.Analysis.Model.pas',DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas',
+  DPH.Publish.Model in '..\DPH.Publish.Model.pas',DPH.Publish.Export in '..\DPH.Publish.Export.pas';
 var Root,Fixture,Database,HashBefore,Body,Key:string;Store:TDPHKnowledgeStore;Analyzer:TDPHAnalyzer;Semantic:TDPHSemanticAnalyzer;
  Scan:TDPHScan;Graph:TDPHSemanticGraph;View:TDPHWorkspaceView;Config,Generation,LessonID,Revision:Int64;
- Lesson,Fields,R,Report:TJSONObject;Rows:TJSONArray;V:TJSONValue;Checks:Integer;Failed:Boolean;Form:TDPHMainForm;Watch:TStopwatch;Bitmap:TBitmap;
+ Lesson,Fields,R,Report:TJSONObject;Rows:TJSONArray;V:TJSONValue;Checks:Integer;Failed:Boolean;Form:TDPHMainForm;Watch:TStopwatch;Bitmap:TBitmap;Publication:TDPHDocumentModel;
 procedure Check(OK:Boolean;const MessageText:string);
 begin if not OK then raise Exception.Create('FAIL '+MessageText);Inc(Checks);Writeln('PASS ',Checks,': ',MessageText);Flush(Output);end;
 procedure WaitForTask(const Name:string;Saving:Boolean=False);
@@ -116,6 +117,22 @@ begin
     Form.TaskCancelClick(nil);
     Form.Hide;
    finally Form.Free;end;
+   Store:=TDPHKnowledgeStore.Create(Database,Fixture,TPath.Combine(Root,'migrations'));
+   try
+    View:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Store.LoadWorkspaceView) as TJSONObject);
+    try Rows:=Store.KnowledgeJSON;
+     try Publication:=TDPHDocumentModel.Create(View,Rows,[],[],False,False);
+      try TDPHPublisher.Export(Publication,Store,TPath.Combine(ExtractFileDir(Database),'learning-edition'));
+       TDPHPublisher.Validate(TPath.Combine(ExtractFileDir(Database),'learning-edition'),Publication.Document.GetValue<string>('input_fingerprint'));
+       Body:=TFile.ReadAllText(TPath.Combine(ExtractFileDir(Database),'learning-edition\learning.html'),TEncoding.UTF8);
+       Check(ContainsText(Body,'Open the Click operation explanation') and ContainsText(Body,'Learn to follow a real event handler'),'Sharing preserves the saved task revision and its purpose');
+       Check(ContainsText(Body,'<ol><li><p>Open the Click operation explanation') and ContainsText(Body,'Expected after step 2:'),'Offline tasks contain real ordered steps and per-step expected results');
+       Check(ContainsText(Body,'Practice:') and ContainsText(Body,'Expected final result:') and ContainsText(Body,'Learning instructor'),'Offline task retains practice, final result and named contributor');
+       Check(not ContainsText(Body,'href="#task_reader"') and ContainsText(Body,'In DPH, Learn a task also'),'Offline instructions distinguish the read-only edition from the native step reader');
+      finally Publication.Free;end;
+     finally Rows.Free;end;
+    finally View.Free;end;
+   finally Store.Free;end;
    Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=HashBefore,'Selected application source remains unchanged');
    Report:=TJSONObject.Create;try Report.AddPair('checks',TJSONNumber.Create(Checks));Report.AddPair('result','PASS');Report.AddPair('independent_learner_acceptance','not performed');TFile.WriteAllText(TPath.Combine(Root,'docs\guided-tasks-validation.json'),Report.Format(2),TEncoding.UTF8);finally Report.Free;end;
    Writeln('PASS guided task learning: ',Checks,' checks');

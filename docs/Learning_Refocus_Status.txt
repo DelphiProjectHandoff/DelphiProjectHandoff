@@ -101,3 +101,22 @@ Actual native evidence is docs/lesson-preparation-*.png. Synthetic fixture image
 and pinned reference images are labeled by filename. Human acceptance remains
 unperformed. Guides review is still unread; documentation remains deferred.
 Next: finish learner sharing and the newcomer route, then review documentation last.
+
+Learner sharing checkpoint: 12 October 2026
+Shared editions now start at learning.html with the twelve beginner topics,
+saved questions/answers, real ordered task instructions and expected results,
+supplied screenshots and business terms. Object links open the beginner
+explanation with optional deeper details. Native Preview lessons opens this route.
+Optional publication settings start collapsed. Exports remain read-only and
+attributed, with the existing scoped redaction and integrity checks.
+120 native learning/reference, 43 guided task/export, 19 profile and 121 publishing
+checks passed; application build and serialized form baseline passed. All 475
+local links across a 28-page scoped fixture edition resolved without external
+navigation. Native browser evidence: learner-sharing-learning-shared-lessons.png.
+Verified pre-change backup: H:\DPH Backups\LearnerSharing_PreChange_20261012_233617
+14765 files; 3835987679.0 bytes. All 62 original input/guide/help
+files and 2,430 pinned reference files remain unchanged.
+The learning application corrections have reached their final documentation
+pass. Read the owner review only now, fix the guides and app-generated editable
+learning guide, and provide explicit run/test directions. Independent beginner
+acceptance has not occurred; do not claim it or complete historical parser gaps.

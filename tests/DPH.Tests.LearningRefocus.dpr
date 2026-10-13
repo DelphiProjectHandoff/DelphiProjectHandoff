@@ -315,6 +315,17 @@ begin
                 Application.ProcessMessages; TThread.Sleep(200);
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
+              Form.WorkspaceTabs.ActiveTab:=Form.PublishTab;
+              Check(not Form.PublishSettingsExpander.IsExpanded and (Form.PublishSettingsExpander.Height<50),'Sharing starts with plain instructions and collapsed optional settings');
+              Form.PublishBrowser.OnShouldLoadURL:=nil;
+              Form.PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;Form.PublishBrowser.Visible:=True;
+              Form.PublishBrowser.Navigate('file://'+TPath.Combine(Work,'image-handoff\learning.html'));
+              WaitHTML(Form.PublishBrowser,'document.body.innerText','Start here');
+              WaitHTML(Form.PublishBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
+              Check(True,'Actual native browser renders the saved learning edition without horizontal overflow');
+              BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-shared-lessons.png'));finally BrowserBitmap.Free;end;
+              Form.PublishBrowser.OnShouldLoadURL:=Form.BrowserShouldLoad;
               Form.Hide;
             finally Form.Free; end;
             end;

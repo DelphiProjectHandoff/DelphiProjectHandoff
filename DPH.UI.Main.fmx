@@ -5707,8 +5707,44 @@ end
 end
 object PublishTab: TTabItem
 Text = 'Publish'
+object PublishPurpose: TLabel
+Align = Top
+Height = 64
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 16
+Text = 'Share a saved learning edition of this application. Choose Share lessons, give the new folder a name, then Preview lessons. The edition includes learning topics, supplied task instructions, explanations and images. Review the material before sharing it.'
+end
 object PublishToolbar: THorzScrollBox
 Align = Top
+Height = 46
+object PublishButton: TButton
+Position.X = 4
+Position.Y = 4
+Width = 180
+Text = 'Share lessons'
+OnClick = PublishClick
+end
+object PreviewButton: TButton
+Position.X = 200
+Position.Y = 4
+Width = 150
+Enabled = False
+Text = 'Preview lessons'
+OnClick = PreviewClick
+end
+end
+object PublishSettingsExpander: TExpander
+Align = Top
+Height = 34
+HeaderHeight = 34
+ContentSize = '190'
+IsExpanded = False
+Text = 'Optional publication settings'
+object PublishOptionsLayout: TLayout
+Align = Client
 Height = 190
 object PublishLocaleLabel: TLabel
 Position.X = 4
@@ -5759,21 +5795,6 @@ Width = 380
 Height = 28
 TextPrompt = 'Exclude relative files or folders; separated'
 end
-object PublishButton: TButton
-Position.X = 4
-Position.Y = 42
-Width = 180
-Text = 'Export HTML guides and AI bundle'
-OnClick = PublishClick
-end
-object PreviewButton: TButton
-Position.X = 200
-Position.Y = 42
-Width = 150
-Enabled = False
-Text = 'Preview offline HTML'
-OnClick = PreviewClick
-end
 object PublishAudienceCombo: TComboBox
 Position.X = 360
 Position.Y = 42
@@ -5785,9 +5806,10 @@ Hint = 'Guide audience; does not replace file exclusions'
 ShowHint = True
 end
 end
+end
 object PublishMemo: TMemo
 Align = Top
-Height = 140
+Height = 92
 ReadOnly = True
 end
 object PublishBrowser: TWebBrowser

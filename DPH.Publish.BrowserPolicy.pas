@@ -18,6 +18,7 @@ begin
   try
     Path:=TPath.GetFullPath(Path);
     Result:=SameFileName(Path,TPath.Combine(TPath.GetFullPath(ADirectory),'index.html'));
+    if not Result and AObjectPages then Result:=SameFileName(Path,TPath.Combine(TPath.GetFullPath(ADirectory),'learning.html'));
     if not Result and ((AObjectPages and SameFileName(ExtractFileDir(Path),TPath.Combine(TPath.GetFullPath(ADirectory),'objects'))) or
       (AHashedPages and SameFileName(ExtractFileDir(Path),TPath.GetFullPath(ADirectory)))) then begin
       Name:=TPath.GetFileNameWithoutExtension(Path); Result:=(Length(Name)=64) and SameText(ExtractFileExt(Path),'.html');

@@ -9,7 +9,7 @@ type
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.RegularExpressions, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
 var Archive: TZipFile; Document,Body,Headings: string; V,W,L: TJSONValue; R: TJSONObject; I: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
   procedure Part(const Name,Text: string);
@@ -80,7 +80,7 @@ var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValu
     Source: TDPHSource; Diagnostics: TDPHDiagnostics; SourceLines: TArray<string>; SourceLine,ObjectPage,SourcePath: string; LineNumber,RenderedSources,OmittedSources: Integer;
     IncludedLines: TJSONArray; LineStarts: TArray<Integer>; LineMask: TArray<Boolean>; CharacterIndex,LineIndex,RenderedLines: Integer; SourceSymbol: TJSONValue; TaskSource,SkippingLines,LineAvailable: Boolean;
     LocalizedRows,CachedTranslations: TJSONArray; Localization,LocalizedRow: TJSONObject; TranslationValue,SegmentValue: TJSONValue;
-    LocalizedBody,LocalizedSource,LocalePage: string; TranslatedCount,FallbackCount: Integer; LocalizedModel: TDPHDocumentModel; LocaleCharacter: Char;
+    LocalizedBody,LocalizedSource,LocalePage,LessonPage: string; TranslatedCount,FallbackCount,LessonIndex,LessonStart,LessonEnd: Integer; LocalizedModel: TDPHDocumentModel; LocaleCharacter: Char;
   procedure Write(const Name,Text: string);
   var Target: string;
   begin Target:=TPath.Combine(Directory,Name.Replace('/',PathDelim)); TDirectory.CreateDirectory(ExtractFilePath(Target)); TFile.WriteAllBytes(Target,TEncoding.UTF8.GetBytes(Text)); end;
@@ -228,10 +228,36 @@ begin
     Write('assets/search.js','"use strict";document.getElementById("search").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("article[data-search]").forEach(function(e){e.hidden=!e.dataset.search.includes(q);});});');
     Write('assets/translation-selector.js','"use strict";document.querySelectorAll("select[data-language-list]").forEach(function(s){Array.from(s.options).sort((a,b)=>a.text.localeCompare(b.text)).forEach(o=>s.add(o));});');
     Write('assets/style.css','body{font:17px/1.5 system-ui,sans-serif;color:#16293a;max-width:1100px;margin:auto;padding:24px}h1,h2{color:#146cb4}a{color:#146cb4}header{border-top:5px solid #f28c28}nav a{margin-right:18px}article{padding:12px 0;border-bottom:1px solid #ddd}pre,code{overflow-wrap:anywhere;white-space:pre-wrap}figure{margin:20px 0}figure img{max-width:100%;height:auto}.status{font-weight:bold}input{padding:10px;width:90%}@media print{nav,input{display:none}body{font:11pt/1.3 serif;max-width:none;padding:0}h2{break-after:avoid}}@media(max-width:600px){body{padding:12px}}');
+    Lines.Clear;
+    Lines.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''self''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><link rel="stylesheet" href="assets/style.css"><title>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</title></head><body><header><h1>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p>Start with the application purpose. Follow a screen action, read its explanation, then try a supplied task.</p></header><nav aria-label="Learning topics">');
+    for LessonIndex:=0 to 11 do Lines.Append('<a href="#lesson_'+IntToStr(LessonIndex)+'">'+TDPHExplanationModel.TopicTitle(LessonIndex)+'</a> ');
+    Lines.Append('<a href="#screenshots">Supplied screenshots</a> <a href="#glossary">Business terms</a></nav><p>This is a saved, read-only learning edition. To add an explanation or answer a question, open the project in DPH and choose Prepare lessons. Source was read without running the application.</p>');
+    for LessonIndex:=0 to 11 do begin
+      LessonPage:=Explanations.LessonHTML(LessonIndex);LessonStart:=Pos('<main>',LessonPage);LessonEnd:=Pos('</main>',LessonPage);
+      if (LessonStart=0) or (LessonEnd<=LessonStart) then raise EReadError.Create('Learning topic has no content');
+      LessonPage:=Copy(LessonPage,LessonStart+6,LessonEnd-LessonStart-6);
+      LessonPage:=TRegEx.Replace(LessonPage,'href="#s_([a-fA-F0-9]{64})"','href="objects/$1.html"');
+      LessonPage:=LessonPage.Replace('href="#task_reader"','href="#lesson_11"').Replace('href="#ask_author"','href="#lesson_9"');
+      if LessonIndex=11 then LessonPage:=LessonPage.Replace('Open Learn a task</a> to follow the prepared steps one at a time, with Previous, Next and Start again.','Read the task instructions below</a>. In DPH, Learn a task also lets you follow them one step at a time.');
+      if LessonIndex=9 then LessonPage:=LessonPage.Replace('Open Author questions</a> to record a named reply.','Read the questions below</a>. Record replies in DPH through Prepare lessons, Author questions.');
+      Lines.Append('<section id="lesson_'+IntToStr(LessonIndex)+'"><h2>'+TDPHExplanationModel.TopicTitle(LessonIndex)+'</h2>'+LessonPage+'</section>');
+    end;
+    Lines.Append('<section id="screenshots"><h2>Supplied screenshots</h2><p>These images were supplied by named contributors. They are separate from reconstructed form designs.</p>');
+    for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
+      Lines.Append('<figure><img src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' &mdash; supplied by '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+'; user supplied, unverified.</figcaption></figure>');
+    end;
+    if AModel.Document.GetValue<TJSONArray>('screenshots').Count=0 then Lines.Append('<p>No screenshots have been supplied for this edition.</p>');
+    Lines.Append('</section><section id="glossary"><h2>Business terms</h2>');LessonIndex:=0;
+    for V in AModel.Document.GetValue<TJSONArray>('knowledge') do if (V.GetValue<string>('kind')='glossary') and not MatchText(V.GetValue<string>('state'),['retired','rejected']) then begin Inc(LessonIndex);
+      Lines.Append('<h3>'+TDPHDocumentModel.HTML(V.GetValue<string>('title'))+'</h3><p>'+TDPHDocumentModel.HTML(V.GetValue<string>('body'))+'</p><p>Supplied by '+TDPHDocumentModel.HTML(V.GetValue<string>('owner'))+'; '+TDPHDocumentModel.HTML(V.GetValue<string>('state').Replace('_',' '))+'.</p>');
+    end;
+    if LessonIndex=0 then Lines.Append('<p>No business terms have been supplied for this edition.</p>');
+    Lines.Append('</section><p><a href="#lesson_0">Return to Start here</a> &middot; <a href="index.html">Optional technical reference</a></p></body></html>');
+    Write('learning.html',Lines.ToString);
     Page.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; script-src ''self''; style-src ''self''; img-src ''self'' data:; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><title>Delphi Project Handoff reference</title><link rel="stylesheet" href="assets/style.css"></head><body><header><h1 class="notranslate" translate="no">'+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p class="status">Generation '+AModel.Document.GetValue('generation_id').Value+' | '+
       IfThen(AModel.Document.GetValue<Boolean>('analysis_complete'),'Captured analysis complete','PARTIAL analysis')+' | '+IfThen(AModel.Document.GetValue<Boolean>('detached'),'Detached source','Connected capture')+' | '+IfThen(AModel.Document.GetValue<Boolean>('stale'),'STALE evidence','Captured fingerprint')+'</p><p>Static evidence; runtime behavior unobserved. Human verification is recorded separately.</p></header><nav>');
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<a href="#'+R.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</a>'); end;
-    Page.Append('</nav><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
+    Page.Append('</nav><p><a href="learning.html">Start learning this application</a></p><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
     if LocalePage<>'' then Page.Append('<p><a href="'+LocalePage+'">Localized authored sections ('+ALocale+')</a>: '+TranslatedCount.ToString+' reviewed; '+FallbackCount.ToString+' source-language fallbacks. Generated guidance remains source language.</p>');
     Page.Append('<section><h2>Source navigation</h2><p>'+IfThen(AIncludeSourceNavigation,'Explicitly included redacted browsing views: ','Excluded by default. ')+
       RenderedSources.ToString+' rendered files; '+OmittedSources.ToString+' omitted files. Original source bytes are not included.</p>');
@@ -290,7 +316,8 @@ begin
     IndexText:='';
     for V in AModel.Document.GetValue<TJSONArray>('symbols') do begin R:=V as TJSONObject; Anchor:='s_'+THashSHA2.GetHashString(R.GetValue<string>('key'));
       Path:='objects/'+THashSHA2.GetHashString(R.GetValue<string>('key'))+'.html';
-      try ObjectPage:=Explanations.ObjectHTML(R.GetValue<string>('key')).Replace('href="#s_','href="../index.html#s_');
+      try ObjectPage:=TRegEx.Replace(Explanations.ObjectLessonHTML(R.GetValue<string>('key')),'href="#s_([a-fA-F0-9]{64})"','href="$1.html"');
+        ObjectPage:=ObjectPage.Replace('<body>','<body><p><a href="../learning.html">Return to learning topics</a></p>');
         LineAvailable:=False;
         if SourcePages.TryGetValue(R.GetValue<string>('range.source'),SourceRecord) then for SourceSymbol in SourceRecord.GetValue<TJSONArray>('included_line_numbers') do
           if SourceSymbol.Value=R.GetValue<Integer>('range.line').ToString then LineAvailable:=True;
@@ -324,7 +351,7 @@ begin
     Write('indexes/glossary.jsonl',Lines.ToString);
     Write('validation/coverage.json',AModel.Document.GetValue<TJSONObject>('coverage').Format(2));
     Write('README.md','# '+AModel.Document.GetValue<string>('project')+' handoff'+#10+#10+
-      '1. Open index.html offline and read Overview and Known unknowns.'+#10+
+      '1. Open learning.html offline. Start with the purpose, follow a screen action and read supplied task instructions.'+#10+
       '2. Compare manifest.json input_fingerprint with a separately trusted capture identity. Run DPH.ValidateHandoff with the bundle directory and that fingerprint; use --allow-stale only for explicit historical inspection.'+#10+
       '3. Read project-summary.md, architecture.md, build-and-test.md, known-risks.md and decisions-and-unknowns.md. Follow exact source ranges in evidence/references.jsonl.'+#10+
       '4. Inspect coverage and authored section review states. Hashes establish integrity relative to this manifest, not author authentication.'+#10+#10+
@@ -377,6 +404,7 @@ begin
       Manifest.AddPair('stale',TJSONBool.Create(AModel.Document.GetValue<Boolean>('stale'))); Manifest.AddPair('source_snapshots_included',TJSONBool.Create(False));
       Manifest.AddPair('agent_instructions_included',TJSONBool.Create(AIncludeAgentInstructions)); Manifest.AddPair('external_calls',TJSONBool.Create(False));
       Manifest.AddPair('source_navigation_included',TJSONBool.Create(AIncludeSourceNavigation));
+      Manifest.AddPair('learning_entry','learning.html');
       Manifest.AddPair('localized_prose_locale',ALocale); Manifest.AddPair('localized_prose_scope',Localization.GetValue<string>('scope'));
       Manifest.AddPair('localized_authored_sections',TJSONNumber.Create(TranslatedCount)); Manifest.AddPair('source_language_fallback_sections',TJSONNumber.Create(FallbackCount));
       Manifest.AddPair('project',AModel.Document.GetValue<string>('project')); Manifest.AddPair('captured_utc',AModel.Document.GetValue<string>('captured_utc'));

@@ -708,7 +708,7 @@ end;
 function TDPHExplanationModel.LessonHTML(AIndex: Integer): string;
 var Body: TStringBuilder; V,W: TJSONValue; S,R,Fields,Metadata,Target: TJSONObject;
     Rows: TList<TJSONObject>; Caption,ControlType,Key,Handler,Kind: string;
-    Count: Integer; Found,HasPurpose: Boolean;
+    Count,StepIndex: Integer; Found,HasPurpose: Boolean;
 begin
   if not (AIndex in [0..11]) then Exit(Page('Learn the application','<p>Choose a topic from the lesson list.</p>'));
   Body:=TStringBuilder.Create;
@@ -884,7 +884,21 @@ begin
             if MatchText(R.GetValue<string>('state',''),['rejected','retired']) then Continue;
             if not MatchText(R.GetValue<string>('kind',''),['user_help','troubleshooting']) and
               not MatchText(R.GetValue<string>('document_kind',''),['user','help']) then Continue;
-            Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body')).Replace(sLineBreak,'</p><p>')+'</p><p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');
+            Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3>');
+            Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
+            if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject else Metadata:=Metadata.Clone as TJSONObject;
+            try
+              if (Metadata<>nil) and (Metadata.GetValue<string>('record_type','')='learning_lesson') then begin
+                Fields:=Metadata.GetValue<TJSONObject>('fields');
+                Body.Append('<p><strong>Purpose:</strong> '+Encode(Fields.GetValue<string>('purpose'))+'</p><p><strong>Before you begin:</strong> '+Encode(Fields.GetValue<string>('prerequisites'))+'</p><ol>');
+                StepIndex:=0;
+                for W in Metadata.GetValue<TJSONArray>('steps') do begin Inc(StepIndex);
+                  Body.Append('<li><p>'+Encode(W.GetValue<string>('action')).Replace(sLineBreak,'<br>')+'</p><p><strong>Expected after step '+IntToStr(StepIndex)+':</strong> '+Encode(W.GetValue<string>('expected_result')).Replace(sLineBreak,'<br>')+'</p></li>');
+                end;
+                Body.Append('</ol><p><strong>Expected final result:</strong> '+Encode(Fields.GetValue<string>('expected_result'))+'</p><p><strong>If something goes wrong:</strong> '+Encode(Fields.GetValue<string>('troubleshooting'))+'</p><p><strong>Practice:</strong> '+Encode(Fields.GetValue<string>('practice'))+'</p>');
+              end else Body.Append('<p>'+Encode(R.GetValue<string>('body')).Replace(sLineBreak,'</p><p>')+'</p>');
+            finally Metadata.Free;end;
+            Body.Append('<p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');
             for W in R.GetValue<TJSONArray>('links') do begin
               Key:=W.GetValue<string>('canonical_key','');
               if (Key<>'') and FSymbols.ContainsKey(Key) then Body.Append('<p>Explore the related part of the application: '+Link(Key)+'.</p>');
