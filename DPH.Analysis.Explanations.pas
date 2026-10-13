@@ -995,17 +995,19 @@ function TDPHExplanationModel.ApplicationRouteHTML(AIndex: Integer): string;
 var
   Body: TStringBuilder;
   V,W: TJSONValue;
-  R,S,Control,Metadata,Fields: TJSONObject;
+  R,S,Control,Metadata,Fields,Screen,Effect,StartupRow: TJSONObject;
   TaskRecords: TList<TJSONObject>;
-  ProjectName,ActionName,ControlName,EventName,Caption,Handler,Source,GuideTitle,GuideBody: string;
-  Guides,GuideSections: TJSONArray; Guide,GuideSection: TJSONObject;
-  Count,TaskIndex,TaskTotal,ActionIndex,P: Integer;
+  HandlerRelations: TList<TJSONObject>;
+  ProjectName,ActionName,ControlName,EventName,Caption,Handler,Source,GuideTitle,GuideBody,EffectVerb: string;
+  Guides,GuideSections,Screens: TJSONArray; Guide,GuideSection: TJSONObject;
+  Count,TaskIndex,TaskTotal,ActionIndex,P,EffectCount: Integer;
   HasPurpose: Boolean;
 begin
   if not (AIndex in [0..3]) then
     Exit(Page('Learn this app','<p>Choose a learning step for the selected application.</p>'));
   ProjectName:=FFacts.GetValue<string>('project','the selected application');
   Guides:=FFacts.GetValue<TJSONArray>('project_guides',nil);
+  Screens:=FFacts.GetValue<TJSONArray>('project_screens',nil);
   Body:=TStringBuilder.Create;
   TaskRecords:=TList<TJSONObject>.Create;
   try
@@ -1036,7 +1038,7 @@ begin
     end));
     TaskTotal:=TaskRecords.Count;
     Body.Append('<section class="card"><p><strong>Selected application:</strong> '+Encode(ProjectName)+
-      '. Follow the forms, visible labels and actions found in this project. Supplied explanations and local project guides add context where available.</p></section>');
+      '. This route follows the project startup, saved screens, visible controls and connected code. Project documents add context where they exist. Each finding names its source.</p></section>');
     case AIndex of
       0: begin
         Body.Append('<section class="card"><h2>What is this application for?</h2>');
@@ -1063,10 +1065,12 @@ begin
           Guide:=V as TJSONObject; GuideSections:=Guide.GetValue<TJSONArray>('sections');
           for W in GuideSections do begin
             GuideSection:=W as TJSONObject; GuideTitle:=GuideSection.GetValue<string>('heading','');
-            if not ContainsText(GuideTitle,'purpose') then Continue;
+            if not (ContainsText(GuideTitle,'purpose') or ContainsText(GuideTitle,'overview') or
+              ContainsText(GuideTitle,'about') or ContainsText(GuideTitle,'introduction')) then Continue;
             GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
             if GuideBody='' then Continue;
-            Body.Append('<p><strong>From the project guide:</strong> '+Encode(GuideBody).Replace(sLineBreak,'<br>')+'</p><p><small>Source: '+Encode(Guide.GetValue<string>('source'))+'. This is supplied documentation, not a run-time check.</small></p>');
+            Body.Append('<p><strong>The <a href="#lesson_2">project documentation</a> explains:</strong> '+Encode(Copy(GuideBody,1,1800)).Replace(sLineBreak,'<br>')+
+              '</p><p><small>Source: '+Encode(Guide.GetValue<string>('source'))+'.</small></p>');
             HasPurpose:=True; Break;
           end;
           if HasPurpose then Break;
@@ -1094,30 +1098,50 @@ begin
                 Caption:=W.GetValue<string>('value'); Source:=S.GetValue<string>('range.source'); Break; end;
             if Caption<>'' then Break;
           end;
-          if Caption<>'' then Body.Append('<p><strong>Prominent title in a saved form design:</strong> '+Encode(Caption)+
-            '. <small>Found in '+Encode(Source)+'. This identifies the application, while its intended users and complete purpose still need confirmation.</small></p>')
-          else Body.Append('<p>The saved form captions below offer a first clue to what this application does. They do not establish its intended users or every business rule.</p>');
+          if Caption<>'' then Body.Append('<p><strong>The main form says:</strong> '+Encode(Caption)+
+            '. <small>Saved in '+Encode(Source)+'.</small></p>')
+          else Body.Append('<p>Begin with the project title and the window titles below; they show how the application presents itself.</p>');
         end;
-        Body.Append('</section><section class="card"><h2>Forms found in the selected project</h2>');
+        Body.Append('</section><section class="card"><h2>Project files</h2>');
         Count:=0;
-        for V in FFacts.GetValue<TJSONArray>('symbols') do begin
-          S:=V as TJSONObject; Source:=S.GetValue<string>('range.source','');
-          if (S.GetValue<string>('kind','')<>'component') or
-            not MatchText(ExtractFileExt(Source),['.fmx','.dfm']) or
-            not StartsText(Source+'.',S.GetValue<string>('name','')) or
-            (Pos('.',Copy(S.GetValue<string>('name',''),Length(Source)+2,MaxInt))>0) then Continue;
-          Caption:='';
-          if S.GetValue<TJSONArray>('serialized_properties',nil)<>nil then
-            for W in S.GetValue<TJSONArray>('serialized_properties') do
-              if SameText(W.GetValue<string>('name',''),'Caption') then begin Caption:=W.GetValue<string>('value',''); Break; end;
-          Body.Append('<p>'+Link(S.GetValue<string>('key')));
-          if (Caption<>'') and not SameText(Caption,ExtractFileName(Source)) then
-            Body.Append(' &mdash; saved window title: <strong>'+Encode(Caption)+'</strong>');
-          Body.Append(' <small>('+Encode(Source)+')</small></p>');
+        for V in FFacts.GetValue<TJSONArray>('files') do begin
+          R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
+          if not MatchText(ExtractFileExt(Source),['.dpr','.dproj','.groupproj']) then Continue;
+          Body.Append('<p><code>'+Encode(Source)+'</code></p>');
           Inc(Count);
         end;
-        if Count=0 then Body.Append('<p>No form design was captured in the selected files. Ask which screen a new user sees first.</p>')
-        else Body.Append('<p>'+IntToStr(Count)+' saved form design(s) found. These are project resources; the first window shown when the application runs may differ.</p>');
+        if Count=0 then Body.Append('<p>No Delphi project file was available in this capture.</p>');
+        Body.Append('</section><section class="card"><h2>Where the application starts</h2>');
+        Count:=0;
+        for V in FFacts.GetValue<TJSONArray>('startup') do begin
+          StartupRow:=V as TJSONObject;
+          if not ContainsText(StartupRow.GetValue<string>('text',''),'CreateForm') then Continue;
+          Body.Append('<p>The project creates a form with <code>'+Encode(StartupRow.GetValue<string>('text',''))+
+            '</code>. <small>'+Encode(StartupRow.GetValue<string>('range.source',''))+':'+
+            IntToStr(StartupRow.GetValue<Integer>('range.line',0))+'</small></p>');
+          Inc(Count); if Count>=5 then Break;
+        end;
+        if Count=0 then Body.Append('<p>No initial form creation was identified in the captured project startup. Use the saved screens below to orient yourself.</p>');
+        Body.Append('</section><section class="card"><h2>Screens found in the saved design</h2>');
+        Count:=0;
+        if Screens<>nil then for V in Screens do begin
+          Screen:=V as TJSONObject;
+          Body.Append('<p><strong>'+Encode(Screen.GetValue<string>('title',Screen.GetValue<string>('name','Screen')))+
+            '</strong>');
+          for W in FFacts.GetValue<TJSONArray>('symbols') do begin
+            S:=W as TJSONObject;
+            if (S.GetValue<string>('kind','')='component') and
+              SameText(S.GetValue<string>('range.source',''),Screen.GetValue<string>('source','')) and
+              SameText(S.GetValue<string>('name',''),Screen.GetValue<string>('source','')+'.'+Screen.GetValue<string>('name','')) then begin
+              Body.Append(' &mdash; open '+Link(S.GetValue<string>('key'))); Break;
+            end;
+          end;
+          Body.Append(' <small>('+Encode(Screen.GetValue<string>('class',''))+'; '+
+            Encode(Screen.GetValue<string>('source',''))+':'+IntToStr(Screen.GetValue<Integer>('line',0))+')</small></p>');
+          Inc(Count);
+        end;
+        if Count=0 then Body.Append('<p>No saved form design was captured in the selected project files.</p>')
+        else Body.Append('<p>'+IntToStr(Count)+' saved screen design(s) found. Open Screens to inspect their layouts and controls.</p>');
         if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then
           Body.Append('<p>No actual screenshot has been supplied for this application. Form designs are reconstructions, not screenshots.</p>')
         else Body.Append('<p>'+IntToStr(FFacts.GetValue<TJSONArray>('screenshots').Count)+
@@ -1157,12 +1181,12 @@ begin
           finally Metadata.Free; end;
         end;
         if (AIndex=1) and (Count=0) then
-          Body.Append('<p>Begin by learning a visible action from this application. The project materials below can explain its screen and purpose; only a tested walkthrough can establish the exact steps and expected result.</p>');
+          Body.Append('<p>Start with the first labeled action traced from a saved screen into source below. The application’s own documents may also describe how to use it.</p>');
         if (AIndex=2) and (Count=0) then
-          Body.Append('<p>No additional task walkthroughs have been supplied. The actions below are candidates to explain, not instructions to perform.</p>');
+          Body.Append('<p>Explore the other actions captured in this application’s saved screens and source below.</p>');
         Body.Append('</section>');
         if (Guides<>nil) and (Guides.Count>0) then begin
-          Body.Append('<section class="card"><h2>Read this application’s own guide</h2><p>These passages come from files beside the selected project. Read them alongside the saved forms; check an operating procedure with the application owner before following it.</p>');
+          Body.Append('<section class="card"><h2>Read this application’s own documents</h2><p>These passages come from files in the selected project folder and are identified by file and fingerprint.</p>');
           Count:=0;
           for V in Guides do begin
             Guide:=V as TJSONObject;
@@ -1178,14 +1202,15 @@ begin
               if AIndex=1 then begin
                 if Count>=8 then Break;
               end else if Count>=8 then Break;
-              Body.Append('<details class="card"><summary>'+Encode(GuideTitle)+'</summary><pre>'+Encode(GuideBody)+'</pre><small>From '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
+              Body.Append('<details class="card"><summary>'+Encode(GuideTitle)+'</summary><pre>'+Encode(GuideBody)+
+                '</pre><small>From '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
               Inc(Count);
             end;
           end;
           if Count=0 then Body.Append('<p>The local guides do not have a clearly labeled getting-started or task section. Explore their headings below and use the forms and actions in this route.</p>');
           Body.Append('</section>');
         end;
-        if (AIndex=2) or (TaskTotal=0) then begin
+        begin
           Body.Append('<section class="card"><h2>Actions found in this application</h2>');
           Count:=0; ActionIndex:=0;
           for V in FFacts.GetValue<TJSONArray>('relationships') do begin
@@ -1210,14 +1235,41 @@ begin
             Handler:=R.GetValue<string>('to','');
             if Caption='' then Continue;
             Inc(ActionIndex);
-            if (AIndex=2) and (TaskTotal=0) and (ActionIndex=1) then Continue;
+            if (AIndex=2) and (ActionIndex=1) then Continue;
             if (AIndex=1) and (ActionIndex>1) then Break;
-            Body.Append('<h3>'+Encode(Caption)+'</h3><p>This control is saved on '+Encode(R.GetValue<string>('range.source','a form'))+
-              '. Its '+Encode(EventName)+' event is recorded in the form design. ');
+            Body.Append('<h3>'+Encode(Caption)+'</h3><p>On the saved screen in '+
+              Encode(R.GetValue<string>('range.source','a form'))+', this control connects '+
+              Encode(EventName)+' to ');
             if (Handler<>'') and FSymbols.ContainsKey(Handler) then
-              Body.Append('Follow '+Link(Handler)+' to learn what the captured source says about this action. ')
-            else Body.Append('The corresponding code was not readable in this capture. ');
-            Body.Append('The expected result still needs confirmation if the guide or a reviewed lesson does not describe it.</p>');
+              Body.Append(Link(Handler)+'. ')
+            else Body.Append('a handler that was not resolved in this capture. ');
+            Body.Append('<small>'+Encode(R.GetValue<string>('range.source',''))+':'+
+              IntToStr(R.GetValue<Integer>('range.line',0))+'</small></p>');
+            if FOutgoing.TryGetValue(Handler,HandlerRelations) then begin
+              EffectCount:=0;
+              for Effect in HandlerRelations do begin
+                if not MatchText(Effect.GetValue<string>('kind',''),
+                  ['calls','reads','writes','shows_form','shows_modal_form','output_candidate','static_sql']) then Continue;
+                if EffectCount=0 then Body.Append('<p>The connected code shows:</p><ul>');
+                EffectVerb:=Effect.GetValue<string>('kind','').Replace('_',' ');
+                if EffectVerb='calls' then EffectVerb:='Calls';
+                if EffectVerb='reads' then EffectVerb:='Reads';
+                if EffectVerb='writes' then EffectVerb:='May update';
+                if EffectVerb='shows form' then EffectVerb:='May open';
+                if EffectVerb='shows modal form' then EffectVerb:='May open a dialog';
+                if EffectVerb='output candidate' then EffectVerb:='May write an output';
+                if EffectVerb='static sql' then EffectVerb:='Uses a saved database command';
+                Body.Append('<li>'+Encode(EffectVerb)+' ');
+                if FSymbols.ContainsKey(Effect.GetValue<string>('to','')) then
+                  Body.Append(Link(Effect.GetValue<string>('to')))
+                else Body.Append(Encode(Effect.GetValue<string>('label','an unresolved target')));
+                Body.Append(' <small>('+Encode(Effect.GetValue<string>('range.source',''))+':'+
+                  IntToStr(Effect.GetValue<Integer>('range.line',0))+')</small></li>');
+                Inc(EffectCount); if EffectCount>=6 then Break;
+              end;
+              if EffectCount>0 then Body.Append('</ul>');
+            end;
+            if AIndex=1 then Body.Append('<p>Use the linked handler and its source evidence to follow the action further. The saved files describe the intended path; observe the running application to check the final result.</p>');
             Inc(Count); if (AIndex=1) or (Count>=8) then Break;
           end;
           if Count=0 then begin
@@ -1248,12 +1300,14 @@ begin
             for V in Guides do begin
               Guide:=V as TJSONObject;
               Body.Append('<h3>'+Encode(Guide.GetValue<string>('source'))+'</h3>');
+              if Guide.GetValue<string>('format','')='.pdf' then
+                Body.Append('<p><small>PDF found. Its text is not indexed in this capture.</small></p>');
               for W in Guide.GetValue<TJSONArray>('sections') do begin
                 GuideSection:=W as TJSONObject;
                 GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
                 if GuideBody='' then Continue;
                 Body.Append('<details class="card"><summary>'+Encode(GuideSection.GetValue<string>('heading','Topic'))+
-                  '</summary><pre>'+Encode(GuideBody)+'</pre></details>');
+                  '</summary><pre>'+Encode(GuideBody)+'</pre><small>Source: '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
               end;
             end;
             Body.Append('</section>');
@@ -1306,7 +1360,7 @@ begin
         else Body.Append('<section class="card"><p><a href="#lesson_3">Check what is still unknown</a>.</p></section>');
       end;
       3: begin
-        Body.Append('<section class="card"><h2>What still needs a person to explain?</h2><ul>');
+        Body.Append('<section class="card"><h2>What the captured files cannot confirm</h2><p>Use the preceding screens, documents and traced actions first. The points below identify outcomes that source reading alone cannot prove.</p><ul>');
         HasPurpose:=False;
         for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
           R:=V as TJSONObject;
@@ -1327,11 +1381,10 @@ begin
             if HasPurpose then Break;
           end;
         if not HasPurpose then
-          Body.Append('<li>The form captions provide a starting clue, but the intended users, purpose and first screen need confirmation.</li>')
-        else Body.Append('<li>Confirm the intended users and first screen with someone who operates this application.</li>');
-        if TaskTotal=0 then Body.Append('<li>No reviewed task walkthrough provides ordered actions, required inputs and expected results.</li>');
-        if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then Body.Append('<li>No actual screenshot has been supplied to confirm a screen or output.</li>');
-        Body.Append('<li>Confirm the results of important actions, permissions and recovery steps by using the application with its owner.</li></ul>');
+          Body.Append('<li>The saved titles suggest a purpose, but the captured documents do not explain every user role or business goal.</li>');
+        if TaskTotal=0 then Body.Append('<li>Source traces show possible action paths; they cannot demonstrate the running result or a safe operating procedure.</li>');
+        if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then Body.Append('<li>The saved form layout shows controls and positions, but no photograph of the running screen is available.</li>');
+        Body.Append('<li>Permissions, external services and recovery behavior require observation in the running application.</li></ul>');
         Count:=0;
         for V in FFacts.GetValue<TJSONArray>('author_questions') do begin
           R:=V as TJSONObject;
@@ -1340,7 +1393,8 @@ begin
           Body.Append('<p>'+Encode(R.GetValue<string>('prompt'))+'</p>');
           Inc(Count); if Count>=3 then Break;
         end;
-        Body.Append('<p><a href="#ask_author">Open Author questions</a> to record a named answer. Use Prepare lessons to add a purpose, task, explanation or actual screenshot for '+Encode(ProjectName)+'.</p></section>');
+        if Count>0 then Body.Append('<p><a href="#ask_author">Open the recorded questions</a> for further investigation of '+Encode(ProjectName)+'.</p>');
+        Body.Append('</section>');
       end;
     end;
     Result:=Page(ApplicationRouteTitle(AIndex)+': '+ProjectName,Body.ToString);

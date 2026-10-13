@@ -1,5 +1,6 @@
 object MainForm: TMain
   object btnConvert: TButton
+    Text = 'Convert example'
     OnClick = Click
   end
 end

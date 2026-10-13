@@ -57,6 +57,9 @@ begin
           try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,True); finally Rows.Free; end;
           Explain:=TDPHExplanationModel.Create(Model.Document);
           try
+            Check((Model.Document.GetValue<TJSONArray>('project_guides').Count>0) and
+              ContainsText(Explain.ApplicationRouteHTML(0),'This example application teaches'),
+              'The selected project README supplies cited app-specific orientation');
             Check(ContainsText(Explain.ObjectText(Key),'Worker.PublicWork'),'Object explanation identifies a real cross-unit dependency');
             Check(ContainsText(Explain.ObjectText(Key),'Sender > 0'),'Explanation carries the actual branch condition');
             Check(ContainsText(Explain.TraceHTML(Key),'possible_dynamic'),'Execution trace preserves asynchronous or dispatch uncertainty');
@@ -94,34 +97,36 @@ begin
                 not ContainsText(FlowText,'OrderPractice'),'Each main learning step belongs to the selected application');
             end;
             Check(ContainsText(Explain.ApplicationRouteHTML(0),'MainForm') and
-              ContainsText(Explain.ApplicationRouteHTML(0),'Forms found in the selected project'),
-              'App introduction shows captured form designs without inventing a purpose');
-            Check(ContainsText(Explain.ApplicationRouteHTML(1),'Begin by learning a visible action') and
-              ContainsText(Explain.ApplicationRouteHTML(1),'only a tested walkthrough'),
-              'Without authored instructions, the route distinguishes clues from a tested task');
-            Check(ContainsText(Explain.ApplicationRouteHTML(3),'No reviewed task walkthrough'),
-              'Unknowns page identifies the missing task instead of inventing a result');
+              ContainsText(Explain.ApplicationRouteHTML(0),'Screens found in the saved design') and
+              (Model.Document.GetValue<TJSONArray>('project_screens').Count>0),
+              'App introduction lists captured form roots and their evidence');
+            Check(ContainsText(Explain.ApplicationRouteHTML(1),'Start with the first labeled action') and
+              ContainsText(Explain.ApplicationRouteHTML(1),'The connected code shows'),
+              'The task route connects a visible control to its source relationships');
+            Check(ContainsText(Explain.ApplicationRouteHTML(3),'Source traces show possible action paths'),
+              'Unknowns page states the runtime limit without inventing a result');
             Check(ContainsText(Explain.ApplicationRouteHTML(2),'<title>Explore related tasks: Semantic.dproj</title>') and
               ContainsText(Explain.ApplicationRouteHTML(2),'<h1>Explore related tasks: Semantic.dproj</h1>'),
               'App-specific page title uses a plain ASCII separator');
             var GuideFacts:=Model.Document.Clone as TJSONObject;
             try
-              GuideFacts.GetValue<TJSONArray>('symbols').AddElement(
-                TJSONObject.Create.AddPair('key','unlinked-form-design').AddPair('kind','component')
-                  .AddPair('name','Extra.fmx.ExtraForm')
-                  .AddPair('range',TJSONObject.Create.AddPair('source','Extra.fmx'))
-                  .AddPair('serialized_properties',TJSONArray.Create(TJSONObject.Create.AddPair('name','Caption').AddPair('value','Extra learning screen'))));
+              GuideFacts.GetValue<TJSONArray>('project_screens').AddElement(
+                TJSONObject.Create.AddPair('source','Extra.fmx').AddPair('source_hash','fixture-hash')
+                  .AddPair('name','ExtraForm').AddPair('class','TExtraForm')
+                  .AddPair('title','Extra learning screen').AddPair('line',TJSONNumber.Create(1)));
               var GuideSections:=TJSONArray.Create;
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','1. Purpose').AddPair('text','A source-supplied purpose for this application.'));
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','2. Getting started').AddPair('text','Begin with its own saved controls.'));
-              GuideFacts.AddPair('project_guides',TJSONArray.Create(TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
+              GuideFacts.RemovePair('project_guides').Free;
+              GuideFacts.AddPair('project_guides',TJSONArray.Create(
+                TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
               var GuideModel:=TDPHExplanationModel.Create(GuideFacts);
               try
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'A source-supplied purpose for this application.') and
                   ContainsText(GuideModel.ApplicationRouteHTML(0),'docs/Application_Guide.md'),
                   'Selected project guide supplies an attributed purpose');
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'Extra learning screen') and
-                  ContainsText(GuideModel.ApplicationRouteHTML(0),'2 saved form design(s)'),
+                  ContainsText(GuideModel.ApplicationRouteHTML(0),'2 saved screen design(s)'),
                   'A form design appears even when no class-link relationship was resolved');
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'Begin with its own saved controls.') and
                   ContainsText(GuideModel.ApplicationRouteHTML(2),'Getting started'),
@@ -315,7 +320,7 @@ begin
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#ask_author',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.QuestionsTab),'Question lesson link opens the existing named-answer workflow');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','What still needs a person to explain?');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','What the captured files cannot confirm');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
@@ -409,7 +414,7 @@ begin
           try
             FlowText:=Explain.ApplicationRouteHTML(1);
             Check(ContainsText(FlowText,'OrderPractice.dproj') and ContainsText(FlowText,'Calculate total') and
-              not ContainsText(FlowText,'Semantic.dproj') and ContainsText(FlowText,'only a tested walkthrough'),
+              not ContainsText(FlowText,'Semantic.dproj') and ContainsText(FlowText,'The connected code shows'),
               'A second selected project yields its own action and no imported practice lesson');
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
@@ -512,7 +517,7 @@ begin
                     Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False;
                     Form.LoadView(View.Document.Clone as TJSONObject);
                     Check((Form.FormCombo.Items.Count>=StrToInt(ParamStr(4))) and
-                      ContainsText(Form.OverviewMemo.Text,IntToStr(FormCount)+' saved form design(s)'),
+                      ContainsText(Form.OverviewMemo.Text,IntToStr(FormCount)+' saved screen design(s)'),
                       'The learner sees the captured form count in the actual DPH form');
                     Check(ContainsText(Form.OverviewMemo.Text,'portable FireMonkey desktop application') and
                       ContainsText(Form.OverviewMemo.Text,'Westminster_Chimes_and_Carillon_Bells_8_1_Application_Guide.md'),
@@ -523,8 +528,8 @@ begin
                       'The task route retains selected-project guide substance in its text fallback');
                     Form.LearningTopics.ItemIndex:=3; Form.LearningClick(nil);
                     Check(not ContainsText(Form.OverviewMemo.Text,'purpose and first screen need confirmation') and
-                      ContainsText(Form.OverviewMemo.Text,'Confirm the intended users and first screen'),
-                      'Unknowns acknowledge purpose evidence while asking only for unresolved operating facts');
+                      ContainsText(Form.OverviewMemo.Text,'Permissions, external services and recovery behavior'),
+                      'Unknowns acknowledge purpose evidence and identify unobserved operating behavior');
                   finally Form.Free;end;
                 finally View.Free;end;
               finally Graph.Free;end;

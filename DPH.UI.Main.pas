@@ -1,4 +1,4 @@
-unit DPH.UI.Main;
+﻿unit DPH.UI.Main;
 interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
@@ -2579,54 +2579,10 @@ begin
   DetailsClick(nil); WorkspaceTabs.ActiveTab:=DetailsTab;
 end;
 procedure TDPHMainForm.RefreshLearning;
-var ID: TGUID; Root,Folder,Path,Name,GuideText,Line,Heading,SectionText: string;
-    Guides,Sections: TJSONArray; Guide,Part: TJSONObject;
-    Paths: TList<string>; Lines: TStringList; I: Integer; TotalBytes: Int64;
+var ID: TGUID;
 begin
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); if FView=nil then Exit;
   FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,not FView.Document.GetValue<Boolean>('analysis_complete'),nil,True);
-  // Local learning pages can quote nearby project guides without changing the selected project.
-  Guides:=TJSONArray.Create; FLearningFacts.Document.AddPair('project_guides',Guides);
-  Root:=FView.Document.GetValue<string>('root',''); TotalBytes:=0;
-  Paths:=TList<string>.Create; Lines:=TStringList.Create;
-  try
-    if (Root<>'') and TDirectory.Exists(Root) then begin
-    for Folder in [Root,TPath.Combine(Root,'docs'),TPath.Combine(Root,'help')] do
-      if (Folder<>'') and TDirectory.Exists(Folder) and
-        ((GetFileAttributes(PChar(Folder)) and FILE_ATTRIBUTE_REPARSE_POINT)=0) then
-        for Path in TDirectory.GetFiles(Folder) do begin
-          Name:=LowerCase(TPath.GetFileName(Path));
-          if not MatchText(TPath.GetExtension(Path),['.md','.txt']) or
-            not (ContainsText(Name,'guide') or ContainsText(Name,'manual') or ContainsText(Name,'readme') or ContainsText(Name,'help')) then Continue;
-          if (GetFileAttributes(PChar(Path)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then Continue;
-          if TFile.GetSize(Path)>131072 then Continue;
-          Paths.Add(Path);
-        end;
-    Paths.Sort(TComparer<string>.Default);
-    for Path in Paths do begin
-      if (Guides.Count>=8) or (TotalBytes+TFile.GetSize(Path)>262144) then Break;
-      try GuideText:=TFile.ReadAllText(Path,TEncoding.UTF8);
-      except on E: Exception do Continue; end;
-      Inc(TotalBytes,TFile.GetSize(Path));
-      Lines.Text:=GuideText; Guide:=TJSONObject.Create;
-      Guide.AddPair('source',Path.Substring(Length(Root)+1).Replace('\','/'));
-      Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections); Guides.AddElement(Guide);
-      Part:=nil;
-      for I:=0 to Lines.Count-1 do begin
-        Line:=Lines[I];
-        if Line.StartsWith('#') and (Pos(' ',Line)>1) and (Line[Pos(' ',Line)-1]='#') then begin
-          Heading:=Trim(Copy(Line,Pos(' ',Line)+1,MaxInt));
-          Part:=TJSONObject.Create.AddPair('heading',Heading).AddPair('text','');
-          Sections.AddElement(Part);
-        end else if Part<>nil then begin
-          SectionText:=Part.GetValue<string>('text','');
-          Part.RemovePair('text').Free;
-          Part.AddPair('text',SectionText+Line+sLineBreak);
-        end;
-      end;
-    end;
-    end;
-  finally Lines.Free;Paths.Free;end;
   FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   if FLearningDirectory='' then begin CreateGUID(ID);
     FLearningDirectory:=TPath.Combine(TPath.GetTempPath,'DPH-Learning-'+GUIDToString(ID));

@@ -68,6 +68,7 @@
     <DCCReference Include="DPH.Workspace.Worker.pas" />
     <DCCReference Include="DPH.Workspace.Screen.pas" />
     <DCCReference Include="DPH.Publish.Model.pas" />
+    <DCCReference Include="DPH.Learning.Discovery.pas" />
     <DCCReference Include="DPH.Publish.Export.pas" />
     <DCCReference Include="DPH.Publish.Translation.pas" />
     <DCCReference Include="DPH.Publish.BrowserPolicy.pas" />

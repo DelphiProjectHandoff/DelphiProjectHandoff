@@ -19,7 +19,7 @@ type
     property LocalDisplay: Boolean read FLocalDisplay;
   end;
 implementation
-uses System.Classes, System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations, DPH.Workspace.Graphs;
+uses System.Classes, System.StrUtils, System.Hash, System.RegularExpressions, System.Generics.Collections, DPH.Analysis.Explanations, DPH.Workspace.Graphs, DPH.Learning.Discovery;
 class function TDPHDocumentModel.HTML(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
 class function TDPHDocumentModel.Redact(const AText: string): string;
@@ -322,6 +322,17 @@ begin
         Paragraphs.Add(R.GetValue<string>('body'));
       end;
     end;
+    TDPHLearningDiscovery.AddEvidence(FDocument,AView.Document);
+    if not ALocalDisplay then
+      for V in FDocument.GetValue<TJSONArray>('project_guides') do begin
+        R:=V as TJSONObject;
+        for W in R.GetValue<TJSONArray>('sections') do begin
+          J:=W as TJSONObject;
+          Path:=Redact(J.GetValue<string>('text',''));
+          J.RemovePair('text').Free;
+          J.AddPair('text',Path);
+        end;
+      end;
     Explanations:=TDPHExplanationModel.Create(FDocument);
     try
       for V in Sections do begin Section:=V as TJSONObject; Kind:=Section.GetValue<string>('id'); Paragraphs:=Section.GetValue<TJSONArray>('paragraphs');
