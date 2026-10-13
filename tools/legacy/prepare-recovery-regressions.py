@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('bin/regress-data-quality.py');s=p.read_text().replace('phase1-data-quality-','phase1-target-recovery-').replace('.Quality.dpr','.Recovery.dpr').replace('.Quality.exe','.Recovery.exe').replace('regress-data-quality.cmd','regress-target-recovery.cmd');s=s.replace("('retention','DataRetention','data-retention','phase1-data-retention-')", "('quality','DataQuality','data-quality','phase1-data-quality-')");Path('bin/regress-target-recovery.py').write_text(s)

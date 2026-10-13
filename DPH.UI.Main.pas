@@ -9,6 +9,10 @@ type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,InspectorTitle,InspectorPurpose: TLabel;
     CommandScroll: THorzScrollBox;
+    ProjectSearchProgress: TLayout;
+    ProjectSearchSpinner: TAniIndicator;
+    ProjectSearchProgressText: TLabel;
+    ProjectPreparationMessage: TLabel;
     HeaderLayout,CommandLayout,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
@@ -605,6 +609,7 @@ type
     procedure OpenKnowledgeLinkClick(Sender: TObject);
     procedure CoverageInspectClick(Sender: TObject);
     procedure WorkspacePageChange(Sender: TObject);
+    procedure LearnerTabClick(Sender: TObject);
     procedure WholeProgramGraphClick(Sender: TObject);
     procedure AllFormsGraphClick(Sender: TObject);
     procedure AllDataGraphClick(Sender: TObject);
@@ -1362,8 +1367,17 @@ begin
 end;
 procedure TDPHMainForm.SetupClick(Sender: TObject);
 begin WorkspaceTabs.ActiveTab:=SetupTab; end;
+procedure TDPHMainForm.LearnerTabClick(Sender: TObject);
+var Index: Integer;
+begin
+  Index:=(Sender as TRectangle).Tag;
+  if (Index>=0) and (Index<LessonPageCombo.Items.Count) then begin
+    LessonPageCombo.ItemIndex:=Index;
+    WorkspacePageChange(LessonPageCombo);
+  end else if Index=11 then WorkspaceTabs.ActiveTab:=SetupTab;
+end;
 procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
-var Index: Integer; Choice: TComboBox; V:TJSONValue;
+var Index: Integer; Choice: TComboBox; V:TJSONValue; TabShape: TRectangle;
 begin
   if FBinding then Exit;
   if (Sender=WorkspacePageCombo) or (Sender=LessonPageCombo) then begin
@@ -1386,6 +1400,15 @@ begin
       WorkspacePageCombo.ItemIndex:=WorkspacePageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
       LessonPageCombo.ItemIndex:=LessonPageCombo.Items.IndexOf(WorkspaceTabs.ActiveTab.Text);
     finally FBinding:=False; end;
+    for Index:=0 to 11 do begin
+      TabShape:=FindComponent('LearnerTab'+IntToStr(Index)) as TRectangle;
+      if TabShape<>nil then begin
+        if ((Index=11) and (WorkspaceTabs.ActiveTab=SetupTab)) or
+           ((Index<11) and (LessonPageCombo.ItemIndex=Index)) then
+          TabShape.Fill.Color:=$FFCDE5F8
+        else TabShape.Fill.Color:=$FFE8F2FB;
+      end;
+    end;
     ExplorerLayout.Visible:=(WorkspaceTabs.ActiveTab=ExplainTab) or (WorkspaceTabs.ActiveTab=SourceTab) or
       (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) or
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
@@ -1435,7 +1458,7 @@ begin
           KnowledgeList.ItemIndex:=Index; KnowledgeClick(nil); WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit;
         end;
     end;
-    StatusLabel.Text:='This result is a diagnostic. Its message and source location are shown in the search details.'; Exit;
+    StatusLabel.Text:='The source location and matching text are shown in the search details.'; Exit;
   end;
   Key:='';
   if ProjectSearchKind.ItemIndex>0 then Key:=ProjectSearchKind.Items[ProjectSearchKind.ItemIndex];
@@ -1446,7 +1469,10 @@ begin
   Request.Database:=FDatabase; Request.Entry:=FEntry; Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');
   Request.Body:=ProjectSearchEdit.Text; Request.SearchOffset:=FSearchOffset;
   Request.SearchKind:=FSearchKind;
-  FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Searching the indexed project evidence and knowledge...';
+  ProjectSearchProgress.Visible:=True;
+  ProjectSearchMemo.Text:='Searching project files, discovered guides and logs, captured evidence, and saved explanations. Please wait...';
+  FWorker.Submit(Request); FBusy:=True; FPendingCommand:='search';
+  StatusLabel.Text:='Searching this application. Please wait...';
 end;
 procedure TDPHMainForm.ProjectSearchSelectionClick(Sender: TObject);
 var Row: TJSONObject;
@@ -1578,6 +1604,7 @@ begin
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
   FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
+  if ACommand='full' then ProjectPreparationMessage.Visible:=True;
     FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
@@ -1613,6 +1640,7 @@ begin
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
+  ProjectPreparationMessage.Visible:=True;
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -1691,6 +1719,8 @@ begin
   while FWorker.Poll(R) do
   try
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
+    if not R.Busy then ProjectPreparationMessage.Visible:=False;
+    if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
     if R.Document<>nil then begin
       if FPendingDatabase<>'' then begin

@@ -18,6 +18,7 @@ Height = 56
 
 object LessonPageCombo: TComboBox
 Align = Right
+Visible = False
 Width = 210
 Margins.Top = 12
 Margins.Bottom = 12
@@ -38,6 +39,7 @@ OnChange = WorkspacePageChange
 end
 object SetupButton: TButton
 Align = Right
+Visible = False
 Width = 118
 Margins.Top = 12
 Margins.Bottom = 12
@@ -47,6 +49,7 @@ OnClick = SetupClick
 end
 object HelpButton: TButton
 Align = Right
+Visible = False
 Width = 130
 Margins.Right = 12
 Margins.Top = 12
@@ -147,6 +150,282 @@ end
 
 end
 end
+object LearnerNavRow1: TLayout
+Align = Top
+Height = 42
+Margins.Left = 12
+Margins.Right = 12
+object LearnerTab0: TRectangle
+Tag = 0
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel0: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Getting started'
+end
+end
+object LearnerTab1: TRectangle
+Tag = 1
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel1: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Learn the project'
+end
+end
+object LearnerTab2: TRectangle
+Tag = 2
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel2: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Learn a task'
+end
+end
+object LearnerTab3: TRectangle
+Tag = 3
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel3: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Learning library'
+end
+end
+object LearnerTab4: TRectangle
+Tag = 4
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel4: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Project map'
+end
+end
+object LearnerTab5: TRectangle
+Tag = 5
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel5: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Screenshots'
+end
+end
+end
+object LearnerNavRow2: TLayout
+Align = Top
+Height = 42
+Margins.Left = 12
+Margins.Right = 12
+object LearnerTab6: TRectangle
+Tag = 6
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel6: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Form designs'
+end
+end
+object LearnerTab7: TRectangle
+Tag = 7
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel7: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Graphs'
+end
+end
+object LearnerTab8: TRectangle
+Tag = 8
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel8: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Business glossary'
+end
+end
+object LearnerTab9: TRectangle
+Tag = 9
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel9: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Search project'
+end
+end
+object LearnerTab10: TRectangle
+Tag = 10
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel10: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Saved explanations'
+end
+end
+object LearnerTab11: TRectangle
+Tag = 11
+Align = Left
+Width = 147
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel11: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Prepare lessons'
+end
+end
+end
 object StatusLabel: TLabel
 Text = 'Choose an application to begin learning. DPH reads its files without changing them.'
 Align = Bottom
@@ -154,6 +433,17 @@ Height = 48
 WordWrap = True
 Margins.Left = 8
 Margins.Right = 8
+end
+object ProjectPreparationMessage: TLabel
+Align = Top
+Height = 36
+Visible = False
+Margins.Left = 16
+Margins.Right = 16
+StyledSettings = []
+TextSettings.Font.Size = 15
+TextSettings.FontColor = xFF146CB4
+Text = 'Reading this application''s source files, screens, guides, and logs. Please wait...'
 end
 object ExplorerLayout: TLayout
 Align = Left
@@ -1203,7 +1493,7 @@ Height = 90
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Search source objects, captured flow evidence, diagnostics and authored knowledge. Enter up to twelve words and click Search. Each word matches the beginning of an indexed word; all words must match. Select a result for its excerpt, then Open result to visit its object or note. Review status stays separate from static evidence. Use the page selector beside Getting started to reach any workspace page when tabs do not fit.'
+Text = 'Search this application''s Pascal source, project and form files, discovered guides and logs, captured evidence, and saved explanations. Enter up to twelve words. Select a result to read its matching text and source location. Results taken from files are clues, not proof of runtime behavior.'
 end
 object ProjectSearchToolbar: TLayout
 Align = Top
@@ -1220,7 +1510,7 @@ Position.X = 296
 Position.Y = 4
 Width = 150
 Height = 30
-Items.Strings = ('All' 'object' 'evidence' 'knowledge' 'diagnostic')
+Items.Strings = ('All' 'file' 'guide' 'log' 'object' 'evidence' 'knowledge' 'diagnostic')
 ItemIndex = 0
 end
 object RunProjectSearchButton: TButton
@@ -1247,6 +1537,23 @@ Width = 140
 Height = 30
 Text = 'Open result'
 OnClick = ProjectSearchClick
+end
+end
+object ProjectSearchProgress: TLayout
+Align = Top
+Height = 38
+Visible = False
+object ProjectSearchSpinner: TAniIndicator
+Align = Left
+Width = 38
+Enabled = True
+end
+object ProjectSearchProgressText: TLabel
+Align = Client
+Text = 'Searching this application''s files and saved explanations. Please wait...'
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF146CB4
 end
 end
 object ProjectSearchMemo: TMemo

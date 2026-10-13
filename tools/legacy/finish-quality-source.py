@@ -1,0 +1,3 @@
+from pathlib import Path
+p=Path('DPH.Storage.Database.pas');s=p.read_text().replace('target-data data quality rule heading','target-data quality rule heading');p.write_text(s,encoding='utf-8')
+p=Path('bin/verify-data-quality-guides.py');s=Path('bin/verify-data-retention-guides.py').read_text().replace('data-retention','data-quality').replace('==32','==33').replace('Record target data retention and archival policies','Record target data quality rules and check reports').replace('Maintain attributed target retention requirements','Maintain target data quality evidence and report imports');p.write_text(s,encoding='utf-8')

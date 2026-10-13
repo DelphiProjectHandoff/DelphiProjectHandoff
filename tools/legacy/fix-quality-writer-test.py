@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('tests/DPH.Tests.DataQuality.dpr');s=p.read_text(encoding='utf-8-sig').replace('Before,WorkspaceBefore:string;','Before,WorkspaceBefore,DatabaseFile:string;').replace(' Worker:=TDPHWorkspaceWorker.Create(Root);',' DatabaseFile:=Store.DatabasePath;FreeAndNil(Store);\n Worker:=TDPHWorkspaceWorker.Create(Root);').replace('Request.Database:=Store.DatabasePath;','Request.Database:=DatabaseFile;');p.write_text(s,encoding='utf-8-sig')

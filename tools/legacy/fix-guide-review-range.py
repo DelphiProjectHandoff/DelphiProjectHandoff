@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('bin/review-command-guides.py');s=p.read_text();s=s.replace('from PIL import Image,ImageOps,ImageDraw','from PIL import Image,ImageOps,ImageDraw\nfrom pypdf import PdfReader');s=s.replace(" for start in range(0,len(pages),6):", " pages=pages[:len(PdfReader(Path('docs/pdf')/(name+'.pdf')).pages)]\n for start in range(0,len(pages),6):");p.write_text(s,encoding='utf-8')

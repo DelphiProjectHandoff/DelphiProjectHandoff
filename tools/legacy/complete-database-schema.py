@@ -1,0 +1,39 @@
+from pathlib import Path
+import json,csv,collections,subprocess,hashlib
+r=Path.cwd();g=r'C:\Program Files\Git\cmd\git.exe';baseline='b9ab896'
+base=json.loads(subprocess.check_output([g,'show',baseline+':docs/Phase1_Requirements_Traceability.json']))
+p=r/'docs/Phase1_Requirements_Traceability.json';doc=json.loads(p.read_text(encoding='utf-8-sig'))
+assert [(x['id'],x['requirement']) for x in doc['requirements']]==[(x['id'],x['requirement']) for x in base['requirements']]
+v=json.loads((r/'docs/phase1-database-schema-validation.json').read_text(encoding='utf-8-sig'));assert v['result']=='PASS' and v['checks']==57
+v=json.loads((r/'docs/phase1-database-engines-validation.json').read_text(encoding='utf-8-sig'));assert v['result']=='PASS' and v['checks']==66
+(r/'docs/phase1-database-schema-engines-regression.json').write_text(json.dumps(v,indent=2)+'\n',encoding='utf-8')
+for name in ['docs/phase1-database-engines-validation.json','docs/phase1-database-engines-workspace.png','docs/phase1-database-engines-compact.png']:
+ (r/name).write_bytes(subprocess.check_output([g,'show',baseline+':'+name]))
+assert 'PASS WP0-TEST' in (r/'docs/phase1-database-schema-build.log').read_text(encoding='utf-8-sig')
+evidence=['DPH.Workspace.DatabaseSchema.pas','DPH.UI.Main.pas','DPH.UI.Main.fmx','tests/DPH.Tests.DatabaseSchema.dpr','tools/build-database-schema.cmd','docs/phase1-database-schema-validation.json','docs/phase1-database-schema-validation.log','docs/guides/Database_Schema_Run_and_Test.txt']
+for row in doc['requirements']:
+ if row['id']!='05.03':continue
+ row.setdefault('audit_at_reconciliation',dict(row['reconciliation']));row['implementation']='implemented';row['evidence']=evidence
+ row['limitation']='Captured source schema inspection only. Supported CREATE headers and balanced bodies retain declaration evidence; body grammar, columns, constraints, dialect correctness, deployed existence and migration order remain unverified. Existing SQL references do not prove table/view identity or a definition. Qualifiers do not prove schema declarations. Unsupported/malformed SQL remains a gap. Exact kind/spelling duplicates retain every definition, with no effective-definition winner. Original source/cache can contain sensitive data; displayed comments and literals are omitted. No target SQL or server is executed.'
+ row['reconciliation'].update(finding='The native Database schema page parses supported table, view and schema declarations from captured referenced SQL resources, retaining source line, resource byte extent, SHA256, generation and sanitized definition text. Separate states identify declared headers, schema qualifier references, existing inferred SQL references and unsupported statements. Duplicate declarations remain visible with unresolved deployment order. Kind/state/text filtering, 250-row paging, guarded source navigation, empty-result teaching and compact scrolling are implemented in IDE-editable FMX controls.',remaining_work='',verification='57 focused checks pass for actual source/resource capture, declaration/header parsing, quoted names, comments/literals, duplicates, unsupported/malformed/oversize SQL, inferred references, SQLite persistence, source containment/generation/hash guards, unchanged source/catalog/workspace, native filtering/paging/details/capture replacement and normal/compact rendering. 66 engine regression checks pass. Actual app build and FMX baseline pass. Both guides rendered and visually inspected; 56 source hashes and 86 TOC entries verified.')
+ row['implementation_update']={'date':'2026-10-12','batch':'Tables views and schemas','validation':'docs/phase1-database-schema-validation.json','prior_audit_status':'partial'}
+assert [x['id'] for x,b in zip(doc['requirements'],base['requirements']) if x!=b]==['05.03']
+counts=dict(collections.Counter(x['implementation'] for x in doc['requirements']));assert counts=={'implemented_manual_capture':18,'partial':232,'implemented':182,'missing':101},counts
+doc['completion']='RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Tables, views, and schemas 05.03 implemented as captured static evidence; 333 partial or missing requirement records remain.'
+doc['current_implementation']={'date':'2026-10-12','completed_batch':'Tables views and schemas','completed_requirement_ids':['05.03'],'counts':counts,'unassessed':0,'incomplete_requirement_records':333,'completion_record':'docs/Phase1_Database_Schema_Completion.txt','next_bounded_batch':{'requirement':'05.04','title':'Columns, data types, and constraints','scope':'Add actual column types/nullability/defaults/constraints from schema evidence.'}}
+p.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+with (r/'docs/Phase1_Implementation_Backlog.csv').open('w',encoding='utf-8-sig',newline='') as out:
+ w=csv.writer(out);w.writerow(['ID','Domain','Requirement / purpose','Status','Existing behavior','Remaining work','Batch','Evidence'])
+ for row in doc['requirements']:
+  if row['implementation'] not in ('partial','missing'):continue
+  a=row['reconciliation'];w.writerow([row['id'],row['domain'],row['requirement'],row['implementation'],a['finding'],a['remaining_work'],a['batch'],'; '.join(row['evidence'])])
+p=r/'docs/Implementation_Completion_Tracker.txt';s=p.read_text(encoding='utf-8-sig');old='Current live backlog: 334 incomplete requirement records; 0 unassessed.';assert old in s
+s=s.replace(old,'Tables, views, and schemas completed (05.03): captured CREATE definitions,\nqualified names, distinct reference/declaration/gap states, duplicate declarations,\nsource provenance, native filtering/paging and guarded source navigation.\n57 focused and 66 engine regression checks passed; actual app/FMX baseline passed.\nSee Phase1_Database_Schema_Completion.txt.\nCurrent live backlog: 333 incomplete requirement records; 0 unassessed.');p.write_text(s,encoding='utf-8')
+for name in ['docs/Phase1_Reconciliation_Report.txt','docs/Phase1_Reconciliation_Batches.json','docs/Phase1_Reconciliation_Validation.json','DPH_Master_Development_Specification_v1.md','DPH_CODEX_HANDOFF.txt','DPH_PHASE1_MASTER_REQUIREMENTS.md','docs/phase1-database-engines-workspace.png','docs/phase1-database-engines-compact.png']:
+ assert (r/name).read_bytes().replace(b'\r\n',b'\n')==subprocess.check_output([g,'show',baseline+':'+name]).replace(b'\r\n',b'\n'),name
+guide=json.loads((r/'bin/database-schema-guide-check.json').read_text());assert guide['guide_sources_verified']==56
+summary={'result':'PASS','requirement':'05.03','status':'implemented','checks':57,'regression_checks':66,'requirements_preserved':533,'only_promoted_record':'05.03','incomplete_requirement_records':333,'unassessed':0,'counts':counts,'guides':guide,'backup':{'path':r'H:\DPH Backups\DatabaseSchema_PreChange_20261012_102158','files':4293,'bytes':1004944245,'sha256_verified':True},'qualification':'Captured static CREATE declaration headers and definitions, distinct from inferred references and unsupported statements; body grammar, deployed schema and migration order unverified. No SQL executed.'}
+files=evidence+['docs/guide-source-validation.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/phase1-database-schema-build.log','docs/phase1-database-schema-engines-regression.json','docs/phase1-database-schema-workspace.png','docs/phase1-database-schema-compact.png']
+summary['evidence_hashes']={x:hashlib.sha256((r/x).read_bytes()).hexdigest() for x in files}
+(r/'docs/phase1-database-schema-completion-validation.json').write_text(json.dumps(summary,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'counts':counts,'incomplete':333,'requirements_preserved':533,'only_promoted_record':'05.03'}))

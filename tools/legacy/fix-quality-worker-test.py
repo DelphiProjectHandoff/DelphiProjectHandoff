@@ -1,0 +1,3 @@
+from pathlib import Path
+p=Path('tests/DPH.Tests.DataQuality.dpr');s=p.read_text(encoding='utf-8-sig').replace('if Worker.Poll(Response) then Break;Sleep(10);','if Worker.Poll(Response) then begin if not Response.Busy then Break;Response.Free;Response:=nil;end;Sleep(10);');p.write_text(s,encoding='utf-8-sig')
+p=Path('bin/regress-data-quality.py');s=Path('bin/regress-data-retention.py').read_text().replace('data-retention','data-quality').replace('.Retention','.Quality').replace("('formats','FileFormats','file-formats','phase1-file-formats-')","('retention','DataRetention','data-retention','phase1-data-retention-')");p.write_text(s,encoding='utf-8')

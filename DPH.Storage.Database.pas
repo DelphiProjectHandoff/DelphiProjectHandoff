@@ -1637,6 +1637,9 @@ begin RequireWriter; Result := VarToStr(Scalar('SELECT sqlite_version()',[])); e
 
 procedure TDPHKnowledgeStore.BuildSearchIndex(AGeneration: Int64);
 var Revision: Int64; Query: TFDQuery; Match: TMatch; FTS: Boolean;
+    Workspace,Asset,Guide,Section: TJSONObject; Assets,Guides,Sections: TJSONArray;
+    Value,GuideValue,SectionValue: TJSONValue;
+    Root,RelativePath,Path,Ext,Body,Kind: string; FileCount: Integer; TotalBytes,FileBytes: Int64;
 begin
   RequireWriter; FTS:=SupportsFTS5;
   if Scalar('SELECT count(*) FROM analysis_generations WHERE generation_id=:id AND status IN (''current'',''partial'')',[AGeneration])<>1 then
@@ -1644,7 +1647,7 @@ begin
   if FTS then FConnection.ExecSQL('CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(title,body)');
   Revision:=Scalar('SELECT coalesce(max(knowledge_revision_id),0) FROM knowledge_revisions',[]);
   if Scalar('SELECT count(*) FROM search_index_state WHERE generation_id=:generation AND knowledge_revision=:revision AND search_version=:version',
-    [AGeneration,Revision,'DPH-SEARCH-1-'+BoolToStr(FTS,True)])=1 then Exit;
+    [AGeneration,Revision,'DPH-SEARCH-2-'+BoolToStr(FTS,True)])=1 then Exit;
   FConnection.StartTransaction;
   try
     if FTS then FConnection.ExecSQL('DELETE FROM search_fts WHERE rowid IN (SELECT document_id FROM search_documents WHERE generation_id=:id)',[AGeneration]);
@@ -1664,6 +1667,62 @@ begin
     FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,knowledge_id,verification_state) '+
       'SELECT :generation,''knowledge'',k.title,r.body_md,k.knowledge_id,k.state FROM knowledge_records k '+
       'JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1',[AGeneration]);
+    Workspace:=TJSONObject.ParseJSONValue(LoadWorkspaceView(AGeneration)) as TJSONObject;
+    try
+      if Workspace<>nil then begin
+        Guides:=Workspace.GetValue<TJSONArray>('project_guides',nil);
+        if Guides<>nil then for GuideValue in Guides do begin
+          Guide:=GuideValue as TJSONObject;
+          RelativePath:=Guide.GetValue<string>('source','');
+          Sections:=Guide.GetValue<TJSONArray>('sections',nil);
+          if Sections=nil then Continue;
+          if Sections.Count=0 then
+            FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,source_path,verification_state) '+
+              'VALUES(:generation,''guide'',:title,:body,:path,''document inventory only'')',
+              [AGeneration,RelativePath,'Document found. Its text was not available to the reader.',RelativePath]);
+          for SectionValue in Sections do begin
+            Section:=SectionValue as TJSONObject;
+            FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,source_path,verification_state) '+
+              'VALUES(:generation,''guide'',:title,:body,:path,''captured project document'')',
+              [AGeneration,RelativePath+' / '+Section.GetValue<string>('heading',''),
+               Section.GetValue<string>('text',''),RelativePath]);
+          end;
+        end;
+        Root:=Workspace.GetValue<string>('root','');
+        Assets:=Workspace.GetValue<TJSONArray>('project_assets',nil);
+        FileCount:=0; TotalBytes:=0;
+        if (Root<>'') and TDirectory.Exists(Root) and (Assets<>nil) then
+          for Value in Assets do begin
+            if (FileCount>=1000) or (TotalBytes>=64*1024*1024) then Break;
+            Asset:=Value as TJSONObject;
+            RelativePath:=Asset.GetValue<string>('source','');
+            Ext:=LowerCase(Asset.GetValue<string>('format',''));
+            if not MatchText(Ext,['.pas','.dpr','.dproj','.groupproj','.fmx','.dfm',
+              '.md','.txt','.log','.html','.htm','.json','.xml','.ini','.config',
+              '.yml','.yaml','.sql','.contract','.schema']) then Continue;
+            try
+              Path:=TPath.GetFullPath(TPath.Combine(Root,RelativePath));
+              if not StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(Root)),Path) or
+                 not TFile.Exists(Path) or
+                 ((GetFileAttributes(PChar(Path)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0) then Continue;
+              FileBytes:=TFile.GetSize(Path);
+              if (FileBytes=0) or (FileBytes>1024*1024) or
+                 (TotalBytes+FileBytes>64*1024*1024) then Continue;
+              Body:=TFile.ReadAllText(Path);
+              if MatchText(Ext,['.html','.htm']) then
+                Body:=TRegEx.Replace(Body,'<[^>]+>',' ');
+              if Length(Body)>262144 then SetLength(Body,262144);
+              if Ext='.log' then Kind:='log'
+              else if MatchText(Ext,['.md','.txt','.html','.htm']) then Kind:='guide'
+              else Kind:='file';
+              FConnection.ExecSQL('INSERT INTO search_documents(generation_id,kind,title,body,source_path,verification_state) '+
+                'VALUES(:generation,:kind,:title,:body,:path,''current project file; compare with captured source'')',
+                [AGeneration,Kind,RelativePath,Body,RelativePath]);
+              Inc(FileCount); Inc(TotalBytes,FileBytes);
+            except on E: Exception do Continue; end;
+          end;
+      end;
+    finally Workspace.Free; end;
     if FTS then FConnection.ExecSQL('INSERT INTO search_fts(rowid,title,body) SELECT document_id,title,body FROM search_documents WHERE generation_id=:id',[AGeneration])
     else begin
       Query:=NewQuery('SELECT document_id,title,body FROM search_documents WHERE generation_id=:id',[AGeneration]);
@@ -1677,18 +1736,18 @@ begin
     end;
     FConnection.ExecSQL('INSERT INTO search_index_state(generation_id,knowledge_revision,search_version) VALUES(:id,:revision,:version) '+
       'ON CONFLICT(generation_id) DO UPDATE SET knowledge_revision=excluded.knowledge_revision,search_version=excluded.search_version',
-      [AGeneration,Revision,'DPH-SEARCH-1-'+BoolToStr(FTS,True)]);
+      [AGeneration,Revision,'DPH-SEARCH-2-'+BoolToStr(FTS,True)]);
     FConnection.Commit;
   except FConnection.Rollback; raise; end;
 end;
 
 function TDPHKnowledgeStore.SearchProject(AGeneration: Int64; const AQuery,AKind: string; AOffset: Integer): TJSONArray;
-var Match: TMatch; ExpressionText,SQLText: string; Query: TFDQuery; Row: TJSONObject; I,TokenCount: Integer;
+var Match: TMatch; ExpressionText,SQLText,Excerpt,FirstWord: string; Query: TFDQuery; Row: TJSONObject; I,TokenCount,ExcerptAt: Integer;
     Values: TArray<Variant>; FTS: Boolean;
 begin
   RequireWriter;
   if (Length(AQuery)>1000) or (AOffset<0) or (AOffset>1000000) then raise EDPHStorage.Create('Invalid search query or page');
-  if not MatchText(AKind,['','object','evidence','knowledge','diagnostic']) then raise EDPHStorage.Create('Invalid search category');
+  if not MatchText(AKind,['','file','guide','log','object','evidence','knowledge','diagnostic']) then raise EDPHStorage.Create('Invalid search category');
   BuildSearchIndex(AGeneration); FTS:=SupportsFTS5; ExpressionText:=''; TokenCount:=0;
   Values:=[AGeneration,AKind];
   for Match in TRegEx.Matches(LowerCase(AQuery),'[\p{L}\p{N}_]+') do begin
@@ -1702,7 +1761,8 @@ begin
     end;
   end;
   if TokenCount=0 then raise EDPHStorage.Create('Enter at least one word to search');
-  SQLText:='SELECT d.document_id,d.kind,d.title,substr(d.body,1,1200) AS excerpt,d.entity_key,coalesce(d.knowledge_id,0) AS knowledge_id,'+
+  FirstWord:=TRegEx.Match(AQuery,'[\p{L}\p{N}_]+').Value;
+  SQLText:='SELECT d.document_id,d.kind,d.title,d.body AS excerpt,d.entity_key,coalesce(d.knowledge_id,0) AS knowledge_id,'+
     'd.source_path,d.verification_state FROM search_documents d ';
   if FTS then SQLText:=SQLText+'JOIN search_fts ON search_fts.rowid=d.document_id ';
   SQLText:=SQLText+'WHERE d.generation_id=:generation AND (:kind='''' OR d.kind=:kind) ';
@@ -1713,7 +1773,14 @@ begin
   try
     while not Query.Eof do begin
       Row:=TJSONObject.Create; Result.AddElement(Row);
-      for I:=0 to Query.FieldCount-1 do Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      for I:=0 to Query.FieldCount-1 do begin
+        if Query.Fields[I].FieldName='excerpt' then begin
+          Excerpt:=Query.Fields[I].AsString;
+          ExcerptAt:=Pos(LowerCase(FirstWord),LowerCase(Excerpt));
+          if ExcerptAt>180 then Dec(ExcerptAt,180) else ExcerptAt:=1;
+          Row.AddPair('excerpt',Copy(Excerpt,ExcerptAt,1200));
+        end else Row.AddPair(Query.Fields[I].FieldName,Query.Fields[I].AsString);
+      end;
       Query.Next;
     end;
   finally Query.Free; end;

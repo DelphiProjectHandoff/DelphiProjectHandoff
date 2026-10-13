@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('DPH.UI.Main.fmx');s=p.read_text();a=s.index('object DataQualityTab:');b=s.index('object FileFormatsTab:',a);t=s[a:b].replace('Height = 64','Height = 48').replace('Height = 48\nMargins.Left = 12\nMargins.Right = 12\nWordWrap = True\nText = \'Open a captured project','Height = 36\nMargins.Left = 12\nMargins.Right = 12\nWordWrap = True\nText = \'Open a captured project').replace('Height = 56','Height = 48');s=s[:a]+t+s[b:];p.write_text(s,encoding='utf-8')

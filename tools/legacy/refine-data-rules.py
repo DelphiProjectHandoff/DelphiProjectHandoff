@@ -1,0 +1,13 @@
+from pathlib import Path
+r=Path.cwd();p=r/'DPH.Workspace.DatabaseConnections.pas';s=p.read_text(encoding='utf-8-sig')
+old="Rule:=NewRule('declared field constraint',Name,Owner.GetValue<string>('source'),Owner.GetValue<string>('source_hash'),TJSONObject.Create.AddPair('source',Owner.GetValue<string>('source')).AddPair('start',PropertyNode.GetValue('start').Clone as TJSONValue).AddPair('end',PropertyNode.GetValue('end').Clone as TJSONValue).AddPair('line',PropertyNode.GetValue('line').Clone as TJSONValue).AddPair('column',PropertyNode.GetValue('column').Clone as TJSONValue),Owner);"
+new="ReferenceRow:=TJSONObject.Create.AddPair('source',Owner.GetValue<string>('source')).AddPair('start',PropertyNode.GetValue('start').Clone as TJSONValue).AddPair('end',PropertyNode.GetValue('end').Clone as TJSONValue).AddPair('line',PropertyNode.GetValue('line').Clone as TJSONValue).AddPair('column',PropertyNode.GetValue('column').Clone as TJSONValue);\n      try Rule:=NewRule('declared field constraint',Name,Owner.GetValue<string>('source'),Owner.GetValue<string>('source_hash'),ReferenceRow,Owner);finally ReferenceRow.Free;end;"
+assert old in s;s=s.replace(old,new)
+s=s.replace("if Rule=nil then Continue;Text:=Safe(PropertyNode.GetValue<string>('value'));", "if Rule=nil then Continue;Text:=PropertyNode.GetValue<string>('value');\n      if MatchText(Name,['CustomConstraint','DefaultExpression']) and (Length(Text)>=2) and (Text[1]='''') and (Text[Length(Text)]='''') then Text:=Copy(Text,2,Length(Text)-2).Replace('''''','''');\n      Text:=Safe(Text);")
+s=s.replace("LinkSymbol(Rule,HandlerKey,'handler');SetText(Rule,'expression',Safe(ExpressionText));", "LinkSymbol(Rule,HandlerKey,'handler');SetText(Rule,'expression',Safe(ExpressionText));SetText(Rule,'condition',PropertyNode.GetValue<string>('condition',''));\n      for C in Nodes do if (C.GetValue<Integer>('start')=Flow.GetValue<Integer>('range.start')) and C.GetValue<string>('kind').StartsWith('statement_') then begin SetText(Rule,'condition',C.GetValue<string>('condition',''));Break;end;")
+p.write_text(s,encoding='utf-8')
+for name in ['DatasetBindings','DatabaseOperations','DatabaseTransactions']:
+ p=r/f'tests/DPH.Tests.{name}.dpr';s=p.read_text(encoding='utf-8-sig')
+ s=s.replace("Check(Find('Amount').GetValue<TJSONArray>('used_by').Count=1,'Persistent field lists exact bound control');", "Check(Find('Amount').GetValue<TJSONArray>('used_by').ToJSON.Contains(Find('AmountEdit').GetValue<string>('id')),'Persistent field retains exact bound control among all dependents');")
+ p.write_text(s,encoding='utf-8')
+print('Rule range ownership, expression masking and dependency assertions refined')

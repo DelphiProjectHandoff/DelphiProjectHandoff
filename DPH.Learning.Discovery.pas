@@ -50,7 +50,7 @@ var
         ContainsText(LowerName,'.env') or ContainsText(LowerName,'private') then Continue;
       if (GetFileAttributes(PChar(Entry)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then Continue;
       if MatchText(Ext,['.pas','.dpr','.dproj','.groupproj','.fmx','.dfm',
-        '.md','.txt','.html','.htm','.docx','.pdf','.rtf','.json','.xml',
+        '.md','.txt','.log','.html','.htm','.docx','.pdf','.rtf','.json','.xml',
         '.ini','.config','.yml','.yaml','.sql','.contract','.schema',
         '.png','.jpg','.jpeg','.svg','.bmp','.rc','.res']) then begin
         Assets.AddElement(TJSONObject.Create.AddPair('source',
@@ -67,7 +67,7 @@ var
     for Entry in FolderEntries do begin
       Base:=LowerCase(TPath.GetFileName(Entry));
       if MatchText(Base,['.git','bin','dcu','database','databases','samples',
-        'export','logs','log','tests','tools','source distributions',
+        'export','tests','tools','source distributions',
         'node_modules','vendor','dependencies']) then Continue;
       Visit(Entry,ADepth+1);
     end;

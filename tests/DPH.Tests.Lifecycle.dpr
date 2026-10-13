@@ -4,6 +4,7 @@ uses System.SysUtils, System.IOUtils, System.JSON, System.Hash, System.NetEncodi
   DPH.Storage.Database in '..\DPH.Storage.Database.pas', DPH.Storage.Types,
   DPH.Storage.Backup in '..\DPH.Storage.Backup.pas';
 var Root,Work,Source,Database,Text: string; Store: TDPHKnowledgeStore;
+    ViewDoc,Guide: TJSONObject; Assets,Guides,Sections: TJSONArray;
     Manifest: TDPHManifest; Config,Generation,OldNote,OldRevision: Int64; Index,Checks: Integer;
     Rows: TJSONArray; Failed: Boolean;
 procedure Check(Condition: Boolean; const MessageText: string);
@@ -17,7 +18,9 @@ begin
   Source:=TPath.Combine(Work,'source'); Database:=TPath.Combine(Work,'fixture.dphdb');
   if TDirectory.Exists(Work) then raise Exception.Create('Lifecycle test work directory already exists; inspect it before reuse');
   TDirectory.CreateDirectory(Source);
-  TFile.WriteAllText(TPath.Combine(Source,'one.pas'),'unit One; interface implementation end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Source,'one.pas'),'unit One; interface implementation // FROGPAS123'#13#10'end.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Source,'README.md'),'FROGGUIDE123 explains the fixture.',TEncoding.UTF8);
+  TFile.WriteAllText(TPath.Combine(Source,'activity.log'),'FROGLOG123 captured in a saved log.',TEncoding.UTF8);
   SetLength(Manifest,1); Manifest[0].RelativePath:='one.pas'; Manifest[0].Kind:='.pas';
   Manifest[0].Availability:='available'; Manifest[0].Encoding:='UTF-8';
   Manifest[0].SHA256:=THashSHA2.GetHashStringFromFile(TPath.Combine(Source,'one.pas'));
@@ -30,7 +33,20 @@ begin
       Generation:=Store.BeginGeneration(Config,'lifecycle-fixture',Manifest);
       if Index<=2 then Store.AddSourceEntity(Generation,'one.pas','old.work','semantic_routine','Old.Work','()',0,10)
       else Store.AddSourceEntity(Generation,'one.pas','new.work','semantic_routine','New.Work','()',0,10);
-      Text:='{"generation_id":'+IntToStr(Generation)+'}'; Store.SaveWorkspaceView(Generation,Text);
+      ViewDoc:=TJSONObject.Create;
+      try
+        ViewDoc.AddPair('generation_id',TJSONNumber.Create(Generation)); ViewDoc.AddPair('root',Source);
+        Assets:=TJSONArray.Create; ViewDoc.AddPair('project_assets',Assets);
+        Assets.AddElement(TJSONObject.Create.AddPair('source','one.pas').AddPair('format','.pas'));
+        Assets.AddElement(TJSONObject.Create.AddPair('source','README.md').AddPair('format','.md'));
+        Assets.AddElement(TJSONObject.Create.AddPair('source','activity.log').AddPair('format','.log'));
+        Guides:=TJSONArray.Create; ViewDoc.AddPair('project_guides',Guides);
+        Guide:=TJSONObject.Create.AddPair('source','README.md'); Guides.AddElement(Guide);
+        Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
+        Sections.AddElement(TJSONObject.Create.AddPair('heading','Purpose').AddPair('text','FROGGUIDE123 explains the fixture.'));
+        Guides.AddElement(TJSONObject.Create.AddPair('source','fixture-handbook.pdf').AddPair('sections',TJSONArray.Create));
+        Store.SaveWorkspaceView(Generation,ViewDoc.ToJSON);
+      finally ViewDoc.Free; end;
       Check(Store.PublishGeneration(Generation,Manifest,'{}',True),'Captured coherent generation '+IntToStr(Index));
       if Index=2 then Store.RetainGeneration(Generation,'Reviewed fixture release','Test reviewer');
       if Index=1 then OldNote:=Store.SaveKnowledge(0,0,Generation,'Rename rationale','Original authored rationale','Original author','note','old.work');
@@ -87,6 +103,16 @@ begin
     try Check(Rows.Count=0,'Search never mixes retired identities into the current generation'); finally Rows.Free; end;
     Failed:=False; try Rows:=Store.SearchProject(Generation,'" OR *', '',0); Rows.Free; except Failed:=True; end;
     Check(not Failed,'Search syntax is tokenized rather than executed as query operators');
+    Rows:=Store.SearchProject(Generation,'FROGPAS123','file',0);
+    try Check((Rows.Count=1) and ((Rows.Items[0] as TJSONObject).GetValue<string>('source_path')='one.pas'),
+      'Project search reads Pascal source text'); finally Rows.Free; end;
+    Rows:=Store.SearchProject(Generation,'FROGGUIDE123','guide',0);
+    try Check(Rows.Count>0,'Project search reads captured guide sections and readable guide files'); finally Rows.Free; end;
+    Rows:=Store.SearchProject(Generation,'FROGLOG123','log',0);
+    try Check((Rows.Count=1) and ((Rows.Items[0] as TJSONObject).GetValue<string>('source_path')='activity.log'),
+      'Project search reads saved project logs'); finally Rows.Free; end;
+    Rows:=Store.SearchProject(Generation,'fixture-handbook','guide',0);
+    try Check(Rows.Count=1,'Project search identifies PDF guides when text extraction is unavailable'); finally Rows.Free; end;
     Text:=TPath.Combine(Work,'capture.png');
     TFile.WriteAllBytes(Text,TNetEncoding.Base64.DecodeStringToBytes('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aDv8AAAAASUVORK5CYII='));
     Store.ImportScreenshot(Generation,Text,'Fixture contributor','One-pixel imported fixture','');

@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('DPH.Storage.Database.pas');s=p.read_text();s=s.replace('var Bytes,RoundTrip:TBytes;Encoding:TUTF8Encoding;Content,Body,Hash:string;RecordValue:TJSONObject;','var Bytes,RoundTrip:TBytes;Encoding:TUTF8Encoding;Content,Body,Hash:string;RecordValue:TJSONObject;Hasher:THashSHA2;').replace(' Hash:=THashSHA2.GetHashString(Bytes);',' Hasher:=THashSHA2.Create;Hasher.Update(Bytes);Hash:=Hasher.HashAsString;');p.write_text(s,encoding='utf-8')

@@ -1,0 +1,40 @@
+from pathlib import Path
+import json,csv,collections,subprocess,hashlib
+r=Path.cwd();g=r'C:\Program Files\Git\cmd\git.exe';p=r/'docs/Phase1_Requirements_Traceability.json'
+d=json.loads(p.read_text(encoding='utf-8-sig'));base=json.loads(subprocess.check_output([g,'show','5f4baf0:docs/Phase1_Requirements_Traceability.json']))
+assert len(d['requirements'])==533
+assert [(x['id'],x['requirement']) for x in d['requirements']]==[(x['id'],x['requirement']) for x in base['requirements']]
+checks={'validation':97,'knowledge-regression-validation':59,'publishing-regression-validation':114,'quality-regression-validation':91,'process-regression-validation':84,'workflow-regression-validation':104,'diagram-regression-validation':147}
+for suffix,count in checks.items():
+ v=json.loads((r/f'docs/phase1-business-rule-{suffix}.json').read_text(encoding='utf-8-sig'));assert v.get('checks_passed',v.get('checks'))==count,(suffix,v)
+assert 'PASS WP0-TEST' in (r/'docs/phase1-business-rule-build.log').read_text(encoding='utf-8-sig')
+guide=json.loads((r/'bin/business-rule-guide-check.json').read_text(encoding='utf-8'));assert sum(x['pages'] for x in guide['guides'])==76;assert sum(x['toc_entries'] for x in guide['guides'])==126;assert guide['guide_sources_verified']==58
+comparison=json.loads((r/'bin/business-rule-guide-page-comparison.json').read_text(encoding='utf-8'));unchanged=sum(bool(x['previous_reviewed_identical_page']) for x in comparison);assert len(comparison)==76
+qualification='Structured attributed business-rule catalog provides unique immutable human identifiers, applicability, conditions, outcomes, exceptions, accountable owners, approval responsibilities and explicit unknowns. Native IDE-editable fields, state/text filters, bounded 250-row pages, exact implementation/procedure links, named review/history and publication preserve evidence. Original unstructured business-rule notes remain distinguishable with their attribution; other typed knowledge kinds are excluded. No target execution or business authorization is performed.'
+evidence=['DPH.Workspace.Model.pas','DPH.Storage.Database.pas','DPH.UI.Main.pas','DPH.UI.Main.fmx','tests/DPH.Tests.BusinessRule.dpr','tools/build-business-rule.cmd','docs/phase1-business-rule-validation.json','docs/phase1-business-rule-validation.log','docs/guides/Business_Rule_Run_and_Test.txt']
+row=next(x for x in d['requirements'] if x['id']=='06.04');assert row['implementation']=='partial'
+row.setdefault('audit_at_reconciliation',dict(row['reconciliation']));row['implementation']='implemented_manual_capture';row['evidence']=evidence;row['limitation']=qualification
+row['reconciliation'].update(finding='Dedicated attributed rule catalog captures unique stable identifiers, applicability, conditions, outcomes, exceptions, owners and approval responsibilities, with exact links, immutable review/history and native typed editing. Original unstructured notes remain available and clearly labeled.',remaining_work='',verification='97 focused and 599 regression checks pass; actual application/FMX pass. Native normal/compact renders reviewed. All 76 guide pages covered by pixel identity or individual changed-page inspection; 58 source hashes and 126 TOC destinations verified.')
+row['implementation_update']={'date':'2026-10-12','batch':'Business-rule catalog','validation':'docs/phase1-business-rule-validation.json','prior_audit_status':'partial'}
+assert [x['id'] for x,b in zip(d['requirements'],base['requirements']) if x!=b]==['06.04']
+counts=dict(collections.Counter(x['implementation'] for x in d['requirements']));assert counts=={'implemented_manual_capture':24,'partial':225,'implemented':196,'missing':88},counts
+next_batch={'requirement':'06.06','title':'Calculations and formulas','scope':'Add a calculation/formula inventory and reviewed business meaning/unit/input/output definitions.'}
+d['completion']='RECONCILIATION COMPLETE; PRODUCT IMPLEMENTATION INCOMPLETE. Zero unassessed requirements. Business-rule catalog 06.04 implemented; 313 partial or missing records remain.'
+d['current_implementation']={'date':'2026-10-12','completed_batch':'Business-rule catalog','completed_requirement_ids':['06.04'],'counts':counts,'unassessed':0,'incomplete_requirement_records':313,'completion_record':'docs/Phase1_Business_Rule_Completion.txt','next_bounded_batch':next_batch}
+p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+with (r/'docs/Phase1_Implementation_Backlog.csv').open('w',encoding='utf-8-sig',newline='') as out:
+ w=csv.writer(out);w.writerow(['ID','Domain','Requirement / purpose','Status','Existing behavior','Remaining work','Batch','Evidence'])
+ for row in d['requirements']:
+  if row['implementation'] in ('partial','missing'):
+   a=row['reconciliation'];w.writerow([row['id'],row['domain'],row['requirement'],row['implementation'],a['finding'],a['remaining_work'],a['batch'],'; '.join(row['evidence'])])
+p=r/'docs/Implementation_Completion_Tracker.txt';s=p.read_text(encoding='utf-8-sig');old='Current live backlog: 314 incomplete requirement records; 0 unassessed.';assert old in s;p.write_text(s.replace(old,'Business-rule catalog completed (06.04).\n97 focused and 599 regression checks passed; actual app/FMX passed.\nSee Phase1_Business_Rule_Completion.txt.\nCurrent live backlog: 313 incomplete requirement records; 0 unassessed.'),encoding='utf-8')
+backup={'path':r'H:\DPH Backups\BusinessRuleCatalog_PreChange_20261012_203544','files':11845,'bytes':3393084150,'sha256_verified':True}
+v=json.loads((Path(backup['path'])/'DPH_Backup_Verification.json').read_text(encoding='utf-8-sig'));assert v['files']==backup['files'] and v['bytes']==backup['bytes']
+review=f'All 76 guide pages reviewed: {unchanged} pixel-identical previously reviewed pages and {76-unchanged} changed pages inspected. 58 source hashes and 126 TOC destinations verified.'
+completion='DPH REQUIREMENT 06.04 COMPLETION: BUSINESS RULE CATALOG\nLast changed: 12 October 2026\n\n'+qualification+'\n\nValidation PASS: 97 focused + 599 regression = 696 checks.\nActual application and FMX baseline PASS. Native normal/compact editor and catalog renders reviewed.\n'+review+'\nEditable DOCX/PDF guides, HTML help and explicit run/test directions updated.\nDirections: docs/guides/Business_Rule_Run_and_Test.txt\n\nPre-change backup: '+backup['path']+'\n11845 files, 3393084150 bytes; every SHA256 verified. No post-change backup.\n\nOnly 06.04 promoted; all 533 original IDs and texts preserved.\n196 implemented; 24 implemented_manual_capture; 225 partial; 88 missing.\n313 incomplete; zero unassessed. Product implementation remains incomplete.\nNext: 06.06 Calculations and formulas. Requirement 06.05 is already implemented_manual_capture.\n'
+(r/'docs/Phase1_Business_Rule_Completion.txt').write_text(completion,encoding='utf-8')
+(r/'docs/phase1-business-rule-guide-review.json').write_text(json.dumps(comparison,indent=2)+'\n',encoding='utf-8')
+files=evidence+['tools/build-guides.py','README.md','help/index.html','docs/guide-source-validation.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/Phase1_Business_Rule_Completion.txt','docs/Phase1_Requirements_Traceability.json','docs/Phase1_Implementation_Backlog.csv','docs/Implementation_Completion_Tracker.txt']
+files+=[x.relative_to(r).as_posix() for x in (r/'docs').glob('phase1-business-rule-*') if x.suffix in ('.json','.log','.png')]
+summary={'result':'PASS','requirement':'06.04','status':'implemented_manual_capture','checks':97,'regression_checks':599,'requirements_preserved':533,'only_promoted_record':'06.04','counts':counts,'incomplete_requirement_records':313,'unassessed':0,'guides':guide,'guide_visual_review':review,'backup':backup,'qualification':qualification,'evidence_hashes':{x:hashlib.sha256((r/x).read_bytes()).hexdigest() for x in dict.fromkeys(files)}}
+(r/'docs/phase1-business-rule-completion-validation.json').write_text(json.dumps(summary,indent=2)+'\n',encoding='utf-8');print(counts)

@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('tests/DPH.Tests.ComponentDependencies.dpr');s=p.read_text();s=s.replace("Check(Editor.ModalResult<>mrOk,'Editor requires contributor');Editor.LoadRecord(RecordValue,'Native Test Author');", "Check(Editor.ModalResult<>mrOk,'Editor requires contributor');Editor.Free;Editor:=TDPHComponentDependencyForm.Create(nil);Editor.LoadRecord(RecordValue,'Native Test Author');");p.write_text(s,encoding='utf-8')
