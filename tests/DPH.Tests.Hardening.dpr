@@ -122,7 +122,7 @@ begin
           Form.WorkspaceTabs.ActiveTab:=Form.GraphTab; Form.Show; Application.ProcessMessages;
           Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
             if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-            Bitmap.SaveToFile(TPath.Combine(Root,'docs\wp7-reference-workspace.png')); finally Bitmap.Free; end;
+            Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\wp7-reference-workspace.png')); finally Bitmap.Free; end;
           Bundle:=TPath.Combine(Work,'reference-task'); PublishBundle(Bundle,[Key],True);
           TDPHPublisher.Validate(Bundle,View.Document.GetValue<string>('semantics.input_fingerprint'),False);
           Check(True,'Pinned reference task handoff validates with explicit partial/stale evidence');
@@ -163,7 +163,7 @@ begin
           Check(ContainsText(JSResult,'SOURCE_READY'),'Real FMX WebView2 renders source excerpts with original line anchors');
           Bitmap:=Form.PublishBrowser.CaptureBitmap;
           Check(Bitmap<>nil,'Source excerpt browser bitmap captured for visual review');
-          try Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-source-browser.png')); finally Bitmap.Free; end;
+          try Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\completion-source-browser.png')); finally Bitmap.Free; end;
           Form.Hide;
         finally Form.Free; end;
         Store:=TDPHKnowledgeStore.Create(Request.Database,ReferenceRoot,TPath.Combine(Root,'migrations'));
@@ -174,7 +174,7 @@ begin
       Report.AddPair('reference_full_ms',TJSONNumber.Create(FullMS)); Report.AddPair('reference_cached_ms',TJSONNumber.Create(CacheMS)); Report.AddPair('reference_incremental_ms',TJSONNumber.Create(IncrementalMS));
       Report.AddPair('ui_message_pump_max_gap_ms',TJSONNumber.Create(MaxGap)); Report.AddPair('peak_working_set_bytes',TJSONNumber.Create(Int64(Memory.PeakWorkingSetSize)));
       Report.AddPair('independent_first_time_programmer','not_run; requires a human participant');
-      TFile.WriteAllText(TPath.Combine(Root,'docs\wp7-validation.json'),Report.Format(2),TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp7-validation.json'),Report.Format(2),TEncoding.UTF8);
       Writeln('PASS WP7: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
   finally Report.Free; CoUninitialize; end;

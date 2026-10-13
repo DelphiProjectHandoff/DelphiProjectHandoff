@@ -66,14 +66,14 @@ begin
                 Form.Show; Application.ProcessMessages;
                 Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
                 try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-project-catalog.png'));
+                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-project-catalog.png'));
                 finally Bitmap.Free; end;
                 Form.WindowState:=TWindowState.wsNormal; Form.Width:=960; Form.Height:=600;
                 Application.ProcessMessages;
                 Check(Form.ProjectMemberMemo.Height>=80,'Evidence remains readable at the minimum supported restored window size');
                 Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
                 try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-project-catalog-compact.png'));
+                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-project-catalog-compact.png'));
                 finally Bitmap.Free; end;
                 Form.Hide;
               finally Form.Free; end;
@@ -86,7 +86,7 @@ begin
     Report:=TJSONObject.Create;
     try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('work',Work);
       Report.AddPair('qualification','Controlled selected-group fixture; declaration kinds only. Service installation and actual build outputs are not verified. Native image is an FMX PaintTo render.');
-      TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-project-catalog-validation.json'),Report.Format(2),TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-project-catalog-validation.json'),Report.Format(2),TEncoding.UTF8);
     finally Report.Free; end;
     Writeln('PASS project catalog: ',Checks,' checks');
   except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

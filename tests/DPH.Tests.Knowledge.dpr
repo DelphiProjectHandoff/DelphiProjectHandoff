@@ -148,7 +148,7 @@ begin
     finally Store.Free; end;
     Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'portable.dphdb'),SourceRoot,TPath.Combine(Root,'migrations'));
     try Row:=LoadNote; try Check(Row.GetValue<TJSONArray>('history').Count=6,'Backup/restore retains full immutable review and rich-link history'); finally Row.Free; end; finally Store.Free; end;
-    Row:=TJSONObject.Create; try Row.AddPair('checks_passed',TJSONNumber.Create(Checks)); Row.AddPair('work',Work); TFile.WriteAllText(TPath.Combine(Root,'docs\wp5-validation.json'),Row.Format,TEncoding.UTF8); finally Row.Free; end;
+    Row:=TJSONObject.Create; try Row.AddPair('checks_passed',TJSONNumber.Create(Checks)); Row.AddPair('work',Work); TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp5-validation.json'),Row.Format,TEncoding.UTF8); finally Row.Free; end;
     Writeln('PASS WP5: ',Checks,' checks');
   except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
 end.

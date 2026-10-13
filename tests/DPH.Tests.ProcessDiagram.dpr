@@ -399,7 +399,7 @@ end;
  Check(DiagramText.Contains('knowledge_revision_'),'Pinned process navigation anchor included');
 Check(DiagramText.Contains('s_'+THashSHA2.GetHashString(Diagram.GetValue<string>('workflow_id')+'|End')),'End-node anchors namespaced by workflow identity');
  Check(Diagram.ToJSON=DiagramBefore,'Rendering never mutates authoritative projection');
- TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-process-diagram-projection.json'),Diagram.Format,TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-process-diagram-projection.json'),Diagram.Format,TEncoding.UTF8);
  Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,False,nil,False,'maintainer');
 Explain:=TDPHExplanationModel.Create(Model.Document);
  try TFile.WriteAllText(TPath.Combine(Work,'process-diagram.html'),Explain.GraphHTML(Diagram),TEncoding.UTF8);finally Explain.Free;Model.Free;end;
@@ -730,7 +730,7 @@ Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceH
 Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
 
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Authored end-to-end process diagrams preserve ordered steps, normal handoffs, stable exception routes and reviewed exact business-process revision links. Canonical HTML and native fallback share the saved projection. Runtime and business authorization remain unverified.');
-try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-process-diagram-validation.json'),Log.Format,TEncoding.UTF8);
+try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-process-diagram-validation.json'),Log.Format,TEncoding.UTF8);
 finally Log.Free;
 end;
 

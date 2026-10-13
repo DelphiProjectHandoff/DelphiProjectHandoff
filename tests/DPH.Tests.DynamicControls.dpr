@@ -94,7 +94,7 @@ begin
  finally Form.Free;end;
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'User project catalog unchanged');
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Model.pas'))=SourceHash,'Selected fixture source unchanged');
- TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-dynamic-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('fixture',Work).AddPair('qualification','Actual Pascal parser/semantic evidence and instantiated native FMX form. PaintTo renders are running DPH controls, not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-dynamic-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('fixture',Work).AddPair('qualification','Actual Pascal parser/semantic evidence and instantiated native FMX form. PaintTo renders are running DPH controls, not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
  finally Report.Free;end;finally View.Free;end;
  Writeln('Dynamic controls validation passed: ',Checks,' checks.');
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

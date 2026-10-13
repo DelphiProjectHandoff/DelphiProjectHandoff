@@ -70,11 +70,11 @@ begin
         Row:=Form.RecordJSON; try Check(Row.GetValue<TJSONObject>('fields').GetValue<string>('owner')='Revised fixture owner','Native editor round-trips the saved owner field'); finally Row.Free; end;
         Form.Show; Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
         try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-          Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-project-profile.png'));
+          Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-project-profile.png'));
         finally Bitmap.Free; end; Form.Hide;
       finally Form.Free; end;
       Report:=TJSONObject.Create; try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('scope','Project profile, attribution, immutable review, stale edits, search and native form'); Report.AddPair('work',Work);
-        TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-profile-validation.json'),Report.Format(2),TEncoding.UTF8); finally Report.Free; end;
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-profile-validation.json'),Report.Format(2),TEncoding.UTF8); finally Report.Free; end;
     finally Profile.Free; end;
     Writeln('PASS Phase1 profile: ',Checks,' checks');
   except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

@@ -130,7 +130,7 @@ begin
         Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('self_cache',SelfCache);
         Report.AddPair('work',Work);
         Report.AddPair('preference_path',PreferencePath);
-        TFile.WriteAllText(TPath.Combine(Root,'docs\selection-validation.json'),Report.Format(2),TEncoding.UTF8);
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\selection-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
       Writeln('PASS Selection: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

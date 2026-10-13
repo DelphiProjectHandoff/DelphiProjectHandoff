@@ -166,7 +166,7 @@ begin
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;
             Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
               if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-              if ParamStr(2)<>'no-report' then Bitmap.SaveToFile(TPath.Combine(Root,'docs\wp4-workspace.png')); finally Bitmap.Free; end;
+              if ParamStr(2)<>'no-report' then Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\wp4-workspace.png')); finally Bitmap.Free; end;
             Form.WorkspaceTabs.ActiveTab:=Form.DetailsTab; Application.ProcessMessages;
             Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
             try
@@ -326,7 +326,7 @@ begin
               Form.WorkspaceTabs.ActiveTab:=Form.TranslationTab;
               Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
               try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-                Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-translations-native.png'));
+                Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\completion-translations-native.png'));
               finally Bitmap.Free; end;
               Form.NewKnowledgeClick(nil); Check(Form.TranslationList.Count=0,'New source section clears prior localized content instead of reusing its review');
             finally NativeStore.Free; end;
@@ -360,7 +360,7 @@ begin
             Form.ValidationAllowStale.IsChecked:=True;
             Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
             try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-              Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-bundle-validation-native.png'));
+              Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\completion-bundle-validation-native.png'));
             finally Bitmap.Free; end;
             TranslationRequest.AllowStaleBundle:=False; Worker.Submit(TranslationRequest); Response:=WaitResponse;
             try Check(Response.Failed,'Default bundle validation rejects a partial/stale capture'); finally Response.Free; end;
@@ -421,7 +421,7 @@ begin
       finally Worker.Free; end;
       Check(True,'Idle worker shutdown returns without a queue loop');
       J:=TJSONObject.Create; try J.AddPair('checks_passed',TJSONNumber.Create(Checks)); J.AddPair('corpus','copied semantic fixture'); J.AddPair('work',Work);
-        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\wp4-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
+        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp4-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
       Writeln('PASS WP4: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
   finally CoUninitialize; end;

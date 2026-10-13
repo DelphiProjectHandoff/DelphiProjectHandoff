@@ -175,7 +175,7 @@ begin
         finally Form.Free; end;
         Check((not TFile.Exists(CatalogPath) and (CatalogHash='')) or (TFile.Exists(CatalogPath) and (THashSHA2.GetHashStringFromFile(CatalogPath)=CatalogHash)),'Validation leaves user project catalog unchanged');
         Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Keys.dfm'))=BeforeHash,'Inspection leaves selected source unchanged');
-        TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-keyboard-validation.json'),
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-keyboard-validation.json'),
           TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('fixture',Work)
           .AddPair('qualification','Real parser/model and instantiated FMX form validation. PaintTo renders are DPH control renders, not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
       finally Report.Free; end;

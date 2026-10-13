@@ -352,7 +352,7 @@ begin
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.dfm'))=SourceHash,'Analyzed source unchanged');
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Actual parser, persisted and reopened captures, redacted configuration and native FMX controls. No target database is opened; fixtures contain only controlled canaries.');
- try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-data-lineage-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-data-lineage-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally Report.Free;end;
  finally Reopened.Free;View.Free;end;
  Writeln('Data lineage validation passed: ',Checks,' checks.');

@@ -185,7 +185,7 @@ begin
             finally Archive.Free;end;
             TFile.AppendAllText(TPath.Combine(Work,'full\indexes\symbols.jsonl'),'tamper',TEncoding.UTF8);
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint')); except Failed:=True; end; Check(Failed,'Modified artifact fails hash validation');
-            TFile.WriteAllText(TPath.Combine(Root,'docs\wp6-canonical-fixture.json'),Model.Document.Format(2),TEncoding.UTF8);
+            TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp6-canonical-fixture.json'),Model.Document.Format(2),TEncoding.UTF8);
           finally Model.Free; end;
           TranslationNote:=Store.SaveKnowledge(0,0,Generation,'Translation fixture','Run conversion','Translation author','note','','engineering','engineer');
           Rows:=Store.KnowledgeJSON;
@@ -298,7 +298,7 @@ begin
       Segments[0].Text:='Run preview'; J:=Cache.Translate(1,'en','fr',Segments,Provider); try Check(J.GetValue<string>('cache_key')<>CacheKey,'Changed prose invalidates localized cache'); Check(J.GetValue<string>('state')='needs_review','Old translation approval cannot carry to new prose'); finally J.Free; end;
       Provider:=TDPHAtlasAdapter.Create; Failed:=False; try J:=Cache.Translate(1,'en','fr',Segments,Provider); J.Free; except Failed:=True; end; Check(Failed,'Unconfigured external Atlas translation cannot transmit content');
     finally Cache.Free; end;
-    J:=TJSONObject.Create; try J.AddPair('checks_passed',TJSONNumber.Create(Checks)); J.AddPair('work',Work); TFile.WriteAllText(TPath.Combine(Root,'docs\wp6-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
+    J:=TJSONObject.Create; try J.AddPair('checks_passed',TJSONNumber.Create(Checks)); J.AddPair('work',Work); TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp6-validation.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
     Writeln('PASS WP6: ',Checks,' checks');
   except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
   CoUninitialize;

@@ -635,7 +635,7 @@ begin
             Row.AddPair('to',G.Symbols[R.ToSymbol].Key); Row.AddPair('kind',R.Kind); Row.AddPair('resolution',R.Resolution);
             Row.AddPair('rule',R.Rule); Row.AddPair('range',DPHRangeJSON(R.Location)); Row.AddPair('source_hash',G.SourceHashes[R.Location.Source]);
           end;
-          TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-reference-validation.json'),J.Format,TEncoding.UTF8);
+          TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp3-reference-validation.json'),J.Format,TEncoding.UTF8);
         finally J.Free; end;
         TFile.WriteAllText(TPath.Combine(Work,'reference-graph.json'),JSON(G),TEncoding.UTF8);
       finally G.Free; end;
@@ -655,7 +655,7 @@ begin
       FixtureTests; FormNavigationTests; OutputTests; VisualTests; RelationshipTests; DataDetailTests; AsyncDetailTests; FlowDetailTests; StartupTests; ResolutionTests; CacheBindingTests; DefinitionTests; ReferenceTests;
       Report:=TJSONObject.Create;
       try Report.AddPair('analyzer',DPHSemanticVersion); Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',Rows); Rows:=nil;
-        TFile.WriteAllText(TPath.Combine(Root,'docs\wp3-validation.json'),Report.Format,TEncoding.UTF8);
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp3-validation.json'),Report.Format,TEncoding.UTF8);
       finally Report.Free; end;
       Writeln('PASS WP3: ',Checks,' checks; evidence: ',Work);
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

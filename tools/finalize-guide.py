@@ -19,6 +19,11 @@ root = ET.fromstring(parts['word/document.xml'])
 pages = [[re.sub(r'\s+', ' ', line).strip().casefold()
           for line in (p.extract_text() or '').splitlines()]
          for p in PdfReader(args.pdf).pages]
+def contains_heading(lines, lookup):
+    # A long section title can wrap over multiple PDF lines. Match complete
+    # adjacent lines so a contents row with a page number cannot match a body heading.
+    return any(' '.join(lines[index:index+count]) == lookup
+               for index in range(len(lines)) for count in range(1, 4))
 inside = False
 separated = False
 entries = []
@@ -49,9 +54,9 @@ for paragraph in root.iter(W+'p'):
     # continue onto more pages. Locate its body heading first, then constrain
     # all other lookups to the body so a continued initial TOC cannot match.
     if body_start is None:
-        body_start = next((i for i, lines in enumerate(pages) if i >= 2 and lookup in lines), None)
+        body_start = next((i for i, lines in enumerate(pages) if i >= 2 and contains_heading(lines, lookup)), None)
     page = next((i+1 for i, lines in enumerate(pages)
-                 if body_start is not None and i >= body_start and lookup in lines), None)
+                 if body_start is not None and i >= body_start and contains_heading(lines, lookup)), None)
     if page is None:
         raise RuntimeError(f'TOC heading absent from body PDF: {heading}')
     # Keep the authored spacing when replacing the field result. Dropping pPr

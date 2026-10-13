@@ -585,7 +585,7 @@ Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceH
 Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
 
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Structured attributed departmental workflows with ordered steps, departments, roles, handoffs and explicit exception destinations. Target execution and business outcomes remain unverified.');
-try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-departmental-workflow-validation.json'),Log.Format,TEncoding.UTF8);
+try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-departmental-workflow-validation.json'),Log.Format,TEncoding.UTF8);
 finally Log.Free;
 end;
 

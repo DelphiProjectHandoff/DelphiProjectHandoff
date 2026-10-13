@@ -106,7 +106,7 @@ begin
  finally Form.Free;end;
  Form:=TDPHMainForm.Create(nil);try Form.PollTimer.Enabled:=False;Form.ChangeTimer.Enabled:=False;Check(not Form.TargetRecoveryNew.Enabled,'No capture disables new policy');finally Form.Free;end;
  Check(View.Document.ToJSON=Before,'Policy workflow leaves captured workspace unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceHash,'Target source unchanged');Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
- Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Attributed target backup/restore requirements and recovery-test claims with source links; target jobs and reported success remain unverified.');try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-target-recovery-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Attributed target backup/restore requirements and recovery-test claims with source links; target jobs and reported success remain unverified.');try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-target-recovery-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally View.Free;end;finally Store.Free;end;finally Graph.Free;end;finally Scan.Free;end;finally Semantic.Free;Analyzer.Free;end;
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
 end.

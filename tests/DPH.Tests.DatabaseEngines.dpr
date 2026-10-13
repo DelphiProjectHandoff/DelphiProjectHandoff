@@ -117,7 +117,7 @@ begin Application.Initialize;
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.dfm'))=SourceHash,'Target source unchanged');
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Controlled captured driver/version declarations using actual text/binary DFM, FMX, SQLite capture persistence and native FMX controls; no target server or driver is opened.');
- try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-database-engines-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-database-engines-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally Report.Free;end;finally Reopened.Free;View.Free;end;
  Writeln('Database engine validation passed: ',Checks,' checks.');
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

@@ -12,7 +12,7 @@ begin if not OK then raise Exception.Create('FAIL '+Text);Inc(Checks);Writeln('P
 procedure Capture(const Name:string);
 begin
  Application.ProcessMessages;Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
- try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\learning-completion-'+Name+'.png'));finally Bitmap.Free;end;
+ try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-completion-'+Name+'.png'));finally Bitmap.Free;end;
 end;
 begin
  CoInitialize(nil);Application.Initialize;
@@ -76,7 +76,7 @@ begin
     finally Store.Free;end;
     for Pair in Pack.GetValue<TJSONObject>('source_hashes') do Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Root,'samples\OrderPractice\'+Pair.JsonString.Value))=Pair.JsonValue.Value,'Practice source/picture unchanged: '+Pair.JsonString.Value);
    finally Pack.Free;end;
-   Report:=TJSONObject.Create;try Report.AddPair('checks',TJSONNumber.Create(Checks)).AddPair('result','PASS').AddPair('independent_beginner_acceptance','not performed');TFile.WriteAllText(TPath.Combine(Root,'docs\learning-completion-practice-validation.json'),Report.Format(2),TEncoding.UTF8);finally Report.Free;end;
+   Report:=TJSONObject.Create;try Report.AddPair('checks',TJSONNumber.Create(Checks)).AddPair('result','PASS').AddPair('independent_beginner_acceptance','not performed');TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\learning-completion-practice-validation.json'),Report.Format(2),TEncoding.UTF8);finally Report.Free;end;
   except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
  finally CoUninitialize;end;
 end.

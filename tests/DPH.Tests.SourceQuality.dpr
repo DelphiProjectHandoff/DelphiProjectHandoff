@@ -86,7 +86,7 @@ begin
                 Form.WorkspaceTabs.ActiveTab:=Form.QualityTab; Form.Show; Application.ProcessMessages;
                 Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
                 try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-source-quality.png'));
+                  Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-source-quality.png'));
                 finally Bitmap.Free; end;
                 Form.QualityClick(Form.QualityOpenButton);
                 Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Quality finding navigates to its canonical source-backed explanation');
@@ -97,7 +97,7 @@ begin
             Report:=TJSONObject.Create;
             try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('quality_version',DPHQualityVersion); Report.AddPair('work',Work);
               Report.AddPair('report',Quality.Clone as TJSONObject);
-              TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-quality-validation.json'),Report.Format(2),TEncoding.UTF8);
+              TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-quality-validation.json'),Report.Format(2),TEncoding.UTF8);
             finally Report.Free; end;
           finally Quality.Free; end;
         finally Graph.Free; end;

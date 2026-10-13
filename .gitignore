@@ -10,7 +10,8 @@
 *.dsk
 __history/
 __recovery/
-/docs/wp0-build-diagnostic.log
+/logs/validation/wp0-build-diagnostic.log
+/logs/development/*
 *.dphdb
 *.dphdb-journal
 *.dphdb-wal

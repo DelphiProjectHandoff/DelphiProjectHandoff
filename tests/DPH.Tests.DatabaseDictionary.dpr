@@ -117,7 +117,7 @@ begin
  Check(View.Document.ToJSON=Before,'Dictionary editing leaves captured workspace immutable');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(SourceRoot,'schema.sql'))=Original,'Dictionary editing leaves target SQL unchanged');
  Store.Free;Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'dictionary.dphdb'),SourceRoot,TPath.Combine(Root,'migrations'));Saved:=Current;try Check(Saved.GetValue<string>('body').Contains('Revised amount before tax'),'Dictionary survives SQLite reopen');finally Saved.Free;end;
  Report:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('requirement','05.09').AddPair('qualification','Business meanings, ownership and sensitivity are attributed human claims with independent review state; exact captured schema links do not establish a live schema or business truth. No target SQL executes.');
- try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-database-dictionary-validation.json'),Report.Format,TEncoding.UTF8);finally Report.Free;end;
+ try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-database-dictionary-validation.json'),Report.Format,TEncoding.UTF8);finally Report.Free;end;
  finally RecordValue.Free;end;
  finally Inventory.Free;end;finally View.Free;end;
  finally Store.Free;Semantic.Free;Analyzer.Free;end;

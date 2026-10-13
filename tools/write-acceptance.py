@@ -6,9 +6,9 @@ import re
 from datetime import datetime, timezone
 
 root = Path(__file__).resolve().parent.parent
-measurement = json.loads((root/'docs/completion-hardening-validation.json').read_text(encoding='utf-8-sig'))
-inputs = json.loads((root/'docs/completion-input-validation.json').read_text(encoding='utf-8-sig'))
-regression = json.loads((root/'docs/completion-regression-validation.json').read_text(encoding='utf-8-sig'))
+measurement = json.loads((root/'docs/validation/reports/completion-hardening-validation.json').read_text(encoding='utf-8-sig'))
+inputs = json.loads((root/'docs/validation/reports/completion-input-validation.json').read_text(encoding='utf-8-sig'))
+regression = json.loads((root/'docs/validation/reports/completion-regression-validation.json').read_text(encoding='utf-8-sig'))
 if (inputs['test_exit'] != 0 or inputs['changed_files'] or measurement['checks_passed'] != 32
         or regression['changed_files'] or not regression['suites']
         or any(s['exit_code'] != 0 for s in regression['suites'])):
@@ -66,5 +66,5 @@ report = dict(schema_version=1, generated_utc=datetime.now(timezone.utc).isoform
     formal_product_acceptance='NOT COMPLETE; partial and not-run are not pass',
     performance_budget_acceptance='not_run; hardware recorded and measurements supplied; release budgets not agreed',
     measurements=measurement)
-(root/'docs/completion-acceptance-matrix.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+(root/'docs/validation/reports/completion-acceptance-matrix.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
 print(report['counts'])

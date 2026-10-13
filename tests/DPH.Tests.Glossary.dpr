@@ -228,7 +228,7 @@ begin
       try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('requirements','06.12, 12.09'); Report.AddPair('work',Work);
         Report.AddPair('native_evidence','FMX controls instantiated from .fmx and rendered with PaintTo; modal editing and draft flow exercised in the native form. Not a target application screenshot.');
         Report.AddPair('scope','Structured glossary fields, duplicates, rename, immutable revisions, attribution/review, project isolation, search, canonical/HTML/DOCX/JSONL, exclusions, tamper, native controls and changed source review');
-        TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-glossary-validation.json'),Report.Format(2),TEncoding.UTF8);
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-glossary-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
     finally Term.Free; end;
     Writeln('PASS business glossary: ',Checks,' checks');

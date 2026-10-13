@@ -107,11 +107,11 @@ begin
     Check(not Form.ExplorerLayout.Visible and not Form.InspectorLayout.Visible,'Task reader has no unrelated technical side panels');
     Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
      if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
-     Bitmap.SaveToFile(TPath.Combine(Root,'docs\guided-tasks-reader-compact.png'));finally Bitmap.Free;end;
+     Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\guided-tasks-reader-compact.png'));finally Bitmap.Free;end;
     Form.ClientWidth:=1400;Form.ClientHeight:=850;Application.ProcessMessages;
     Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
      if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
-     Bitmap.SaveToFile(TPath.Combine(Root,'docs\guided-tasks-reader.png'));finally Bitmap.Free;end;
+     Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\guided-tasks-reader.png'));finally Bitmap.Free;end;
     Form.TaskEditClick(Form.TaskEdit);Check(Form.TutorSteps.Count=2,'Reopening instructions restores their ordered steps');
     Form.Tutor_purpose.Text:='Revised learning purpose';Form.TaskCancelClick(nil);Check(Form.WorkspaceTabs.ActiveTab=Form.TaskTab,'Cancel returns to learning without saving a replacement');
     Form.TaskSelectionChange(nil);Check(ContainsText(Form.TaskContextMemo.Text,'Learn the two alternatives'),'Canceled edits preserve the stored purpose');
@@ -128,7 +128,7 @@ begin
     Form.Tutor_purpose.Text:='Learn to follow a real event handler';
     Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try
      if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
-     Bitmap.SaveToFile(TPath.Combine(Root,'docs\guided-tasks-preparation.png'));finally Bitmap.Free;end;
+     Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\guided-tasks-preparation.png'));finally Bitmap.Free;end;
     Form.TaskSaveClick(nil);WaitForTask('Choose an option',True);
     Check(ContainsText(Form.TaskContextMemo.Text,'Learn to follow a real event handler') and (Form.TaskActionMemo.Text='Open the Click operation explanation'),'Edited purpose and reordered steps persist together');
     Check(ContainsText(Form.TaskContextMemo.Text,'New operator') and ContainsText(Form.TaskContextMemo.Text,'First day'),'Saved role and learning path accompany the actual instructions');
@@ -175,7 +175,7 @@ begin
     Form.WorkspaceTabs.ActiveTab:=Form.ScreenshotTab;Form.ScreenshotClick(nil);Application.ProcessMessages;
     Check(ContainsText(Form.ScreenshotEvidence.Text,'1. Reading the sample total') and ContainsText(Form.ScreenshotEvidence.Text,'Callout contributor'),'Picture legend presents the numbered meaning and actual contributor');
     Check(THashSHA2.GetHashStringFromFile(PicturePath)=PictureHash,'Anchored callouts leave original picture bytes unchanged');
-    Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\guided-tasks-callouts.png'));finally Bitmap.Free;end;
+    Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\guided-tasks-callouts.png'));finally Bitmap.Free;end;
     Form.Hide;
    finally Form.Free;end;
    Store:=TDPHKnowledgeStore.Create(Database,Fixture,TPath.Combine(Root,'migrations'));
@@ -213,7 +213,7 @@ begin
     finally View.Free;end;
    finally Store.Free;end;
    Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=HashBefore,'Selected application source remains unchanged');
-   Report:=TJSONObject.Create;try Report.AddPair('checks',TJSONNumber.Create(Checks));Report.AddPair('result','PASS');Report.AddPair('independent_learner_acceptance','not performed');TFile.WriteAllText(TPath.Combine(Root,'docs\guided-tasks-validation.json'),Report.Format(2),TEncoding.UTF8);finally Report.Free;end;
+   Report:=TJSONObject.Create;try Report.AddPair('checks',TJSONNumber.Create(Checks));Report.AddPair('result','PASS');Report.AddPair('independent_learner_acceptance','not performed');TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\guided-tasks-validation.json'),Report.Format(2),TEncoding.UTF8);finally Report.Free;end;
    Writeln('PASS guided task learning: ',Checks,' checks');
   except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
  finally CoUninitialize;end;

@@ -430,7 +430,7 @@ Form.Hide;
 end;
 
  PNG:=TPngImage.Create;
-try PNG.LoadFromFile(TPath.Combine(Root,'docs\phase1-screen-history-layouts.png'));
+try PNG.LoadFromFile(TPath.Combine(Root,'docs\validation\images\phase1-screen-history-layouts.png'));
 Blue:=0;
 Orange:=0;
 for Y:=400 to PNG.Height-1 do for X:=270 to Min(1250,PNG.Width-1) do begin Pixel:=PNG.Pixels[X,Y];if (GetBValue(Pixel)>GetRValue(Pixel)+30) and (GetBValue(Pixel)>GetGValue(Pixel)+20) then Inc(Blue);
@@ -526,7 +526,7 @@ end;
 
  Log:=TJSONObject.Create;
 try Log.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Actual parser, two persisted generations, managed attributed PNGs, exact pixel comparisons, retained-cache worker and native FMX controls. Synthetic images are controlled test data, not observed target-runtime screenshots.');
-TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-screen-history-validation.json'),Log.Format,TEncoding.UTF8);
+TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-screen-history-validation.json'),Log.Format,TEncoding.UTF8);
 finally Log.Free;
 end;
 

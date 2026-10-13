@@ -102,7 +102,7 @@ begin
  Form.FileFormatsFilter.Text:='nonexistent';Form.FileFormatsFilterChange(nil);Check(Form.FileFormatsMemo.Text.Contains('Empty results do not prove'),'Empty result explains unknown transfers');Form.Hide;
  finally Form.Free;end;
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceHash,'Target source unchanged');
- Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Controlled captured format candidates, resource shape, attributed contracts and native FMX workflows. Runtime transfers unobserved.');try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-file-formats-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Controlled captured format candidates, resource shape, attributed contracts and native FMX workflows. Runtime transfers unobserved.');try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-file-formats-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally Report.Free;end;finally Reopened.Free;View.Free;end;
  finally Store.Free;end;finally Graph.Free;end;finally Scan.Free;end;finally Semantic.Free;Analyzer.Free;end;
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

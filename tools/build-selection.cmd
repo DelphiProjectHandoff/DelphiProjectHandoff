@@ -7,5 +7,5 @@ dcc32 -B -Q -U"%BDS%\lib\Win32\release;.;dependencies\DelphiAppTranslation" -NSS
 if errorlevel 1 exit /b 1
 bin\Win32\Debug\DPH.Tests.Selection.exe "%CD%"
 if errorlevel 1 exit /b 1
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$report=Get-Content -LiteralPath 'docs\selection-validation.json' -Raw | ConvertFrom-Json; & 'bin\Win32\Debug\DPH.Tests.Selection.exe' $report.self_cache; exit $LASTEXITCODE"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$report=Get-Content -LiteralPath 'docs\validation\reports\selection-validation.json' -Raw | ConvertFrom-Json; & 'bin\Win32\Debug\DPH.Tests.Selection.exe' $report.self_cache; exit $LASTEXITCODE"
 exit /b %errorlevel%

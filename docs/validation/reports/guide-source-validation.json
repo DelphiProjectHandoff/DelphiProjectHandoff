@@ -1,5 +1,5 @@
 {
-  "guide_version": 41,
+  "guide_version": 42,
   "last_changed": "2026-10-13",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -58,7 +58,34 @@
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
     "DPH.UI.Main.fmx": "d41b0ec24d21fa40c8d553236febca76e4c519e6e906e09937778692f14ed2fc",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
+    "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
+    "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
+    "migrations/003_lifecycle.sql": "1f895f1e960915bd6eae491f03d0afd395bafcb4723864ac2ea953e86cbb3b8c",
+    "migrations/004_search.sql": "7fa68cf214821a1a57077a3a6b3e69e029e709bc8f69a0257eb6fd2e18e6dd98",
+    "migrations/005_document_sections.sql": "f5921c2d6bdb6ef9e708a40a078c958f133386267686b115d58e5409caaf9040",
+    "migrations/006_revision_links.sql": "8d3acd723a6b9e1adffcc8a02d0bc11ed80307981e0a00ca5bdc6e7490a9ba60",
+    "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
+    "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
+    "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
+    "docs/guides/source/DPH_Engineering_Guide.txt": "c0b637bc2943198d86e5c732e63cccffe916e5a2985669e81799797620ee42d2",
+    "docs/guides/source/DPH_User_Guide.txt": "12c059fc573850d9193b810001c2dde209029346eedc41cac8ee1b376b36828f",
     "DelphiProjectHandoff.dproj": "fc131b87384bc80f6d391db9c015b7aaa41c098ff8b96d53abfcdb67ced18e8d"
   },
-  "basis": "Inspected native controls source and behavior, including the supplied practice application"
+  "content": {
+    "User": {
+      "parts": 6,
+      "chapters": 27,
+      "subsections": 120,
+      "words": 13489,
+      "figures": 6
+    },
+    "Engineering": {
+      "parts": 6,
+      "chapters": 27,
+      "subsections": 171,
+      "words": 16093,
+      "figures": 0
+    }
+  },
+  "basis": "Current source and serialized controls, authored detailed procedures, exact unit declarations and SQL migration reference"
 }

@@ -135,7 +135,7 @@ begin
               WaitHTML(Form.HelpBrowser,'document.body.innerText','Your first ten minutes');
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-getting-started.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-getting-started.png')); finally BrowserBitmap.Free; end;
               Form.LoadView(View.Document.Clone as TJSONObject); Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Your first route'); Check(True,'Real WebView2 renders the learning workspace');
               Form.SearchEdit.Text:='TMain.Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
@@ -143,14 +143,14 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Explorer selection opens Explain');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               Check(BrowserBitmap<>nil,'Native WebView2 image capture is available for visual QA');
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-explain-browser.png'));
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-explain-browser.png'));
               Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
                 if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);
                   Bitmap.Canvas.SetMatrix(TMatrix.Identity);
                   var BrowserBounds:=Form.ExplainBrowser.AbsoluteRect;
                   Bitmap.Canvas.DrawBitmap(BrowserBitmap,TRectF.Create(0,0,BrowserBitmap.Width,BrowserBitmap.Height),BrowserBounds,1);
                 finally Bitmap.Canvas.EndScene; end;
-                Bitmap.SaveToFile(TPath.Combine(Root,'docs\rework-learning-workspace.png'));
+                Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-learning-workspace.png'));
               finally Bitmap.Free; end;
               finally BrowserBitmap.Free; end;
               Form.GraphGroupingCombo.ItemIndex:=2; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(nil);
@@ -163,7 +163,7 @@ begin
                 WaitHTML(Form.FlowBrowser,'(()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");if(!graph)return "WAIT";graph.scrollIntoView();return "GRAPH_VISIBLE";})()','GRAPH_VISIBLE');
                 Application.ProcessMessages; TThread.Sleep(200);
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\completion-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\completion-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
               Form.Hide;
             finally Form.Free; end;
             end;
@@ -214,24 +214,24 @@ begin
               WaitHTML(Form.ExplainBrowser,'document.body.innerText','Understand this selection');
               Check(ContainsText(Form.ExplainFallback.Text,'btnConvertClick'),'Reference object explanation works in the actual FMX form');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-reference-explain.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-reference-explain.png')); finally BrowserBitmap.Free; end;
               WaitHTML(Form.ExplainBrowser,'(()=>{const h=Array.from(document.querySelectorAll("h2")).find(x=>x.textContent==="Follow the work"); if(!h)return "WAIT"; h.scrollIntoView();return "TRACE_READY";})()','TRACE_READY');
               Check(True,'Reference execution trace is present in the actual rendered explanation');
               Application.ProcessMessages; TThread.Sleep(100);
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-reference-trace.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-reference-trace.png')); finally BrowserBitmap.Free; end;
               Form.GraphCombo.ItemIndex:=1; Form.WorkspaceTabs.ActiveTab:=Form.GraphTab; Form.ViewChange(nil);
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Control-flow diagram');
               Check(True,'Reference procedure CFG renders labeled captured edges');
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-reference-flow.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-reference-flow.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Application.CreateForm');
               Check(True,'Reference startup lesson renders actual initialization evidence');
               WaitHTML(Form.LearningBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Narrow learning view wraps long source citations without horizontal overflow');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\rework-reference-startup.png')); finally BrowserBitmap.Free; end;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\rework-reference-startup.png')); finally BrowserBitmap.Free; end;
               ReferenceBundle:=TPath.Combine(TPath.GetDirectoryName(ReferenceDB),'reference-task');
               if TFile.Exists(TPath.Combine(ReferenceBundle,'source-navigation.json')) then begin
                 Row:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(ReferenceBundle,'source-navigation.json'),TEncoding.UTF8)) as TJSONObject;
@@ -246,7 +246,7 @@ begin
                 WaitHTML(Form.PublishBrowser,'(()=>{const line=document.querySelector("pre span[id^=L]");if(!line)return "WAIT";line.scrollIntoView();return "SOURCE_LINES_READY";})()','SOURCE_LINES_READY');
                 Application.ProcessMessages; TThread.Sleep(200);
                 BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
-                try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\completion-source-lines-browser.png')); finally BrowserBitmap.Free; end;
+                try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\completion-source-lines-browser.png')); finally BrowserBitmap.Free; end;
               end;
               Form.Hide;
             finally Form.Free; end;
@@ -256,7 +256,7 @@ begin
       end;
       Report:=TJSONObject.Create; try Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('work',Work); Report.AddPair('reference_cache',ReferenceDB); Report.AddPair('human_acceptance','not_run');
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));
-        TFile.WriteAllText(TPath.Combine(Root,'docs\rework-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
+        TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\rework-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
       Writeln('PASS Learning: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

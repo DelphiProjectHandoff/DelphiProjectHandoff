@@ -94,7 +94,7 @@ begin
  CopyDoc:=View.Document.Clone as TJSONObject;CopyDoc.GetValue<TJSONObject>('syntax').RemovePair('files').Free;CopyDoc.GetValue<TJSONObject>('syntax').AddPair('files',TJSONArray.Create);Form.LoadView(CopyDoc);Check(Form.LayoutList.Count=0,'Replacement capture clears stale layout rows');
  finally Form.Free;end;
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'User catalog unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Classic.dfm'))=Hash,'Selected fixture source unchanged');
- TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-layout-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('fixture',Work).AddPair('qualification','Actual text/binary DFM and FMX parser evidence plus instantiated native DPH controls. Educational resize arithmetic is not target-engine evaluation. PaintTo renders are not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-layout-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('fixture',Work).AddPair('qualification','Actual text/binary DFM and FMX parser evidence plus instantiated native DPH controls. Educational resize arithmetic is not target-engine evaluation. PaintTo renders are not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
  finally Report.Free;end;finally Keyboard.Free;end;finally View.Free;end;
  Writeln('Layout rules validation passed: ',Checks,' checks.');
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

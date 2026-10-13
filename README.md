@@ -31,6 +31,8 @@ Forms and ordinary controls remain editable in the IDE. The selected application
 
 ## Current scope
 
-[The learning reconciliation](docs/Learning_Requirements_Reconciliation.txt) records all 533 original requirement dispositions; its CSV and JSON retain each original status, limitation and remaining work. The revised learning contract supersedes dedicated enterprise administration, specialist analysis expansion and agent infrastructure. A scope decision does not claim that an original technical requirement was implemented. The historical ledger remains unchanged.
+[The learning reconciliation](docs/requirements/Learning_Requirements_Reconciliation.txt) records all 533 original requirement dispositions; its CSV and JSON retain each original status, limitation and remaining work. The revised learning contract supersedes dedicated enterprise administration, specialist analysis expansion and agent infrastructure. A scope decision does not claim that an original technical requirement was implemented. The historical ledger remains unchanged.
+
+[Project layout](docs/PROJECT_LAYOUT.txt) explains where current guides, original plans, validation reports, images, logs, compiled units, and databases live. [The move manifest](docs/PROJECT_MOVE_MANIFEST.csv) maps every reorganized file to its former location and records its SHA-256 hash.
 
 Independent first-time learner acceptance is reported separately from software validation. The converter reference is passive test input and is never a DPH build or runtime dependency.

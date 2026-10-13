@@ -87,7 +87,7 @@ begin
  Doc:=View.Document.Clone as TJSONObject;Doc.GetValue<TJSONObject>('syntax').RemovePair('files').Free;Doc.GetValue<TJSONObject>('syntax').AddPair('files',TJSONArray.Create);Form.LoadView(Doc);Check(Form.InheritanceList.Count=0,'Replacement capture clears inherited rows');
  finally Form.Free;end;
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'User catalog unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Derived.dfm'))=BeforeHash,'Selected fixture source unchanged');
- TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-form-inheritance-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Actual text/binary DFM and FMX parsing, cached overlays and native DPH controls. No target classes instantiated. PaintTo renders are not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
+ TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-form-inheritance-validation.json'),TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Actual text/binary DFM and FMX parsing, cached overlays and native DPH controls. No target classes instantiated. PaintTo renders are not target-runtime screenshots.').ToJSON,TEncoding.UTF8);
  finally Report.Free;end;finally View.Free;end;
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
 end.

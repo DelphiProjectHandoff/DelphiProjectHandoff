@@ -228,7 +228,7 @@ begin
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'schema.sql'))=SourceHash,'Target source restored unchanged after navigation refusal test');
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Controlled SQL column/type/nullability/default/constraint capture, unsupported-entry gaps, duplicate ownership, literal omission, persistence and native FMX controls. Expressions and deployed enforcement unverified; no SQL executed.');
- try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-database-columns-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-database-columns-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally Report.Free;end;finally Reopened.Free;View.Free;end;
  Writeln('Database columns validation passed: ',Checks,' checks.');
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

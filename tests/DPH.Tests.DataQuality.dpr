@@ -146,7 +146,7 @@ begin
  finally Worker.Free;end;
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Work,'result.txt'))=Before,'Imported report file unchanged');
 Check(View.Document.ToJSON=WorkspaceBefore,'Quality workflow leaves captured workspace unchanged');Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=SourceHash,'Target source unchanged');Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
- Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Attributed manual target-data quality policies with captured implementation links; source enforcement and imported outcomes remain unverified.');try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-data-quality-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','Attributed manual target-data quality policies with captured implementation links; source enforcement and imported outcomes remain unverified.');try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-data-quality-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally View.Free;end;finally Store.Free;end;finally Graph.Free;end;finally Scan.Free;end;finally Semantic.Free;Analyzer.Free;end;
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;
 end.

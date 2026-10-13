@@ -667,7 +667,7 @@ begin
  Check(Form.WorkspacePageCombo.Items.IndexOf('Database ER diagram')>=0,'ER page available through serialized upper-right selector');
  Form.WorkspacePageCombo.ItemIndex:=Form.WorkspacePageCombo.Items.IndexOf('Database ER diagram');Form.WorkspacePageChange(Form.WorkspacePageCombo);
  Check(Form.WorkspaceTabs.ActiveTab=Form.DatabaseERTab,'Upper-right selector opens ER page');
- Bitmap:=Form.DatabaseERPaint.MakeScreenshot;try Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-database-er-diagram.png'));finally Bitmap.Free;end;
+ Bitmap:=Form.DatabaseERPaint.MakeScreenshot;try Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-database-er-diagram.png'));finally Bitmap.Free;end;
  Render('phase1-database-er-workspace.png');
  Form.WindowState:=TWindowState.wsNormal;Form.Width:=960;Form.Height:=600;Application.ProcessMessages;
  Form.DatabaseERZoom.ItemIndex:=4;Form.DatabaseERFilterChange(nil);Check(Form.DatabaseERPaint.Width>Form.DatabaseERScroll.Width,'ER zoom enables horizontal scrolling');
@@ -695,7 +695,7 @@ begin
  Check((not TFile.Exists(Catalog) and (CatalogHash='')) or (TFile.Exists(Catalog) and (THashSHA2.GetHashStringFromFile(Catalog)=CatalogHash)),'Owner catalog unchanged');
  Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'schema.sql'))=SourceHash,'Target source restored unchanged after navigation refusal test');
  Log:=TJSONObject.Create.AddPair('result','PASS').AddPair('checks',TJSONNumber.Create(Checks)).AddPair('qualification','ER diagrams from captured declarations and exact key links, qualified gaps, bounded table/column/relationship projections, focus/filter/paging/zoom and native evidence navigation. Cardinality, semantic validity and deployed schema unverified; no SQL executed.');
- try TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-database-er-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
+ try TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-database-er-validation.json'),Log.Format,TEncoding.UTF8);finally Log.Free;end;
  finally Report.Free;end;finally Reopened.Free;View.Free;end;
  Writeln('Database ER validation passed: ',Checks,' checks.');
  except on E:Exception do begin Writeln(E.ClassName,': ',E.Message);ExitCode:=1;end;end;

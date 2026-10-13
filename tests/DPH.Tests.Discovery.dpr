@@ -353,7 +353,7 @@ begin
           begin Row.AddPair('nodes',TJSONNumber.Create(UnitIR.Nodes.Count)); Row.AddPair('significant_tokens',TJSONNumber.Create(UnitIR.SignificantTokens));
             Row.AddPair('opaque_tokens',TJSONNumber.Create(UnitIR.OpaqueTokens)); Row.AddPair('complete',TJSONBool.Create(UnitIR.Complete)); end;
         end;
-        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\wp2-reference-validation.json'),Report.Format,TEncoding.UTF8);
+        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp2-reference-validation.json'),Report.Format,TEncoding.UTF8);
       finally Report.Free; end;
       J:=Scan.AsJSON; try TFile.WriteAllText(TPath.Combine(Work,'reference-ir.json'),J.Format,TEncoding.UTF8); finally J.Free; end;
     finally Scan.Free; end;
@@ -375,7 +375,7 @@ begin
       try
         Report.AddPair('analyzer',DPHAnalyzerVersion); Report.AddPair('ir_schema',TJSONNumber.Create(DPHIRVersion));
         Report.AddPair('checks_passed',TJSONNumber.Create(Checks)); Report.AddPair('checks',TestRows.Clone as TJSONArray);
-        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\wp2-validation.json'),Report.Format,TEncoding.UTF8);
+        if ParamStr(2)<>'no-report' then TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\wp2-validation.json'),Report.Format,TEncoding.UTF8);
       finally Report.Free; end;
       Writeln('PASS ALL: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;

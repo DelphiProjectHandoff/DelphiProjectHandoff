@@ -80,7 +80,7 @@ begin
           Form.WorkspaceTabs.ActiveTab:=Form.ComparisonTab; Form.Show; Application.ProcessMessages;
           Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
           try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
-            Bitmap.SaveToFile(TPath.Combine(Root,'docs\phase1-revision-comparison.png'));
+            Bitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\phase1-revision-comparison.png'));
           finally Bitmap.Free; end; Form.Hide;
         finally Form.Free; end;
       finally Report.Free; end;
@@ -124,7 +124,7 @@ begin
     Before.Free; After.Free;
     ResultLog:=TJSONObject.Create;
     try ResultLog.AddPair('checks_passed',TJSONNumber.Create(Checks)); ResultLog.AddPair('work',Work);
-      TFile.WriteAllText(TPath.Combine(Root,'docs\phase1-comparison-validation.json'),ResultLog.Format(2),TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\phase1-comparison-validation.json'),ResultLog.Format(2),TEncoding.UTF8);
     finally ResultLog.Free; end;
     Writeln('PASS revision comparison: ',Checks,' checks');
   except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
