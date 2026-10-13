@@ -8,7 +8,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
 CHANGED='13 October 2026'
-VERSION=42
+VERSION=43
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -80,7 +80,7 @@ def units_blocks():
  for i,path in enumerate(sorted(ROOT.glob('DPH.*.pas')),1):
   text=path.read_text(encoding='utf-8-sig');interface=text.split('\nimplementation',1)[0]
   name=path.stem.removeprefix('DPH.');assert name in LAYER_PURPOSE,name
-  blocks.extend([('section',f'25.{i+1} {name}'),('p','Source file: '+path.name+'. '+LAYER_PURPOSE[name])])
+  blocks.extend([('section',f'25.{i+1}. {name}'),('p','Source file: '+path.name+'. '+LAYER_PURPOSE[name])])
   types=re.findall(r'^\s*(TDPH\w+)\s*=\s*(?:class|record|\(|reference)',interface,re.M)
   if types:blocks.append(('p','Principal public types: '+', '.join(dict.fromkeys(types))+'.'))
   # Capture complete public/interface declarations across line wraps, without implementation bodies.
@@ -112,7 +112,7 @@ def schema_blocks():
  blocks=[];n=2
  purposes={'001':'Foundation project/configuration identity, immutable captures, source facts and authored history.','002':'Additional relational and lifecycle protection beyond base table creation.','003':'Managed cache, retention, release and continuity lifecycle support.','004':'Generation-scoped search indexes and their maintenance.','005':'Document section, audience and related knowledge organization.','006':'Exact revision-link targets and additional integrity constraints.','007':'Attributed author-question metadata and answer provenance.','008':'Revision/locale translation caching and named review support.','009':'Typed authored metadata stored with its exact knowledge revision.'}
  for path in sorted((ROOT/'migrations').glob('*.sql')):
-  text=path.read_text(encoding='utf-8-sig');blocks.extend([('section',f'26.{n} Migration {path.stem.replace("_"," ")}'),('p',purposes[path.name[:3]]+' Source: migrations/'+path.name+'.')]);n+=1
+  text=path.read_text(encoding='utf-8-sig');blocks.extend([('section',f'26.{n}. Migration {path.stem.replace("_"," ")}'),('p',purposes[path.name[:3]]+' Source: migrations/'+path.name+'.')]);n+=1
   # Include exact DDL, retaining constraints. Full trigger implementations remain in migrations.
   clean=re.sub(r'--[^\n]*','',text)
   tables=re.findall(r'CREATE\s+(?:VIRTUAL\s+)?TABLE[\s\S]*?;',clean,re.I)
@@ -158,8 +158,8 @@ def document(kind,blocks):
  for border in list(doc.styles.element.iter(qn('w:pBdr'))):border.getparent().remove(border)
  title='Delphi Project Handoff '+kind+' Guide'
  props=doc.core_properties;props.author='';props.last_modified_by='';props.title=title;props.subject='Detailed application operation' if kind=='User' else 'Architecture contracts implementation and maintenance';props.comments='';props.keywords=''
- doc.add_paragraph(title,'Title');doc.add_paragraph('Detailed Windows desktop manual','Subtitle');doc.add_paragraph('Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
- intro='From opening the application to preparing reviewing and sharing complete lessons' if kind=='User' else 'From architecture and data ownership to source analysis storage testing and release'
+ doc.add_paragraph(title,'Title');doc.add_paragraph('Learning and teaching an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
+ intro='From opening DPH to preparing, reviewing and sharing lessons about a selected application' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
  doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Lessons about a selected Delphi application are separate material displayed and published by the program.')
  doc.add_page_break();doc.add_paragraph('Contents','Title');field(doc.add_paragraph(),'begin',' TOC \\o "1-2" \\h \\z \\u ');field(doc.add_paragraph(),'separate')
  for k,v in blocks:
@@ -168,7 +168,7 @@ def document(kind,blocks):
  part_pending=False
  for k,v in blocks:
   if k=='part':
-   p=doc.add_heading(v,1);p.paragraph_format.page_break_before=True;part_pending=True
+   p=doc.add_heading(v,1);p.paragraph_format.page_break_before=v.startswith('PART 1:');p.paragraph_format.space_before=Pt(24);part_pending=True
   elif k=='chapter':
    p=doc.add_heading(v,2);p.paragraph_format.page_break_before=False;p.paragraph_format.space_before=Pt(22) if not part_pending else Pt(13);part_pending=False
   elif k=='section':doc.add_heading(v,3)

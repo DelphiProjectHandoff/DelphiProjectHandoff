@@ -1,43 +1,43 @@
-@part Part I Product contracts and architecture
-@chapter 1 Engineering purpose and reading map
-@section 1.1 The system being maintained
+﻿@part PART 1: Product contracts and architecture
+@chapter 1. Engineering purpose and reading map
+@section 1.1. The system being maintained
 Delphi Project Handoff, abbreviated DPH, is a Windows desktop application implemented with Delphi and FireMonkey. Its product responsibility is to help a beginner understand one unfamiliar Delphi application. It reads project, source and form material; persists captured facts and attributed knowledge; presents understandable learning routes; and publishes a portable reading edition. The target application's source is input to this process, not a workspace that DPH rewrites or executes.
 This manual explains the implementation, ownership boundaries, persisted contracts, failure behavior and maintenance procedures. The User Guide explains how to operate the visible product. Read the architecture and end-to-end flows before modifying an analyzer or save path. Use the source-unit and schema references at the end to find exact declarations and constraints, then consult the named implementation method for its complete behavior.
 The architecture contains more technical mechanisms than the learner interface exposes. Source identity, immutable generations, database ownership and publication integrity support reliable instruction. They must not become the organizing subject of the beginner route. Conversely, an engineer needs to understand them deeply to prevent stale or unreviewed content being presented as established knowledge.
-@section 1.2 Three independent kinds of truth
+@section 1.2. Three independent kinds of truth
 Captured source facts describe what DPH established from a particular source set and configuration. Human knowledge describes what a named contributor supplied. Observations describe separately imported material claimed to represent runtime evidence. These are distinct provenance channels. Parser success cannot verify a business explanation, a contribution cannot turn an unresolved call into a statically confirmed target, and a supplied observation does not mean DPH executed the program.
 Preserve these distinctions in database columns, JSON projections, UI wording and exports. A current generation may still have incomplete semantic understanding. A reviewed explanation can become stale when its linked source changes. An internally consistent export may contain intentionally historical or partial material when explicitly permitted. A single green success flag cannot replace those separate states.
-@section 1.3 How to use the technical references
+@section 1.3. How to use the technical references
 Chapters 2 through 6 establish boundaries and orchestration. Chapters 7 through 11 explain acquisition, parsing and semantic evidence. Chapters 12 through 16 cover persistence, knowledge, progress and images. Chapters 17 through 19 describe projection, publication and browser policy. Chapters 20 through 24 cover building, testing, deployment and diagnosis.
 The source reference is generated from the current project units and distinguishes public declarations from explanatory narrative. The schema reference is derived from numbered SQL migrations, retaining actual table columns and constraints. Neither reference should be mistaken for an invitation to manipulate a production store manually; storage mutations must continue through the writer and lifecycle contracts.
-@chapter 2 System boundaries and design rules
-@section 2.1 Inputs outputs and side effects
+@chapter 2. System boundaries and design rules
+@section 2.1. Inputs outputs and side effects
 Inputs include the selected .dproj, .dpr or .groupproj entry, reachable allowed source files, form/resource data, source-reading configuration, authored explanations and imported PNG or observation files. Source acquisition is bounded to the selected root and explicit approved dependency roots. Paths and reparse behavior are checked so that an apparently local reference does not silently acquire unrelated filesystem content.
 Outputs include the .dphdb knowledge store, adjacent managed .views content, local workspace preferences, generated learning pages and fresh offline publication folders. DPH's own build produces executables and intermediate units under bin and dcu. Publication destinations and the knowledge database must remain outside the selected target source tree.
-The selected target is not compiled or run during ordinary analysis. DPH's own test programs and designated practice sample may be executed as explicit development validation. Keep those operations separate from claims about an arbitrary target application's runtime behavior.
-@section 2.2 Native forms are serialized assets
+The selected target is not compiled or run during ordinary analysis. DPH's own test programs and developer fixtures may be executed as explicit development validation. Keep those operations separate from claims about an arbitrary target application's runtime behavior.
+@section 2.2. Native forms are serialized assets
 DPH.UI.Main.fmx and the dedicated dialog .fmx files define ordinary controls, labels, dimensions, alignment, scrolling and event hookups. Engineers should be able to open them in RAD Studio and modify ordinary layout properties in the Object Inspector. Do not replace these assets with an unreviewable runtime-only UI construction path.
 Generated HTML is a view inside serialized browser controls. Graph and image overlays use the established rendering paths; their style prototypes remain serialized where implemented. Runtime response handling binds content and state to those controls. Layout changes require both a resource-instantiation check and visual inspection at maximized and restored sizes.
-@section 2.3 Local storage is not a target business database
+@section 2.3. Local storage is not a target business database
 The SQLite store is DPH's internal knowledge database. Modules describing database engines, dictionaries, schema, bindings or rules analyze or capture explanations about a selected application; they are not general business database administration engines. Their existence in source does not mean every specialist page belongs in the learner selector.
 The ordinary preparation selector is intentionally limited. Legacy serialized pages and backend capabilities remain in the repository and may support existing records or deeper inspection. An engineer must not advertise a hidden page as an accessible current workflow or add a menu entry solely because a class exists.
-@section 2.4 Scope and evidence limits
+@section 2.4. Scope and evidence limits
 The historical requirements ledger preserves original implementation assessments. Learning_Requirements_Reconciliation maps every original record to the revised teaching contract, including superseded technical obligations. A scope decision is not an implementation of the original specialist requirement. Preserve that distinction in engineering status and release claims.
 Teach only what the captured source and attributed contributions support. A static call graph is not a runtime trace, a reconstructed form is not a screenshot, and absence from a bounded result list is not proof of absence from the whole program. Qualify uncertain dispatch, dynamic controls, external services and unwritten business intent explicitly.
-@chapter 3 Layer and responsibility map
-@section 3.1 Acquisition and syntax layers
+@chapter 3. Layer and responsibility map
+@section 3.1. Acquisition and syntax layers
 DPH.Project.Source acquires bytes and maps decoded character positions back to byte ranges. DPH.Project.Inventory discovers allowed project members, reading configuration, search paths and dependencies. DPH.Parse.Lexer produces tokens. DPH.Parse.Preprocessor attaches conditional state and resolves permitted includes. DPH.Parse.Pascal, Forms and Resources produce structured syntax or qualified opaque evidence.
 DPH.Project.Analysis coordinates parse results into a TDPHScan and provides staging operations. This layer owns source and parse-result lifetimes. The semantic layer consumes those results rather than rereading arbitrary files or running the compiler to infer behavior.
-@section 3.2 Semantic and projection layers
+@section 3.2. Semantic and projection layers
 DPH.Analysis.Model defines symbols, relationships, flow nodes and edges. DPH.Analysis.Symbols binds source constructs, resolves supported references and caches routine summaries. DPH.Analysis.Flow builds control flow. Async, SQL, Persistence and Quality add focused analyses with their own qualifications.
 DPH.Workspace.Model captures a reusable JSON view and provides object lookup, search, coverage, questions and structured teaching-record validation. Specialized Workspace units project graphs, screen designs, layout rules, dependencies and comparisons. DPH.Analysis.Explanations turns captured facts and selected contributions into beginner-oriented lessons.
-@section 3.3 Storage orchestration and presentation
+@section 3.3. Storage orchestration and presentation
 DPH.Storage.Database owns SQLite, migrations, writer ownership, immutable generation facts, knowledge revisions, search indexes and managed artifacts. DPH.Storage.Backup preserves a consistent store with its managed files. DPH.Workspace.Worker serializes UI requests on a background thread and returns owned response objects through bounded queues.
 DPH.UI.Main binds requests, response state and native controls. Dedicated dialogs collect structured profile, glossary, action-purpose, dependency and dictionary material. DPH.Publish.Model builds the scoped publication contract. DPH.Publish.Export writes and validates editions. DPH.Publish.BrowserPolicy gates embedded navigation. DPH.Publish.Translation and the pinned translation dependency are supporting integrations, not an assumption that every learner page performs remote translation.
-@section 3.4 A responsibility test for a proposed change
+@section 3.4. A responsibility test for a proposed change
 If a field is displayed incorrectly, inspect the form and binding first. If a typed teaching record is rejected, inspect its model validator and SaveKnowledge canonical-body checks. If a call target is wrong, inspect symbol binding and semantic caching rather than adding a UI exception. If an export exposes excluded content, inspect the publication model before the HTML renderer.
 Each correction should live at the layer that owns its contract. Fixing a symptom in a later layer can conceal inconsistent underlying facts and produce different behavior between the native reader and exported lessons.
-@section 3.5 Read the data and ownership path
+@section 3.5. Read the data and ownership path
 @code
 Serialized FMX controls and current editor draft
     | Submit request value; UI remains on its own thread
@@ -58,194 +58,194 @@ Request queue -> Workspace worker -> Response queue -> UI model binding
                         Learner explanations   Offline edition
 @end
 This is an architectural reading map rather than a runtime trace. The worker constructs and owns storage operations; the UI adopts owned response data and binds controls. The native lesson and offline edition share explanatory/model contracts, while export additionally applies its scope and privacy boundary.
-@chapter 4 Startup and application lifecycle
-@section 4.1 Program entry and resource instantiation
+@chapter 4. Startup and application lifecycle
+@section 4.1. Program entry and resource instantiation
 DelphiProjectHandoff.dpr initializes the FireMonkey application and creates the main form. The .dproj supplies build configuration and project dependencies. Main-form creation initializes collections, editor state, workspace catalog, selectors, worker orchestration and the introductory view. Form resources must instantiate without missing event methods or mismatched component fields.
 The baseline test creates the serialized form and checks component bindings. It catches failures that a compiler can miss when a .fmx event name refers to an absent method or when a field declaration no longer agrees with a serialized component. Treat that test as necessary for form changes, while recognizing that it does not verify visual usability.
-@section 4.2 Locating bundled assets
+@section 4.2. Locating bundled assets
 The main form determines its base directory from the executable location and searches upward for the migrations directory within the implemented bounded search. That base locates migrations, help and samples. This supports both a development executable under bin and a deployed executable beside its content folders.
-A desktop package must preserve that structure. A successful source-tree run does not prove a package contains the same files. Extract the binary ZIP elsewhere and test migration discovery, practice-pack resolution and browser-loader availability from the extracted location.
-@section 4.3 Preferences and local catalog
+A desktop package must preserve that structure. A successful source-tree run does not prove a package contains the same files. Extract the binary ZIP elsewhere and test migration discovery, local help, current guide availability and browser-loader availability from the extracted location.
+@section 4.3. Preferences and local catalog
 TDPHWorkspaceCatalog stores known database paths and learning_progress in the existing per-user workspace.json location under the user's local application data. It migrates the established single database entry into a catalog without treating catalog removal as deletion of the store. The catalog is separate from a .dphdb and therefore is not automatically transferred with that database.
 Catalog construction validates its version and structure. Remember, Forget and Save update local navigation state. An absent database remains representable as a missing catalog entry. This lets the user locate moved files without implying that source or knowledge has been deleted.
-@section 4.4 Closing and cancellation boundaries
+@section 4.4. Closing and cancellation boundaries
 FormCloseQuery protects pending editor work. FormDestroy stops the worker, waits for its termination and releases owned models and collections. Do not free controls or shared state while a response can still be applied. Worker shutdown closes queues and drains response objects through the established ownership path.
 A user-requested close is not a transaction rollback API for arbitrary already-committed work. Preserve storage atomicity so interruption cannot publish half a generation or partially update a knowledge revision. On reopening, interrupted generation recovery marks incomplete work rather than presenting it as current.
-@chapter 5 Background request and response protocol
-@section 5.1 Request structure
+@chapter 5. Background request and response protocol
+@section 5.1. Request structure
 TDPHWorkspaceRequest is a value record containing command, database, source entry, configuration, platform, define/root arrays, generation and revision identifiers, authored text and links, export options, and screenshot/history parameters. Submit initializes a default record and fills the fields needed by that command.
 The worker uses a TThreadedQueue of eight requests and a separate queue of eight response objects. Submit raises an explicit queue-full error when PushItem cannot accept the record. UI busy state prevents ordinary overlapping user commands; it is not a replacement for storage ownership or revision checks.
-@section 5.2 Worker thread lifetime and COM
+@section 5.2. Worker thread lifetime and COM
 TDPHWorkspaceWorker is a non-free-on-terminate TThread. Execute initializes COM for the worker's apartment, constructs analyzer instances, consumes requests and releases resources on exit. Store instances are created and used on the owning worker thread. FireDAC connections and writer-thread checks must not be bypassed by calling the same store from the UI thread.
 Requests for opening, scanning, saving, reviewing, searching, publishing or importing artifacts share this orchestration. Some commands return specialized response data without replacing the complete workspace view. Do not treat every response as a full analysis completion.
-@section 5.3 Response ownership and stale result guards
+@section 5.3. Response ownership and stale result guards
 TDPHWorkspaceResponse owns its Document, Knowledge, Screenshots and other JSON result fields. Its destructor frees these fields. When the UI adopts a field, it transfers ownership by assigning it to the retained model and setting the response's field to nil. Omitting that nil assignment can double-free an adopted object; cloning without a reason adds unnecessary memory and obscures ownership.
 Generation-sensitive search, comparison and review responses are accepted only when their recorded generation agrees with the displayed view where guarded. Screenshot-history responses also carry tokens and database identity. These checks prevent a delayed result for an older selection from replacing the current workspace.
-@section 5.4 Draft state across asynchronous save
+@section 5.4. Draft state across asynchronous save
 The UI records which structured task or teaching card is being saved. On success it reloads knowledge, finds that stable identity and returns to the reader. Failed saves clear the in-flight identity as appropriate and preserve editable draft content. The editor must not declare itself saved simply because a background response arrived.
 For general knowledge, the saved snapshot includes title, body, document destination, audience, links, question metadata and structured JSON. FKnowledgeEdited is cleared only when the current editor still matches the submitted snapshot. This protects an edit made after submission from being accidentally marked clean by an earlier save response.
-@chapter 6 End to end flows an engineer must preserve
-@section 6.1 First source attachment
+@chapter 6. End-to-end flows an engineer must preserve
+@section 6.1. First source attachment
 The UI obtains a project entry and an outside-source database destination. Inventory validates the selected project and source-reading context. The worker rejects DPH's own project before scanning. The store opens or initializes its singleton project and selected configuration, while source files are observed into a manifest.
 The analyzer parses supported inputs, the semantic analyzer builds the graph, facts are staged in a generation and source is revalidated before publication. A workspace view is saved and returned. The native learner route is then rendered from that captured view and current knowledge. A failure before publication must leave the earlier published head available.
-@section 6.2 Opening cached lessons
+@section 6.2. Opening cached lessons
 Open uses the database's recorded project root and stored view instead of pretending to acquire missing source. The UI can present a detached captured view and saved knowledge. Detached status must remain explicit, particularly for review and publication decisions that require current source.
 Opening a cache is not equivalent to a full scan. It should not perform every expensive optional report merely because the form has serialized tabs for them. Build deeper projections on demand for their active destination.
-@section 6.3 Saving and reviewing knowledge
+@section 6.3. Saving and reviewing knowledge
 An editor produces text, metadata and the expected current revision. The worker validates and sends the save to TDPHKnowledgeStore. The store checks record type, canonical body, project-scoped links and optimistic revision identity, then appends a revision and updates the appropriate head. The returned knowledge projection drives the reader.
 Review is another command with its own reviewer, revision, generation and current-source checks. A save does not transition automatically to a verified review. If source changed during checking, refuse to present that review as current until reassessment establishes the correct evidence context.
-@section 6.4 Publishing a learning edition
+@section 6.4. Publishing a learning edition
 The worker builds TDPHDocumentModel from the selected workspace view, saved knowledge, images, audience, seeds and exclusions. Scoping and redaction occur before rendering. Export writes a fresh destination, includes indexes and provenance, computes checksums and validates the resulting edition.
 The native preview opens learning.html, the same learner route recipients should begin with. A consistent technical index does not establish human instructional quality. Test a supplied task, a picture and an object explanation in the independent export as well as the native reader.
-@part Part II Source acquisition syntax and semantics
-@chapter 7 Source bytes ranges and safe acquisition
-@section 7.1 TDPHSource is the byte to text boundary
+@part PART 2: Source acquisition, syntax, and semantics
+@chapter 7. Source bytes, ranges, and safe acquisition
+@section 7.1. TDPHSource is the byte to text boundary
 TDPHSource retains source path, original bytes, decoded text, encoding identity, line-ending information and a character-to-byte offset array. The acquisition method opens and reads the file under its path checks, rejects source larger than the implemented 16 MiB limit and detects a size change during acquisition.
 Original byte hashes establish source identity. Do not hash normalized text and then label that result as the original file hash. Line-ending conversion, a byte-order mark and different encodings can yield equal-looking text with different original bytes. Evidence ranges refer back to the acquired bytes.
-@section 7.2 Encoding precedence
+@section 7.2. Encoding precedence
 The reader recognizes UTF-8 BOM, UTF-16 little endian and UTF-16 big endian before considering the explicit code page. With no byte-order mark and no selected legacy code page, it attempts the implemented UTF-8 decoding path. An explicit Windows code page supports older source where authorized. Read the actual decoder exception and fallback branch before changing encoding behavior.
 This is source decoding, not translation. UI explanations should retain that distinction. A learner should not be asked to choose a programming language merely to correct character display in an older file.
-@section 7.3 Byte offsets and Unicode
+@section 7.3. Byte offsets and Unicode
 The offset array maps Delphi string character positions to original byte positions, including surrogate handling. Range construction uses that map for StartByte and EndByte and records line and column. The terminal offset represents the end of text. Preserve the implemented half-open range behavior when extracting or validating source snippets.
 Test multibyte UTF-8, UTF-16, supplementary characters and CRLF/LF boundaries when modifying this code. A naive character index used as a byte offset can make a plausible excerpt point at the wrong bytes while still producing valid JSON.
-@section 7.4 Path safety is part of correctness
+@section 7.4. Path safety is part of correctness
 Inventory.Allowed checks the project root and explicit external roots and rejects reparse-point ancestry through its Windows attribute checks. Source acquisition also resolves file handles to the expected path. Storage destinations apply their own outside-source boundary. These checks protect both confidentiality and the promise that DPH does not modify its selected target.
 Do not replace containment checks with a simple unqualified string prefix: sibling paths with similar names and reparse redirection can defeat that approach. Add a focused path regression if a legitimate dependency case requires changing boundary behavior.
-@chapter 8 Project inventory and reading configuration
-@section 8.1 Entry files and reachable members
+@chapter 8. Project inventory and reading configuration
+@section 8.1. Entry files and reachable members
 TDPHInventory accepts the selected project entry, configuration, platform, additional defines, explicit external roots and code page. It discovers project XML and Pascal references, captures allowed files, records unavailable files and preserves diagnostics. Sources and ProjectIR are owning dictionaries; SourceDefines records the effective defines for individual files.
 Project and group declarations provide settings and references. They do not prove that an output executable exists or a service has been installed. Project-member UI wording must preserve that distinction between a declared target and an observed built artifact.
-@section 8.2 Configuration identity and macros
+@section 8.2. Configuration identity and macros
 ConfigurationName, PlatformName and ConfigurationIdentity distinguish the selected reading environment. Macro expansion, namespaces, search paths and per-source defines influence what declarations and references DPH can resolve. Additional roots authorize acquisition; they are not a request to recursively scan an entire drive.
 SelectionHash in the workspace model includes configuration, platform, defines, roots and code page. A view captured under one selection cannot be treated as current for a different selection merely because source filenames are unchanged. Review and refresh paths compare this identity.
-@section 8.3 Unavailable files and incomplete inventories
+@section 8.3. Unavailable files and incomplete inventories
 Missing, excluded or unreadable source must remain represented with qualified availability and diagnostics. Do not drop an unresolved file and then report complete coverage over only the files that happened to open. Inventory.Complete reflects whether the discovery can support its current completeness claim.
 For an unreadable dependency, diagnose the entry and reference path, intended configuration and allowed roots first. A new learner still needs useful known material and a focused unanswered question, rather than a wall of internal inventory counters.
-@section 8.4 Revalidate before publication
+@section 8.4. Revalidate before publication
 Inventory.Revalidate and CurrentManifest compare the source state after work with the captured input. Source may change while a scan runs. Publication must refuse to make mismatched staged facts current, preserving the last published generation and recording failure or stale state as implemented.
 Incremental reuse is safe only when all relevant identity inputs agree. A changed include or binding environment can invalidate routines even when their own body file hash has not changed. The semantic cache includes binding context for this reason.
-@chapter 9 Lexer preprocessing and intermediate representation
-@section 9.1 Token acquisition
+@chapter 9. Lexer, preprocessing, and intermediate representation
+@section 9.1. Token acquisition
 TDPHLexer.Tokenize emits token kind, text, range, active state and condition. It recognizes whitespace, comments, identifiers, numbers, strings, symbols and end-of-file under bounded token acquisition. Malformed strings, comments or numbers require diagnostics rather than an invented valid token stream.
 Retaining comments and exact ranges supports later explanations and source evidence. Significant-token accounting is separate from full token count. Do not interpret a high recognized-token ratio as full semantic understanding of the program.
-@section 9.2 Conditional preprocessing
+@section 9.2. Conditional preprocessing
 TDPHCondition evaluates supported expressions using three-valued active state: true, false or unknown. Both, Either and Opposite preserve uncertainty when a condition cannot be established. The preprocessor handles symbols, directive state and permitted include resolution through a resolver supplied by inventory.
 Unknown conditional state must survive into captured conditions and completeness qualifications. Treating unknown as false silently discards a possible implementation; treating it as true silently claims an active path. Add fixtures for nested conditions, defines, includes and malformed expressions when changing this layer.
-@section 9.3 TDPHIRNode and TDPHParseResult
+@section 9.3. TDPHIRNode and TDPHParseResult
 The intermediate representation stores Kind, Name, Value, Condition, Parent index, source range and first/last token indexes. TDPHParseResult owns its node list and tokens, recognized/significant/opaque counts and Complete flag. AsJSON records the IR schema and analyzer version alongside the nodes.
 Parent is an index into the node collection, not a database entity identifier. Token indexes refer to the parse result's own token array. Preserve those coordinate systems when cloning or serializing; mixing them produces structurally valid but semantically wrong relationships.
-@section 9.4 Opaque syntax and diagnostics
+@section 9.4. Opaque syntax and diagnostics
 Unsupported or incomplete syntax remains qualified rather than being claimed as fully parsed. Opaque regions and diagnostics allow later layers to present known facts while keeping uncertainty. Diagnostics are bounded at 10000 entries in the shared diagnostic collector.
 When expanding parser support, add a fixture that demonstrates the previously opaque construct and a negative case that should still diagnose. Do not simply suppress a diagnostic to increase completeness; verify the resulting node structure, ranges and downstream relation.
-@chapter 10 Pascal forms and resource parsing
-@section 10.1 Pascal declarations and bodies
+@chapter 10. Pascal, forms, and resource parsing
+@section 10.1. Pascal declarations and bodies
 The Pascal parser recognizes supported program/unit structure, declarations, routines and statement bodies into IR. Declaration and implementation occurrences can refer to the same logical symbol while having different source ranges. Routine parameters and signatures later inform overload and dispatch resolution.
 Parser work is a source-reading model, not a substitute for the Delphi compiler. Generics, overloads, conditional code, nested routines and dynamic dispatch require the supported rules and explicit qualifications. Use exact source fixtures to demonstrate a changed resolution rather than relying only on an end-to-end count.
-@section 10.2 Form definitions
+@section 10.2. Form definitions
 Forms parsing captures component hierarchy, class names, properties and event bindings from supported DFM/FMX material. A saved event property may connect a component to a handler declaration. Form inheritance and runtime modifications require separate projections and cannot always be reconstructed as the actual visible screen.
 Use the saved hierarchy to teach names and relationships. Label generated form designs as reconstructions. Keep imported screenshots in their distinct channel with contributor, caption and image identity. Replacing that distinction with a generic screenshot caption misstates what was observed.
-@section 10.3 Resources and includes
+@section 10.3. Resources and includes
 Resource acquisition recognizes supported definitions under bounded reading. Includes retain their source locations and conditional context. Evidence from an included file must refer to that included source and original byte hash, not misleadingly to the top-level unit as if the bytes were there.
 Binary or unsupported resource data should remain qualified. A missing form resource may explain why no screen design can be shown, but it does not establish that the application has no screen at runtime.
-@section 10.4 Analysis coordination
+@section 10.4. Analysis coordination
 TDPHAnalyzer creates scans and supports incremental source/parse reuse. TDPHScan owns inventory and results, exposes syntax JSON and ContextHash, and stages source entities and syntax evidence. ContextHash includes analyzer identity, inventory root and configuration identity, manifest identity and per-file defines.
 Staging records source metadata, syntax IR and diagnostics as generation facts. The semantic analyzer adds relationships and flow evidence before publication. Keep the staging lifecycle consistent so a later semantic failure cannot leave partial facts labeled as a current complete capture.
-@chapter 11 Symbols resolution control flow and focused analyses
-@section 11.1 Semantic model
+@chapter 11. Symbols, resolution, control flow, and focused analyses
+@section 11.1. Semantic model
 TDPHSymbol stores canonical key, names, kind, signature, unit and owner, type, condition, variant, dispatch qualification, source hash, range, parameter information and declaration occurrences. TDPHRelation stores source/target indexes, relation kind, resolution, rule, label, condition and evidence range. An unresolved endpoint is represented explicitly.
 TDPHSemanticGraph owns symbols, relations, flow nodes, flow edges, diagnostics and source hashes. Its Complete flag is affected by unresolved relations. AsJSON converts indexes to stable external identities and includes schema and analyzer versions, input and context fingerprints, qualifiers and source ranges.
-@section 11.2 Routine summary caching
+@section 11.2. Routine summary caching
 TDPHSemanticAnalyzer maintains FRoutineCache keyed by routine identity. CachedRoutineFacts validates a summary using a hash of binding context, routine key and routine source hash. It stores relation endpoint keys and cached flow/diagnostic information so it can rebind into a new graph rather than reuse stale in-memory indexes directly.
 When restoring a summary, flow node indexes are offset into the new graph and endpoints are resolved against the current symbol set. Reuse checks graph limits before appending. A body-text-only cache key would miss changes in imported declarations, overload candidates or binding context.
-@section 11.3 Control flow construction
+@section 11.3. Control flow construction
 TDPHFlowBuilder builds a graph from statement IR and tokens. Sequence processes statements from the end toward the beginning so each statement can connect to its known continuation. Statement carries explicit next, return, exception, break and continue targets. Branches, loops, case arms and protected regions therefore have different successor rules.
 Finally context and label/goto bookkeeping preserve qualifications around nonlocal jumps. Do not replace a try/finally path with a simple sequential arrow. Test early exits, loop exits, exceptions and gotos in fixtures that assert meaningful topology rather than only node counts.
-@section 11.4 Bounded graph contracts
+@section 11.4. Bounded graph contracts
 The semantic relationship limit is 200000. Flow nodes are bounded at 100000, edges at 300000, and flow-builder nesting at 128. Impact traversal has explicit depth/node bounds. These are implemented limits; UI graph projections may use much smaller bounds to remain readable.
 A limit exception must produce qualified failure instead of truncating silently and declaring completeness. A small displayed graph can be a valid bounded view of a larger captured graph, but its omission should not be mistaken for source absence.
-@section 11.5 Focused analysis modules
+@section 11.5. Focused analysis modules
 Async examines supported asynchronous patterns. SQL identifies supported statements and data-use evidence. Persistence records source-derived persistence relationships. Quality identifies routine metrics, potential duplicate bodies, disconnected flow candidates and cycles. These are investigation aids with scope limits, not proof of runtime races, actual database contents, equivalent routines or safely removable code.
 The Workspace projections turn these facts into inspectable explanations. Retain qualifiers through rendering and export. If a learner needs to understand a background operation, combine the captured connection with an attributed explanation of its effect and safe expectations.
-@part Part III Persistence authored knowledge and native presentation
-@chapter 12 SQLite store ownership migrations and transactions
-@section 12.1 Connection contract
+@part PART 3: Persistence, authored knowledge, and native presentation
+@chapter 12. SQLite store ownership, migrations, and transactions
+@section 12.1. Connection contract
 TDPHKnowledgeStore creates a FireDAC SQLite connection for an absolute database path and recorded source root. It applies CheckOutsideSource before opening. Normal locking, disabled shared cache, a 3000 ms busy timeout, foreign-key enforcement and synchronous FULL are configured. The default journal mode is DELETE; WAL is an explicit constructor option and is refused for a UNC database path.
 The connection belongs to the creating thread. RequireWriter checks thread identity and lifecycle state. QueueWrite and ProcessQueuedWrites provide the implemented write queue instead of authorizing arbitrary cross-thread connection access. A store is not a thread-safe global service merely because it has a queue field.
-@section 12.2 Single writer mutex
+@section 12.2. Single writer mutex
 A named Windows mutex uses Local\\DPH.Writer plus a SHA256 identity derived from the normalized database path. If another writer already owns that identity, store construction fails with an explicit ownership error. The mutex is released when the store is destroyed.
 This guards DPH writers in the implemented local-session namespace. It does not provide a distributed database service or authorize multiple remote writers. Keep error guidance practical: identify and resolve the existing writer rather than increasing busy timeout until the collision becomes less visible.
-@section 12.3 Schema migration
+@section 12.3. Schema migration
 CurrentSchemaVersion is 9. ApplyMigrations reads ordered SQL files, using the explicit DPH STATEMENT separator to execute migration units. PRAGMA user_version prevents an older application from opening a newer unsupported schema. Foreign keys are verified as active, and integrity is checked after migration.
 Migrations define constraints, indexes and triggers in addition to tables. Do not copy only CREATE TABLE definitions into a new database. A migration change requires an old-store opening test, a failure/rollback test where appropriate and preservation of authored revisions. Keep applied migration semantics stable; introduce a new numbered migration for a new persisted contract.
-@section 12.4 Interrupted generation recovery
+@section 12.4. Interrupted generation recovery
 On store startup, running generations left by an interrupted writer are diagnosed and failed, and project stale/failure state is updated transactionally. The application must not assume an unfinished generation became usable merely because some rows or a cached file exist.
 Retain the last published head as the reading baseline when a new scan fails. An engineer diagnosing interruption should inspect generation status, diagnostics and project_state before considering repair. Avoid manually promoting a running or failed generation to current.
-@chapter 13 Generations source identity and cached views
-@section 13.1 The persisted graph of records
+@chapter 13. Generations, source identity, and cached views
+@section 13.1. The persisted graph of records
 projects is a singleton project record. configurations stores reading environments and their fingerprints. analysis_generations associates each capture with its project, configuration, manifest and analyzer. project_state records the published head and independent stale, failure, modification and knowledge-review flags.
 source_files identifies canonical relative paths and observed/analyzed identity. file_revisions and generation_files associate bytes and availability with particular captures. entities, entity_versions, evidence, relationships and flow tables preserve facts within generation/project boundaries. Composite foreign keys keep records from different projects or captures from being linked accidentally.
-@section 13.2 Stage commit and publish are separate
+@section 13.2. Stage commit and publish are separate
 BeginGeneration creates the running capture. BeginFacts starts staged fact work. CommitFacts persists staged content; RollbackFacts abandons a failed fact transaction. PublishGeneration checks the revalidated manifest and completeness before switching the published head. FailGeneration records failure while preserving the earlier usable head.
 An engineer should identify the exact transaction boundary before modifying scan flow. Committing rows is not equivalent to publishing them. UI code must not bypass PublishGeneration by loading whatever generation has the largest numeric ID.
-@section 13.3 Stable identity and changed objects
+@section 13.3. Stable identity and changed objects
 Canonical entity keys identify logical source objects under the implemented signature/structure rules. A name or signature change may create a new identity rather than automatically moving human knowledge. ContinuityCandidates and ApproveContinuity support explicit review of proposed replacement links, retaining the history.
 Do not assume text similarity proves the same logical object. Inspect kind, scope, signature, structural evidence and linked explanation. An approved continuity link preserves traceability; the knowledge content still needs review for current correctness.
-@section 13.4 Cached workspace views
+@section 13.4. Cached workspace views
 SaveWorkspaceView persists a captured JSON view in managed storage and associates it with the appropriate generation. LoadWorkspaceView retrieves that view for later reading. A cache is a projection of immutable facts and selected capture context, not the authoritative source of authored revision history.
 Retention removes eligible older cached views while preserving protected generations and linked evidence under the implemented policy. It does not delete the immutable analysis fact history or human knowledge merely because an older view file is eligible. Backup must include managed images and observations, not only cache JSON.
-@section 13.5 Relocation contract
+@section 13.5. Relocation contract
 RelocateSource updates a source root only after verifying the intended manifest and generation. A root mismatch on ordinary store open is refused. This prevents a convenient database filename from attaching knowledge to unrelated source.
 Test relocation with identical intended source, changed source and an unrelated project. Preserve the previous store on refusal. Avoid rewriting root_uri manually to get past a check; it is part of the project's identity and evidence boundary.
-@chapter 14 Authored revisions links and review state
-@section 14.1 SaveKnowledge contract
+@chapter 14. Authored revisions, links, and review state
+@section 14.1. SaveKnowledge contract
 SaveKnowledge accepts knowledge identity, expected revision, source generation, title, body, editor, kind, entity association, document destination, audience, links, question metadata and structured JSON through its implemented signature. It validates inputs and appends a revision rather than overwriting history. The caller must supply the revision it actually edited.
 Optimistic revision checking prevents a later save from silently replacing newer content. A conflict is a data reconciliation event, not a reason to discard the expected revision parameter. The UI should preserve the draft, refresh the current record and allow deliberate reconciliation.
-@section 14.2 Structured text and typed metadata agree
+@section 14.2. Structured text and typed metadata agree
 Migration 009 adds structured_json to immutable knowledge revisions with a JSON-object constraint and default {} for older material. Task, teaching-card, profile, glossary and other supported types have validators and canonical body renderers. The stored text and structured record must agree under the corresponding save rules.
 This prevents an editor from storing one human-readable procedure while typed metadata drives a different task reader or export. When adding a typed record, implement validation, canonical body construction, immutable identity checks and relevant projection tests together. Preserve legacy unstructured notes rather than inventing fields for them.
-@section 14.3 Links have precise targets
+@section 14.3. Links have precise targets
 Knowledge links associate revisions with source entities, evidence or other exact records under project/generation constraints. Rich links preserve target kind and identity. Document sections and audiences determine where supplied knowledge is projected. A global unlinked note must not become the purpose of every source object.
 Link validity and review status are separate. A valid source key proves that the link resolves under the captured view; it does not prove the contributor's interpretation. An excluded target in publication must not leave a leaked private detail or a misleading active link.
-@section 14.4 Review lifecycle
+@section 14.4. Review lifecycle
 ReviewKnowledge records a named decision against the expected revision and relevant generation, with current-source prerequisites where required. Save creates pending attributed content. Verified review, rejection and retirement are separate state transitions; historical revisions remain available.
 Current teaching-card and task projections exclude rejected and retired content. Review-needed state can arise from source changes even when the explanation text is unchanged. Test both positive projection of current material and exclusion of superseded/rejected/retired material.
-@section 14.5 Document sections and questions
+@section 14.5. Document sections and questions
 Document-section metadata organizes knowledge for overview, user, engineering, maintenance, build/deploy, troubleshooting, orientation, handoff and help destinations. Audience is separately scoped. Author-question metadata preserves the original prompt and answer relationship rather than treating a reply as unrelated free text.
 Human review is not a parser function. Keep unresolved questions visible in beginner language, and make it possible for a contributor to add an answer with context and a named owner. Do not promote an answer because its associated source file parsed successfully.
-@chapter 15 Structured tasks teaching cards and personal progress
-@section 15.1 Learning lesson schema
+@chapter 15. Structured tasks, teaching cards, and personal progress
+@section 15.1. Learning lesson schema
 A learning_lesson has a canonical GUID lesson_id, six fields named name, purpose, prerequisites, expected_result, troubleshooting and practice, and an ordered steps array. Each step contains action and expected_result. A backward-compatible optional learning object contains exactly role, path and order.
 Validation requires one through 100 steps, nonblank supported fields, a descriptive task name no longer than 200 characters, field and step text within 4096 characters, and complete structured JSON within 65536 characters. Step action and task purpose cannot be a meaningless Unknown placeholder. The optional role/path strings are each bounded at 200 characters and order must be an integer from 1 through 10000.
-@section 15.2 Task editing and reading states
+@section 15.2. Task editing and reading states
 The editor holds FTaskDraft separately from the step currently being edited. New step creates a draft step, Keep step accepts it, Undo step edit abandons only that edit, and Move up/down reorder the draft array. Save task validates and persists the complete canonical record asynchronously. Cancel changes abandons the draft explicitly.
 The reader filters by search, role and path, sorts prepared tasks by path/order/title and presents one step at a time. Legacy unstructured user-help notes remain readable without invented steps. Other typed records must not accidentally appear as task walkthroughs merely because their kind resembles user_help.
-@section 15.3 Valid task metadata example
+@section 15.3. Valid task metadata example
 The following minimal typed record illustrates the persisted teaching contract. Its values are sample instruction, not SQL commands. Use LearningLessonBody to derive its canonical body and the normal save path to persist it with contributor, kind, revision and generation metadata. The typed record alone is not a complete knowledge database row.
 @code
 {
   "record_type": "learning_lesson",
   "lesson_id": "{59A27D12-66A0-48EA-A5AF-DB41CDB33EE8}",
   "fields": {
-    "name": "Predict the sample subtotal",
-    "purpose": "Explain how quantity and unit price combine.",
-    "prerequisites": "Read the practice application's purpose.",
-    "expected_result": "The learner predicts 20.00.",
-    "troubleshooting": "Recheck quantity 2 and unit price 10.00.",
-    "practice": "Predict 3 times 5.00. Expected answer: 15.00."
+    "name": "Find a customer record",
+    "purpose": "Locate a record from an approved search screen.",
+    "prerequisites": "Read the selected application's purpose.",
+    "expected_result": "The matching record is shown.",
+    "troubleshooting": "Check the search value and ask the owner about access rules.",
+    "practice": "Explain which result identifies the intended record."
   },
   "steps": [
     {
-      "action": "Multiply quantity 2 by unit price 10.00.",
-      "expected_result": "The subtotal is 20.00."
+      "action": "Enter an owner-approved search value and choose Search.",
+      "expected_result": "A matching record appears in the result list."
     }
   ],
-  "learning": {"role": "New learner", "path": "First day", "order": 2}
+  "learning": {"role": "New learner", "path": "Customer lookup", "order": 2}
 }
 @end
-@section 15.4 Teaching card schema
+@section 15.4. Teaching card schema
 A learning_card contains canonical card_id, one of twelve categories and exactly seven fields: name, role, meaning, example, limits, help and practice. Optional picture metadata contains image_sha256 plus normalized x and y coordinates. Canonical body generation preserves the same content for general knowledge, the native library and offline lessons.
 Card identity and type are retained during revision. The storage layer checks uniqueness and canonical text. The reader filters title/body and role, keeps All learners material available, excludes rejected/retired records and resolves contextual links from both links and rich_links to current captured symbols.
-@section 15.5 Valid teaching card metadata example
+@section 15.5. Valid teaching card metadata example
 Use LearningCardBody for the matching canonical text. A picture callout adds the optional picture object only when image_sha256 identifies an imported image in this project. The numeric coordinates are normalized integers, not display pixels.
 @code
 {
@@ -263,81 +263,81 @@ Use LearningCardBody for the matching canonical text. A picture callout adds the
   }
 }
 @end
-@section 15.6 Progress key and semantics
+@section 15.6. Progress key and semantics
 TDPHWorkspaceCatalog.LearningProgress and SetLearningProgress key progress by database, learner, lesson identity and exact knowledge revision. Learner names are trimmed and bounded from 1 through 120 characters. Checked-step counts are bounded from 0 through 100. Persistence uses the existing atomic catalog save path rather than adding progress to immutable lesson content.
 I checked this result records consecutive checks and advances to the next unchecked step. Next/Previous are reading navigation. Start again changes the reading position without clearing checks. Clear my progress resets the selected learner/task/revision key. A revised task does not inherit old progress automatically.
-@section 15.7 Progress is not authentication or mastery
+@section 15.7. Progress is not authentication or mastery
 Role filters are teaching metadata. Learner names are local keys. Neither provides authentication, target-system permission or a certification result. UI wording and exported prose must not imply that checked-step count proves successful target execution or competence.
 Test persistence after changing tasks and reopening, distinct learners, changed revisions, reset behavior and invalid count/name rejection. A test that only checks incrementing an integer misses the identity and stale-revision contracts that make progress useful.
-@chapter 16 Pictures artifacts and anchored callouts
-@section 16.1 Import and managed storage
+@chapter 16. Pictures, artifacts, and anchored callouts
+@section 16.1. Import and managed storage
 ImportScreenshot accepts generation, existing PNG file, author, caption, optional source entity key and image kind. The default kind is Screenshot; Sample output and Other teaching image preserve the educational distinction. Imported images are managed artifacts associated with the selected project and captured context.
 Validate supplied image format, size, identity and outside-source storage according to the implementation. Do not accept an arbitrary file extension as proof of PNG content. Import does not launch or capture the target application. A caption should state what the contributor supplied and which context it illustrates.
-@section 16.2 Normalized coordinates
+@section 16.2. Normalized coordinates
 Picture metadata identifies the managed image by SHA256 and stores x/y in the normalized range 0 through 10000. Normalization makes a point independent of the displayed pixel size. The native paint path multiplies that coordinate by the current image extent; offline HTML uses corresponding relative positioning.
 At import/save time, the image must exist in this project's managed image set. A syntactically valid hash is insufficient if it names another project's image or no image. The original PNG bytes remain unchanged; markers are an overlay, not destructive raster edits.
-@section 16.3 Native style and interaction
+@section 16.3. Native style and interaction
 ScreenshotImage hosts ScreenshotMarkers, a serialized TPaintBox with hit testing disabled so the underlying image receives point selection. ScreenshotMarkerStyle and ScreenshotMarkerText are serialized style prototypes. ScreenshotPoint records the selected normalized location; Explain this point creates a teaching-card draft tied to that image point.
 ScreenshotMarkerPaint draws numbered markers using the current image extent, while the legend presents attributed teaching content. Fit, native-pixel and custom zoom modes change the display transform. Test markers near boundaries and after zoom/resize so a correct stored point does not become a misplaced visual label.
-@section 16.4 Offline presentation
+@section 16.4. Offline presentation
 The publication renderer includes the supplied image and proportional marker overlay with a numbered explanation legend. The same meaning, example, help and practice content should survive into learning.html. Redaction/scoping must account for image captions and linked knowledge even though an image's pixels cannot be fully sanitized by text redaction.
 Test both byte preservation and instructional meaning. A checksum-only test proves the image was copied, but not that a learner can connect marker 1 to the right worked example. A native-only visual test misses export placement and caption loss.
-@chapter 17 Learner projections and native binding
-@section 17.1 TDPHWorkspaceView
+@chapter 17. Learner projections and native binding
+@section 17.1. TDPHWorkspaceView
 The workspace view owns a JSON capture and a symbol lookup dictionary. Symbol, Neighbors, Search, Hierarchy, Properties, Details and Graph expose focused projections. Capture combines scan, graph and selection context into a reusable document. Coverage and Questions report separate qualifications rather than erasing incomplete evidence.
 Methods return JSON values with explicit ownership conventions. Follow the caller's finally/free patterns and avoid retaining borrowed objects after the view is replaced. A stable external key is safer for selection state than a pointer into an old JSON document.
-@section 17.2 Beginner explanation model
-TDPHExplanationModel generates twelve lesson topics and object-specific explanations from selected facts and attributed knowledge. ObjectLessonHTML introduces role and relevant purpose, actual conditions and bounded next connections, then keeps the deeper code walkthrough optional. ObjectText provides a native text route from the same explanatory model.
-The lesson renderer must not turn an unlinked application-wide note into every object's purpose. It must exclude rejected/retired content and preserve unresolved questions. Authored task walkthroughs use prepared learning order and include the retained task set, while source examples may be bounded for readability.
-@section 17.3 Lazy optional reports
+@section 17.2. Beginner explanation model
+TDPHExplanationModel.ApplicationRouteHTML generates four primary pages for the selected application: Meet this app, Learn a real task, Explore related tasks and Resolve unknowns. It combines source-derived forms and action links with that application's attributed profile, structured tasks, teaching cards and open author questions. Its task order uses saved learning order, then path and title. Absent instructions remain explicit gaps; an event binding alone is never presented as a verified task. The older generic LessonHTML topics remain supporting code, not the main learner route.
+ObjectLessonHTML introduces role and relevant purpose, actual conditions and bounded next connections, then keeps the deeper code walkthrough optional. ObjectText provides a native text route from the same explanatory model. The renderer must not turn an unlinked application-wide note into every object's purpose. It must exclude rejected or retired content and preserve unresolved questions. The native list of four routes is serialized in DPH.UI.Main.fmx so ordinary labels remain IDE-editable.
+@section 17.3. Lazy optional reports
 WorkspacePageChange chooses the active projection. Report generation for hidden specialist tabs should not delay opening the ordinary learner route. Refresh routines must distinguish loading the base view from building graphs, quality reports or screen-history comparisons on demand.
 When adding a learner destination, define what question it answers and reuse the existing model. Do not expose every serialized tab simply to make the selector appear comprehensive. A learner's information hierarchy and the repository's technical module hierarchy serve different readers.
-@section 17.4 Layout state and compact windows
+@section 17.4. Layout state and compact windows
 The main form opens maximized and enforces a minimum client size of 960 by 600. Side panes appear for relevant object work while focused readers use the available width. TaskContextExpander collapses prerequisites/context to preserve room for the current action and expected result.
 Validate native labels, scroll ranges, tab order, buttons and text areas at both maximized and restored sizes. A successful screenshot of an HTML page does not validate a native editor. Inspect how a user reaches commands that require horizontal scrolling and document that behavior explicitly when necessary.
-@part Part IV Publication search and operational safety
-@chapter 18 Publication model and export contract
-@section 18.1 Canonical scoped model
+@part PART 4: Publication, search, and operational safety
+@chapter 18. Publication model and export contract
+@section 18.1. Canonical scoped model
 TDPHDocumentModel receives workspace view, knowledge, seeds, exclusions, detached/stale state, images, display mode and audience. It builds a schema-versioned document with project/capture identity, analyzer versions, reading configuration, source revision qualification, symbols, evidence, relationships, flow, sections and knowledge. The current learning template version is DPH-LEARNING-13.
 Publication audiences include all, engineer, user, maintainer, builder and agent under validation. Local display can preserve original local content, while export uses scoped redacted values. Do not use an unscoped native view directly as an export model.
-@section 18.2 Scoping before rendering
+@section 18.2. Scoping before rendering
 Allowed files and selected keys are built before renderers run. Seeds define selected-object traversal; exclusions remove specified files or prefixes. Related evidence, flow and knowledge links must be checked against the retained scope. Excluded source must not leak through a secondary link, comment, trace or image caption.
 Test both the obvious omitted page and indirect references. A renderer that simply hides one table after serializing an unredacted JSON document still leaks the content in another output format. The canonical model is the common privacy boundary.
-@section 18.3 Redaction and encoding
+@section 18.3. Redaction and encoding
 Redact masks supported secret patterns such as private-key blocks, bearer tokens, credential assignments and recognized access-token shapes. Scrub recursively handles JSON fields and converts structured_json into structured_record for exported typed metadata. HTML encoding converts contributed text to text content rather than trusting it as markup.
 Pattern redaction is a safeguard, not a guarantee that arbitrary images or prose contain no confidential data. Review the intended edition before sharing. Keep product identifiers and code names appropriately protected from optional page translation where used.
-@section 18.4 Export files and atomic destination
-TDPHPublisher.Export writes a new destination and refuses an existing one. learning.html presents the twelve-topic learner route, authored tasks, examples, questions, terms and supplied images. Hash-named object pages provide linked explanations with optional source detail. index.html and JSONL technical indexes support deeper inspection and validation.
+@section 18.4. Export files and atomic destination
+TDPHPublisher.Export writes a new destination and refuses an existing one. learning.html presents the selected application's four-part learner route, authored tasks, examples, questions, terms and supplied images. The generated User Guide follows those same four parts. Hash-named object pages provide linked explanations with optional source detail. index.html and JSONL technical indexes support deeper inspection and validation.
 The edition also includes its manifest/provenance, checksum index and document companions under the implemented export structure. Optional source navigation and generated agent instructions are explicit options. Preserve fresh-destination behavior so a failed or changed export does not silently mix files from two captures.
-@section 18.5 Validation trust boundary
+@section 18.5. Validation trust boundary
 TDPHPublisher.Validate checks filenames, hashes, canonical provenance, ranges, technical indexes and evidence agreement against a separately supplied trusted input fingerprint. The command-line tool requires bundle-directory and trusted-input-fingerprint. Its optional --allow-stale flag permits historical/partial inspection without making the material current or complete.
 A checksum supplied inside an unknown bundle is not author authentication. The separately retained expected identity is essential to the integrity claim. Do not implement a repair that rewrites a failing bundle's checksums and calls it verified without regenerating from the trusted source model.
-@chapter 19 Search browser navigation and supporting integrations
-@section 19.1 Persistent project search
+@chapter 19. Search, browser navigation, and supporting integrations
+@section 19.1. Persistent project search
 BuildSearchIndex creates generation-scoped searchable material for objects, evidence, knowledge and diagnostics. SearchProject validates the query, result kind and page offset. The UI explains the contract: up to twelve words, prefix matches and all words required, with pages of 50 results.
 Keep search excerpts qualified by their result kind. A matching diagnostic is not a reviewed teaching explanation. Refresh or generation switches must not apply stale result pages to a new workspace. Test missing terms, Unicode, filtering, pagination and source/knowledge results with meaningful assertions.
-@section 19.2 Embedded browser policy
+@section 19.2. Embedded browser policy
 DPH.Publish.BrowserPolicy constrains navigation to expected local roots and supported routes. BrowserShouldLoad inspects requested URLs before navigation and routes supported internal object actions through selection handlers. Generated HTML links must remain inside the edition or intentional policy rather than loading arbitrary file paths.
 Path traversal, encoded separators, untrusted schemes and outside-root file navigation belong in browser-policy tests. A page that renders correctly can still contain unsafe links. Never use HTML rendering success as evidence that navigation policy was applied.
-@section 19.3 Runtime observations and data-quality imports
+@section 19.3. Runtime observations and data-quality imports
 Imported observations are separately attributed records tied to supported project/generation context. DPH does not infer that a source analyzer executed the target. Data-quality imports similarly represent supplied evidence and explicit analysis limits. Their JSON/size/path validation remains necessary even when a page is not on the main learner route.
 For a lesson about a real background task or error, distinguish the supplied observation from static evidence and author interpretation. Exports must preserve that attribution and qualification. An imported report is not authority to connect to the target database or execute diagnostic scripts.
-@section 19.4 Translation dependency
+@section 19.4. Translation dependency
 The repository pins DelphiAppTranslation under dependencies with its license and snapshot identity. Translation cache and adapter code preserve source revision, locale and review information. Optional HTML help translation uses the approved GTranslate widget and local selector helper, requiring connectivity for the remote widget.
 Do not conflate optional help translation with source text decoding. Do not assume the existence of translation backend code means a particular remote provider is configured or an ordinary translation page is exposed. Inspect the current UI and adapter configuration before documenting a workflow.
-@part Part V Build test diagnose and release
-@chapter 20 Build environment and source layout
-@section 20.1 Required engineering tools
+@part PART 5: Building, testing, diagnosis, and release
+@chapter 20. Build environment and source layout
+@section 20.1. Required engineering tools
 The project uses RAD Studio 37.0 for the installed Windows toolchain. rsvars.bat initializes BDS and compiler/library environment. dcc32 builds the current Win32 application and console tests, while the application project build script invokes MSBuild with Debug and Win32. Use the configured RAD Studio path in your environment rather than copying a personal workstation path into end-user directions.
 The repository uses FireDAC SQLite, FireMonkey, Windows APIs and the pinned DelphiAppTranslation source. The WebView2 loader is supplied under tools/WebView2/Win32. Microsoft WebView2 Runtime remains a system prerequisite. LibreOffice renders editable guides and creates PDF companions; the guide scripts use Python with python-docx and pypdf plus Poppler for visual inspection.
 For the standard installed RAD Studio location, initialize a command prompt with the command below. This is a tool installation path, not a user project directory. If the toolchain was installed elsewhere, adjust this location and the build scripts consistently.
 @code
 call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat"
 @end
-@section 20.2 Directory responsibilities
+@section 20.2. Directory responsibilities
 Project Pascal units and .fmx resources are at the repository root. bin/Win32/Debug contains executables and dcu contains compiled units. docs/guides contains current editable guides and directions; docs/pdf contains PDF companions. Original specifications are in docs/planning, the requirement ledger is in docs/requirements, JSON checks are in docs/validation/reports, test pictures are in docs/validation/images, and logs are in logs/validation or logs/development. help contains local HTML, export contains desktop or lesson deliverables, and source distributions contains versioned source archives. docs/PROJECT_LAYOUT.txt and docs/PROJECT_MOVE_MANIFEST.csv record the complete folder map and every moved file.
-samples holds the small OrderPractice teaching application, translation fixtures and optional locally pinned reference material. tools holds build, packaging, documentation and validation tools. migrations holds the ordered SQL schema. dependencies holds pinned third-party source. Databases is the default suggested lesson-store area; user stores must not be committed or packaged.
-@section 20.3 Build the application and form baseline
+samples holds developer fixtures and optional locally pinned reference material; OrderPractice remains a parser/form fixture without imported learner lessons. tools holds build, packaging, documentation and validation tools. migrations holds the ordered SQL schema. dependencies holds pinned third-party source. Databases is the default suggested lesson-store area; user stores must not be committed or packaged.
+@section 20.3. Build the application and form baseline
 @steps
 Open an engineering command shell in the repository root with the privileges required by the configured RAD Studio environment.
 Run tools\build-wp0.cmd. It initializes the RAD environment, creates the configured output directories, copies the WebView2 loader and invokes the project build.
@@ -346,38 +346,37 @@ Confirm that bin\Win32\Debug contains DelphiProjectHandoff.exe and the loader. S
 If the executable is locked, identify the exact running project process and confirm it has no unsaved work before closing the permitted project instance and rebuilding.
 @end
 Expected result: current source compiles and the serialized main form binds correctly. Compiler warnings should be reviewed in context; do not hide a new diagnostic by discarding all warnings.
-@section 20.4 Build the publication validator
+@section 20.4. Build the publication validator
 tools\build-wp7.cmd compiles DPH.ValidateHandoff and the hardening test, then runs the latter. tools\build-glossary.cmd also compiles the validator after its glossary checks. If only recompiling the validator, use the same initialized RAD environment and the compiler flags declared by those scripts.
 The validator shares the current publication units. Package a validator compiled against the same source contract as the exported template. A stale validator executable beside a newer application can produce misleading deployment checks.
-@chapter 21 Meaningful test selection and execution
-@section 21.1 Select tests by the changed contract
-Form layout or event-binding changes require the baseline and relevant native UI checks. Task/card changes require GuidedTasks, Catalog and Practice. Knowledge persistence changes require Knowledge and Storage. Publication changes require Publishing and the applicable hardening/privacy checks. Analyzer changes require their focused parser/semantic fixtures and relevant reference/incremental checks.
+@chapter 21. Meaningful test selection and execution
+@section 21.1. Select tests by the changed contract
+Form layout or event-binding changes require the baseline and relevant native UI checks. Task/card changes require GuidedTasks, Catalog and the selected-application learning test. Knowledge persistence changes require Knowledge and Storage. Publication changes require Publishing and the applicable hardening/privacy checks. Analyzer changes require their focused parser/semantic fixtures and relevant reference/incremental checks.
 A test should demonstrate observable contract behavior. Checking that a function returns a nonempty string is insufficient for a teaching explanation that must preserve meaning, attribution, order and safe recovery. Do not add repetitive tests that merely mirror an implementation assignment.
-@section 21.2 Current learning test commands
+@section 21.2. Current learning test commands
 @code
 tools\build-wp0.cmd
 tools\build-learning-refocus.cmd
 tools\build-guided-tasks.cmd "<new disposable task workspace>"
-tools\build-practice.cmd "<new disposable practice workspace>"
 tools\build-order-sample.cmd
 tools\build-wp6.cmd
 @end
 Read the script before using an optional argument. Use a fresh disposable workspace outside source fixtures when a test writes a database or exported edition. Some scripts accept a reference database; others create their own temporary paths. A command's mere presence in this list is not authorization to run it against an owner store.
 The catalog test is tests\DPH.Tests.Catalog.dpr; it does not have a dedicated build-catalog.cmd wrapper. Compile it with the same initialized dcc32 environment and unit search paths as build-guided-tasks.cmd, then run its executable with a disposable root directory as its first argument. It creates bin\catalog-validation under that root; supply a dedicated temporary root so this does not replace a user's workspace.json. Inspect its ParamStr calls before invocation.
-@section 21.3 Practice test as an integration route
-DPH.Tests.Practice opens the actual native form, invokes the supplied-practice route and checks prepared path order, task purpose, worked result, saved progress, field guidance, contextual source links, FAQ content, sample-output callouts, compact layout and persisted records. It also publishes the example and checks the shared learning route and original source/image hashes.
-DPH.Tests.OrderSample validates the designated example's actual calculation behavior and captures its native pictures. These two tests establish different contracts: the sample's behavior and DPH's ability to teach it. Neither proves that an arbitrary selected target was executed or understood completely.
-@section 21.4 Full and incremental reference checks
+@section 21.3. Selected-application learning integration
+DPH.Tests.LearningRefocus creates a disposable selected-project capture, verifies that the four main pages use that project's own forms and action links, and confirms that no OrderPractice lessons are imported. Its native WebView2 path checks the route title, internal links, text fallback and compact layout. The test writes screenshots into its disposable workspace so validation does not overwrite the published manuals' images.
+DPH.Tests.GuidedTasks checks structured task validation, ordered steps, revision-specific progress, teaching cards, picture callouts and publication of selected-app instructions. DPH.Tests.OrderSample still tests a developer fixture's calculation behavior; it is not a default learner path. None of these tests proves that an arbitrary selected application ran or that its unwritten business rules are known.
+@section 21.4. Full and incremental reference checks
 The pinned reference project provides a larger real source set for analysis, cache, export and incremental consistency. Preserve its bytes and fixture identity. Reusing one prepared reference cache can avoid generating many duplicate test folders without weakening the relevant comparison.
 Compare semantic identity and meaningful facts between full and incremental analysis, not only elapsed time or counts. A routine-cache change requires a fixture where binding changes without an equivalent body edit. A form event change requires checking the actual linked handler and source range.
-@section 21.5 Isolate local preferences and artifacts
+@section 21.5. Isolate local preferences and artifacts
 Native tests may use the ordinary per-user workspace catalog. Preserve and restore its original bytes when the test cannot use an isolated path. Avoid testing against a user's actively edited DPH instance. Keep generated stores, exported editions and temporary compiled sources under one explicitly owned validation area.
 After success, retain concise logs and relevant screenshots, then remove only verified disposable directories created by that validation phase. Check containment and reparse points before recursive deletion. Never delete owner databases, source fixtures, untracked documents or a reference source tree as generic test cleanup.
-@chapter 22 Package deploy and verify extracted copies
-@section 22.1 Binary package contents
-The desktop package contains DelphiProjectHandoff.exe, DPH.ValidateHandoff.exe, WebView2Loader.dll, migrations, help, current guides and directions, Databases instructions, licenses and the eight OrderPractice lesson/source/image files. It deliberately contains no owner .dphdb, private document copies or reference-project working stores.
-The supplied practice lesson pack includes source_hashes for the four source/project files and two PNG images. Preserve these exact bytes through packaging and source control. The repository's .gitattributes disables text normalization for those sample files so a checkout does not invalidate the prepared identity.
-@section 22.2 Run the packager deliberately
+@chapter 22. Package, deploy, and verify extracted copies
+@section 22.1. Binary package contents
+The desktop package is intended to contain DelphiProjectHandoff.exe, DPH.ValidateHandoff.exe, WebView2Loader.dll, migrations, help, current guides and directions, Databases instructions and required licenses. It does not include the OrderPractice developer fixture, an owner .dphdb, private document copies or reference-project working stores. A previously created package remains a historical build; rebuild only after its documentation and executable agree.
+The source archive may include developer fixtures and tests for reproducibility. Their presence does not authorize the application to offer a generic practice lesson or imply that a fixture's behavior applies to the selected target.
+@section 22.2. Run the packager deliberately
 @steps
 Complete the relevant code/document validation and build current application and validator executables.
 Stage the intended new source/sample/guide files. The source packager enumerates git ls-files, so unstaged new files are otherwise absent from that list.
@@ -386,60 +385,60 @@ Read docs/validation/reports/learning-distribution-validation.json and verify th
 Retain the ready-to-run folder under bin\distribution and the binary ZIP under export. Keep the source ZIP under source distributions.
 @end
 Expected result: a fresh versioned delivery exists. Do not overwrite an earlier release's files and keep its old checksum report as if it still described the new content.
-@section 22.3 Verify the binary extraction
-Extract the binary ZIP to a new writable location. Verify every SHA256.json entry against extracted bytes. Check required migrations, current manuals, local help, loader and practice-pack files. Start the extracted actual executable, confirm a responsive native window and normal close, then run the practice route against disposable lesson storage.
+@section 22.3. Verify the binary extraction
+Extract the binary ZIP to a new writable location. Verify every SHA256.json entry against extracted bytes. Check required migrations, current manuals, local help and loader. Start the extracted executable, confirm a responsive native window and normal close, then select a disposable Delphi project and verify that its four-part route names that project without importing unrelated lessons.
 Do not test the delivery solely by running the development executable. That can conceal missing package files because the source tree supplies them. After adding temporary verification tools to an extracted copy, keep that copy separate from the pristine release staging folder.
-@section 22.4 Verify the source extraction
+@section 22.4. Verify the source extraction
 Extract the source ZIP into a different new directory and run its application build/baseline there. This demonstrates that source, forms, project file, dependencies and tools required for the build are actually included. Preserve the build log and exact archive hash.
-The source archive intentionally excludes personal owner data and locally pinned reference source. A reference-only test may require separately supplied reference material, while the ordinary application and bundled small-sample tests must remain reproducible from shipped source.
-@section 22.5 Release record and repositories
+The source archive intentionally excludes personal owner data and locally pinned reference source. A reference-only test may require separately supplied reference material, while the ordinary application and included developer-fixture tests must remain reproducible from shipped source.
+@section 22.5. Release record and repositories
 Review git status, stage only intended changes and artifacts, commit with a concrete description and push to every configured public/private remote under the project's authorization. Verify each remote branch points at the intended commit. Do not force-push or overwrite unreviewed remote work to simplify synchronization.
 Keep release validation, source provenance and manual version evidence together. If a guide is corrected after a release, deliver clearly identified companion guides or a fresh package version rather than silently changing a historical ZIP. A user's untracked PDF copies are owner documents, not automatically release artifacts.
-@chapter 23 Diagnose failures at their owning layer
-@section 23.1 Acquisition and inventory failure
+@chapter 23. Diagnose failures at their owning layer
+@section 23.1. Acquisition and inventory failure
 Record the entry path, source-reading configuration and first diagnostic. Check allowed roots, referenced filenames, encoding and missing include/form dependencies. Inspect the acquisition method's original-byte range and path checks before modifying parser behavior.
 Do not broaden acquisition to unrelated directories merely to eliminate missing-file diagnostics. If the target genuinely depends on external source, obtain an explicit dependency root and preserve its identity in configuration and manifests.
-@section 23.2 Parsing or semantic mismatch
+@section 23.2. Parsing or semantic mismatch
 Reduce the failing construct to a protected fixture. Inspect tokens, conditional active state, IR node parent/ranges and the semantic resolution rule. If full analysis is correct but incremental differs, inspect context hashes and cache rebinding before patching the renderer.
 Keep unsupported syntax qualified. A new parser branch must improve actual structure and downstream facts, not just suppress opaque-token accounting. Check Unicode range behavior if the excerpt or line target is wrong despite a correct object name.
-@section 23.3 Store open or migration failure
+@section 23.3. Store open or migration failure
 Check the exact schema-version, integrity, source-root or writer-ownership error. Preserve the database and managed folder before repair. Inspect PRAGMA user_version, migration history and relevant foreign-key constraints using an approved diagnostic copy.
 Do not disable foreign keys, delete history rows or overwrite root_uri to make the store open. Those actions can hide cross-project links or corrupt provenance. A newer-schema store requires a compatible build or a deliberate tested migration plan.
-@section 23.4 Save conflict or lost draft report
+@section 23.4. Save conflict or lost draft report
 Reproduce with the exact knowledge identity and expected revision. Compare the submitted snapshot with the current editor and the response branch clearing FKnowledgeEdited. Inspect stable task/card saving IDs and ownership transfer when the list reloads.
 For a conflict, verify that the original draft remains recoverable and the latest saved revision is not overwritten. For a canonical-body error, compare typed fields with the renderer used for that record type. Do not relax equality merely to allow two representations to diverge.
-@section 23.5 Export or navigation failure
+@section 23.5. Export or navigation failure
 Rebuild a scoped model and examine the failing filename, hash, range or link. Inspect exclusions, audience and transformed structured metadata before editing HTML. Run the validator with the separately trusted expected fingerprint. If a browser refuses a link, inspect BrowserPolicy and the generated URL's decoding/containment behavior.
 Never repair a broken trust boundary by permitting all file URLs or regenerating checksums over unexplained mutated content. Fix the producing model or route, then generate a new edition and validate it.
-@section 23.6 Native layout or browser display failure
+@section 23.6. Native layout or browser display failure
 Separate native resource/binding failure from embedded-browser failure. The baseline test covers the former structurally; actual restored/maximized inspection covers usability. WebView2 Runtime, loader and generated-page existence matter for the latter.
 Check scroll ownership, alignment, margins, collapsed context and reader height at the minimum size. The user must be able to find the action, its expected result and the save/navigation commands without guessing which unlabeled area to scroll.
-@chapter 24 Maintain documentation as an engineering artifact
-@section 24.1 Source for the current manuals
+@chapter 24. Maintain documentation as an engineering artifact
+@section 24.1. Source for the current manuals
 tools\build-guides.py builds the current DPH manuals from the authored User and Engineering source text in docs\guides\source, supported native images and generated technical references. It records source hashes in docs\validation\reports\guide-source-validation.json. These manuals describe DPH; the selected application's published guides are generated through DPH.Publish.Export and are a separate output path.
 Keep control names aligned with .fmx resources and event handlers. Documentation must distinguish a currently accessible selector route from a backend method or hidden serialized legacy page. New instructions should begin at an explicit visible starting point and finish with a result the reader can check.
-@section 24.2 Editable contents and companion PDFs
+@section 24.2. Editable contents and companion PDFs
 The manuals use real heading styles with numbered parts, chapters and subsections. The contents is an editable field, with a cached page-number result populated against its matching rendered PDF. tools\finalize-guide.py updates that cached result without destroying the field. tools\render-guides.ps1 uses LibreOffice and the document renderer to produce PDFs and page PNGs, then rerenders after contents population.
 If page numbers move during field population, repeat verification until cached entries agree with the final PDF. A table of heading names without valid page numbers is not a finished contents. A printed manual needs consistent running headers, page numbers and readable hierarchy as well as searchable text.
-@section 24.3 Review depth and instructional completeness
-For the User Guide, verify that a person can extract, open, identify controls, complete the supplied learning path, save progress, choose another application, interpret source connections, prepare each contribution type, review it and share it. Include exact actions, examples, expected results, field limits and recovery instructions where applicable.
+@section 24.3. Review depth and instructional completeness
+For the User Guide, verify that a person can extract, open, choose an unfamiliar application, follow its four-part route, identify an authored task or a missing explanation, save progress, choose another application, interpret source connections, prepare each contribution type, review it and share it. Include exact actions, examples, expected results, field limits and recovery instructions where applicable.
 For the Engineering Guide, verify the explanation of ownership, source ranges, configuration, parser/semantic boundaries, generation transactions, migrations, authored revisions, structured schemas, progress identity, image coordinates, privacy, build/test commands and extracted-delivery validation. File inventories support this explanation; they do not replace it.
-@section 24.4 Visual and privacy checks
+@section 24.4. Visual and privacy checks
 Inspect every final rendered page for clipping, stranded headings, excessive blank space, broken code wrapping, unreadable figures and contents errors. Reopen the DOCX to verify field and heading structure and reopen the PDF to verify pages and text. Retain evidence of the exact final files reviewed.
 Remove personal author metadata, development-machine references and historical conversational disputes from both manuals. Standard tool versions and relative repository paths belong in the engineering text where useful. User instructions should refer to the recipient's extracted delivery, not a particular developer's machine.
-@part Part VI Technical reference
-@chapter 25 Source units and public contracts
-@section 25.1 Reading the generated unit reference
+@part PART 6: Technical reference
+@chapter 25. Source units and public contracts
+@section 25.1. Reading the generated unit reference
 The following reference is generated from the exact current Pascal source files. Each entry identifies the layer responsibility, current file size and public type or routine declarations. Read these declarations alongside the architectural chapters before changing their implementation. Private routines and implementation details remain in the named unit.
 The reference intentionally includes supporting and legacy projection modules so an engineer can understand the existing repository. Their inclusion does not add those pages to the learner interface or claim unrestricted semantic capability. Public declarations show callable contracts; the implementation and associated tests establish behavior and limits.
 @units
-@chapter 26 Persisted schema and migration reference
-@section 26.1 How to read a table definition
+@chapter 26. Persisted schema and migration reference
+@section 26.1. How to read a table definition
 The following definitions are extracted from the numbered SQL migrations. A primary key identifies a row. A unique constraint prevents duplicate identities under the listed columns. A foreign key requires the referenced project/generation/entity to exist. A check constraint restricts allowed values or valid JSON. Triggers add lifecycle or immutability protection that cannot be inferred from column names alone.
 The reference separates table definitions from later alterations and the names of indexes/triggers. Consult the corresponding migration for the complete trigger body or transactional implementation. The final schema is the cumulative result of migrations 001 through 009, not merely migration 001. structured_json, revision links, search and translation cache therefore need their later additions to be understood correctly.
 @schema
-@chapter 27 Engineering change and release checklists
-@section 27.1 Before changing a contract
+@chapter 27. Engineering change and release checklists
+@section 27.1. Before changing a contract
 @steps
 Identify the actual user learning problem and the layer that owns its behavior.
 Inspect the relevant source, native form, persisted contract and focused tests.
@@ -447,7 +446,7 @@ Confirm repository state and take the required verified pre-change backup to the
 Define the expected before/after behavior and a meaningful validation example. Preserve original source fixtures and owner data.
 Make the smallest approved change that satisfies the learning requirement without adding unrelated administration or helper layers.
 @end
-@section 27.2 Before declaring the change validated
+@section 27.2. Before declaring the change validated
 @steps
 Build the current application and run the serialized form baseline when applicable.
 Run focused tests that exercise the changed contract and the necessary adjacent regressions.
@@ -456,11 +455,11 @@ Save/reopen typed knowledge and publish the same lesson when capture, projection
 Verify source bytes, authored history, current-source qualifications and privacy boundaries remain correct.
 Update the matching manual sections and inspect their final rendered pages.
 @end
-@section 27.3 Before delivering a release
+@section 27.3. Before delivering a release
 @steps
 Build current application and validator executables and identify a fresh package version.
-Package required files only, including the exact supplied practice pack and current guides.
-Verify extracted binary checksums and actual native startup. Exercise the supplied learner route in a disposable copy.
+Package required files only, including current guides and help. Exclude developer-only lesson fixtures and owner data from the desktop delivery.
+Verify extracted binary checksums and actual native startup. Exercise a disposable selected application's learner route in the extracted copy.
 Build from a fresh source-ZIP extraction and retain its log.
 Remove only confirmed disposable validation folders; preserve owner material and useful failure evidence.
 Commit intended changes, push every configured repository and verify remote branch identities.

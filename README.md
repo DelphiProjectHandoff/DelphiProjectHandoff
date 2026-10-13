@@ -9,9 +9,7 @@ Delphi Project Handoff (DPH) helps a beginner learn one unfamiliar Delphi applic
 3. In **Learn the project**, follow **Meet this app**, **Learn a real task**, **Explore related tasks**, and **Resolve unknowns**. These pages use the selected application's own captured screens and actions plus its supplied explanations.
 4. Use **Learn a task** for reviewed instructions and expected results, and **Learning library** for meanings and examples. If instructions are missing, ask someone who knows the app to prepare them; DPH does not invent business facts.
 
-The [run and test directions](docs/guides/Run_And_Test.txt), [User Guide](docs/pdf/DPH_User_Guide.pdf), and [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) are retained for review.
-
-The existing DOCX/PDF guides and HTML help still describe the earlier practice-example flow. They are being held unchanged during review of this new app-specific route. Use the current in-app **Getting started** page and the steps above for this development build.
+The [run and test directions](docs/guides/Run_And_Test.txt), [User Guide](docs/pdf/DPH_User_Guide.pdf), and [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) cover the current app-specific learning route. The guides also have editable DOCX editions in `docs/guides`.
 
 ## Teaching features
 

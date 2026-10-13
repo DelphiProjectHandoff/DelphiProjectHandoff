@@ -35,8 +35,7 @@ Experimental Windows desktop learning application
    Explore related tasks and Resolve unknowns.
 5. Use the in-app Getting started page for first-session directions.
 
-The included guides and HTML help still describe the earlier practice-example
-flow. They are retained pending review of this app-specific learning route.
+The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for
 embedded pages; its supplied loader is a separate file.
 
