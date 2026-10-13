@@ -2633,7 +2633,6 @@ begin
   if FExplanations=nil then Exit;
   HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
-  Fallback:=TRegEx.Replace(Fallback,'<details class="card"><summary>How this lesson was prepared</summary>.*?</details>','',[roSingleLine,roIgnoreCase]);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
   OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');

@@ -9,6 +9,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, 
   DPH.Publish.BrowserPolicy in '..\DPH.Publish.BrowserPolicy.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas', DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
   DPH.Workspace.Worker in '..\DPH.Workspace.Worker.pas',
+  DPH.Learning.Discovery in '..\DPH.Learning.Discovery.pas',
   DPH.UI.ActionPurpose in '..\DPH.UI.ActionPurpose.pas', DPH.Knowledge.ActionPurpose in '..\DPH.Knowledge.ActionPurpose.pas',
   DPH.Analysis.Model in '..\DPH.Analysis.Model.pas', DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
 var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArtifact,ReferenceBundle: string; ID: TGUID;
@@ -37,6 +38,18 @@ begin
   try
     try
       Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(ID); Work:=TPath.Combine(Root,'bin\learning-refocus-tests-'+GUIDToString(ID)); TDirectory.CreateDirectory(Work);
+      TFile.WriteAllText(TPath.Combine(Work,'README.md'),'The learning fixture has a documented first task.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Work,'activity.log'),StringOfChar('x',1100000)+sLineBreak+
+        'The Convert action completed at 10:30.',TEncoding.UTF8);
+      var DiscoveryFacts:=TJSONObject.Create.AddPair('root',Work);
+      try
+        TDPHLearningDiscovery.AddEvidence(DiscoveryFacts,DiscoveryFacts);
+        var FoundLog:=False;
+        for var Discovered in DiscoveryFacts.GetValue<TJSONArray>('project_guides') do
+          if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
+            ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
+        Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
+      finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Root,'tests\fixtures\semantics'); BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
       Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
       Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'fixture.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
@@ -123,6 +136,7 @@ begin
               var GuideSections:=TJSONArray.Create;
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','1. Purpose').AddPair('text','A source-supplied purpose for this application.'));
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','2. Getting started').AddPair('text','Begin with its own saved controls.'));
+              GuideSections.AddElement(TJSONObject.Create.AddPair('heading','3. Convert a file').AddPair('text','Choose btnConvert on MainForm to begin the example conversion.'));
               GuideFacts.RemovePair('project_guides').Free;
               GuideFacts.AddPair('project_guides',TJSONArray.Create(
                 TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
@@ -137,6 +151,21 @@ begin
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'Begin with its own saved controls.') and
                   ContainsText(GuideModel.ApplicationRouteHTML(2),'Getting started'),
                   'Application guide enriches the first task and related topics');
+                var ControlKey: string:='';
+                for var SymbolValue in GuideFacts.GetValue<TJSONArray>('symbols') do
+                  if (SymbolValue.GetValue<string>('kind','')='component') and
+                    ContainsText(SymbolValue.GetValue<string>('name',''),'btnConvert') then begin
+                    ControlKey:=SymbolValue.GetValue<string>('key'); Break;
+                  end;
+                Check(ControlKey<>'','Fixture exposes its saved Convert control');
+                FlowText:=GuideModel.ObjectLessonHTML(ControlKey);
+                Check(ContainsText(FlowText,'What the application documents and logs say') and
+                  ContainsText(FlowText,'Choose btnConvert on MainForm') and
+                  ContainsText(FlowText,'docs/Application_Guide.md'),
+                  'A selected control shows its matching project-guide passage and source');
+                Check(not ContainsText(FlowText,'How this lesson was prepared') and
+                  not ContainsText(FlowText,'This is a saved part of a screen'),
+                  'Learner page omits preparation metadata and stock control wording');
               finally GuideModel.Free;end;
             finally GuideFacts.Free;end;
             var FAQFacts:=Model.Document.Clone as TJSONObject;

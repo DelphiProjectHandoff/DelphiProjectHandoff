@@ -322,7 +322,18 @@ begin
         Paragraphs.Add(R.GetValue<string>('body'));
       end;
     end;
-    TDPHLearningDiscovery.AddEvidence(FDocument,AView.Document);
+    if AView.Document.GetValue<TJSONArray>('project_guides',nil)<>nil then begin
+      FDocument.AddPair('project_guides',CaptureValue(AView.Document.GetValue('project_guides')));
+      if AView.Document.GetValue('project_screens')<>nil then
+        FDocument.AddPair('project_screens',CaptureValue(AView.Document.GetValue('project_screens')))
+      else FDocument.AddPair('project_screens',TJSONArray.Create);
+      if AView.Document.GetValue('project_assets')<>nil then
+        FDocument.AddPair('project_assets',CaptureValue(AView.Document.GetValue('project_assets')))
+      else FDocument.AddPair('project_assets',TJSONArray.Create);
+      if AView.Document.GetValue('project_sites')<>nil then
+        FDocument.AddPair('project_sites',CaptureValue(AView.Document.GetValue('project_sites')))
+      else FDocument.AddPair('project_sites',TJSONArray.Create);
+    end else TDPHLearningDiscovery.AddEvidence(FDocument,AView.Document);
     if not ALocalDisplay then
       for V in FDocument.GetValue<TJSONArray>('project_guides') do begin
         R:=V as TJSONObject;

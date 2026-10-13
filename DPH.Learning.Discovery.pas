@@ -12,24 +12,30 @@ type
 
 implementation
 
-uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.StrUtils,
-  System.Hash, System.NetEncoding, System.RegularExpressions, System.Zip;
+uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.StrUtils, System.Math,
+  System.Hash, System.NetEncoding, System.RegularExpressions, System.Zip,
+  System.Net.HttpClient, System.Net.URLClient;
 
 class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject);
 var
-  Guides,Screens,Sections,Nodes,Files,Assets: TJSONArray;
-  FileRow,Node,Child,Screen,Guide,Section: TJSONObject;
-  Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title: string;
+  Guides,Screens,Sections,Nodes,Files,Assets,Sites: TJSONArray;
+  FileRow,Node,Child,Screen,Guide,Section,Site: TJSONObject;
+  Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title,URL,Host: string;
   Paths: TStringList;
   Lines: TStringList;
   V: TJSONValue;
-  I,K: Integer;
+  I,K,DocumentCount,LogCount: Integer;
   TotalBytes: Int64;
   Data: TBytes;
   Zip: TZipFile;
   Stream: TStream;
   Header: TZipHeader;
   FileStream: TFileStream;
+  Matches: TMatchCollection;
+  Match: TMatch;
+  HTTP: THTTPClient;
+  Response: IHTTPResponse;
+  URI: TURI;
   function SafeFolder(const AFolder: string): Boolean;
   var Attr: Cardinal;
   begin
@@ -57,12 +63,14 @@ var
           Entry.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/'))
           .AddPair('format',Ext));
       end;
-      if not MatchText(Ext,['.md','.txt','.html','.htm','.docx','.pdf']) or (Paths.Count>=300) then Continue;
+      if not MatchText(Ext,['.md','.txt','.html','.htm','.docx','.pdf','.log']) or (Paths.Count>=300) then Continue;
       if not (ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
         ContainsText(LowerName,'notes') or ContainsText(LowerName,'getting start') or
-        ContainsText(AFolder,'docs') or ContainsText(AFolder,'help')) then Continue;
-      if TFile.GetSize(Entry)<=1048576 then Paths.Add(Entry);
+        ContainsText(AFolder,'docs') or ContainsText(AFolder,'help') or
+        (Ext='.log')) then Continue;
+      if ((Ext='.log') and (TFile.GetSize(Entry)<=16777216)) or
+        ((Ext<>'.log') and (TFile.GetSize(Entry)<=1048576)) then Paths.Add(Entry);
     end;
     for Entry in FolderEntries do begin
       Base:=LowerCase(TPath.GetFileName(Entry));
@@ -81,9 +89,9 @@ var
     Result:=TRegEx.Replace(Result,'[ \t]+',' ');
   end;
 begin
-  Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create;
+  Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create; Sites:=TJSONArray.Create;
   AFacts.AddPair('project_guides',Guides); AFacts.AddPair('project_screens',Screens);
-  AFacts.AddPair('project_assets',Assets);
+  AFacts.AddPair('project_assets',Assets); AFacts.AddPair('project_sites',Sites);
   Root:=AWorkspace.GetValue<string>('root','');
   Files:=AWorkspace.GetValue<TJSONArray>('syntax.files',nil);
   if Files<>nil then for V in Files do begin
@@ -114,14 +122,25 @@ begin
   if (Root='') or not TDirectory.Exists(Root) then Exit;
   Paths:=TStringList.Create; Lines:=TStringList.Create;
   try
-    Visit(Root,0); Paths.Sort; TotalBytes:=0;
+    Visit(Root,0); Paths.Sort; TotalBytes:=0; DocumentCount:=0; LogCount:=0;
     for Path in Paths do begin
-      if Guides.Count>=24 then Break;
-      if TotalBytes+TFile.GetSize(Path)>2097152 then Break;
+      Ext:=LowerCase(TPath.GetExtension(Path));
+      if (Ext='.log') and (LogCount>=8) then Continue;
+      if (Ext<>'.log') and (DocumentCount>=24) then Continue;
+      if Ext='.log' then begin
+        if TotalBytes+Min(TFile.GetSize(Path),7500)>4194304 then Continue;
+      end else if TotalBytes+TFile.GetSize(Path)>4194304 then Continue;
       RelativePath:=Path.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/');
-      Ext:=LowerCase(TPath.GetExtension(Path)); Body:='';
+      Body:='';
       try
-        Data:=TFile.ReadAllBytes(Path);
+        if Ext='.log' then begin
+          FileStream:=TFileStream.Create(Path,fmOpenRead or fmShareDenyNone);
+          try
+            SetLength(Data,Min(FileStream.Size,7500));
+            FileStream.Position:=FileStream.Size-Length(Data);
+            if Length(Data)>0 then FileStream.ReadBuffer(Data[0],Length(Data));
+          finally FileStream.Free;end;
+        end else Data:=TFile.ReadAllBytes(Path);
         if Ext='.docx' then begin
           Zip:=TZipFile.Create;
           try
@@ -141,7 +160,8 @@ begin
           if MatchText(Ext,['.html','.htm']) then Body:=CleanText(Body);
         end;
       except on E: Exception do Continue; end;
-      Inc(TotalBytes,TFile.GetSize(Path));
+      Inc(TotalBytes,Length(Data));
+      if Ext='.log' then Inc(LogCount) else Inc(DocumentCount);
       Guide:=TJSONObject.Create; Guides.AddElement(Guide);
       Guide.AddPair('source',RelativePath);
       FileStream:=TFileStream.Create(Path,fmOpenRead or fmShareDenyNone);
@@ -150,6 +170,18 @@ begin
       Guide.AddPair('format',Ext);
       Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
       if Ext='.pdf' then Continue;
+      if (Ext<>'.log') and (Sites.Count<3) then begin
+        Matches:=TRegEx.Matches(Body,'https://[A-Za-z0-9][A-Za-z0-9.-]+(?:/[A-Za-z0-9_./?=&%#-]*)?');
+        for Match in Matches do begin
+          URL:=Match.Value.TrimRight(['.',',',';',')']);
+          URI:=TURI.Create(URL); Host:=LowerCase(URI.Host);
+          if (Host='localhost') or Host.EndsWith('.local') or Host.EndsWith('.internal') or
+            TRegEx.IsMatch(Host,'^[0-9.]+$') or (Pos('.',Host)=0) then Continue;
+          Site:=TJSONObject.Create.AddPair('url',URL).AddPair('source',RelativePath).AddPair('text','');
+          Sites.AddElement(Site);
+          if Sites.Count>=3 then Break;
+        end;
+      end;
       Lines.Text:=Body; Heading:=TPath.GetFileNameWithoutExtension(Path); Value:='';
       for I:=0 to Lines.Count-1 do begin
         Line:=Trim(Lines[I]);
@@ -165,6 +197,24 @@ begin
       end;
       if Value<>'' then Sections.AddElement(TJSONObject.Create.AddPair('heading',Heading).AddPair('text',Copy(Value,1,8000)));
     end;
+    HTTP:=THTTPClient.Create;
+    try
+      HTTP.ConnectionTimeout:=2500; HTTP.ResponseTimeout:=4000;
+      HTTP.HandleRedirects:=False;
+      for V in Sites do begin
+        Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
+        try
+          Response:=HTTP.Get(URL);
+          if (Response.StatusCode>=200) and (Response.StatusCode<300) and
+            (Response.ContentLength>0) and (Response.ContentLength<=131072) and
+            ContainsText(Response.MimeType,'text/html') then begin
+            Body:=CleanText(Response.ContentAsString(TEncoding.UTF8));
+            if Length(Body)>6000 then Body:=Copy(Body,1,6000);
+            Site.RemovePair('text').Free; Site.AddPair('text',Body);
+          end;
+        except on E: Exception do Continue; end;
+      end;
+    finally HTTP.Free; end;
   finally Lines.Free; Paths.Free; end;
 end;
 

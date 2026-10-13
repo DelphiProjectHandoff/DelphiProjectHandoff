@@ -304,6 +304,7 @@ end
 end
 object LearnerTab9: TRectangle
 Tag = 9
+Visible = False
 Align = Left
 Width = 147
 Margins.Right = 6
@@ -1430,6 +1431,7 @@ end
 end
 object ProjectSearchTab: TTabItem
 Text = 'Search project'
+Visible = False
 object ProjectSearchPurpose: TLabel
 Align = Top
 Height = 90

@@ -70,7 +70,7 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory, DPH.Learning.Discovery;
 
 destructor TDPHWorkspaceResponse.Destroy;
 begin ScreenHistory.Free;Comparison.Free; Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
@@ -422,7 +422,15 @@ begin
               finally Inventory.Free; end;
               RunScan:=Changed;
               if Changed then Respond(nil,'Source modification detected; analysis stale; reassessing...',True,True,False,False)
-              else if OpeningCached then Respond(Cached.Clone as TJSONObject,'Cached project verified; source fingerprints unchanged',False,False,False,False,nil,'',nil,Request.Entry)
+              else if OpeningCached then begin
+                Cached.RemovePair('project_guides').Free;
+                Cached.RemovePair('project_screens').Free;
+                Cached.RemovePair('project_assets').Free;
+                Cached.RemovePair('project_sites').Free;
+                Respond(nil,'Refreshing this application''s guides, logs and website references...',True,False,False,False);
+                TDPHLearningDiscovery.AddEvidence(Cached,Cached);
+                Respond(Cached.Clone as TJSONObject,'Cached project verified; application information refreshed',False,False,False,False,nil,'',nil,Request.Entry);
+              end
               else Respond(nil,'Source fingerprints unchanged',False,False,False,False);
             finally Cached.Free; end;
           end;
@@ -443,6 +451,8 @@ begin
               if Terminated then begin Store.FailGeneration(Generation,'Cancelled by user'); Continue; end;
               Document:=TDPHWorkspaceView.Capture(Scan,Graph,Generation,Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
               try
+                Respond(nil,'Reading this application''s guides, logs, screens and website references...',True,Changed,False,False);
+                TDPHLearningDiscovery.AddEvidence(Document,Document);
                 Store.SaveWorkspaceView(Generation,Document.ToJSON);
                 if TDPHSemanticPersistence.Publish(Scan,Graph,Store,Generation) then MessageText:='Analysis current'
                 else if not Scan.Inventory.Revalidate then

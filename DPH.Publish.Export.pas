@@ -37,7 +37,6 @@ begin
         Headings:=Headings+P(TDPHExplanationModel.ApplicationRouteTitle(I),'Heading1');
         Lesson:=Explanations.ApplicationRouteHTML(I);StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
         Lesson:=Copy(Lesson,StartAt+6,EndAt-StartAt-6);
-        Lesson:=TRegEx.Replace(Lesson,'(?s)<details class="card"><summary>How this lesson was prepared</summary>.*?</details>','');
         Lesson:=Lesson.Replace('<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','');
         Lesson:=TRegEx.Replace(Lesson,'(?is)<h[23]>(.*?)</h[23]>',sLineBreak+'[[HEADING]]$1'+sLineBreak);
         Lesson:=TRegEx.Replace(Lesson,'(?i)</(?:p|h[1-6]|li|section)>|<br\s*/?>',sLineBreak);
