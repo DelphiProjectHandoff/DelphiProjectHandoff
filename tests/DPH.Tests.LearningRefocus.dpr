@@ -88,6 +88,19 @@ begin
             Check(ContainsText(Explain.LessonHTML(0),'author has not yet supplied') and not ContainsText(Explain.LessonHTML(0),'UNRELATED_NOTE_MUST_NOT_APPEAR'),'Application purpose gap is explicit without dumping unrelated records');
             Check(ContainsText(Explain.LessonHTML(2),'btnConvert') and ContainsText(Explain.LessonHTML(2),'OnClick') and ContainsText(Explain.LessonHTML(2),'Click'),'Screen lesson uses actual captured control and action binding');
             Check(ContainsText(Explain.LessonHTML(3),'responding operation') and ContainsText(Explain.LessonHTML(3),'#s_'),'Action lesson links actual event and handler');
+            for I:=0 to 3 do begin
+              FlowText:=Explain.ApplicationRouteHTML(I);
+              Check(ContainsText(FlowText,Model.Document.GetValue<string>('project')) and
+                not ContainsText(FlowText,'OrderPractice'),'Each main learning step belongs to the selected application');
+            end;
+            Check(ContainsText(Explain.ApplicationRouteHTML(0),'MainForm') and
+              ContainsText(Explain.ApplicationRouteHTML(0),'No application-purpose explanation'),
+              'App introduction uses its captured form and identifies a missing human purpose');
+            Check(ContainsText(Explain.ApplicationRouteHTML(1),'btnConvert') and
+              ContainsText(Explain.ApplicationRouteHTML(1),'not a verified operating procedure'),
+              'Without authored instructions, a real app action remains an explicitly incomplete task');
+            Check(ContainsText(Explain.ApplicationRouteHTML(3),'No reviewed task walkthrough'),
+              'Unknowns page identifies the missing task instead of inventing a result');
             var FAQFacts:=Model.Document.Clone as TJSONObject;
             try
               var FAQRecord:=TJSONObject.Create.AddPair('title','Answer: Which task first?').AddPair('body','Begin with the supplied example option.').AddPair('owner','Named application teacher').AddPair('state','needs_review').AddPair('question_metadata',TJSONObject.Create.AddPair('prompt','Which task should a newcomer learn first?'));
@@ -266,21 +279,21 @@ begin
               Check(Form.ActionPurposeList.Count>0,'Requesting action purposes builds their real preparation report');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
 
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Your first route'); Check(True,'Real WebView2 renders the learning workspace');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Selected application'); Check(True,'Real WebView2 renders the selected application route');
 
               Failed:=False; Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#lesson_3',Failed);
-              Check(Failed and (Form.LearningTopics.ItemIndex=3),'Lesson link opens its actual next topic without external navigation');
+              Check(Failed and (Form.LearningTopics.ItemIndex=3) and (Form.LearningTopics.Count=4),'Route link opens Resolve unknowns without external navigation');
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#task_reader',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.TaskTab),'Task walkthrough link opens the native step reader');
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#ask_author',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.QuestionsTab),'Question lesson link opens the existing named-answer workflow');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','From an action to its operation');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','What still needs a person to explain?');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Meet the interface');
-              Check(ContainsText(Form.OverviewMemo.Text,'Meet the interface') and not ContainsText(Form.OverviewMemo.Text,'Source capture'),'Text fallback presents the same beginner screen lesson without technical capture metadata');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Other tasks and actions');
+              Check(ContainsText(Form.OverviewMemo.Text,'Other tasks and actions') and not ContainsText(Form.OverviewMemo.Text,'Source capture'),'Text fallback presents the same app-specific route without technical capture metadata');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
               Form.WindowState:=TWindowState.wsNormal; Form.ClientWidth:=960;Form.ClientHeight:=600;Application.ProcessMessages;
@@ -321,7 +334,7 @@ begin
               Form.PublishBrowser.OnShouldLoadURL:=nil;
               Form.PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;Form.PublishBrowser.Visible:=True;
               Form.PublishBrowser.Navigate('file://'+TPath.Combine(Work,'image-handoff\learning.html'));
-              WaitHTML(Form.PublishBrowser,'document.body.innerText','Start here');
+              WaitHTML(Form.PublishBrowser,'document.body.innerText','Meet this app');
               WaitHTML(Form.PublishBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Actual native browser renders the saved learning edition without horizontal overflow');
               BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
@@ -354,6 +367,21 @@ begin
             Check(ContainsText(Explain.RoutineLesson(Key),'source points omitted by the 60-point lesson limit'),
               'Long source lessons disclose omitted points rather than claiming full coverage');
             Check(not ContainsText(Explain.TopicText(1),'FakeInsideRoutine'),'Startup explanation excludes expressions inside declared routines');
+          finally Explain.Free; Model.Free; end;
+        finally View.Free; end;
+      finally Semantic.Free; Analyzer.Free; end;
+      Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
+      try Scan:=Analyzer.Scan(TPath.Combine(Root,'samples\OrderPractice\OrderPractice.dproj'),'Debug','Win32',[],[],False);
+        try Graph:=Semantic.Analyze(Scan);
+          try View:=TDPHWorkspaceView.Create(TDPHWorkspaceView.Capture(Scan,Graph,1,'OrderPractice.dproj','Debug','Win32',[],[]));
+          finally Graph.Free; end;
+        finally Scan.Free; end;
+        try Model:=TDPHDocumentModel.Create(View,nil,[],[],False,True); Explain:=TDPHExplanationModel.Create(Model.Document);
+          try
+            FlowText:=Explain.ApplicationRouteHTML(1);
+            Check(ContainsText(FlowText,'OrderPractice.dproj') and ContainsText(FlowText,'Calculate total') and
+              not ContainsText(FlowText,'Semantic.dproj') and ContainsText(FlowText,'not a verified operating procedure'),
+              'A second selected project yields its own action and no imported practice lesson');
           finally Explain.Free; Model.Free; end;
         finally View.Free; end;
       finally Semantic.Free; Analyzer.Free; end;
@@ -391,8 +419,8 @@ begin
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\validation\images\learning-refocus-reference-flow.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Application.CreateForm');
-              Check(True,'Reference startup lesson renders actual initialization evidence');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Start with a task');
+              Check(True,'Reference application renders its own task starting point');
               WaitHTML(Form.LearningBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Narrow learning view wraps long source citations without horizontal overflow');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;

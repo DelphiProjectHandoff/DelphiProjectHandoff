@@ -13,11 +13,6 @@ foreach ($name in @('DelphiProjectHandoff.exe','DPH.ValidateHandoff.exe','WebVie
 foreach ($directory in @('migrations','help')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
 }
-$practiceDestination=Join-Path $packageRoot 'samples\OrderPractice'
-[IO.Directory]::CreateDirectory($practiceDestination) | Out-Null
-foreach ($name in @('OrderPractice.dpr','OrderPractice.dproj','OrderForm.pas','OrderForm.fmx','lessons.json','practice-screen.png','practice-result.png','README.txt')) {
- Copy-Item -LiteralPath (Join-Path $projectRoot ('samples\OrderPractice\'+$name)) -Destination $practiceDestination
-}
 foreach ($relative in @('docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
  $destination=Join-Path $packageRoot $relative
  [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
@@ -35,12 +30,13 @@ Experimental Windows desktop learning application
 
 1. Extract this whole folder to a writable local location.
 2. Double-click DelphiProjectHandoff.exe.
-3. Click Try practice example for prepared lessons and a worked learning path.
-4. Use Learn the project, Learn a task and Learning library in the selector.
-5. Open docs\guides\Run_And_Test.txt for a repeatable first-session check.
+3. Click Choose application and select the Delphi project you want to learn.
+4. In Learn the project, use Meet this app, Learn a real task,
+   Explore related tasks and Resolve unknowns.
+5. Use the in-app Getting started page for first-session directions.
 
-The User Guide is in docs\pdf\DPH_User_Guide.pdf and docs\guides as an
-editable document. The Engineering Guide covers building and maintaining DPH.
+The included guides and HTML help still describe the earlier practice-example
+flow. They are retained pending review of this app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for
 embedded pages; its supplied loader is a separate file.
 

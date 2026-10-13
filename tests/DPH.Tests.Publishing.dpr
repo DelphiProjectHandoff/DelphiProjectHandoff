@@ -100,7 +100,8 @@ begin
             TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint'));
             Check(True,'Full handoff passes filename and SHA256 validation');
             Text:=TFile.ReadAllText(TPath.Combine(Work,'full\learning.html'),TEncoding.UTF8);
-            Check(Text.Contains('id="lesson_11"') and Text.Contains('Delphi terms in plain language') and Text.Contains('Start here'),'Offline learning edition includes the full beginner topic route');
+            Check(Text.Contains('id="lesson_3"') and Text.Contains('Meet this app') and Text.Contains('Resolve unknowns') and
+              not Text.Contains('id="lesson_11"'),'Offline learning edition contains the four app-specific route steps');
             Check(not Text.Contains('href="#s_') and Text.Contains('href="objects/'),'Learning links point directly to exported object explanations');
             Check(not Text.Contains('DO_NOT_EXPORT') and not Text.Contains('<script>alert(1)</script>'),'Learning edition uses the redacted model and escapes authored markup');
             Text:=TFile.ReadAllText(TPath.Combine(Work,'full\objects\'+THashSHA2.GetHashString(Key)+'.html'),TEncoding.UTF8);
@@ -179,9 +180,9 @@ begin
             Failed:=False; try TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'full')); except Failed:=True; end; Check(Failed,'Publishing cannot overwrite an existing folder');
             Archive:=TZipFile.Create; try Archive.Open(TPath.Combine(Work,'full\Engineering_Guide.docx'),zmRead); Archive.Read('word/document.xml',Bytes); Text:=TEncoding.UTF8.GetString(Bytes); Check(Pos(' TOC ',Text)>0,'Editable engineering guide has a changeable TOC field'); Check(Pos('Last changed',Text)>0,'Guide title page records last changed identity'); finally Archive.Free; end;
             Archive:=TZipFile.Create;try Archive.Open(TPath.Combine(Work,'full\User_Guide.docx'),zmRead);Archive.Read('word/document.xml',Bytes);Text:=TEncoding.UTF8.GetString(Bytes);
-              Check(Text.Contains(' TOC ') and Text.Contains('Task walkthroughs') and Text.Contains('Delphi terms in plain language'),'Selected-application user guide contains an editable contents field and the beginner route');
+              Check(Text.Contains(' TOC ') and Text.Contains('Learn a real task') and Text.Contains('Resolve unknowns'),'Selected-application user guide contains an editable contents field and the app route');
               Check(not Text.Contains('SHA256') and not Text.Contains('SOURCE WALKTHROUGH') and not Text.Contains('confirmed_static'),'Selected-application user guide avoids technical evidence dumps');
-              Check(Text.Contains('w:pStyle w:val="Heading2"') and Text.Contains('Meet the interface') and Text.Contains('Open learning.html in this edition'),'Selected-application guide retains lesson subsections and explains where its object links are available');
+              Check(Text.Contains('w:pStyle w:val="Heading2"') and Text.Contains('What is this application for?') and Text.Contains('Open learning.html'),'Selected-application guide retains app-specific sections and explains where object links are available');
             finally Archive.Free;end;
             TFile.AppendAllText(TPath.Combine(Work,'full\indexes\symbols.jsonl'),'tamper',TEncoding.UTF8);
             Failed:=False; try TDPHPublisher.Validate(TPath.Combine(Work,'full'),Model.Document.GetValue<string>('input_fingerprint')); except Failed:=True; end; Check(Failed,'Modified artifact fails hash validation');

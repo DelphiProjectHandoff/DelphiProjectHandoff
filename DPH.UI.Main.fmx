@@ -105,14 +105,6 @@ Width = 80
 Height = 28
 OnClick = BackClick
 end
-object PracticeButton: TButton
-Text = 'Try practice example'
-Position.X = 480
-Position.Y = 4
-Width = 180
-Height = 28
-OnClick = PracticeClick
-end
 object ParentButton: TButton
 Text = 'Parent'
 Position.X = 96
@@ -1679,6 +1671,11 @@ end
 object LearningTopics: TListBox
 Align = Left
 Width = 188
+Items.Strings = (
+'Meet this app'
+'Learn a real task'
+'Explore related tasks'
+'Resolve unknowns')
 OnChange = LearningClick
 end
 object OverviewMemo: TMemo
@@ -1707,9 +1704,9 @@ Lines.Strings = (
 ''
 '1. Click Choose application at the top left and select its .dproj, .dpr or .groupproj file.'
 '2. Accept the proposed saved-lessons file in Databases. For an existing file, click Open saved lessons instead.'
-'3. Learn the project opens when the application is ready. Begin with its purpose, then Screens and actions.'
-'4. Follow an action to its responding operation. Explain introduces its role and connections.'
-'5. Describe what starts the action, what it uses and what result the user expects. Ask the author about missing explanations.'
+'3. Learn the project opens a route based on this application. Begin with Meet this app.'
+'4. Learn a real task shows supplied instructions, or a source-connected action that still needs an author.'
+'5. Explore related tasks, then Resolve unknowns to see what source alone cannot explain.'
 ''
 'The upper-right page selector is the learning route. Prepare lessons contains settings and authoring tools for the person supplying explanations.'
 'Form designs are reconstructed layouts. Screenshots contains separately supplied images.'

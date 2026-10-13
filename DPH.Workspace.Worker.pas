@@ -70,7 +70,7 @@ type
 implementation
 uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
-  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory,DPH.Knowledge.ProjectProfile;
+  DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory;
 
 destructor TDPHWorkspaceResponse.Destroy;
 begin ScreenHistory.Free;Comparison.Free; Document.Free; Knowledge.Free; Screenshots.Free; Lifecycle.Free; Continuity.Free; SearchResults.Free; LinkCandidates.Free; ReviewTasks.Free; Observations.Free; Translations.Free; inherited; end;
@@ -111,7 +111,6 @@ var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanti
     View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray; LifecycleResponse: TDPHWorkspaceResponse;
     TranslationCache: TDPHTranslationCache; Provider: IDPHTranslationProvider; TranslationEntry: TJSONObject; RecordValue: TJSONValue;
     BeforeImage,AfterImage:TJSONObject;BeforeView,AfterView:TDPHWorkspaceView;
-    PracticePack,PracticeRecord:TJSONObject;PracticeItem,PracticeSymbol:TJSONValue;PracticePair:TJSONPair;PracticeKey,PracticeBody,PracticeKind,PracticeTitle,PracticeDocument:string;PracticeMatches:Integer;
 begin
   CoInitializeEx(nil,COINIT_APARTMENTTHREADED); Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
   try
@@ -452,44 +451,6 @@ begin
                   Document.Free; Document:=nil; Respond(nil,MessageText,False,True,False,False); Continue;
                 end
                 else MessageText:='PARTIAL captured analysis; previous complete head retained';
-                if Request.Kind='practice_lessons' then begin
-                  if not SameFileName(TPath.GetFullPath(Request.Entry),TPath.Combine(FBaseDirectory,'samples\OrderPractice\OrderPractice.dproj')) then raise EReadError.Create('Practice lessons apply only to the supplied practice project');
-                  PracticePack:=TJSONObject.ParseJSONValue(TFile.ReadAllText(TPath.Combine(ExtractFilePath(Request.Entry),'lessons.json'),TEncoding.UTF8)) as TJSONObject;
-                  try
-                    if (PracticePack=nil) or (PracticePack.GetValue<Integer>('version',0)<>1) then raise EReadError.Create('Invalid supplied practice lessons');
-                    for PracticePair in PracticePack.GetValue<TJSONObject>('source_hashes') do begin
-                      if ExtractFileName(PracticePair.JsonString.Value)<>PracticePair.JsonString.Value then raise EReadError.Create('Practice source identity must be local');
-                      if THashSHA2.GetHashStringFromFile(TPath.Combine(ExtractFilePath(Request.Entry),PracticePair.JsonString.Value))<>PracticePair.JsonValue.Value then raise EReadError.Create('Practice source has changed; its supplied explanations require review before import');
-                    end;
-                    for PracticeItem in PracticePack.GetValue<TJSONArray>('records') do begin
-                      PracticeRecord:=PracticeItem.GetValue<TJSONObject>('record');PracticeKind:=PracticeRecord.GetValue<string>('record_type');
-                      if PracticeKind='learning_lesson' then TDPHWorkspaceView.ValidateLearningLesson(PracticeRecord)
-                      else if PracticeKind='learning_card' then TDPHWorkspaceView.ValidateLearningCard(PracticeRecord)
-                      else if PracticeKind='project_profile' then TDPHProjectProfile.Validate(PracticeRecord) else raise EReadError.Create('Unsupported practice material');
-                    end;
-                    for PracticeItem in PracticePack.GetValue<TJSONArray>('images') do begin
-                      Text:=PracticeItem.GetValue<string>('file');
-                      if (ExtractFileName(Text)<>Text) or (PracticePack.GetValue<TJSONObject>('source_hashes').GetValue(Text)=nil) then raise EReadError.Create('Practice picture must have a verified local identity');
-                      Store.ImportScreenshot(Generation,TPath.Combine(ExtractFilePath(Request.Entry),Text),'DPH sample native test',PracticeItem.GetValue<string>('caption'),'',PracticeItem.GetValue<string>('kind'));
-                    end;
-                    for PracticeItem in PracticePack.GetValue<TJSONArray>('records') do begin
-                      PracticeRecord:=PracticeItem.GetValue<TJSONObject>('record');PracticeKind:=PracticeRecord.GetValue<string>('record_type');PracticeKey:='';PracticeMatches:=0;
-                      Text:=PracticeItem.GetValue<string>('source_name','');
-                      if Text<>'' then begin
-                        for PracticeSymbol in Document.GetValue<TJSONArray>('semantics.symbols') do
-                          if (EndsText('.'+Text,PracticeSymbol.GetValue<string>('name')) or SameText(Text,PracticeSymbol.GetValue<string>('name'))) and
-                            ((PracticeItem.GetValue<string>('source_kind','')='') or (PracticeSymbol.GetValue<string>('kind')=PracticeItem.GetValue<string>('source_kind'))) then begin PracticeKey:=PracticeSymbol.GetValue<string>('key');Inc(PracticeMatches);end;
-                        if PracticeMatches<>1 then raise EReadError.Create('Practice lesson source link is missing or ambiguous: '+Text);
-                      end;
-                      PracticeDocument:='user';PracticeTitle:=PracticeRecord.GetValue<string>('fields.name','');
-                      if PracticeKind='learning_lesson' then PracticeBody:=TDPHWorkspaceView.LearningLessonBody(PracticeRecord)
-                      else if PracticeKind='learning_card' then PracticeBody:=TDPHWorkspaceView.LearningCardBody(PracticeRecord)
-                      else begin PracticeBody:=TDPHProjectProfile.Body(PracticeRecord);PracticeTitle:='Project profile';PracticeDocument:='overview';end;
-                      if PracticeKind='project_profile' then PracticeKind:='orientation' else PracticeKind:='user_help';
-                      Store.SaveKnowledge(0,0,Generation,PracticeTitle,PracticeBody,'DPH practice lesson author',PracticeKind,PracticeKey,PracticeDocument,'all','','',PracticeRecord.ToJSON);
-                    end;
-                  finally PracticePack.Free;end;
-                end;
                 MessageText:=MessageText+' | routines rebuilt '+IntToStr(Semantic.RecomputedRoutines)+', reused '+IntToStr(Semantic.ReusedRoutines);
                 if Store.Status.KnowledgeReviewNeeded then MessageText:=MessageText+' | human knowledge review pending';
                 Knowledge:=nil; Images:=nil;

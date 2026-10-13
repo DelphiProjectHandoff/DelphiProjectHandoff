@@ -5,11 +5,13 @@ Delphi Project Handoff (DPH) helps a beginner learn one unfamiliar Delphi applic
 ## Run and learn
 
 1. Extract the desktop package into a writable local folder and double-click `DelphiProjectHandoff.exe`.
-2. Click **Try practice example**. The supplied order-calculation example includes four ordered First day tasks, fourteen teaching explanations, worked totals, safe error recovery and two actual native pictures.
-3. Use **Learn a task** for actions and expected results, **Learning library** for meanings and examples, and **Learn the project** to follow screens and source connections.
-4. When ready, click **Choose application** and select your own Delphi project or project group. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
+2. Click **Choose application** and select the Delphi project or project group you need to learn. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
+3. In **Learn the project**, follow **Meet this app**, **Learn a real task**, **Explore related tasks**, and **Resolve unknowns**. These pages use the selected application's own captured screens and actions plus its supplied explanations.
+4. Use **Learn a task** for reviewed instructions and expected results, and **Learning library** for meanings and examples. If instructions are missing, ask someone who knows the app to prepare them; DPH does not invent business facts.
 
-Read [Run and test](docs/guides/Run_And_Test.txt) for explicit first-session directions. The [User Guide](docs/pdf/DPH_User_Guide.pdf) covers reading and preparing lessons. The [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) covers the architecture, build, validation and deployment.
+The [run and test directions](docs/guides/Run_And_Test.txt), [User Guide](docs/pdf/DPH_User_Guide.pdf), and [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) are retained for review.
+
+The existing DOCX/PDF guides and HTML help still describe the earlier practice-example flow. They are being held unchanged during review of this new app-specific route. Use the current in-app **Getting started** page and the steps above for this development build.
 
 ## Teaching features
 
@@ -25,7 +27,7 @@ Preparing a lesson cannot establish an unwritten business fact. A knowledgeable 
 
 ## Build and validate
 
-Use the configured RAD Studio toolchain from an elevated developer prompt. `tools\build-wp0.cmd` builds DPH and verifies the serialized FMX controls. `tools\build-practice.cmd` exercises the supplied beginner route using a new disposable destination. Detailed test directions are in [Developer test directions](docs/guides/Developer_Test_Directions.txt).
+Use the configured RAD Studio toolchain from an elevated developer prompt. `tools\build-wp0.cmd` builds DPH and verifies the serialized FMX controls. `tools\build-learning-refocus.cmd` checks the app-specific learning route and source-linked explanations. Detailed test directions are in [Developer test directions](docs/guides/Developer_Test_Directions.txt).
 
 Forms and ordinary controls remain editable in the IDE. The selected application is a read-only input. Runtime observation, live service access and selected-project execution are not part of passive discovery.
 

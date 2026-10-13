@@ -184,13 +184,13 @@ begin
     try Rows:=Store.KnowledgeJSON;
      try Pictures:=Store.ScreenshotsJSON;
       try Publication:=TDPHDocumentModel.Create(View,Rows,[],[],False,False,Pictures);finally Pictures.Free;end;
-      try TDPHPublisher.Export(Publication,Store,TPath.Combine(ExtractFileDir(Database),'learning-edition'));
-       TDPHPublisher.Validate(TPath.Combine(ExtractFileDir(Database),'learning-edition'),Publication.Document.GetValue<string>('input_fingerprint'));
-       Body:=TFile.ReadAllText(TPath.Combine(ExtractFileDir(Database),'learning-edition\learning.html'),TEncoding.UTF8);
+      try TDPHPublisher.Export(Publication,Store,ChangeFileExt(Database,'')+'-learning-edition');
+       TDPHPublisher.Validate(ChangeFileExt(Database,'')+'-learning-edition',Publication.Document.GetValue<string>('input_fingerprint'));
+       Body:=TFile.ReadAllText(TPath.Combine(ChangeFileExt(Database,'')+'-learning-edition','learning.html'),TEncoding.UTF8);
        Check(ContainsText(Body,'Open the Click operation explanation') and ContainsText(Body,'Learn to follow a real event handler'),'Sharing preserves the saved task revision and its purpose');
-       Check(ContainsText(Body,'<ol><li><p>Open the Click operation explanation') and ContainsText(Body,'Expected after step 2:'),'Offline tasks contain real ordered steps and per-step expected results');
-       Check(ContainsText(Body,'Practice:') and ContainsText(Body,'Expected final result:') and ContainsText(Body,'Learning instructor'),'Offline task retains practice, final result and named contributor');
-       Check(not ContainsText(Body,'href="#task_reader"') and ContainsText(Body,'In DPH, Learn a task also'),'Offline instructions distinguish the read-only edition from the native step reader');
+       Check(ContainsText(Body,'<ol><li>Open the Click operation explanation') and ContainsText(Body,'<strong>Expected:</strong>'),'Offline tasks contain real ordered steps and per-step expected results');
+       Check(ContainsText(Body,'Practice:') and ContainsText(Body,'Final result:') and ContainsText(Body,'Learning instructor'),'Offline task retains practice, final result and named contributor');
+       Check(not ContainsText(Body,'href="#task_reader"') and ContainsText(Body,'href="#lesson_1"'),'Offline task-reader links stay inside the read-only learning edition');
        Check(ContainsText(Body,'Field: Choosing a mode') and ContainsText(Body,'Expected: the saved Click handler.'),'Shared lessons contain the same teaching card and expected practice answer');
        Check(ContainsText(Body,'class="callout" style="left:50%;top:50%">1') and ContainsText(Body,'Sample output:'),'Shared edition preserves the anchored point and the supplied image kind');
        Check(ContainsText(Body,'Callout contributor') and ContainsText(Body,'This synthetic blue image'),'Picture callout legend keeps attribution and the actual worked example');
@@ -204,8 +204,12 @@ begin
          OrderedRecord.AddPair('learning',TJSONObject.Create.AddPair('role','All learners').AddPair('path','Ordering check').AddPair('order',TJSONNumber.Create(LessonPosition)));
         end;
         var OrderedExplain:=TDPHExplanationModel.Create(OrderedFacts);
-        try Body:=OrderedExplain.LessonHTML(11);
-         Check((Pos('<h3>Choose an option</h3>',Body)>0) and (Pos('<h3>Choose an option</h3>',Body)<Pos('<h3>Initial task</h3>',Body)),'Shared tasks honor prepared learning-path order rather than creation order');
+        try Body:=OrderedExplain.ApplicationRouteHTML(1);
+         Check((Pos('<h3>Choose an option</h3>',Body)>0) and (Pos('<h3>Initial task</h3>',Body)=0),
+           'The first app-specific task follows prepared learning-path order rather than creation order');
+         Body:=OrderedExplain.ApplicationRouteHTML(2);
+         Check((Pos('<h3>Initial task</h3>',Body)>0) and (Pos('<h3>Choose an option</h3>',Body)=0),
+           'The next task appears once in the related-task route');
         finally OrderedExplain.Free;end;
        finally OrderedFacts.Free;end;
       finally Publication.Free;end;

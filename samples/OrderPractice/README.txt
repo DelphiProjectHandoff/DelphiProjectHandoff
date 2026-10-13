@@ -1,7 +1,7 @@
-DPH supplied practice application
+OrderPractice developer fixture
 
-In DPH, click Try practice example. Start with Learn a task and the First day path.
-The prepared lessons explain this sample without running it. Study its fields, worked totals, choice, errors and practice answers in Learning library.
-This sample does not save orders, transfer money or contact a service. Use fictional values only.
-Source and form files are included for inspection. DPH checks their hashes before loading the supplied lesson pack; edited source requires a review of those lessons.
-The sample is separate from customer applications and from DPH itself.
+This small Delphi project remains in the source repository for parser and screen-capture tests.
+Its prepared lessons were removed. It is not included in the learner desktop package
+and is not a default learning application. Newcomers choose the application they actually
+need to learn. Source-derived connections for any selected application still require
+an attributed explanation when business purpose or expected behavior is unknown.

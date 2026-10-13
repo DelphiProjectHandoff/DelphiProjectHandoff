@@ -27,15 +27,15 @@ begin
   if AUser then begin
     Body:=P(ATitle,'Title')+P('Learn '+AModel.Document.GetValue<string>('project'),'Normal')+
       P('Last changed '+AModel.Document.GetValue<string>('captured_utc','not recorded'),'Normal')+
-      P('Start with the application purpose, follow a screen action and read the supplied task instructions. This guide presents source-derived explanations and named contributions. It does not run the application. Open learning.html in this edition to use the object links and supplied images mentioned in these lessons.','Normal')+
+      P('This application-specific route combines saved purpose and task instructions with captured screens and action connections. Missing business meaning and expected results remain questions for a knowledgeable contributor. DPH does not run the application. Open learning.html for linked explanations and supplied pictures.','Normal')+
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+P('Contents','Title')+
       '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-1" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
     Explanations:=TDPHExplanationModel.Create(AModel.Document);
     try
-      for I:=0 to 11 do begin
-        Body:=Body+P(TDPHExplanationModel.TopicTitle(I),'Normal');
-        Headings:=Headings+P(TDPHExplanationModel.TopicTitle(I),'Heading1');
-        Lesson:=Explanations.LessonHTML(I);StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
+      for I:=0 to 3 do begin
+        Body:=Body+P(TDPHExplanationModel.ApplicationRouteTitle(I),'Normal');
+        Headings:=Headings+P(TDPHExplanationModel.ApplicationRouteTitle(I),'Heading1');
+        Lesson:=Explanations.ApplicationRouteHTML(I);StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
         Lesson:=Copy(Lesson,StartAt+6,EndAt-StartAt-6);
         Lesson:=TRegEx.Replace(Lesson,'(?s)<details class="card"><summary>About this lesson</summary>.*?</details>','');
         Lesson:=Lesson.Replace('<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','');
@@ -259,18 +259,16 @@ begin
     Write('assets/translation-selector.js','"use strict";document.querySelectorAll("select[data-language-list]").forEach(function(s){Array.from(s.options).sort((a,b)=>a.text.localeCompare(b.text)).forEach(o=>s.add(o));});');
     Write('assets/style.css','body{font:17px/1.5 system-ui,sans-serif;color:#16293a;max-width:1100px;margin:auto;padding:24px}h1,h2{color:#146cb4}a{color:#146cb4}header{border-top:5px solid #f28c28}nav a{margin-right:18px}article{padding:12px 0;border-bottom:1px solid #ddd}pre,code{overflow-wrap:anywhere;white-space:pre-wrap}figure{margin:20px 0}figure img{max-width:100%;height:auto}.status{font-weight:bold}input{padding:10px;width:90%}@media print{nav,input{display:none}body{font:11pt/1.3 serif;max-width:none;padding:0}h2{break-after:avoid}}@media(max-width:600px){body{padding:12px}}');
     Lines.Clear;
-    Lines.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''self''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><link rel="stylesheet" href="assets/style.css"><title>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</title></head><body><header><h1>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p>Start with the application purpose. Follow a screen action, read its explanation, then try a supplied task.</p></header><nav aria-label="Learning topics">');
-    for LessonIndex:=0 to 11 do Lines.Append('<a href="#lesson_'+IntToStr(LessonIndex)+'">'+TDPHExplanationModel.TopicTitle(LessonIndex)+'</a> ');
+    Lines.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''self''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><link rel="stylesheet" href="assets/style.css"><title>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</title></head><body><header><h1>Learn '+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p>Follow this application''s own purpose, tasks and action connections. Ask its owner about missing expected results.</p></header><nav aria-label="Learning topics">');
+    for LessonIndex:=0 to 3 do Lines.Append('<a href="#lesson_'+IntToStr(LessonIndex)+'">'+TDPHExplanationModel.ApplicationRouteTitle(LessonIndex)+'</a> ');
     Lines.Append('<a href="#screenshots">Supplied screenshots</a> <a href="#glossary">Business terms</a></nav><p>This is a saved, read-only learning edition. To add an explanation or answer a question, open the project in DPH and choose Prepare lessons. Source was read without running the application.</p>');
-    for LessonIndex:=0 to 11 do begin
-      LessonPage:=Explanations.LessonHTML(LessonIndex);LessonStart:=Pos('<main>',LessonPage);LessonEnd:=Pos('</main>',LessonPage);
+    for LessonIndex:=0 to 3 do begin
+      LessonPage:=Explanations.ApplicationRouteHTML(LessonIndex);LessonStart:=Pos('<main>',LessonPage);LessonEnd:=Pos('</main>',LessonPage);
       if (LessonStart=0) or (LessonEnd<=LessonStart) then raise EReadError.Create('Learning topic has no content');
       LessonPage:=Copy(LessonPage,LessonStart+6,LessonEnd-LessonStart-6);
       LessonPage:=TRegEx.Replace(LessonPage,'href="#s_([a-fA-F0-9]{64})"','href="objects/$1.html"');
-      LessonPage:=LessonPage.Replace('href="#task_reader"','href="#lesson_11"').Replace('href="#ask_author"','href="#lesson_9"');
-      if LessonIndex=11 then LessonPage:=LessonPage.Replace('Open Learn a task</a> to follow the prepared steps one at a time, with Previous, Next and Start again.','Read the task instructions below</a>. In DPH, Learn a task also lets you follow them one step at a time.');
-      if LessonIndex=9 then LessonPage:=LessonPage.Replace('Open Author questions</a> to record a named reply.','Read the questions below</a>. Record replies in DPH through Prepare lessons, Author questions.');
-      Lines.Append('<section id="lesson_'+IntToStr(LessonIndex)+'"><h2>'+TDPHExplanationModel.TopicTitle(LessonIndex)+'</h2>'+LessonPage+'</section>');
+      LessonPage:=LessonPage.Replace('href="#task_reader"','href="#lesson_1"').Replace('href="#ask_author"','href="#lesson_3"');
+      Lines.Append('<section id="lesson_'+IntToStr(LessonIndex)+'"><h2>'+TDPHExplanationModel.ApplicationRouteTitle(LessonIndex)+'</h2>'+LessonPage+'</section>');
     end;
     Lines.Append('<style>.picture{position:relative;display:inline-block;max-width:100%}.picture img{display:block;max-width:100%;height:auto}.callout{position:absolute;transform:translate(-50%,-50%);background:#f28c28;color:#20364a;border:2px solid #146cb4;border-radius:50%;width:28px;height:28px;text-align:center;line-height:24px;font-weight:bold}</style><section id="screenshots"><h2>Supplied pictures and sample outputs</h2><p>These images were supplied by named contributors. They are separate from reconstructed form designs. Numbered callouts explain what to notice without changing the original picture.</p>');
     for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
@@ -295,7 +293,7 @@ begin
       Lines.Append('<h3>'+TDPHDocumentModel.HTML(V.GetValue<string>('title'))+'</h3><p>'+TDPHDocumentModel.HTML(V.GetValue<string>('body'))+'</p><p>Supplied by '+TDPHDocumentModel.HTML(V.GetValue<string>('owner'))+'; '+TDPHDocumentModel.HTML(V.GetValue<string>('state').Replace('_',' '))+'.</p>');
     end;
     if LessonIndex=0 then Lines.Append('<p>No business terms have been supplied for this edition.</p>');
-    Lines.Append('</section><p><a href="#lesson_0">Return to Start here</a> &middot; <a href="index.html">Optional technical reference</a></p></body></html>');
+    Lines.Append('</section><p><a href="#lesson_0">Return to Meet this app</a> &middot; <a href="index.html">Optional technical reference</a></p></body></html>');
     Write('learning.html',Lines.ToString);
     Page.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; script-src ''self''; style-src ''self''; img-src ''self'' data:; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><title>Delphi Project Handoff reference</title><link rel="stylesheet" href="assets/style.css"></head><body><header><h1 class="notranslate" translate="no">'+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p class="status">Generation '+AModel.Document.GetValue('generation_id').Value+' | '+
       IfThen(AModel.Document.GetValue<Boolean>('analysis_complete'),'Captured analysis complete','PARTIAL analysis')+' | '+IfThen(AModel.Document.GetValue<Boolean>('detached'),'Detached source','Connected capture')+' | '+IfThen(AModel.Document.GetValue<Boolean>('stale'),'STALE evidence','Captured fingerprint')+'</p><p>Static evidence; runtime behavior unobserved. Human verification is recorded separately.</p></header><nav>');

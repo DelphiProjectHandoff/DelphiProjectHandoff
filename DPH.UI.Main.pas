@@ -488,7 +488,6 @@ type
     AnalysisSettingsExpander: TExpander;
     AnalysisSettingsLayout: TLayout;
     SetupButton: TButton;
-    PracticeButton:TButton;
     CardLibraryTab,CardEditorTab:TTabItem;
     CardToolbar,CardEditToolbar:THorzScrollBox;
     CardFilter,CardRole,CardAuthor:TEdit;
@@ -714,7 +713,6 @@ type
     procedure RelocateClick(Sender: TObject);
     procedure TaskFilterChange(Sender: TObject);
     procedure TaskProgressClick(Sender: TObject);
-    procedure PracticeClick(Sender:TObject);
     procedure CardFilterChange(Sender:TObject);
     procedure CardSelectionChange(Sender:TObject);
     procedure CardEditClick(Sender:TObject);
@@ -912,7 +910,7 @@ type
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
   public
-    procedure OpenSelection(const AEntry,ADatabase: string;APractice:Boolean=False);
+    procedure OpenSelection(const AEntry,ADatabase: string);
     procedure LoadView(ADocument: TJSONObject);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
@@ -968,9 +966,8 @@ begin
     RestoreDestinationDialog.InitialDir:=DatabaseDirectory;
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
-  for I:=0 to 11 do LearningTopics.Items.Add(TDPHExplanationModel.TopicTitle(I));
   LearningTopics.ItemIndex:=0;
-  OverviewMemo.Text:='Attach a Delphi project or open a cache to begin. Start here provides a guided route through the selected program; Explain describes any object you select.';
+  OverviewMemo.Text:='Choose an application or open saved lessons. Its own purpose, screens, actions and supplied tasks will shape the learning route.';
   HelpClick(nil);
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
@@ -1595,20 +1592,7 @@ begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenCacheDialog.Execute then Exit; OpenSelection('',OpenCacheDialog.FileName);
 end;
-procedure TDPHMainForm.PracticeClick(Sender:TObject);
-var Entry,Database:string;
-begin
- if FBusy or FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current draft before opening the practice example.';Exit;end;
- Entry:=TPath.Combine(FBaseDirectory,'samples\OrderPractice\OrderPractice.dproj');
- if not TFile.Exists(Entry) then begin StatusLabel.Text:='The supplied practice source is missing. Keep the samples folder with DPH.';Exit;end;
- Database:=TPath.Combine(DatabaseDialog.InitialDir,'OrderPractice.dphdb');
- if TFile.Exists(Database) then begin
-  if SameFileName(ExcludeTrailingPathDelimiter(TDPHKnowledgeStore.ProjectRoot(Database)),ExcludeTrailingPathDelimiter(ExtractFilePath(Entry))) then begin OpenSelection('',Database);Exit;end;
-  Database:=TPath.Combine(DatabaseDialog.InitialDir,'OrderPractice-'+TGUID.NewGuid.ToString+'.dphdb');
- end;
- OpenSelection(Entry,Database,True);
-end;
-procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string;APractice:Boolean);
+procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string);
 var Request: TDPHWorkspaceRequest;
 begin
   if FBusy then Exit;
@@ -1616,7 +1600,6 @@ begin
   Request:=Default(TDPHWorkspaceRequest); Request.Entry:=AEntry; Request.Database:=ADatabase;
   if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   if AEntry='' then Request.Command:='open' else Request.Command:='incremental';
-  if APractice then Request.Kind:='practice_lessons';
   Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
   Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
   if AEntry<>'' then begin Request.Configuration:=''; Request.Platform:=''; end;
@@ -2613,7 +2596,7 @@ procedure TDPHMainForm.LearningClick(Sender: TObject);
 var HTML,PreviewPath,Fallback: string;
 begin
   if FExplanations=nil then Exit;
-  HTML:=FExplanations.LessonHTML(Max(0,LearningTopics.ItemIndex));
+  HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
@@ -2704,13 +2687,13 @@ begin
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28}h1{margin:0;font-size:30px}main{padding:26px;max-width:1000px;margin:auto}'+
     'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>Learn an application with DPH</title></head><body><header><h1>Welcome to Delphi Project Handoff</h1>'+
-    '<p>Learn what a Delphi application does, how to use it, and how its parts work together.</p></header><main><section><h2>Try a supplied example first</h2><p>Click <strong>Try practice example</strong> at the top. DPH opens a small order-calculation application with prepared lessons, field explanations, worked results and practice questions. Begin with Learn a task and the First day learning path. DPH reads this example without running it. Return to Choose application when you are ready to study your own program.</p></section><section><h2>Your first ten minutes</h2><ol>'+
+    '<p>Learn an unfamiliar Delphi application from its own screens, actions and supplied explanations.</p></header><main><section><h2>Begin with the application you want to learn</h2><p>Choose its Delphi project. DPH prepares a route for that application. It does not substitute lessons from another example. A knowledgeable contributor can add its purpose, complete task steps, real screenshots and expected results where source files cannot establish them.</p></section><section><h2>Your first ten minutes</h2><ol>'+
     '<li><strong>Choose application.</strong> Click the button at the top left. Select the application''s .dproj, .dpr or .groupproj file. This identifies the program you want to learn.</li>'+
     '<li><strong>Keep its lessons.</strong> Accept the proposed file in the Databases folder. DPH stores what it learns there. If you have already done this, use <strong>Open saved lessons</strong> instead.</li>'+
-    '<li><strong>Read Learn the project.</strong> This page opens when the application is ready. Begin with its purpose, then meet its screens and controls.</li>'+
-    '<li><strong>Learn a task.</strong> Choose Learn a task in the top-right selector. Select supplied instructions, read Before you begin, then use Next step and compare the expected result. If no task has been supplied, ask the author to use Prepare lessons.</li>'+
-    '<li><strong>Follow one action.</strong> Pick a familiar button or event. Open its responding operation and read Explain. Follow one next operation before exploring the whole program.</li>'+
-    '<li><strong>Check your understanding.</strong> Describe what starts the action, what it uses, what decisions it makes, and what result the user expects. Ask the author about anything the lessons cannot establish.</li></ol></section>'+
+    '<li><strong>Meet this app.</strong> Read its supplied purpose, saved screen designs and separately supplied pictures.</li>'+
+    '<li><strong>Learn a real task.</strong> Follow its own supplied steps. If no task is ready, DPH shows a source-connected action and identifies what the owner must explain.</li>'+
+    '<li><strong>Explore related tasks.</strong> Review other supplied tasks and actions found in this application.</li>'+
+    '<li><strong>Resolve unknowns.</strong> Ask for missing business meaning, expected results or actual screenshots. Source alone cannot establish them.</li></ol></section>'+
     '<section><h2>You do not need compiler expertise to begin</h2><p>The page selector at the upper right is your learning route. The left-hand list finds parts by name; the right-hand panel explains your selection.</p>'+
     '<p><strong>Prepare lessons</strong> is for the person supplying explanations or adjusting how source files are read. It holds the advanced settings; learners can leave them alone.</p></section>'+
     '<section><h2>Understand what you are seeing</h2><p>Form designs are drawings made from the saved layout. Screenshots are separately supplied images of the application. An absent explanation is a question for the author, not a fact to guess.</p>'+
