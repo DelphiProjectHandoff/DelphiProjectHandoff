@@ -80,7 +80,7 @@ type
     function ReviewTasks(AGeneration: Int64): TJSONArray;
     procedure RecordExport(AGenerationID: Int64; const ADirectory,ACanonicalHash,AScope: string; AStale: Boolean);
     function GenerationIsStale(AGenerationID: Int64): Boolean;
-    procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
+    procedure ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string; const AImageKind:string='Screenshot');
     function ScreenshotsJSON: TJSONArray;
     function ImportDataQualityReport(AGenerationID:Int64;const AFile,AAuthor,AContext:string):Int64;
     procedure ImportObservation(AGenerationID: Int64; const AFile,AAuthor,AContext,AEntityKey: string);
@@ -783,7 +783,7 @@ end;
 function TDPHKnowledgeStore.SaveKnowledge(AKnowledgeID,AExpectedRevision,AGenerationID: Int64;
   const ATitle,ABody,AEditor,AKind,AEntityKey: string; const ADocumentKind,AAudience,ALinksJSON,AQuestionJSON,AStructuredJSON: string): Int64;
 var Revision,Entity,TargetID: Int64; Prior,DocumentKind,Audience,TargetKind,Role,LabelText,SQL: string;
-  LinkRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;
+  LinkRows,PictureRows: TJSONArray; Value,ParsedLinks: TJSONValue; LinkRow,Question: TJSONObject; Ordinal: Integer; QuestionID,PriorQuestion,ExpectedID,StructuredText,PriorStructured: string;PictureFound:Boolean;
   DictionaryView:TDPHWorkspaceView;DictionaryInventory,DictionaryExpected:TJSONObject;DictionaryValue:TJSONValue;DictionaryMatched:Boolean;
   StructuredValue,PriorRecord: TJSONValue; GlossaryQuery: TFDQuery; ExistingGlossary: TJSONObject;
   TermNames,ExistingNames: TArray<string>; GlossaryName,ExistingName,ActionIdentityField: string;
@@ -840,6 +840,21 @@ begin
           try for ActionIdentityField in ['action_id','target','target_key'] do if PriorRecord.GetValue<string>('fields.'+ActionIdentityField,'')<>StructuredValue.GetValue<string>('fields.'+ActionIdentityField,'') then raise EDPHStorage.Create('Action purpose target identity cannot change');finally PriorRecord.Free;end;
         end;
         if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''action_purpose'' AND lower(json_extract(r.structured_json,''$.fields.action_id''))=lower(:identity)',[AKnowledgeID,StructuredValue.GetValue<string>('fields.action_id')])<>0 then raise EDPHStorage.Create('A purpose record already exists for this target; refresh and edit it. Retired identities remain reserved.');
+      end else if StructuredValue.GetValue<string>('record_type','')='learning_card' then begin
+        TDPHWorkspaceView.ValidateLearningCard(StructuredValue as TJSONObject);
+        if (AKind<>'user_help') or (DocumentKind<>'user') or (Audience<>'all') or (ATitle<>StructuredValue.GetValue<string>('fields.name').Trim) then raise EDPHStorage.Create('Teaching cards must preserve their learner scope and name');
+        if (Trim(AEditor)='') or SameText(Trim(AEditor),'Unknown') then raise EDPHStorage.Create('Enter the person supplying this explanation');
+        if ABody<>TDPHWorkspaceView.LearningCardBody(StructuredValue as TJSONObject) then raise EDPHStorage.Create('Edit teaching fields in the learning library');
+        if StructuredValue.GetValue<TJSONObject>('picture',nil)<>nil then begin
+          PictureFound:=False;PictureRows:=ScreenshotsJSON;
+          try for Value in PictureRows do if Value.GetValue<string>('image_sha256')=StructuredValue.GetValue<string>('picture.image_sha256') then PictureFound:=True;finally PictureRows.Free;end;
+          if not PictureFound then raise EDPHStorage.Create('Import this picture into the selected application before saving its callout');
+        end;
+        if (PriorStructured<>'') and (PriorStructured<>'{}') then begin
+          PriorRecord:=TJSONObject.ParseJSONValue(PriorStructured);
+          try if PriorRecord.GetValue<string>('card_id')<>StructuredValue.GetValue<string>('card_id') then raise EDPHStorage.Create('Teaching card identity cannot change');finally PriorRecord.Free;end;
+        end;
+        if Scalar('SELECT count(*) FROM knowledge_records k JOIN knowledge_revisions r ON r.knowledge_revision_id=k.current_revision_id WHERE k.project_id=1 AND k.knowledge_id<>:id AND json_extract(r.structured_json,''$.record_type'')=''learning_card'' AND json_extract(r.structured_json,''$.card_id'')=:identity',[AKnowledgeID,StructuredValue.GetValue<string>('card_id')])<>0 then raise EDPHStorage.Create('This teaching card already exists; edit its current version');
       end else if StructuredValue.GetValue<string>('record_type','')='learning_lesson' then begin
         TDPHWorkspaceView.ValidateLearningLesson(StructuredValue as TJSONObject);
         if (AKind<>'user_help') or (DocumentKind<>'user') or (Audience<>'all') or (AEntityKey<>'') then raise EDPHStorage.Create('Task instructions must preserve their selected-project learning scope');
@@ -1459,7 +1474,7 @@ begin
   except FConnection.Rollback; FSourceRoot:=OldRoot; raise; end;
 end;
 
-procedure TDPHKnowledgeStore.ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string);
+procedure TDPHKnowledgeStore.ImportScreenshot(AGenerationID: Int64; const AFile,AAuthor,ACaption,AEntityKey: string; const AImageKind:string);
 var Bytes: TBytes; Hash,Directory,Path,MetadataHash: string; Metadata: TJSONObject; Hasher: THashSHA2; Width,Height: Int64;
 begin
   RequireWriter;
@@ -1480,10 +1495,12 @@ begin
   Directory:=FDatabasePath+'.views'; CheckOutsideSource(Directory); TDirectory.CreateDirectory(Directory);
   Path:=TPath.Combine(Directory,Hash+'.png'); if not TFile.Exists(Path) then TFile.WriteAllBytes(Path,Bytes);
   if THashSHA2.GetHashStringFromFile(Path)<>Hash then raise EDPHStorage.Create('Screenshot content hash mismatch');
+  if not MatchText(AImageKind,['Screenshot','Sample output','Other teaching image']) then raise EDPHStorage.Create('Choose screenshot, sample output or other teaching image');
   Metadata:=TJSONObject.Create;
   try
     Metadata.AddPair('image',Hash+'.png'); Metadata.AddPair('image_sha256',Hash); Metadata.AddPair('generation_id',TJSONNumber.Create(AGenerationID));
     Metadata.AddPair('author',AAuthor); Metadata.AddPair('caption',ACaption); Metadata.AddPair('entity_key',AEntityKey);
+    Metadata.AddPair('image_kind',AImageKind);
     Metadata.AddPair('imported_utc',UTCNow); Metadata.AddPair('verification_state','user_supplied_unverified');
     Metadata.AddPair('provenance','User-selected image; capture time, environment and runtime origin are contributor claims, not observed by DPH');
     Bytes:=TEncoding.UTF8.GetBytes(Metadata.ToJSON); Hasher:=THashSHA2.Create; Hasher.Update(Bytes); MetadataHash:=Hasher.HashAsString;

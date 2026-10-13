@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup><MainSource>OrderPractice.dpr</MainSource><ProjectVersion>20.3</ProjectVersion><FrameworkType>FMX</FrameworkType><Config>Debug</Config><Platform>Win32</Platform></PropertyGroup>
+  <ItemGroup><DelphiCompile Include="OrderPractice.dpr"><MainSource>MainSource</MainSource></DelphiCompile><DCCReference Include="OrderForm.pas"><Form>PracticeOrderForm</Form><FormType>fmx</FormType></DCCReference></ItemGroup>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" />
+</Project>

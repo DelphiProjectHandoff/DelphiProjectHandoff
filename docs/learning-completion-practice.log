@@ -1,0 +1,37 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+tests\DPH.Tests.Practice.dpr(67) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+20880 lines, 1.36 seconds, 10980040 bytes code, 349312 bytes data.
+PASS 1: One practice button opens four ordered tasks and fourteen actual application explanations: Lessons for OrderPractice.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 2: The practice application includes its native screen and sample output
+PASS 3: First day learning path follows the prepared prerequisite order
+PASS 4: The learner starts with a task purpose rather than source metadata
+PASS 5: A real worked task teaches the input and expected subtotal
+PASS 6: Practice learner can save a checked result and resume the next action
+PASS 7: Field guide teaches meaning, valid input and the expected practice answer
+PASS 8: Field guidance links to its actual captured control
+PASS 9: Contextual help opens the linked control explanation
+PASS 10: FAQ explains an actual application behavior with a concrete answer
+PASS 11: Native sample output has its anchored teaching explanation
+PASS 12: Compact learning library uses the available width without technical side panes
+PASS 13: Practice knowledge persists as nineteen attributed records
+PASS 14: Application purpose explains the boundary in ordinary language
+PASS 15: Screen lesson includes its supplied field meanings
+PASS 16: Decision lesson includes the worked business rule
+PASS 17: Input/result lesson explains both option-dependent outcomes
+PASS 18: Question lesson includes the actual error recovery
+PASS 19: The sample responding operation resolves to one captured identity
+PASS 20: The actual operation combines source-derived decisions with its attributed meaning
+PASS 21: Shared practice includes the learning path, tasks and anchored pictures
+PASS 22: Practice source/picture unchanged: OrderForm.fmx
+PASS 23: Practice source/picture unchanged: OrderForm.pas
+PASS 24: Practice source/picture unchanged: OrderPractice.dpr
+PASS 25: Practice source/picture unchanged: OrderPractice.dproj
+PASS 26: Practice source/picture unchanged: practice-result.png
+PASS 27: Practice source/picture unchanged: practice-screen.png

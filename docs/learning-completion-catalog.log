@@ -1,0 +1,18 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+205 lines, 0.11 seconds, 1020500 bytes code, 44140 bytes data.
+PASS: Legacy last database migrates
+PASS: Multiple entries persist without case duplicates
+PASS: Last successful project persists
+PASS: Checked steps persist after reopening the catalog
+PASS: Progress is isolated to the selected application
+PASS: Progress is isolated by learner
+PASS: Changed instructions require new checks instead of inheriting completion
+PASS: Learner can clear their own progress
+PASS: Forget never deletes database contents
+PASS: Forgotten active entry is not reopened
+PASS: Missing database entries remain discoverable
+PASS: Atomic save leaves no temporary preferences

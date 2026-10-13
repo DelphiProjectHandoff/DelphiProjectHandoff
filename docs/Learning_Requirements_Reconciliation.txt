@@ -1,0 +1,49 @@
+DPH LEARNING REQUIREMENTS RECONCILIATION
+13 October 2026
+
+All 533 numbered records reviewed, including all 312 historically partial/missing records. Zero unreconciled.
+The historical ledger and its implementation counts are unchanged. Revised scope is not original technical completion.
+Each CSV/JSON row preserves the original requirement, status, limitation and remaining work alongside the revised teaching contract.
+Dedicated technical administration, enterprise workflow engines, specialist whole-program proof, AI agent infrastructure and translation expansion are not the revised product.
+Teaching cards explain application-specific rules, permissions, reports and problems; they do not implement those systems or claim to infer unwritten author knowledge.
+
+REVISED CAPABILITIES
+orientation: Explain the selected application, who uses it, a first-session route and plain Delphi terms.
+Evidence: DPH.Analysis.Explanations.pas, DPH.Knowledge.ProjectProfile.pas, tests/DPH.Tests.LearningRefocus.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+source_lessons: Teach supported screen, action, decision, input/result and connection examples with source links; keep deep code optional and unknowns explicit.
+Evidence: DPH.Analysis.Explanations.pas, DPH.Workspace.Screen.pas, tests/DPH.Tests.LearningRefocus.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+teaching_cards: Teach screen/field meanings, examples and units, limits, permissions, settings, related systems, rules, errors and output interpretation using attributed, editable cards. This is instruction, not a business or administration engine.
+Evidence: DPH.Workspace.Model.pas, DPH.Storage.Database.pas, DPH.UI.Main.fmx, tests/DPH.Tests.GuidedTasks.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+tasks_paths: Provide ordered tasks, prerequisites, role filters, named learning paths, exercises, expected results and revision-specific personal progress.
+Evidence: DPH.UI.Main.pas, DPH.Workspace.Catalog.pas, tests/DPH.Tests.GuidedTasks.dpr, tests/DPH.Tests.Catalog.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+pictures: Use real contributed pictures, linked explanations and anchored callouts; keep source reconstructions clearly labeled.
+Evidence: DPH.Workspace.Screen.pas, DPH.Storage.Database.pas, DPH.UI.Main.fmx, tests/DPH.Tests.GuidedTasks.dpr, tests/DPH.Tests.Practice.dpr
+State: implemented and exercised in the native viewer and offline publication; original PNG bytes preserved
+
+knowledge: Preserve named author explanations, glossary, questions, links, revisions and human review; never invent missing application knowledge.
+Evidence: DPH.Storage.Database.pas, DPH.Knowledge.Glossary.pas, tests/DPH.Tests.Knowledge.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+publishing: Publish the same selected-application lessons, tasks, examples, terms and pictures in an offline searchable/printable edition and editable user guide.
+Evidence: DPH.Publish.Model.pas, DPH.Publish.Export.pas, tests/DPH.Tests.Publishing.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+foundation: Keep selected sources read-only, results project-scoped, cached lessons durable, current-source checks honest and failed scans recoverable. These support teaching and stay out of the main lesson route.
+Evidence: DPH.Project.Analysis.pas, DPH.Storage.Database.pas, DPH.Workspace.Worker.pas, tests/DPH.Tests.Storage.dpr
+State: implemented and exercised within the revised teaching contract; see learning-completion-validation.json
+
+delivery: Deliver a native beginner-friendly application, a supplied worked learning example, current explicit instructions and validated packages.
+Evidence: DPH.UI.Main.fmx, samples/OrderPractice/lessons.json, tests/DPH.Tests.Practice.dpr, tools/package-dph.ps1, docs/guides/Run_And_Test.txt
+State: worked example, current manuals and explicit run/test directions implemented and validated; package checks recorded separately in learning-distribution-validation.json
+
+NEXT REMAINING WORK
+Directions, guides and visual review are complete. Final package checks are recorded separately in learning-distribution-validation.json.
+Independent human beginner acceptance is a separate reported observation, not a reason to stop implementation.

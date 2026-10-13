@@ -1,0 +1,53 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+7274 lines, 0.58 seconds, 4827648 bytes code, 232884 bytes data.
+Test database: C:\New Delphi Projects\Delphi Project Handoff\bin\wp1-tests-{34EB6A14-0B8E-4D63-BE5C-451B06EB99CA}\project.dphdb
+SQLite version: 3.42.0; FTS5 compiled: True
+PASS WP1-01: fresh schema-eight migration and integrity
+PASS WP1-02: schema ledger version 9
+PASS WP1-03: second DPH writer is rejected
+PASS WP1-04: database cannot be created in selected source
+PASS WP1-05: observation sets separate dirty/stale flags
+PASS WP1-26: evidence outside captured bytes is rejected
+PASS WP1-27: mid-publication SQL fault rolls back both generation and head
+PASS WP1-06: coherent generation published atomically
+PASS WP1-07: head and exact-input flags updated
+PASS WP1-08: observed change rejects old captured generation
+PASS WP1-09: old head survives; manual review is pending
+PASS WP1-10: revalidation mismatch rejects publish
+PASS WP1-11: cross-generation evidence rejected by foreign key
+PASS WP1-12: fresh captured generation publishes
+PASS WP1-13: reparse preserves note and pending human review
+PASS WP1-14: database rejects invalid mutation
+PASS WP1-15: database rejects invalid mutation
+PASS WP1-16: database rejects invalid mutation
+PASS WP1-17: manual reassessment has its own flag
+PASS WP1-18: failure retains previous published head
+PASS WP1-19: abandoned generation recovers with diagnostic
+PASS WP1-34: opening cached data does not start a new analysis
+PASS WP1-20: configuration change supersedes capture
+PASS WP1-21: deleted source retains entity/knowledge history
+PASS WP1-22: consistent SQLite backup produced
+PASS WP1-23: backup restores with intact head
+PASS WP1-24: newer incompatible database rejected
+PASS WP1-28: incomplete captured input cannot replace completed head
+PASS WP1-29: forced process termination recovers prior committed state
+PASS WP1-30: failed second migration rolls back DDL and ledger to version 1
+PASS WP1-31: version 1 database upgrades successfully after repair
+PASS WP1-44: existing manual knowledge survives schema 1 to 2 upgrade
+PASS WP1-45: pre-migration backup retains version 1 and existing notes
+PASS WP1-32: modified applied migration checksum is rejected
+PASS WP1-33: manifest path cannot traverse outside project
+PASS WP1-35: explicit local WAL configuration publishes
+PASS WP1-36: WAL reader retains consistent snapshot while writer publishes
+PASS WP1-37: reader sees new generation after releasing snapshot
+PASS WP1-38: unchanged source revision reused across generations
+PASS WP1-39: worker commands queue to owner; direct cross-thread writes rejected
+PASS WP1-40: busy writer times out safely and succeeds after lock release
+PASS WP1-42: expanded file manifest publishes
+PASS WP1-46: explicit partial analyzer coverage cannot clear stale state
+PASS WP1-43: only changed files are flagged for incremental reassessment
+PASS WP1-41: graceful store shutdown drains accepted write commands
+PASS WP1-25: selected fixture source bytes unchanged
+PASS WP1-SUITE

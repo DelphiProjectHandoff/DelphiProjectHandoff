@@ -1,0 +1,138 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+bin\learning-completion\DPH.Tests.Publishing.dpr(65) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(69) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(84) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(87) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(90) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(202) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(257) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Publishing.dpr(296) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+13095 lines, 1.26 seconds, 5608980 bytes code, 252688 bytes data.
+PASS 1: Preview permits its blank startup page
+PASS 2: App preview permits content-hashed page in its owned preview directory
+PASS 3: Hashed preview policy rejects arbitrary local page names
+PASS 4: Preview permits only its local index and internal anchors
+PASS 5: Preview rejects external navigation
+PASS 6: Preview rejects unrelated local files
+PASS 7: Preview rejects encoded traversal
+PASS 8: Preview rejects script navigation
+PASS 9: Publication preview permits its owned learning entry and lesson anchors
+PASS 10: Adding the learning entry does not permit arbitrary local HTML
+PASS 11: Pascal quoted credential assignments are fully redacted
+PASS 12: Bearer authorization tokens are redacted
+PASS 13: JSON credential text is redacted
+PASS 14: Captured fixture has its click routine
+PASS 15: Publication fixture has a relationship to the excluded worker unit
+PASS 16: Credential assignment is redacted throughout canonical model
+PASS 17: Explicit source exclusion is recorded
+PASS 18: Canonical handoff includes evidence-derived unanswered author questions
+PASS 19: Scoped author questions omit evidence from excluded source files
+PASS 20: Publication removes rich relationship links whose target unit is excluded
+PASS 21: Generated document sections have stable IDs and deterministic content versions
+PASS 22: Publication preserves authored section source generation
+PASS 23: Engineering audience excludes user-only authored sections
+PASS 24: Audience filter includes overview and engineering-role guides
+PASS 25: Excluded file cannot leak through symbol index
+PASS 26: Excluded file cannot leak through symbol index
+PASS 27: Excluded file cannot leak through symbol index
+PASS 28: Excluded file cannot leak through symbol index
+PASS 29: Excluded file cannot leak through symbol index
+PASS 30: Excluded file cannot leak through symbol index
+PASS 31: Excluded file cannot leak through symbol index
+PASS 32: Excluded file cannot leak through symbol index
+PASS 33: Excluded file cannot leak through symbol index
+PASS 34: Excluded file cannot leak through symbol index
+PASS 35: Excluded file cannot leak through symbol index
+PASS 36: Excluded file cannot leak through symbol index
+PASS 37: Excluded file cannot leak through symbol index
+PASS 38: Excluded file cannot leak through symbol index
+PASS 39: Excluded file cannot leak through symbol index
+PASS 40: Excluded file cannot leak through symbol index
+PASS 41: Excluded file cannot leak through symbol index
+PASS 42: Excluded file cannot leak through symbol index
+PASS 43: Excluded file cannot leak through symbol index
+PASS 44: Excluded file cannot leak through symbol index
+PASS 45: Excluded file cannot leak through symbol index
+PASS 46: Excluded file cannot leak through symbol index
+PASS 47: Excluded file cannot leak through symbol index
+PASS 48: Excluded file cannot leak through symbol index
+PASS 49: Excluded file cannot leak through symbol index
+PASS 50: Excluded file cannot leak through symbol index
+PASS 51: Full handoff passes filename and SHA256 validation
+PASS 52: Offline learning edition includes the full beginner topic route
+PASS 53: Learning links point directly to exported object explanations
+PASS 54: Learning edition uses the redacted model and escapes authored markup
+PASS 55: Exported object starts with the beginner explanation and keeps deeper details optional
+PASS 56: Exported object navigation stays on the learning route
+PASS 57: Owner guardrails and generated agent instructions are excluded by default
+PASS 58: Source browsing is excluded by default
+PASS 59: Handoff includes planned narrative project-summary.md
+PASS 60: Handoff includes planned narrative architecture.md
+PASS 61: Handoff includes planned narrative build-and-test.md
+PASS 62: Handoff includes planned narrative known-risks.md
+PASS 63: Handoff includes planned narrative decisions-and-unknowns.md
+PASS 64: Manifest carries project, analyzer, source scope and honest required-toolchain status
+PASS 65: Configuration index describes the captured selection rather than duplicating the file inventory
+PASS 66: Authored markup is encoded rather than executed
+PASS 67: Escaped author text remains inspectable
+PASS 68: Authored HTML exposes exact section identity and missing named review
+PASS 69: Generated HTML sections disclose their unreviewed state separately
+PASS 70: Offline guide contains target navigation and exact revision anchors
+PASS 71: Offline HTML blocks external connections
+PASS 72: Code identifiers are protected from translation
+PASS 73: Local bilingual language selector helper is included
+PASS 74: Canonical output is deterministic for fixed capture, scope and knowledge
+PASS 75: Task bundle records its technical scope
+PASS 76: Task bundle selects incident context rather than a blind full-export truncation
+PASS 77: Task source browsing is explicitly limited to cited noncontainer line excerpts
+PASS 78: Task source browsing is explicitly limited to cited noncontainer line excerpts
+PASS 79: Task source browsing is explicitly limited to cited noncontainer line excerpts
+PASS 80: Task source browsing omits uncited source instead of disclosing every line of an included file
+PASS 81: Explicit agent-instruction opt-in produces bounded generated instructions and a valid disclosed manifest
+PASS 82: Explicit source browsing generates validated derived pages without copying original source bytes
+PASS 83: Source pages preserve line anchors and redact recognized credential assignments
+PASS 84: Excluded source cannot leak through browsing pages
+PASS 85: Object explanation links to its exact captured source line using a relative allowlisted route
+PASS 86: Redacted source navigation bundle validates after folder relocation
+PASS 87: Changed source is rejected before it can masquerade as the captured browsing revision
+PASS 88: Changed input fingerprint rejects a stale bundle
+PASS 89: Publishing cannot write into the analyzed source
+PASS 90: Publishing cannot overwrite an existing folder
+PASS 91: Editable engineering guide has a changeable TOC field
+PASS 92: Guide title page records last changed identity
+PASS 93: Selected-application user guide contains an editable contents field and the beginner route
+PASS 94: Selected-application user guide avoids technical evidence dumps
+PASS 95: Selected-application guide retains lesson subsections and explains where its object links are available
+PASS 96: Modified artifact fails hash validation
+PASS 97: Selected Atlas DAT pack translates offline without a network provider
+PASS 98: Pinned DAT reader resolves exact source prose from a real pack
+PASS 99: Localized publication uses the reviewed current translation and reports untranslated source fallbacks
+PASS 100: Localized HTML contains actual reviewed prose, explicit fallback scope and redacted source content
+PASS 101: Editable localized supplement shares the same translated body and retains its TOC field
+PASS 102: Translation and named approval survive cache reconstruction in SQLite
+PASS 103: Regional locale fallback records the actual base-language pack
+PASS 104: Persistent cache rejects source text that differs from the saved authored revision
+PASS 105: Editing source invalidates the saved translation review state
+PASS 106: Historical translation cannot be approved as the current authored revision
+PASS 107: Source edit prevents obsolete reviewed translation from leaking into a new localized export
+PASS 108: Missing DAT phrase retains source and counts its fallback
+PASS 109: Missing localized prose cannot receive translation approval
+PASS 110: Exact prose terminology supplies a missing pack entry
+PASS 111: Changed terminology invalidates the derived translation and approval
+PASS 112: Prose segmentation preserves every source character including line endings
+PASS 113: Fenced code, SQL and paths are protected without becoming missing prose
+PASS 114: Canonical publication includes attributed project profile text
+PASS 115: Structured profile values are decoded before export redaction
+PASS 116: Canonical profile retains typed structured fields rather than an opaque encoded JSON string
+PASS 117: Offline handoff renders readable project purpose and owner
+PASS 118: Editable engineering guide includes the same attributed project profile
+PASS 119: Translation preserves identifiers, paths and SQL byte for byte
+PASS 120: Translated prose requires human review
+PASS 121: Translation review is cached for exact content and revision
+PASS 122: Changed prose invalidates localized cache
+PASS 123: Old translation approval cannot carry to new prose
+PASS 124: Unconfigured external Atlas translation cannot transmit content
+PASS WP6: 124 checks

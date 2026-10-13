@@ -544,6 +544,7 @@ begin
     Body.Append('<section class="card"><h2>Why it matters to the user</h2>'); Found:=False;
     for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
       R:=V as TJSONObject; Linked:=R.GetValue<string>('entity_key','')=AKey;
+      if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
       for W in R.GetValue<TJSONArray>('links') do if W.GetValue<string>('canonical_key','')=AKey then Linked:=True;
       if not Linked then Continue;
       Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
@@ -555,7 +556,7 @@ begin
             Meaning:=Fields.GetValue<string>(PurposeFields[I],'Not supplied; ask the author.');
             Body.Append('<h3>'+PurposeLabels[I]+'</h3><p>'+Encode(Meaning)+'</p>');
           end;
-        end else Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body'))+'</p>');
+        end else Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3><p>'+Encode(R.GetValue<string>('body')).Replace(sLineBreak,'<br>')+'</p>');
         Body.Append('<p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');Found:=True;
       finally Metadata.Free;end;
     end;
@@ -707,8 +708,8 @@ begin
 end;
 function TDPHExplanationModel.LessonHTML(AIndex: Integer): string;
 var Body: TStringBuilder; V,W: TJSONValue; S,R,Fields,Metadata,Target: TJSONObject;
-    Rows: TList<TJSONObject>; Caption,ControlType,Key,Handler,Kind: string;
-    Count,StepIndex: Integer; Found,HasPurpose: Boolean;
+    Rows,TaskRecords: TList<TJSONObject>; Caption,ControlType,Key,Handler,Kind: string;
+    Count,StepIndex: Integer; Found,HasPurpose,IncludeCard: Boolean;
 begin
   if not (AIndex in [0..11]) then Exit(Page('Learn the application','<p>Choose a topic from the lesson list.</p>'));
   Body:=TStringBuilder.Create;
@@ -717,6 +718,7 @@ begin
       Body.Append('<section class="card"><h2>What does this application do?</h2>'); HasPurpose:=False;
       for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
         R:=V as TJSONObject; Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
+        if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
         if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject
         else Metadata:=Metadata.Clone as TJSONObject;
         try
@@ -897,17 +899,34 @@ begin
         11: begin
           Body.Append('<h2>Task walkthroughs for this application</h2><p>These are instructions supplied for the selected application. Read the prerequisites, follow the named actions, and compare the result with the expected outcome. The contributor and review status identify whose explanation you are using.</p>');
           Body.Append('<p><a href="#task_reader">Open Learn a task</a> to follow the prepared steps one at a time, with Previous, Next and Start again.</p>');
-          for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
-            R:=V as TJSONObject;
+          TaskRecords:=TList<TJSONObject>.Create;
+          try
+          for V in FFacts.GetValue<TJSONArray>('knowledge') do TaskRecords.Add(V as TJSONObject);
+          TaskRecords.Sort(TComparer<TJSONObject>.Construct(function(const L,R:TJSONObject):Integer
+          var LeftRecord,RightRecord:TJSONObject;
+          begin
+            LeftRecord:=L.GetValue<TJSONObject>('structured_record',nil);RightRecord:=R.GetValue<TJSONObject>('structured_record',nil);
+            if LeftRecord=nil then LeftRecord:=TJSONObject.ParseJSONValue(L.GetValue<string>('structured_json','{}')) as TJSONObject else LeftRecord:=LeftRecord.Clone as TJSONObject;
+            if RightRecord=nil then RightRecord:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject else RightRecord:=RightRecord.Clone as TJSONObject;
+            try
+              Result:=CompareText(LeftRecord.GetValue<string>('learning.path',''),RightRecord.GetValue<string>('learning.path',''));
+              if Result=0 then Result:=CompareValue(LeftRecord.GetValue<Integer>('learning.order',10000),RightRecord.GetValue<Integer>('learning.order',10000));
+              if Result=0 then Result:=CompareText(L.GetValue<string>('title'),R.GetValue<string>('title'));
+            finally LeftRecord.Free;RightRecord.Free;end;
+          end));
+          for R in TaskRecords do begin
             if MatchText(R.GetValue<string>('state',''),['rejected','retired']) then Continue;
             if not MatchText(R.GetValue<string>('kind',''),['user_help','troubleshooting']) and
               not MatchText(R.GetValue<string>('document_kind',''),['user','help']) then Continue;
-            Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3>');
             Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
             if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject else Metadata:=Metadata.Clone as TJSONObject;
             try
+              if (Metadata<>nil) and (Metadata.GetValue<string>('record_type','')<>'') and (Metadata.GetValue<string>('record_type','')<>'learning_lesson') then Continue;
+              Body.Append('<h3>'+Encode(R.GetValue<string>('title'))+'</h3>');
               if (Metadata<>nil) and (Metadata.GetValue<string>('record_type','')='learning_lesson') then begin
                 Fields:=Metadata.GetValue<TJSONObject>('fields');
+                if Metadata.GetValue('learning')<>nil then Body.Append('<p><strong>User role:</strong> '+Encode(Metadata.GetValue<string>('learning.role'))+
+                  '<br><strong>Learning path:</strong> '+Encode(Metadata.GetValue<string>('learning.path'))+'; lesson '+IntToStr(Metadata.GetValue<Integer>('learning.order'))+'</p>');
                 Body.Append('<p><strong>Purpose:</strong> '+Encode(Fields.GetValue<string>('purpose'))+'</p><p><strong>Before you begin:</strong> '+Encode(Fields.GetValue<string>('prerequisites'))+'</p><ol>');
                 StepIndex:=0;
                 for W in Metadata.GetValue<TJSONArray>('steps') do begin Inc(StepIndex);
@@ -921,15 +940,43 @@ begin
               Key:=W.GetValue<string>('canonical_key','');
               if (Key<>'') and FSymbols.ContainsKey(Key) then Body.Append('<p>Explore the related part of the application: '+Link(Key)+'.</p>');
             end;
-            Inc(Count); if Count>=30 then Break;
+            Inc(Count);
           end;
+          finally TaskRecords.Free;end;
           if Count=0 then Body.Append('<p>No user walkthrough has been supplied for this application yet. Ask its author for one common task: who performs it, what must be ready, the screen actions in order, the expected result, and what to do if it fails. The code alone cannot supply unwritten operating instructions.</p>');
-          if Count>=30 then Body.Append('<p>First 30 instruction records shown. Use Search project for another task.</p>');
           Body.Append('<h3>Practice</h3><p>Choose a supplied task, explain its steps in your own words, and identify the result you would check. Do not run the selected application or alter live information without its owner''s approval.</p>');
         end;
       end;
       Body.Append('</section><section class="card"><p><a href="#lesson_0">Return to your learning route</a></p></section>');
     end;
+    for V in FFacts.GetValue<TJSONArray>('knowledge') do begin
+      R:=V as TJSONObject;if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
+      Metadata:=R.GetValue<TJSONObject>('structured_record',nil);
+      if Metadata=nil then Metadata:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject else Metadata:=Metadata.Clone as TJSONObject;
+      try
+        if (Metadata=nil) or (Metadata.GetValue<string>('record_type','')<>'learning_card') then Continue;
+        Kind:=Metadata.GetValue<string>('category');IncludeCard:=False;
+        case AIndex of
+          0: IncludeCard:=Kind='Role or permission';
+          2: IncludeCard:=MatchText(Kind,['Screen','Field']);
+          3: IncludeCard:=Kind='Background work';
+          4: IncludeCard:=Kind='Business rule';
+          5: IncludeCard:=MatchText(Kind,['Output or report','Setting or option']);
+          6: IncludeCard:=Kind='Related system';
+          7: IncludeCard:=Kind='History or design choice';
+          8: IncludeCard:=Kind='Learning check';
+          9: IncludeCard:=MatchText(Kind,['Error or problem','Question and answer']);
+        end;
+        if not IncludeCard then Continue;
+        Body.Append('<section class="card"><h2>'+Encode(Kind)+': '+Encode(R.GetValue<string>('title'))+'</h2><p>'+Encode(R.GetValue<string>('body')).Replace(sLineBreak,'<br>')+'</p><p><small>Supplied by '+Encode(R.GetValue<string>('owner'))+'; review status: '+Encode(R.GetValue<string>('state'))+'.</small></p>');
+        Key:=R.GetValue<string>('entity_key','');
+        if R.GetValue('links')<>nil then for W in R.GetValue<TJSONArray>('links') do
+          if FSymbols.ContainsKey(W.GetValue<string>('canonical_key','')) then begin Key:=W.GetValue<string>('canonical_key');Break;end;
+        if (Key<>'') and FSymbols.ContainsKey(Key) then Body.Append('<p>Explore the related selection: '+Link(Key)+'.</p>');
+        Body.Append('</section>');
+      finally Metadata.Free;end;
+    end;
+    if AIndex=0 then Body.Append('<section class="card"><h2>Find a plain-language explanation</h2><p>Choose Learning library in DPH to search screen and field guides, worked examples, questions, errors, rules and reports. In this shared guide, those explanations appear with their relevant learning topic.</p></section>');
     Result:=Page(TopicTitle(AIndex),Body.ToString);
   finally Body.Free; end;
 end;

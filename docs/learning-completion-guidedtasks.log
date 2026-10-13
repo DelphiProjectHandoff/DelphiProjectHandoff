@@ -1,0 +1,87 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Analysis.Explanations.pas(977) Hint: H2077 Value assigned to 'Count' never used
+DPH.Analysis.Explanations.pas(952) Hint: H2077 Value assigned to 'Count' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.GuidedTasks.dpr(49) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.GuidedTasks.dpr(56) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+21031 lines, 1.84 seconds, 11000584 bytes code, 349376 bytes data.
+PASS 1: A blank template cannot masquerade as task instructions
+PASS 2: A task needs an explicit purpose and a real action
+PASS 3: Canonical instructions preserve the action and expected outcome
+PASS 4: SQLite returns the saved typed lesson
+PASS 5: Free-text edits cannot silently contradict the structured instructions
+PASS 6: A task cannot be duplicated under the same identity
+PASS 7: Task contribution requires a named person
+PASS 8: Incomplete step structure is rejected
+PASS 9: An empty teaching template cannot masquerade as an explanation
+PASS 10: Saved teaching prose cannot contradict its structured fields
+PASS 11: Teaching explanations require a named contributor
+PASS 12: A callout cannot refer to a picture outside the selected application
+PASS 13: A callout outside the picture bounds is rejected
+PASS 14: Project opening protects lesson drafts until the candidate is accepted
+PASS 15: Saved task is returned through the actual background save/open pipeline: Initial task / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 16: Accepted project restores normal lesson interaction
+PASS 17: Learner reads the actual supplied first action
+PASS 18: Learner sees the expected result beside the action
+PASS 19: Legacy text remains readable without fabricated step boundaries
+PASS 20: Task editor controls are serialized in the native form
+PASS 21: Prepare lessons opens a real new task draft
+PASS 22: Native preparation retains two explicitly authored steps
+PASS 23: An in-flight save protects the supplied instructions from lost edits
+PASS 24: Saved task is returned through the actual background save/open pipeline: Choose an option / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 25: One Save task returns directly to the learner
+PASS 26: Saved task starts with its first step
+PASS 27: Last step shows the overall expected result
+PASS 28: Reader prevents moving beyond the last step
+PASS 29: Learner can return to the earlier action
+PASS 30: Start again resets the learning sequence
+PASS 31: Task reader has no unrelated technical side panels
+PASS 32: Reopening instructions restores their ordered steps
+PASS 33: Cancel returns to learning without saving a replacement
+PASS 34: Canceled edits preserve the stored purpose
+PASS 35: Editing preserves the saved task identity
+PASS 36: Replacing a step keeps the replacement in its original position
+PASS 37: Moving a step down preserves both instructions
+PASS 38: Moving a step up restores the order
+PASS 39: Removing a step preserves the other steps
+PASS 40: Undo step restores the kept action
+PASS 41: Saved task is returned through the actual background save/open pipeline: Choose an option / Lessons for Semantic.dproj. Choose Learn the project to continue. Some code could not be explained; check unanswered questions.
+PASS 42: Edited purpose and reordered steps persist together
+PASS 43: Saved role and learning path accompany the actual instructions
+PASS 44: A named learner can check the first result
+PASS 45: Checking a result saves progress and moves to the next real step
+PASS 46: Returning to a task resumes the unchecked step
+PASS 47: Every result must be checked before task completion
+PASS 48: Clear my progress resets this learner without changing instructions
+PASS 49: Role filter excludes instructions for another named role
+PASS 50: Role filter retains this role instructions
+PASS 51: Learning path selects only its assigned task
+PASS 52: Reopening the saved revision restores the replacement step
+PASS 53: Teaching library opens an IDE-editable explanation form
+PASS 54: One Save explanation persists the real fields and returns to the learner
+PASS 55: A teaching card retains contributor and pending review in plain language
+PASS 56: Teaching library filters role-specific explanations
+PASS 57: Teaching library searches examples and expected answers as well as titles
+PASS 58: Reopening a card restores its actual saved example
+PASS 59: Saved sample output opens with the selected application
+PASS 60: Learner sees the sample purpose rather than a fingerprint dump
+PASS 61: A selected picture point opens its real output explanation draft
+PASS 62: The anchored explanation is saved through the actual background pipeline
+PASS 63: Picture legend presents the numbered meaning and actual contributor
+PASS 64: Anchored callouts leave original picture bytes unchanged
+PASS 65: Sharing preserves the saved task revision and its purpose
+PASS 66: Offline tasks contain real ordered steps and per-step expected results
+PASS 67: Offline task retains practice, final result and named contributor
+PASS 68: Offline instructions distinguish the read-only edition from the native step reader
+PASS 69: Shared lessons contain the same teaching card and expected practice answer
+PASS 70: Shared edition preserves the anchored point and the supplied image kind
+PASS 71: Picture callout legend keeps attribution and the actual worked example
+PASS 72: Shared tasks honor prepared learning-path order rather than creation order
+PASS 73: Selected application source remains unchanged
+PASS guided task learning: 73 checks

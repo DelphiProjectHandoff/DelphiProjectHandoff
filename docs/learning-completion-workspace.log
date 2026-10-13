@@ -1,0 +1,159 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(61) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(62) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(64) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(64) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(66) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(66) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(69) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(97) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(126) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(221) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(228) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(228) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(229) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(254) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(254) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(259) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(278) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(278) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(294) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\DPH.Tests.Workspace.dpr(387) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+bin\learning-completion\bin\learning-completion\DPH.Tests.Workspace.dpr(260) Hint: H2077 Value assigned to 'Rows' never used
+21225 lines, 1.62 seconds, 11014344 bytes code, 349948 bytes data.
+PASS 1: PARTIAL captured analysis; previous complete head retained | routines rebuilt 14, reused 0
+PASS 2: Background scan returns a captured workspace
+PASS 3: Workspace includes its immutable generation
+PASS 4: Project-wide search selects method identity
+PASS 5: Form component is searchable
+PASS 6: Inspector retains serialized properties
+PASS 7: Component details distinguish serialized values from unknown defaults
+PASS 8: Routine details retain statement text and immutable source evidence
+PASS 9: Reverse references retain event evidence
+PASS 10: Collapsed hierarchy shows only ownership roots
+PASS 11: Expanding a module reveals its immediate owned objects
+PASS 12: Collapsing a branch restores root rows without changing the source model
+PASS 13: Hierarchy pagination is applied after branch visibility
+PASS 14: Types grouping retains every captured member while collapsing nodes
+PASS 15: Types grouping retains internal and external relationship counts
+PASS 16: Grouped graph HTML renders directed labeled nodes with member navigation
+PASS 17: Graph labels escape analyzed source text as inert content
+PASS 18: Units grouping retains every captured member while collapsing nodes
+PASS 19: Units grouping retains internal and external relationship counts
+PASS 20: Grouped graph HTML renders directed labeled nodes with member navigation
+PASS 21: Graph labels escape analyzed source text as inert content
+PASS 22: Grouped graph preserves source-projection truncation
+PASS 23: Execution graph is bounded
+PASS 24: Execution graph has static provenance
+PASS 25: Procedure CFG graph is bounded
+PASS 26: Procedure CFG graph has static provenance
+PASS 27: Caller / callee graph is bounded
+PASS 28: Caller / callee graph has static provenance
+PASS 29: Form navigation graph is bounded
+PASS 30: Form navigation graph has static provenance
+PASS 31: Data flow graph is bounded
+PASS 32: Data flow graph has static provenance
+PASS 33: Change impact graph is bounded
+PASS 34: Change impact graph has static provenance
+PASS 35: Design-time screen contains form and button
+PASS 36: Screen reconstruction never claims runtime capture
+PASS 37: FMX Explorer displays canonical cached objects
+PASS 38: IDE-editable expand button opens the selected Explorer branch
+PASS 39: Explorer branch collapse preserves other roots
+PASS 40: FMX choices come from captured project options
+PASS 41: Captured code page is visible in the source settings
+PASS 42: Coverage metrics define inventory denominator explicitly
+PASS 43: Coverage retains syntax and semantic diagnostic evidence
+PASS 44: Coverage page explains human-review limits separately from static measures
+PASS 45: Coverage gap opens labeled source evidence in Details
+PASS 46: Explorer selection populates source-backed inspector
+PASS 47: Detached source view does not follow cached filesystem paths
+PASS 48: Selected routine populates IDE-editable statement/evidence rows
+PASS 49: Evidence pane labels certainty, rule and source hash
+PASS 50: Detached evidence command retains cached details without following filesystem paths
+PASS 51: Selecting a collapsed graph group opens its member/evidence list
+PASS 52: Group member opens its canonical object explanation
+PASS 53: Whole program command opens startup execution projection
+PASS 54: Whole program projection preserves the inspected object context
+PASS 55: All forms command selects the whole form navigation projection
+PASS 56: All forms graph preserves the inspected object context
+PASS 57: Project data command opens the whole captured data projection
+PASS 58: Project data projection preserves the inspected object context
+PASS 59: Canonical selection can be bookmarked
+PASS 60: Render screen mode Thumbnail
+PASS 61: Render screen mode Fit
+PASS 62: Render screen mode Native
+PASS 63: Render screen mode Custom zoom
+PASS 64: Render screen mode Full screen
+PASS 65: Dedicated full screen hides surrounding workspace while retaining screen toolbar
+PASS 66: Escape restores workspace from focused full screen
+PASS 67: Custom zoom updates scrollable extent to three times native width
+PASS 68: Fit computes bounds from all captured components within screen viewport
+PASS 69: Imported screenshot gallery provides bounded image thumbnail
+PASS 70: Native screenshot mode uses actual pixel dimensions
+PASS 71: Screenshot zoom updates scrollable image bounds
+PASS 72: Screenshot linked object opens canonical explanation
+PASS 73: Link picker offers entity candidates
+PASS 74: Link picker offers relationship candidates
+PASS 75: Link picker offers evidence candidates
+PASS 76: Link picker offers screenshot candidates
+PASS 77: Link picker offers section candidates
+PASS 78: Exact document revision exposes current referring section backlink
+PASS 79: IDE-editable link list loads every saved typed target
+PASS 80: Saved entity link opens canonical source-backed explanation
+PASS 81: Saved relationship link opens typed evidence details
+PASS 82: Saved evidence link opens source range and derivation context
+PASS 83: Saved screenshot link opens its managed image
+PASS 84: Saved section link opens exact pinned revision text
+PASS 85: Referenced section edit reopens separate review without rewriting prior verification
+PASS 86: Review queue explains referenced-document change
+PASS 87: Review task opens affected authored content
+PASS 88: Review task opens affected source change-impact projection
+PASS 89: Review task cannot record anonymous approval
+PASS 90: Focused questions are bounded and deterministic for captured evidence
+PASS 91: Unresolved call question carries actual source hash and stable evidence identity
+PASS 92: Question opens source-backed evidence details
+PASS 93: Question answer draft requires explicit named author and response
+PASS 94: Empty answer cannot create an attributed response
+PASS 95: Saved but unreviewed answer does not hide its author question
+PASS 96: Explicitly verified response suppresses only its exact evidence question
+PASS 97: Native translation view compares source and actual cached DAT prose with provider provenance
+PASS 98: Native translated content wraps, remains read-only and exposes review state
+PASS 99: Translation administration stays outside the learner and lesson-preparation menus
+PASS 100: New source section clears prior localized content instead of reusing its review
+PASS 101: Background worker loads the exact revision translation through the DAT adapter and persistent cache
+PASS 102: Background publisher creates a fixture bundle for native validation
+PASS 103: Source browsing and generated agent boundaries require separate explicit export opt-ins
+PASS 104: Standalone background bundle validation works without opening a database and qualifies historical inspection
+PASS 105: Native validation explicitly copies expected identity from the opened capture
+PASS 106: Technical bundle validation stays outside the lesson-preparation menu
+PASS 107: Native validation is reachable, defaults to current-only and displays read-only reports
+PASS 108: Default bundle validation rejects a partial/stale capture
+PASS 109: Background validation rejects a different expected fingerprint
+PASS 110: Background validation rejects changed bundle bytes
+PASS 111: Native validation explains malformed expected fingerprints before file selection
+PASS 112: Same-project reassessment preserves selected object and active page
+PASS 113: Same-project reassessment retains surviving bookmarks
+PASS 114: Removed object clears stale inspector and reports selection loss without guessing a replacement
+PASS 115: Removed object is pruned from reassessment bookmarks
+PASS 116: Cached database opens without analysis
+PASS 117: Cached open verifies available source automatically
+PASS 118: Cached open preserves generation
+PASS 119: Fixture cached open completes within 5 seconds
+PASS 120: Cached document is delivered before background verification completes
+PASS 121: Unavailable source opens safely detached
+PASS 122: Unchanged connected check skips analysis
+PASS 123: Configuration change reassesses unchanged source bytes
+PASS 124: Source modification triggers background reassessment
+PASS 125: Controlled edit changes its input fingerprint
+PASS 126: Updated cached workspace can reopen
+PASS 127: Artifact tampering is rejected
+PASS 128: Idle worker shutdown returns without a queue loop
+PASS WP4: 128 checks

@@ -19,3 +19,20 @@ bin\Win32\Debug\DelphiProjectHandoff.exe
 
 Keep WebView2Loader.dll beside the executable and migrations in the source root.
 Use Debug and Win32 in RAD Studio. The User Guide describes deployed operation.
+
+CURRENT BEGINNER FEATURES
+From an elevated RAD Studio command prompt at the source root:
+tools\build-order-sample.cmd validates the designated sample and captures its
+actual native screen. It runs only the supplied teaching example, never a
+customer application. Rebuilding those pictures requires checking the hashes
+in samples\OrderPractice\lessons.json before the practice import.
+
+tools\build-practice.cmd "<new disposable absolute folder>" validates the
+practice button, actual source-linked explanations, ordered tasks, progress
+and offline teaching edition. Run with a disposable workspace catalog and
+restore any original preferences afterward; do not use owner lesson databases.
+
+The revised learning scope is recorded in docs\Learning_Requirements_Reconciliation.json
+and its CSV and text companions. The original requirement ledger remains
+unchanged. Scope decisions are distinct from implementation of old technical
+requirements. Human learning acceptance remains separately reported.

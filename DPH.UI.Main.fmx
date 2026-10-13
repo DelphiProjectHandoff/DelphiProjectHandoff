@@ -26,6 +26,7 @@ Items.Strings = (
 'Getting started'
 'Learn the project'
 'Learn a task'
+'Learning library'
 'Form designs'
 'Screenshots'
 'Explain'
@@ -103,6 +104,14 @@ Position.Y = 42
 Width = 80
 Height = 28
 OnClick = BackClick
+end
+object PracticeButton: TButton
+Text = 'Try practice example'
+Position.X = 480
+Position.Y = 4
+Width = 180
+Height = 28
+OnClick = PracticeClick
 end
 object ParentButton: TButton
 Text = 'Parent'
@@ -259,6 +268,249 @@ Align = Client
 TabPosition = None
 ActiveTab = OverviewTab
 OnChange = WorkspacePageChange
+object CardLibraryTab: TTabItem
+Text = 'Learning library'
+object CardPurpose: TLabel
+Align = Top
+Height = 72
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Learn what the selected application does and how to use it. Read worked examples, field guidance, rules, answers and safe troubleshooting. Explanations are supplied by named contributors; Unknown means an answer is still needed.'
+end
+object CardToolbar: THorzScrollBox
+Align = Top
+Height = 48
+object CardNew: TButton
+Position.X = 12
+Position.Y = 6
+Width = 180
+Height = 32
+Text = 'Prepare an explanation'
+OnClick = CardEditClick
+end
+object CardEdit: TButton
+Position.X = 200
+Position.Y = 6
+Width = 160
+Height = 32
+Text = 'Edit explanation'
+OnClick = CardEditClick
+end
+object CardRelated: TButton
+Position.X = 368
+Position.Y = 6
+Width = 190
+Height = 32
+Text = 'Explore related selection'
+OnClick = CardRelatedClick
+end
+end
+object CardFilter: TEdit
+Align = Top
+Height = 34
+Margins.Left = 12
+Margins.Right = 12
+TextPrompt = 'Find a topic, question, error message or example'
+OnChange = CardFilterChange
+end
+object CardRole: TEdit
+Align = Top
+Height = 34
+Margins.Left = 12
+Margins.Right = 12
+TextPrompt = 'User role (blank means all; shared explanations always appear)'
+OnChange = CardFilterChange
+end
+object CardList: TListBox
+Align = Left
+Width = 260
+Margins.Left = 12
+Margins.Right = 12
+OnChange = CardSelectionChange
+end
+object CardReader: TMemo
+Align = Client
+Margins.Right = 12
+Margins.Bottom = 12
+ReadOnly = True
+WordWrap = True
+ShowScrollBars = True
+StyledSettings = []
+TextSettings.Font.Size = 17
+end
+end
+object CardEditorTab: TTabItem
+Text = 'Prepare an explanation'
+object CardEditorPurpose: TLabel
+Align = Top
+Height = 78
+Margins.Left = 12
+Margins.Right = 12
+WordWrap = True
+Text = 'Teach one part of the selected application. Name the screen, field, error, question or report. Explain its purpose in plain language, give a worked example, mistakes to avoid, safe help and a practice question with its answer. Unknown is allowed when the author must answer. A new card links to the currently selected object, if any.'
+end
+object CardEditToolbar: THorzScrollBox
+Align = Top
+Height = 78
+object CardCategory: TComboBox
+Position.X = 12
+Position.Y = 12
+Width = 210
+Height = 34
+Items.Strings = (
+'Screen'
+'Field'
+'Error or problem'
+'Question and answer'
+'Business rule'
+'Output or report'
+'Role or permission'
+'Related system'
+'Setting or option'
+'Background work'
+'History or design choice'
+'Learning check'
+)
+ItemIndex = 0
+OnChange = CardChanged
+end
+object CardAuthor: TEdit
+Position.X = 234
+Position.Y = 12
+Width = 230
+Height = 34
+TextPrompt = 'Person supplying this explanation'
+OnChange = CardChanged
+end
+object CardSave: TButton
+Position.X = 476
+Position.Y = 12
+Width = 150
+Height = 34
+Text = 'Save explanation'
+OnClick = CardSaveClick
+end
+object CardCancel: TButton
+Position.X = 638
+Position.Y = 12
+Width = 150
+Height = 34
+Text = 'Cancel changes'
+OnClick = CardCancelClick
+end
+end
+object CardEditorScroll: TVertScrollBox
+Align = Client
+Margins.Left = 12
+Margins.Right = 12
+object Card_name_label: TLabel
+Align = Top
+Position.Y = 0
+Height = 38
+WordWrap = True
+Text = 'Topic name: screen, field, exact error, question or report'
+end
+object Card_name: TMemo
+Align = Top
+Position.Y = 38
+Height = 64
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_role_label: TLabel
+Align = Top
+Position.Y = 102
+Height = 38
+WordWrap = True
+Text = 'Who this helps: enter a user role, or All learners'
+end
+object Card_role: TMemo
+Align = Top
+Position.Y = 140
+Height = 64
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_meaning_label: TLabel
+Align = Top
+Position.Y = 204
+Height = 38
+WordWrap = True
+Text = 'What it means and why the user needs it'
+end
+object Card_meaning: TMemo
+Align = Top
+Position.Y = 242
+Height = 110
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_example_label: TLabel
+Align = Top
+Position.Y = 352
+Height = 38
+WordWrap = True
+Text = 'Worked example, valid input and units, or sample output explained'
+end
+object Card_example: TMemo
+Align = Top
+Position.Y = 390
+Height = 110
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_limits_label: TLabel
+Align = Top
+Position.Y = 500
+Height = 38
+WordWrap = True
+Text = 'Rules, limits, permission requirements and common mistakes'
+end
+object Card_limits: TMemo
+Align = Top
+Position.Y = 538
+Height = 110
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_help_label: TLabel
+Align = Top
+Position.Y = 648
+Height = 38
+WordWrap = True
+Text = 'If the result differs: symptom, safe next step and who can help'
+end
+object Card_help: TMemo
+Align = Top
+Position.Y = 686
+Height = 110
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+object Card_practice_label: TLabel
+Align = Top
+Position.Y = 796
+Height = 38
+WordWrap = True
+Text = 'Practice question or exercise and expected answer'
+end
+object Card_practice: TMemo
+Align = Top
+Position.Y = 834
+Height = 110
+WordWrap = True
+ShowScrollBars = True
+OnChange = CardChanged
+end
+end
+end
 object SetupTab: TTabItem
 Text = 'Project setup'
 object SetupScroll: TVertScrollBox
@@ -310,6 +562,7 @@ Margins.Right = 12
 Items.Strings = (
 'Learn the project'
 'Learn a task'
+'Learning library'
 'Action purposes'
 'Screenshots'
 'Business glossary'
@@ -411,7 +664,7 @@ object TaskPurposeLabel: TLabel
 Align = Top
 Margins.Left = 12
 Margins.Right = 12
-Height = 64
+Height = 44
 WordWrap = True
 Text = 'Learn one task step by step. Read what must be ready, follow each action, and check the expected result. DPH presents instructions without running the selected application.'
 StyledSettings = []
@@ -463,6 +716,39 @@ Height = 34
 TextPrompt = 'Find task instructions'
 OnChange = TaskFilterChange
 end
+object TaskRoleLabel: TLabel
+Align = Top
+Height = 22
+Text = 'User role'
+end
+object TaskRoleFilter: TEdit
+Align = Top
+Height = 34
+TextPrompt = 'User role (all when blank)'
+OnChange = TaskFilterChange
+end
+object TaskPathLabel: TLabel
+Align = Top
+Height = 22
+Text = 'Learning path'
+end
+object TaskPathFilter: TEdit
+Align = Top
+Height = 34
+TextPrompt = 'Learning path (all when blank)'
+OnChange = TaskFilterChange
+end
+object TaskLearnerLabel: TLabel
+Align = Top
+Height = 22
+Text = 'Your name for saved progress'
+end
+object TaskLearner: TEdit
+Align = Top
+Height = 34
+TextPrompt = 'Your name for saved progress'
+OnChange = TaskSelectionChange
+end
 object TaskNextPage: TButton
 Align = Bottom
 Height = 32
@@ -478,9 +764,15 @@ object TaskReaderPanel: TLayout
 Align = Client
 Margins.Left = 12
 Margins.Right = 12
+object TaskProgressLabel: TLabel
+Align = Bottom
+Height = 48
+WordWrap = True
+Text = 'Enter your name to save your place on this computer.'
+end
 object TaskNavigation: THorzScrollBox
 Align = Bottom
-Height = 44
+Height = 56
 object TaskPrevious: TButton
 Position.X = 8
 Position.Y = 6
@@ -505,6 +797,22 @@ Height = 30
 Text = 'Start again'
 OnClick = TaskNavigate
 end
+object TaskCheckStep: TButton
+Position.X = 422
+Position.Y = 6
+Width = 180
+Height = 30
+Text = 'I checked this result'
+OnClick = TaskProgressClick
+end
+object TaskResetProgress: TButton
+Position.X = 610
+Position.Y = 6
+Width = 160
+Height = 30
+Text = 'Clear my progress'
+OnClick = TaskProgressClick
+end
 end
 object TaskReaderScroll: TVertScrollBox
 Align = Client
@@ -518,15 +826,23 @@ StyledSettings = []
 TextSettings.Font.Size = 20
 TextSettings.FontColor = xFF146CB4
 end
-object TaskContextMemo: TMemo
+object TaskContextExpander: TExpander
 Position.Y = 38
 Align = Top
-Height = 110
+Height = 184
+HeaderHeight = 34
+ContentSize = '150'
+IsExpanded = False
+Text = 'Before you begin and task context'
+object TaskContextMemo: TMemo
+Align = Client
+Height = 150
 WordWrap = True
 ReadOnly = True
 ShowScrollBars = True
 StyledSettings = []
 TextSettings.Font.Size = 15
+end
 end
 object TaskStepLabel: TLabel
 Position.Y = 148
@@ -551,7 +867,7 @@ end
 object TaskActionMemo: TMemo
 Position.Y = 178
 Align = Top
-Height = 180
+Height = 64
 ReadOnly = True
 WordWrap = True
 ShowScrollBars = True
@@ -605,6 +921,50 @@ Width = 150
 Height = 30
 Text = 'Cancel changes'
 OnClick = TaskCancelClick
+end
+end
+object TutorLearningLayout: THorzScrollBox
+Align = Top
+Height = 76
+object TutorRoleLabel: TLabel
+Position.X = 12
+Width = 220
+Height = 24
+Text = 'User role (blank means everyone)'
+end
+object TutorRole: TEdit
+Position.X = 12
+Position.Y = 28
+Width = 220
+Height = 30
+OnChange = TaskEditorChanged
+end
+object TutorPathLabel: TLabel
+Position.X = 244
+Width = 220
+Height = 24
+Text = 'Learning path name (optional)'
+end
+object TutorPath: TEdit
+Position.X = 244
+Position.Y = 28
+Width = 220
+Height = 30
+OnChange = TaskEditorChanged
+end
+object TutorOrderLabel: TLabel
+Position.X = 476
+Width = 160
+Height = 24
+Text = 'Lesson order in this path'
+end
+object TutorOrder: TEdit
+Position.X = 476
+Position.Y = 28
+Width = 160
+Height = 30
+Text = '1'
+OnChange = TaskEditorChanged
 end
 end
 object TaskEditorScroll: TVertScrollBox
@@ -1549,6 +1909,8 @@ Text = 'Screenshots'
 object ScreenshotToolbar: TLayout
 Align = Top
 Height = 118
+  Margins.Left = 12
+  Margins.Right = 12
 object ScreenshotAuthor: TEdit
 Position.X = 8
 Position.Y = 8
@@ -1563,6 +1925,23 @@ Width = 500
 Height = 30
 TextPrompt = 'Capture date, environment and what this image shows'
 end
+  object ScreenshotKind: TComboBox
+  Position.X = 516
+  Position.Y = 45
+  Width = 220
+  Height = 30
+  Items.Strings = ('Screenshot' 'Sample output' 'Other teaching image')
+  ItemIndex = 0
+  end
+  object ScreenshotCallout: TButton
+  Position.X = 753
+  Position.Y = 82
+  Width = 180
+  Height = 30
+  Text = 'Explain this point'
+  Enabled = False
+  OnClick = ScreenshotCalloutClick
+  end
 object ImportScreenshotButton: TButton
 Position.X = 8
 Position.Y = 82
@@ -1604,12 +1983,29 @@ end
 end
 object ScreenshotEvidence: TMemo
 Align = Bottom
-Height = 150
+  Height = 170
+  Margins.Left = 12
+  Margins.Right = 12
+  Margins.Bottom = 12
 ReadOnly = True
+  WordWrap = True
+  ShowScrollBars = True
+  StyledSettings = []
+  TextSettings.Font.Size = 15
 end
+  object ScreenshotHelp: TLabel
+  Align = Top
+  Height = 44
+  Margins.Left = 12
+  Margins.Right = 12
+  WordWrap = True
+  Text = 'View supplied pictures and sample outputs here. To explain a detail, click its point on the picture, then choose Explain this point. Enter what to notice, an example and a practice question. The original image stays unchanged.'
+  end
 object ScreenshotList: TListBox
 Align = Left
 Width = 200
+  Margins.Left = 12
+  Margins.Right = 12
 ItemHeight = 100
 OnChange = ScreenshotClick
 end
@@ -1619,8 +2015,27 @@ object ScreenshotImage: TImage
 Width = 1
 Height = 1
 WrapMode = Stretch
+  OnMouseDown = ScreenshotPoint
+  object ScreenshotMarkers: TPaintBox
+  Align = Client
+  HitTest = False
+  OnPaint = ScreenshotMarkerPaint
+  end
 end
 end
+  object ScreenshotMarkerStyle: TRectangle
+  Width = 28
+  Height = 28
+  Visible = False
+  Fill.Color = xFFF28C28
+  Stroke.Color = xFF146CB4
+  Stroke.Thickness = 2
+  end
+  object ScreenshotMarkerText: TText
+  Visible = False
+  TextSettings.Font.Size = 14
+  TextSettings.FontColor = xFF20364A
+  end
 end
 object RelationsTab: TTabItem
 Text = 'References'

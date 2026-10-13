@@ -243,10 +243,10 @@ begin
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Root,'docs\learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
 
-              Check((Form.LessonPageCombo.Items.Count=10) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation excludes database administration and translation tools');
+              Check((Form.LessonPageCombo.Items.Count=11) and (Form.LessonPageCombo.Items.IndexOf('Learning library')>=0) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation includes the teaching library and excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
               Form.SetupClick(nil); Check(Form.WorkspaceTabs.ActiveTab=Form.SetupTab,'Prepare lessons opens its separate setup page');
-              Check((Form.WorkspacePageCombo.Items.Count=11) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu contains lesson material rather than database administration');
+              Check((Form.WorkspacePageCombo.Items.Count=12) and (Form.WorkspacePageCombo.Items.IndexOf('Learning library')>=0) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu contains lesson material and teaching explanations rather than database administration');
               Check(not Form.AnalysisSettingsExpander.IsExpanded and (Form.AnalysisSettingsExpander.Height<50),'Source reading settings start collapsed');
               Form.AnalysisSettingsExpander.IsExpanded:=True;Application.ProcessMessages;
               Check(Form.AnalysisSettingsExpander.Height>390,'Native expander exposes the IDE-editable source settings when requested');

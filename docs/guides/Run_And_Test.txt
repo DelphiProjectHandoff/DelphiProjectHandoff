@@ -1,58 +1,108 @@
 RUN AND TEST DELPHI PROJECT HANDOFF
+Last changed 13 October 2026
 
-START THE SUPPLIED DESKTOP PACKAGE
-1. Extract the ZIP file into a local folder where you can save files.
-2. Open that extracted folder in File Explorer.
-3. Double-click DelphiProjectHandoff.exe. Getting started should appear.
-4. Keep the executable, loader, migrations, help and docs together.
+START THE SUPPLIED APPLICATION
+1. Extract the entire ZIP into a local folder where you can save files.
+2. Open that extracted folder and double-click DelphiProjectHandoff.exe.
+3. Keep its migrations, help, docs, samples and loader beside the executable.
+   The window opens maximized. Getting started explains the first session.
 
-OPEN AN APPLICATION
-5. Click Choose application at the top left.
-6. Select the intended Delphi .dproj or .dpr, or its .groupproj group.
-7. Save its proposed .dphdb in Databases, outside the selected source folder.
-8. Wait for Learn the project to open. Read Start here, then Screens and actions.
-   If lessons already exist, use Open saved lessons and select their .dphdb.
-   Keep the adjacent .dphdb.views folder with the database.
+BEGIN WITH THE SUPPLIED PRACTICE EXAMPLE
+4. Click Try practice example in the command strip at the top.
+5. Wait for Learn the project and read Start here. The example calculates a
+   practice total; it saves no orders or payments. DPH does not launch it.
+6. Choose Learn a task in the top-right selector. Enter New learner in User
+   role and First day in Learning path. Scroll the task list if necessary.
+7. Select Meet the practice application. Open Before you begin and task
+   context. Read the purpose and prerequisites, then collapse that section
+   to give the steps more space.
+8. Read the action and expected result. Use Next step and Previous step.
+   Scroll the instruction area or its text boxes if more text is below.
+9. Continue with Predict a total without tax, Compare the tax alternatives,
+   and Understand an input error safely, in that order.
+   Worked answers for quantity 2 and price 10.00 are 20.00 without tax and
+   22.00 with the example tax. Quantity 2.5 is invalid: only whole items
+   from 1 to 1000 are accepted. These exercises can be completed by reading.
 
-CHECK AN ACTUAL EXPLANATION
-9. Follow a screen control or event link into Explain. Read the selection role.
-10. Follow its responding operation and read its purpose and next connections.
-11. Read Choices and stopping points if present. Identify an actual condition.
-12. Use Back to return. Keep optional source details closed until you need them.
+SAVE AND CHECK YOUR PLACE
+10. Enter your name in Your name for saved progress.
+11. After checking the current result, click I checked this result. The count
+    increases by one and the next action appears.
+12. Select another task, then return using the same name. The next unchecked
+    step should appear. Start again returns to the first step without erasing
+    checks. Clear my progress resets your own checks. Scroll the button strip
+    horizontally if a button is outside the visible width.
+    Checks are your record, not proof of mastery or a recorded application run.
 
-PREPARE AND CHECK A TASK
-13. Click Prepare lessons, then Prepare task instructions.
-14. Enter your contributor name, task name, purpose and prerequisites.
-15. Enter its overall result, recovery guidance and practice exercise.
-16. Scroll to the steps. Click New step, enter an action and expected result,
-    then Keep step. Add a second step in the same way.
-17. Click Save task. Learn a task should open at Step 1 of 2.
-18. Click Next step, Previous step and Start again. Check each displayed action
-    and expected result against what you entered. Scroll the instruction area.
-19. Close and reopen DPH, use Open saved lessons, and check the saved task.
+READ A FIELD GUIDE AND FOLLOW ITS ACTUAL CONNECTION
+13. Choose Learning library. Search for Quantity: and select Quantity: how
+    many whole items. Read its meaning, example, limits, safe help and practice
+    answer. Scroll within the reading area to see the complete explanation.
+14. Click Explore related selection. Explain opens the captured control.
+    Read its role and saved guidance. Keep optional source detail closed until
+    it answers your question. Return through the top-right selector.
+15. In Learning library search for Why did changing a field. Read why the
+    Calculate total button must be used after changing an input.
+16. Choose Screenshots. Select Sample output on the left. Read the actual
+    native sample image and its numbered result explanation. Use Fit, Native
+    pixels or Custom zoom to make the relevant detail readable.
 
-CHECK A SAVED ANSWER AND SHARE
-20. In Prepare lessons choose Author questions. Select a question, then Record
-    author answer. Enter the contributor and reply after Answer:, then Save.
-21. In Learn the project choose Questions and answers and find that reply.
-22. In Prepare lessons choose Publish, then Share lessons. Give a NEW folder
-    name outside the selected application's source. Wait, then Preview lessons.
-23. Open learning.html in the edition folder. Check the task, answer and object
-    link. Keep the whole edition folder together when sharing it.
+PREPARE AN EXPLANATION AND A PICTURE CALLOUT
+17. In Learning library click Prepare an explanation. Choose a teaching topic.
+18. Enter your contributor name, topic name, user role or All learners,
+    meaning, worked example, limits, safe help and practice with its answer.
+    Enter Unknown where an answer has not yet been obtained.
+19. Click Save explanation. Find and read it in the library. Edit explanation
+    opens the existing fields; Cancel changes discards the current draft.
+20. To explain a picture point, choose Screenshots, select a picture, click
+    its relevant point, then Explain this point. Complete the teaching fields
+    and Save explanation. Reselect the picture to read its numbered legend.
+    The original picture remains unchanged.
 
-EXPECTED RESULT
-You can explain one task, its prerequisites and expected result, follow one
-actual screen action into its operation, and read the same saved instruction
-in the exported learning edition. DPH does not perform the task in the selected
-application. Use owner-approved example data if separately practicing there.
+PREPARE A TASK AND LEARNING PATH
+21. Click Prepare lessons, then Prepare task instructions.
+22. Enter your contributor name, task name, purpose, prerequisites, overall
+    result, recovery guidance and practice exercise with an expected answer.
+23. Optionally enter a User role and Learning path name. Set Lesson order
+    to a whole number from 1 to 10000; lower numbers appear first in the path.
+24. Scroll to the steps. Click New step, enter an action and expected result,
+    then Keep step. Add another step in the same way.
+25. Click Save task. Learn a task opens the saved instructions. Compare the
+    actions and results with what you entered. Edited instruction revisions
+    require fresh checks rather than inheriting old completion.
 
-IF SOMETHING IS UNAVAILABLE
-No task or purpose supplied means a contributor must add it. Some code could
-not be explained means the preparer must check missing files or source settings.
-If embedded pages fail, check Microsoft WebView2 Runtime and use available
-native text or the exported learning.html. Never delete the last readable
-lesson database as a first troubleshooting step.
+SHARE AND REOPEN THE LESSONS
+26. Click Prepare lessons and choose Publish in its page selector.
+27. Click Share lessons and choose a NEW folder outside the source folder.
+28. Wait, then click Preview lessons. The edition starts at learning.html.
+    Check tasks, explanations, pictures and links. Keep the whole edition
+    folder together when sharing it.
+29. Close and reopen DPH. If necessary, use Open saved lessons and select the
+    same .dphdb in Databases. Keep its adjacent .dphdb.views folder with it.
+    Check that your authored content and same-name progress are retained.
 
-The complete procedures and illustrations are in DPH_User_Guide.docx and its
-PDF companion. Source-build and automated-check directions are in the
-Engineering Guide and Developer_Test_Directions.txt.
+STUDY YOUR OWN APPLICATION
+30. Click Choose application. Select the intended Delphi .dproj, .dpr or
+    .groupproj file supplied by that application's owner.
+31. Accept its proposed .dphdb in Databases, outside the selected source.
+32. Read Learn the project and follow one screen action. Use Learning library,
+    Learn a task, Business glossary and Search project for supplied material.
+33. If purpose, field meanings, tasks or business answers are missing, have
+    someone who knows that application prepare them. DPH discovers supported
+    source connections; it cannot invent unwritten procedures or business facts.
+
+EXPECTED LEARNING RESULT
+Explain the application's purpose, name a task's inputs and expected result,
+describe one choice, interpret an example output and explain one input error.
+Use the supplied practice values to check your answers before studying another
+application. Independent beginner acceptance is a separate human exercise;
+automatic test success does not prove a person's understanding.
+
+WHEN SOMETHING IS UNAVAILABLE
+Some code could not be explained means the preparer should check missing files
+or source settings. Leave advanced settings to that person. If embedded pages
+fail, check Microsoft WebView2 Runtime and use available native text or the
+shared learning.html. Do not delete your last readable lesson database.
+
+The User Guide gives complete illustrated procedures. Source-build and automated
+check directions are in the Engineering Guide and Developer_Test_Directions.txt.

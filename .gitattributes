@@ -4,3 +4,9 @@ docs/*-validation.json text eol=lf
 tests/fixtures/** text eol=lf
 dependencies/DelphiAppTranslation/*.pas -text whitespace=cr-at-eol
 dependencies/DelphiAppTranslation/LICENSE -text
+samples/OrderPractice/*.pas -text
+samples/OrderPractice/*.fmx -text
+samples/OrderPractice/*.dpr -text
+samples/OrderPractice/*.dproj -text
+samples/OrderPractice/*.json -text
+samples/OrderPractice/*.txt -text

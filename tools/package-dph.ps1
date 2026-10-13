@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.4.0')
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.5.0')
 $ErrorActionPreference='Stop'
 $projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $packageName='DPH-'+$Version+'-experimental-Win32'
@@ -10,6 +10,11 @@ foreach ($name in @('DelphiProjectHandoff.exe','DPH.ValidateHandoff.exe','WebVie
 }
 foreach ($directory in @('migrations','help')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
+}
+$practiceDestination=Join-Path $packageRoot 'samples\OrderPractice'
+[IO.Directory]::CreateDirectory($practiceDestination) | Out-Null
+foreach ($name in @('OrderPractice.dpr','OrderPractice.dproj','OrderForm.pas','OrderForm.fmx','lessons.json','practice-screen.png','practice-result.png','README.txt')) {
+ Copy-Item -LiteralPath (Join-Path $projectRoot ('samples\OrderPractice\'+$name)) -Destination $practiceDestination
 }
 foreach ($relative in @('docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
  $destination=Join-Path $packageRoot $relative
@@ -28,8 +33,8 @@ Experimental Windows desktop learning application
 
 1. Extract this whole folder to a writable local location.
 2. Double-click DelphiProjectHandoff.exe.
-3. Read Getting started, then click Choose application or Open saved lessons.
-4. Use Learn the project and Learn a task in the upper-right selector.
+3. Click Try practice example for prepared lessons and a worked learning path.
+4. Use Learn the project, Learn a task and Learning library in the selector.
 5. Open docs\guides\Run_And_Test.txt for a repeatable first-session check.
 
 The User Guide is in docs\pdf\DPH_User_Guide.pdf and docs\guides as an
@@ -61,8 +66,8 @@ try {
  if ($LASTEXITCODE -ne 0) {throw 'Cannot enumerate source files'}
  foreach ($relative in $paths) {
   $include=($relative -match '^DPH\..*\.(pas|fmx)$') -or ($relative -match '^DelphiProjectHandoff\.(dpr|dproj|res)$') -or
-   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|samples/translation)/') -or
-   ($relative -in @('docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/lesson-preparation-task-reader-compact.png','docs/learning-guides-prepare-lessons.png','Databases/README.txt'))
+   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|samples/(translation|OrderPractice))/') -or
+   ($relative -in @('README.md','.gitattributes','.gitignore','docs/Learning_Requirements_Reconciliation.txt','docs/Learning_Requirements_Reconciliation.csv','docs/Learning_Requirements_Reconciliation.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/learning-completion-practice-task-compact.png','docs/learning-completion-practice-library-compact.png','Databases/README.txt'))
   $source=Join-Path $projectRoot $relative
   if ($include -and (Test-Path -LiteralPath $source -PathType Leaf)) {
    [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$source,$relative,[IO.Compression.CompressionLevel]::Optimal) | Out-Null

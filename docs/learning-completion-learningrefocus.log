@@ -1,0 +1,131 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+DPH.Project.Source.pas(34) Warning: W1002 Symbol 'GetFinalPathNameByHandle' is specific to a platform
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Cached' never used
+DPH.Workspace.Worker.pas(293) Hint: H2077 Value assigned to 'Document' never used
+DPH.Workspace.Catalog.pas(92) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(121) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+DPH.Workspace.Catalog.pas(122) Hint: H2443 Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+21229 lines, 1.61 seconds, 11024712 bytes code, 349652 bytes data.
+PASS 1: Object explanation identifies a real cross-unit dependency
+PASS 2: Explanation carries the actual branch condition
+PASS 3: Execution trace preserves asynchronous or dispatch uncertainty
+PASS 4: Flow diagram uses captured branch edges
+PASS 5: Attributed knowledge appears in the linked explanation
+PASS 6: Explanation is not a raw JSON dump
+PASS 7: Captured source comment is available as author documentation
+PASS 8: Beginner walkthrough ties the actual condition to both captured branch destinations
+PASS 9: Walkthrough distinguishes post-test repeat semantics from loop-exit paths
+PASS 10: Walkthrough teaches early-return cleanup and qualified exceptional alternatives
+PASS 11: Native HTML and exported text share the source lesson with escaped expressions and a concrete learning exercise
+PASS 12: An absent routine cannot acquire a fabricated walkthrough
+PASS 13: Learning topic 0 renders a complete offline page
+PASS 14: Learning topic 1 renders a complete offline page
+PASS 15: Learning topic 2 renders a complete offline page
+PASS 16: Learning topic 3 renders a complete offline page
+PASS 17: Learning topic 4 renders a complete offline page
+PASS 18: Learning topic 5 renders a complete offline page
+PASS 19: Learning topic 6 renders a complete offline page
+PASS 20: Learning topic 7 renders a complete offline page
+PASS 21: Learning topic 8 renders a complete offline page
+PASS 22: Learning topic 9 renders a complete offline page
+PASS 23: Learning topic 10 renders a complete offline page
+PASS 24: Unlinked global notes do not masquerade as an object purpose
+PASS 25: Learner explanation includes linked knowledge and excludes unrelated notes
+PASS 26: Detailed source walkthrough is optional in the learner explanation
+PASS 27: Beginner explanation teaches the actual branch before the optional technical walkthrough
+PASS 28: Learner topic 0 avoids technical hash and resolution dumps
+PASS 29: Learner topic 1 avoids technical hash and resolution dumps
+PASS 30: Learner topic 2 avoids technical hash and resolution dumps
+PASS 31: Learner topic 3 avoids technical hash and resolution dumps
+PASS 32: Learner topic 4 avoids technical hash and resolution dumps
+PASS 33: Learner topic 5 avoids technical hash and resolution dumps
+PASS 34: Learner topic 6 avoids technical hash and resolution dumps
+PASS 35: Learner topic 7 avoids technical hash and resolution dumps
+PASS 36: Learner topic 8 avoids technical hash and resolution dumps
+PASS 37: Learner topic 9 avoids technical hash and resolution dumps
+PASS 38: Learner topic 10 avoids technical hash and resolution dumps
+PASS 39: Learner topic 11 avoids technical hash and resolution dumps
+PASS 40: Application purpose gap is explicit without dumping unrelated records
+PASS 41: Screen lesson uses actual captured control and action binding
+PASS 42: Action lesson links actual event and handler
+PASS 43: Question lesson presents the saved author reply with its actual question
+PASS 44: Saved answer remains attributed and does not become automatically verified
+PASS 45: Retired answer is excluded from the learner questions page
+PASS 46: Linked purpose explains the action name and user goal
+PASS 47: Learner purpose omits internal record title, identity and storage body
+PASS 48: Purpose editor hides the three internal identity rows
+PASS 49: Purpose editor begins with the visible action name
+PASS 50: Simpler editor preserves the saved identity
+PASS 51: Control explanation test uses a captured selected-project component
+PASS 52: Control explanation uses escaped visible text
+PASS 53: Control explanation includes supplied typing guidance
+PASS 54: Field explanation describes actual saved editability and input limit
+PASS 55: Control explanation distinguishes saved availability and visibility
+PASS 56: Design settings are not presented as guaranteed runtime behavior
+PASS 57: Decisions lesson teaches an actual application condition
+PASS 58: Learner decisions explain their alternatives and author questions omit analyzer jargon
+PASS 59: Task lesson displays selected-application instructions, expected outcome and named author
+PASS 60: Task lesson excludes unrelated engineering notes
+PASS 61: Opening lesson uses the authored application purpose with escaped content and attribution
+PASS 62: Unreviewed purpose is presented with its actual review status
+PASS 63: Export includes the selected object explanation
+PASS 64: Narrative export preserves generation, canonical and artifact integrity
+PASS 65: Unredacted local display projection cannot be published
+PASS 66: Preview permits only the generated object route shape
+PASS 67: Preview rejects an arbitrary local object filename
+PASS 68: Imported image persists with metadata
+PASS 69: Imported image cannot silently become runtime-verified
+PASS 70: Managed image hash matches contributor evidence
+PASS 71: Export includes matching attributed image evidence
+PASS 72: Private image storage path is absent from canonical export
+PASS 73: Excluding the linked source also excludes its screenshot
+PASS 74: Non-PNG input is rejected
+PASS 75: Image cannot be linked to an object absent from its generation
+PASS 76: Detached copy resolves its own adjacent screenshot assets
+PASS 77: Damaged managed screenshot is rejected before display or export
+PASS 78: Damaged supplemental image does not block the valid cached analysis
+PASS 79: First launch provides directions before a project is loaded
+PASS 80: Default learning navigation includes the teaching library and excludes database administration and translation tools
+PASS 81: Encoding and compiler settings are serialized outside the learner toolbar
+PASS 82: Prepare lessons opens its separate setup page
+PASS 83: Preparation menu contains lesson material and teaching explanations rather than database administration
+PASS 84: Source reading settings start collapsed
+PASS 85: Native expander exposes the IDE-editable source settings when requested
+PASS 86: Learner page selector returns from preparation to learning
+PASS 87: A newly opened application starts its learning route
+PASS 88: Opening a lesson leaves unrequested preparation reports unloaded
+PASS 89: Guided lessons reserve width for learning instead of technical side panels
+PASS 90: Requesting action purposes builds their real preparation report
+PASS 91: Real WebView2 renders the learning workspace
+PASS 92: Lesson link opens its actual next topic without external navigation
+PASS 93: Task walkthrough link opens the native step reader
+PASS 94: Question lesson link opens the existing named-answer workflow
+PASS 95: Text fallback presents the same beginner screen lesson without technical capture metadata
+PASS 96: Wide lesson page uses the available main window
+PASS 97: Real WebView2 renders the readable selected-object explanation
+PASS 98: Explorer selection opens Explain
+PASS 99: Text fallback keeps the learning explanation and excludes optional technical dumps
+PASS 100: Native WebView2 image capture is available for visual QA
+PASS 101: Native grouped graph renders labeled source relationships in WebView2
+PASS 102: Grouped graph keeps wide diagrams inside their scrollable viewport
+PASS 103: Sharing starts with plain instructions and collapsed optional settings
+PASS 104: Actual native browser renders the saved learning edition without horizontal overflow
+PASS 105: Selected fixture source remains unchanged
+PASS 106: Large routine collapses straight-line statements into a usable diagram
+PASS 107: Collapsed flow preserves loop-back and branch-exit evidence
+PASS 108: Long source lessons disclose omitted points rather than claiming full coverage
+PASS 109: Startup explanation excludes expressions inside declared routines
+PASS 110: Pinned program startup is captured from its DPR body
+PASS 111: Pinned startup lesson includes the three startup operations without treating form-call arguments as separate actions
+PASS 112: Token spacing does not prevent plain-language startup explanations
+PASS 113: Startup lesson cites actual form creation
+PASS 114: Reference convert explanation reaches its actual callback evidence
+PASS 115: Reference trace reaches the actual conversion worker through its callback
+PASS 116: Reference object explanation works in the actual FMX form
+PASS 117: Reference execution trace is present in the actual rendered explanation
+PASS 118: Reference procedure CFG renders labeled captured edges
+PASS 119: Reference startup lesson renders actual initialization evidence
+PASS 120: Narrow learning view wraps long source citations without horizontal overflow
+PASS 121: Learning does not clear partial reference coverage
+PASS Learning: 121 checks; disposable test workspace removed

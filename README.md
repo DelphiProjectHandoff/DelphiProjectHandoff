@@ -1,150 +1,36 @@
 # Delphi Project Handoff
 
-Experimental Windows desktop software for understanding one selected Delphi application through captured source evidence and attributed knowledge. DPH reads the selected project without compiling or executing it. The converter reference is passive test input, never a build or runtime dependency.
+Delphi Project Handoff (DPH) helps a beginner learn one unfamiliar Delphi application: what it does, how to use its screens, what inputs mean, how an action reaches its operation, and how to recognize a result. DPH reads selected source without changing, compiling or running that application.
 
-The owner rejected the original WP7 experience as inadequate. The 11 October 2026 rework adds first-launch education, eleven project learning topics, readable object explanations, source comments, event/callback traces, labeled procedure diagrams, attributed screenshot imports and corresponding publication. The previous blanket completion statement is withdrawn. [The plan comparison](docs/Rework_Requirements_Audit.txt) identifies the remaining requirements; historical WP reports are not acceptance of the rework.
+## Run and learn
 
-## Run
+1. Extract the desktop package into a writable local folder and double-click `DelphiProjectHandoff.exe`.
+2. Click **Try practice example**. The supplied order-calculation example includes four ordered First day tasks, fourteen teaching explanations, worked totals, safe error recovery and two actual native pictures.
+3. Use **Learn a task** for actions and expected results, **Learning library** for meanings and examples, and **Learn the project** to follow screens and source connections.
+4. When ready, click **Choose application** and select your own Delphi project or project group. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
 
-1. Run `bin\Win32\Debug\DelphiProjectHandoff.exe`, or extract the latest experimental binary ZIP from `export` to a writable folder and run its executable.
-2. Read **Getting started**, which opens at launch. Keep the deployed `help`, `migrations` and `WebView2Loader.dll` files with the executable. Microsoft WebView2 Runtime enables embedded pages; native text remains available as a fallback.
-3. Choose the intended configuration and platform; enter required compiler defines. Choose **Attach project**, select its project file and save its `.dphdb` database outside the selected source tree.
-4. Start with **Learn the project → How the program starts**. Choose a control under **Screens and user actions**, follow its event, and read **Explain**. Compare its decisions and connections with **Source** and **Graphs**.
-5. Preserve missing business explanations in **Knowledge** with a named author. Use **Publish** to create a scoped offline handoff after reviewing exclusions and private information.
+Read [Run and test](docs/guides/Run_And_Test.txt) for explicit first-session directions. The [User Guide](docs/pdf/DPH_User_Guide.pdf) covers reading and preparing lessons. The [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) covers the architecture, build, validation and deployment.
 
-DPH opens maximized. Click an object in the far-left Explorer to read the labeled **Selection details** pane; its text wraps and scrolls vertically. Choose **Explain**, **Source**, or **Learn the project** in the upper-right page selector. The **status line** is along the bottom edge. Choose **Coverage** for defined static measures, or **Learn the project → Coverage and troubleshooting** for guidance. In a smaller restored window, scroll the command toolbar horizontally to reach commands that do not fit.
+## Teaching features
 
-**Databases** under the DPH application folder is now the default location for **Save knowledge database** and **Open cache**. For a source checkout this is the top-level `Databases` folder; for an extracted distribution it is beside the executable. Existing databases are not moved. You may browse to another location outside the selected source tree. Keep each database's adjacent `.dphdb.views` folder with it.
+- Application purpose, a beginner learning route and plain Delphi terms.
+- Screen and field meanings, worked examples, input limits, safe help and practice answers.
+- Ordered task steps, role filters, learning paths and personal revision-specific checked-step progress.
+- Source-linked action explanations with optional deeper detail.
+- Attributed FAQs, error recovery, business rules, settings, dependencies and output explanations.
+- Real supplied pictures and sample outputs with anchored numbered callouts. Source-based form reconstructions remain clearly labeled.
+- Search, business glossary, saved knowledge and shared offline lessons from the same records.
 
-DPH rejects its own source project and self-analysis caches, including renamed or relocated copies retaining its project GUID or program declaration. A rejected selection leaves the current workspace intact. A rejected startup cache leaves **Getting started** visible. This is an application selection rule, not an identity/security guarantee for arbitrarily modified source.
+Preparing a lesson cannot establish an unwritten business fact. A knowledgeable contributor supplies that information; DPH preserves attribution, unanswered points and review status. Checked steps record the learner's checks, not proof of mastery or a recorded application run.
 
-**Form designs** are approximate serialized reconstructions. **Screenshots** displays actual PNG images explicitly imported by a contributor, retaining their generation and unverified attribution. DPH does not run the input application to obtain screenshots.
+## Build and validate
 
-For the pinned converter example, select `samples\reference-vcl2fmx-v6.0.0\VCL2FMXConverter.dproj`, Debug / Win32, with extra defines `MSWINDOWS;WIN32`. The reference remains PARTIAL; missing dependencies and unsupported syntax are visible gaps.
+Use the configured RAD Studio toolchain from an elevated developer prompt. `tools\build-wp0.cmd` builds DPH and verifies the serialized FMX controls. `tools\build-practice.cmd` exercises the supplied beginner route using a new disposable destination. Detailed test directions are in [Developer test directions](docs/guides/Developer_Test_Directions.txt).
 
-Full directions and exercises: [User Guide DOCX](docs/guides/DPH_User_Guide.docx), [User Guide PDF](docs/pdf/DPH_User_Guide.pdf), and [local HTML help](help/index.html). Developers should also read the [Engineering Guide](docs/guides/DPH_Engineering_Guide.docx).
+Forms and ordinary controls remain editable in the IDE. The selected application is a read-only input. Runtime observation, live service access and selected-project execution are not part of passive discovery.
 
-## Build and test
+## Current scope
 
-For the business glossary, choose **Business glossary** in the upper-right workspace selector after opening a project. **New term** opens its editable fields; **Apply to Knowledge draft** prepares a draft, and **Save** on Knowledge persists it. **Open in Knowledge** provides history, source links and named review. Full steps and repeatable checks are in [Business glossary directions](docs/guides/Business_Glossary_Run_and_Test.txt). From an elevated prompt run `cmd /c tools\build-glossary.cmd` for the focused acceptance suite.
+[The learning reconciliation](docs/Learning_Requirements_Reconciliation.txt) records all 533 original requirement dispositions; its CSV and JSON retain each original status, limitation and remaining work. The revised learning contract supersedes dedicated enterprise administration, specialist analysis expansion and agent infrastructure. A scope decision does not claim that an original technical requirement was implemented. The historical ledger remains unchanged.
 
-Open `DelphiProjectHandoff.dproj` in RAD Studio. Controls and properties are serialized in `DPH.UI.Main.fmx` and editable in the Object Inspector. From an elevated PowerShell prompt in this folder:
-
-```powershell
-cmd /c tools\build-wp0.cmd
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\validate-rework.ps1
-```
-
-The first command builds the Win32 Debug application and checks its FMX resource. The second runs the serial storage, discovery, semantics, workspace, knowledge, publishing, hardening and learning suites. It preserves historical phase reports, writes `docs/rework-*` evidence and verifies the pinned source and original instructions remain unchanged. It needs the pinned reference already present and may take several minutes. Test data stays under ignored `bin` directories.
-
-For focused learning tests, use `cmd /c tools\build-learning.cmd`, optionally followed by a saved pinned-reference `.dphdb` path. To validate a bundle, run `DPH.ValidateHandoff.exe <bundle> <trusted fingerprint>`; `--allow-stale` permits integrity inspection of explicitly historical/partial bundles.
-
-For self-selection, cache/startup rejection, workspace preservation and the Databases defaults, run `cmd /c tools\build-selection.cmd` from this project folder in an elevated PowerShell prompt. It creates isolated fixtures under ignored `bin` directories and restores the remembered startup selection after testing.
-
-The installed RAD Studio toolchain is `C:\Program Files (x86)\Embarcadero\Studio\37.0\bin`; scripts load its `rsvars.bat`. Guide generation uses the owner's Python 3.13 and LibreOffice. Online translation, external AI and runtime instrumentation remain disabled.
-
-**Translations** reads explicitly selected DAT offline packs using independently vendored, licensed reader code from the owner's VCL2FMX reference. Compare saved source and localized prose, resolve source review, then attribute translation approval. In **Publish**, an optional locale includes reviewed exact-revision authored bodies in HTML and editable DOCX; missing or obsolete entries retain labeled source fallbacks. This does not translate all generated guidance or supply a complete language catalog. The French sample contains only three unreviewed phrases.
-
-**Publish** also offers unchecked options for redacted captured-source browsing and generated agent boundaries. Review the output and exclusions before sharing. **Validate bundle** checks a selected root manifest against a separately trusted input fingerprint, without requiring an open database. Historical/partial inspection is an explicit qualification. Full steps are in [Workspace operations](docs/guides/Workspace_Operations.txt).
-
-For keyboard inspection, open a project and choose **Keyboard and focus** in the upper-right selector. Select a component to inspect sibling focus order, readable shortcuts, action references, source evidence and possible conflicts. [Full run and test directions](docs/guides/Keyboard_and_Focus_Run_and_Test.txt) explain all commands and evidence limits. Run tools\build-keyboard.cmd elevated for focused acceptance checks.
-
-For menu and toolbar inspection, choose **Menus and commands**. Select a command to read its menu path, action, shortcut and captured handlers. Scroll its command bar horizontally to choose a handler and click **Explain handler**. [Explicit run and test directions](docs/guides/Menus_and_Commands_Run_and_Test.txt) cover filtering, source navigation and evidence limits. Run `tools\build-commands.cmd` elevated for focused acceptance checks.
-
-Choose **Dynamic controls** to inspect recognized constructor sites and their owner, parent, event and property references. Reassess older captures to obtain the new relationships. Runtime instance counts remain unobserved. [Explicit directions and tests](docs/guides/Dynamic_Controls_Run_and_Test.txt) explain every command. Run `tools\build-dynamic-controls.cmd` elevated for acceptance checks.
-
-Choose **Layout rules** to read captured alignments, anchors, spacing, constraints and resize events. Enter parent size changes and click **Apply example** for qualified basic anchor examples. Scroll the command bar horizontally at narrow widths. Final runtime geometry remains unobserved. [Explicit directions and tests](docs/guides/Layout_Rules_Run_and_Test.txt) explain the page and manual resizing exercises. Run `tools\build-layout-rules.cmd` elevated for 56 focused acceptance checks.
-
-Choose **Component dependencies** to inspect captured class declarations and unresolved dependencies. **Edit dependency** records package, vendor, version, support and evidence with a named contributor. Apply creates a draft; click **Save** on Knowledge, then review explicitly. **Explain class** follows a unique captured candidate. [Full directions and tests](docs/guides/Component_Dependencies_Run_and_Test.txt) cover every command. Run `tools\build-component-dependencies.cmd` elevated for focused checks.
-
-Form inheritance (04.18): choose **Form inheritance** in the upper-right
-selector to inspect base-to-derived component, property and event origins,
-inline frame instances and unresolved ancestry. Scroll the toolbar to choose
-an origin and **Open origin source**. No target classes are instantiated.
-Explicit run and test directions: `docs/guides/Form_Inheritance_Run_and_Test.txt`.
-Focused checks: `tools\build-form-inheritance.cmd` from an elevated prompt.
-
-Choose **Action purposes** to record why users perform an operation, its
-prerequisites, steps, expected outcome, evidence and recovery. **Edit purpose**
-maps guidance to a captured UI candidate; **New task** records a project
-procedure. Enter a named contributor, Apply to Knowledge draft, then **Save**.
-Review explicitly in Knowledge. Captions do not establish business intent.
-[Full directions and tests](docs/guides/Action_Purposes_Run_and_Test.txt) cover
-all commands. Run `tools\build-action-purposes.cmd` elevated for 81 focused checks.
-
-Choose **Screen history** to compare two attributed screenshot records. Click
-**Compare** for side-by-side images, an exact pixel mask and counts. Enter both
-relative DFM/FMX paths for captured component/property differences and a layout
-overlay. Imported images and approximate reconstructions retain distinct labels.
-Scroll the command bar sideways and the page down for commands and evidence.
-[Explicit run and test directions](docs/guides/Screen_History_Run_and_Test.txt)
-cover import generations, pixel colors, retention and limitations. Run
-`tools\build-screen-history.cmd` elevated for 73 focused checks.
-
-Choose **Database connections** to inspect captured connections, datasets, data
-sources, transactions, sessions and named definition references. Select a row
-for masked configuration, source evidence and unresolved links. Choose a Target
-or Used by entry, then **Follow reference**. Scroll the toolbar horizontally and
-drag the list divider to adjust the evidence area. DPH opens no target database.
-[Explicit run and test directions](docs/guides/Database_Connections_Run_and_Test.txt)
-include a controlled practice. Run `tools\build-database-connections.cmd` elevated
-for 66 checks. Original source/cache files can still contain secrets.
-
-Database connections now shows selected-project **engine and version evidence**
-(requirement 05.02). Recognized FireDAC driver declarations identify families;
-server version declarations, client/driver versions, conflicts and unknowns are
-distinguished. No production connection is made. See
-[Database engines run and test](docs/guides/Database_Engines_Run_and_Test.txt).
-
-Database schema (05.03) now separates captured table/view/schema declarations,
-qualifier references, inferred SQL references and unsupported statements. Source
-line/hash/generation, duplicate declarations, filtering, paging and guarded source
-navigation help investigate the schema. Captured definitions do not establish a
-valid dialect or deployed database. See
-[Database schema run and test](docs/guides/Database_Schema_Run_and_Test.txt).
-
-Database schema now includes **columns, declared types, explicit nullability,
-defaults and constraint text** (05.04), with source attribution and separate
-ownership for duplicate table declarations. Unsupported entries remain gaps;
-expressions and deployed enforcement are unverified. See
-[Database columns run and test](docs/guides/Database_Columns_Run_and_Test.txt).
-
-Requirement 05.05: Database schema now exposes captured primary, foreign and unique keys with ordered columns, exact declaration ownership, evidence relationships and Follow relationship navigation. Missing, ambiguous and unsupported evidence is explained. No SQL is executed. See docs/guides/Database_Keys_Run_and_Test.txt.
-
-Requirement 05.06: Database schema now exposes captured indexes with ordered members/expressions, includes, predicates, methods and storage declarations. Exact captured table, column and SQL reference links reuse Follow relationship. SQL references do not prove index use or performance benefit. See docs/guides/Database_Indexes_Run_and_Test.txt.
-
-Requirement 05.07: Database schema now exposes captured procedures, functions and triggers with ordered parameters, return types, sanitized bodies and supported dependency evidence links. Dynamic SQL, ambiguous overloads and unsupported grammar remain explained gaps. See docs/guides/Database_Stored_Objects_Run_and_Test.txt.
-
-Requirement 05.08: Database ER diagram now draws captured tables, ordered column/key badges and foreign-key arrows with explicit schema gaps. Click cards or select numbered FK evidence, then Open evidence for the exact schema record. Focus, filtering, paging and zoom are available. See docs/guides/Database_ER_Diagrams_Run_and_Test.txt.
-
-Requirement 05.09: Database schema > Edit dictionary records attributed table/column business definitions, owners, sensitivity and evidence with exact captured source/schema links. Apply prepares a Knowledge draft; Save and named review remain explicit. Schema search includes current definitions, and source-excluded or mismatched definitions are omitted from publication. See docs/guides/Database_Dictionary_Run_and_Test.txt.
-
-Requirement 05.11: Database connections follows captured dataset/data-source/control/persistent-field chains, including serialized FMX DataSource/FieldName/Control references. Duplicate, missing and runtime-only fields remain unresolved. See docs/guides/Dataset_Bindings_Run_and_Test.txt.
-
-Requirement 05.12: Database connections now inventories source dataset CRUD requests and captured SQL families, with effects, exact receiver references and hash-checked Source navigation. Preparation, posting, cached writes and configured SQL are distinguished from execution and commit. See docs/guides/Database_Operations_Run_and_Test.txt.
-
-Requirement 05.13 adds captured transaction API boundaries and conservative normal/error/cleanup routes in Database connections. Select transaction operation, inspect source-qualified routes, and follow a receiver or next boundary. Five framework families and captured descendants are recognized without executing a target or proving outcomes. Explicit directions: [Database transaction run and test guide](docs/guides/Database_Transactions_Run_and_Test.txt). Focused validation: 402 checks.
-
-Field validation and transformation evidence is under Database connections → data rule. Inspect declared constraints, handler conditions and assignment inputs/outputs, then follow exact context, handler or lexical declaration references. Explicit launch and test directions: docs/guides/Data_Rules_Run_and_Test.txt.
-
-Data lineage: select a Database connections row, scroll its toolbar right and use Trace lineage or Lineage diagram. Inputs/Destinations filter lexical dependencies; context is separately qualified. Unresolved breaks and trace limits remain visible. Explicit directions: docs/guides/Data_Lineage_Run_and_Test.txt.
-
-Requirement 05.16 adds referenced migration-script candidates, filename/loader order evidence, explicit SQLite application-version assignments, verification request evidence and missing-script gaps in Database schema. See docs/guides/Schema_History_Run_and_Test.txt. Deployed versions and verification outcomes remain unknown.
-
-Requirement 05.17 adds Import/export formats with captured API/encoding candidates, JSON/XML/INI member structure, source/routine navigation and attributed format contracts. Read docs/guides/File_Formats_Run_and_Test.txt. Transfer success and formal schema compliance remain unverified.
-
-Requirement 05.18 adds Target data retention: attributed manual policies covering retention, archival, disposal and holds, with exact implementation/procedure links, revision history and named review. See docs/guides/Data_Retention_Run_and_Test.txt. No target archival or deletion job executes.
-
-Requirement 05.19 adds Target data quality: attributed rules, thresholds, owners and implementing links, plus safe import of saved UTF-8 check reports with original byte hashes, review/history and exact report-revision citations. See docs/guides/Data_Quality_Run_and_Test.txt. No target check or SQL executes.
-
-Requirement 05.20 adds Target backup and restore: attributed requirements, recovery objectives, operational responsibility, exact source/procedure links and recovery-test evidence. See docs/guides/Target_Recovery_Run_and_Test.txt. Target jobs never execute.
-
-Requirement 06.01 adds Business processes with a native structured editor for owner, inputs, outputs, trigger, roles, steps and unknowns, plus stable identity, exact source/procedure links and named review/history. See docs/guides/Business_Process_Run_and_Test.txt.
-
-Requirement 06.02 adds Departmental workflows with native ordered step editing, roles, handoffs, explicit exception destinations, named review/history and exact source/procedure links. See docs/guides/Departmental_Workflow_Run_and_Test.txt. Save now refuses unapplied structured editor fields.
-
-Requirement 06.03 adds Process diagram to Departmental workflows: actual SVG and native step diagrams, normal handoffs, stable exception routes, explicit Unknown destinations and exact reviewed process links. Publication retains and validates the projection. See docs/guides/Process_Diagram_Run_and_Test.txt.
-
-Requirement 06.04 adds Business rules with stable unique rule identifiers, applicability, conditions, outcomes, exceptions, accountable owners and approval responsibilities. Native editing, exact implementation links, review/history and clearly distinguished original notes are available. See docs/guides/Business_Rule_Run_and_Test.txt.
-
-Requirement 06.06 adds Calculation evidence for captured expression and constant-formula candidates, plus Calculations and Calculation fields for reviewed business meaning, formulas, inputs, outputs, units, rounding, assumptions and examples. Exact implementation links and immutable review/history accompany publication. See docs/guides/Calculation_Run_and_Test.txt. DPH never evaluates formula text.
+Independent first-time learner acceptance is reported separately from software validation. The converter reference is passive test input and is never a DPH build or runtime dependency.

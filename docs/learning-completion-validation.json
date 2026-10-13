@@ -1,0 +1,22 @@
+{
+  "result": "PASS implemented learning features and relevant regressions; final distribution validation pending",
+  "counts": {
+    "Storage": 46,
+    "Knowledge": 59,
+    "Workspace": 128,
+    "Hardening": 32,
+    "Publishing": 124,
+    "Phase1": 19,
+    "LearningRefocus": 121,
+    "Catalog": 12,
+    "GuidedTasks": 73,
+    "Practice": 27,
+    "OrderSample": 4
+  },
+  "total_checks": 645,
+  "independent_first_time_learner_acceptance": "not performed",
+  "original_technical_completion_claim": false,
+  "backup": "H:\\DPH Backups\\LearningCompletion_PreChange_20261013_073811",
+  "backup_files": 6330,
+  "backup_bytes": 3061051852
+}

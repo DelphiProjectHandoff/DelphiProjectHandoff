@@ -1,0 +1,29 @@
+{
+  "result": "PASS current manuals, editable contents, privacy, local help links and preserved original inputs",
+  "guides": [
+    {
+      "guide": "User",
+      "pages": 16,
+      "chapters": 12,
+      "native_figures": 3,
+      "docx_sha256": "1b4717764e302cb3a9e18d5ded7c26bd37e038949389fb01f712d4a5af85f396",
+      "pdf_sha256": "33a45aab25a0b535de76c44379c0f3b4f1e2b4335f2f4ea4f917b19d23622b8c",
+      "editable_contents": "populated",
+      "visual_review": "Final pages individually inspected"
+    },
+    {
+      "guide": "Engineering",
+      "pages": 10,
+      "chapters": 8,
+      "native_figures": 0,
+      "docx_sha256": "ebf58dc9c49a34150b78bf49fdb7310a42f7fe49528ea5723c6a682778c99a5e",
+      "pdf_sha256": "fa309f4a8eebe9e8a1c13245acad8b9cddcdc7f715d2646fc101941ca131cbc0",
+      "editable_contents": "populated",
+      "visual_review": "Final pages individually inspected"
+    }
+  ],
+  "preserved_input_files": 2475,
+  "historical_ledger_unchanged": true,
+  "owner_pdf_copies_unchanged": true,
+  "independent_beginner_acceptance": "not performed"
+}

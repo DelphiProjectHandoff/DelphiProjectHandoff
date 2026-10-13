@@ -1,5 +1,5 @@
 object DPHProjectProfileForm: TDPHProjectProfileForm
-  Caption = 'Selected application profile'
+  Caption = 'Describe the application'
   ClientWidth = 820
   ClientHeight = 740
   Constraints.MinWidth = 620
@@ -11,7 +11,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
     Margins.Left = 12
     Margins.Right = 12
     WordWrap = True
-    Text = 'Describe only the selected application. Purpose and attribution are required. Blank optional fields stay explicitly unknown. Apply creates a Knowledge draft; use Save there, then review with a named reviewer. Do not enter credentials.'
+    Text = 'Explain the selected application for a new learner: its purpose, who can help, where practice is safe and how its main parts fit together. Purpose and attribution are required. Apply prepares a draft; click Save in Saved explanations to keep it. Leave unanswered fields Unknown.'
     StyledSettings = []
     TextSettings.Font.Size = 16
     TextSettings.FontColor = xFF146CB4
@@ -61,7 +61,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Application purpose and scope (01.06)'
+        Text = 'What the application does and who uses it'
       end
       object Profile_purpose: TMemo
         Align = Client
@@ -74,9 +74,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_company_Row: TLayout
-      Position.Y = 122
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_company_Label: TLabel
         Align = Top
@@ -95,9 +96,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_department_Row: TLayout
-      Position.Y = 244
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_department_Label: TLabel
         Align = Top
@@ -116,9 +118,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_business_unit_Row: TLayout
-      Position.Y = 366
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_business_unit_Label: TLabel
         Align = Top
@@ -137,9 +140,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_criticality_Row: TLayout
-      Position.Y = 488
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_criticality_Label: TLabel
         Align = Top
@@ -158,7 +162,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_owner_Row: TLayout
-      Position.Y = 610
+      Position.Y = 122
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -166,7 +170,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Application owner (01.08)'
+        Text = 'Who is responsible for this application'
       end
       object Profile_owner: TMemo
         Align = Client
@@ -179,7 +183,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_support_Row: TLayout
-      Position.Y = 732
+      Position.Y = 244
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -187,7 +191,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Support contacts and escalation (01.08)'
+        Text = 'Who can answer questions or help with a problem'
       end
       object Profile_support: TMemo
         Align = Client
@@ -200,7 +204,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_environments_Row: TLayout
-      Position.Y = 854
+      Position.Y = 366
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -208,7 +212,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Development, test, staging and production environments (01.09)'
+        Text = 'Where safe learning and practice should happen'
       end
       object Profile_environments: TMemo
         Align = Client
@@ -221,7 +225,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_relationships_Row: TLayout
-      Position.Y = 976
+      Position.Y = 488
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -229,7 +233,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Relevant applications and dependencies (01.10)'
+        Text = 'Other systems the learner needs to know about'
       end
       object Profile_relationships: TMemo
         Align = Client
@@ -242,9 +246,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_lifecycle_Row: TLayout
-      Position.Y = 1098
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_lifecycle_Label: TLabel
         Align = Top
@@ -263,9 +268,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_maturity_Row: TLayout
-      Position.Y = 1220
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_maturity_Label: TLabel
         Align = Top
@@ -284,9 +290,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_vendor_Row: TLayout
-      Position.Y = 1342
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_vendor_Label: TLabel
         Align = Top
@@ -305,9 +312,10 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_license_Row: TLayout
-      Position.Y = 1464
+      Position.Y = 0
       Width = 780
-      Height = 122
+      Height = 0
+      Visible = False
       Anchors = [akLeft, akTop, akRight]
       object Profile_license_Label: TLabel
         Align = Top
@@ -326,7 +334,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_architecture_Row: TLayout
-      Position.Y = 1586
+      Position.Y = 610
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -334,7 +342,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Architecture and constraints (01.14)'
+        Text = 'How its main parts fit together in plain language'
       end
       object Profile_architecture: TMemo
         Align = Client
@@ -347,7 +355,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
       end
     end
     object Profile_evidence_Row: TLayout
-      Position.Y = 1708
+      Position.Y = 732
       Width = 780
       Height = 122
       Anchors = [akLeft, akTop, akRight]
@@ -355,7 +363,7 @@ object DPHProjectProfileForm: TDPHProjectProfileForm
         Align = Top
         Height = 28
         Margins.Left = 12
-        Text = 'Attribution, evidence references and remaining unknowns (15.12)'
+        Text = 'Who supplied these facts and what still needs checking'
       end
       object Profile_evidence: TMemo
         Align = Client

@@ -1,18 +1,35 @@
 FIND YOUR WAY AROUND DELPHI PROJECT HANDOFF
 
-Use the top-right page selector for Learn the project, Learn a task, Explain,
-Form designs, Screenshots, Graphs, Business glossary, Search project and Saved
-explanations. Getting started returns to introductory directions.
+Start with Try practice example. Its First day path, field guides, worked
+totals, error explanations and native pictures demonstrate how to learn an app.
+Choose application opens your own source. Open saved lessons reopens a .dphdb;
+keep its adjacent .dphdb.views folder with it.
 
-Prepare lessons contains the application description, task instructions and
-other lesson material. Source reading settings start collapsed.
+The top-right selector opens Learn the project, Learn a task, Learning library,
+Explain, Form designs, Screenshots, Graphs, Business glossary, Search project
+and Saved explanations. Getting started returns to introductory directions.
 
-Explain shows the selected object. Double-click an object in the left list to
-open it. Selection details labels the right pane. Drag dividers to resize panes.
-Scroll command strips horizontally and instruction areas vertically when needed.
+Learn a task provides roles, learning paths and ordered actions/results. Open
+Before you begin and task context for prerequisites. Enter your name to save
+checked-step progress. I checked this result records a check; Next step only
+navigates. Clear my progress resets your own checks.
 
-Save task stores prepared instructions and opens their reader. Profile, purpose
-and glossary dialogs first Apply to a draft; click Save in Saved explanations
-to keep those records. Named review is a separate decision.
+Learning library presents meanings, worked examples, limits, safe help and
+practice answers for the selected application. Prepare an explanation and Edit
+explanation open its native teaching editor. Save explanation persists it and
+returns to the reader. Saving a contribution does not perform independent review.
 
-Read Run_And_Test.txt for a complete first session and repeatable checks.
+Screenshots contains supplied screenshots, sample outputs and teaching pictures.
+Click a point and Explain this point to prepare an anchored callout. The original
+image stays unchanged. Form designs remain clearly labeled reconstructions.
+
+Prepare lessons contains descriptions, tasks and other lesson material. Advanced
+source settings begin collapsed. Profile, action-purpose and glossary dialogs
+Apply to a draft; click Save in Saved explanations to keep those drafts. Save
+task and Save explanation save directly to their readers.
+
+Double-click an object on the left to open Explain. Selection details labels
+the right pane. Drag dividers to resize panes. Scroll command strips horizontally
+and text/list areas vertically when content is outside the visible view.
+
+Follow Run_And_Test.txt for explicit first-session and repeatable checks.

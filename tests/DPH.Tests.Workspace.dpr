@@ -129,6 +129,7 @@ begin
               Check(J.GetValue<TJSONArray>('diagnostics').Count=View.Document.GetValue<TJSONArray>('syntax.diagnostics').Count+
                 View.Document.GetValue<TJSONArray>('semantics.diagnostics').Count,'Coverage retains syntax and semantic diagnostic evidence');
             finally J.Free; end;
+            Form.WorkspaceTabs.ActiveTab:=Form.CoverageTab;Form.WorkspacePageChange(nil);
             Check(Form.CoverageMemo.Text.Contains('not proof') and Form.CoverageMemo.Text.Contains('denominator'),
               'Coverage page explains human-review limits separately from static measures');
             if Form.CoverageList.Count>0 then begin
@@ -144,6 +145,7 @@ begin
             Check(Pos('SHA256:',Form.DetailsMemo.Text)>0,'Evidence pane labels certainty, rule and source hash');
             Form.WorkspaceTabs.ActiveTab:=Form.DetailsTab; Form.DetailsSourceClick(nil);
             Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and (Pos('detached',Form.DetailsMemo.Text)>0),'Detached evidence command retains cached details without following filesystem paths');
+            Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
             Form.GraphGroupingCombo.ItemIndex:=Form.GraphGroupingCombo.Items.IndexOf('Units'); Form.ViewChange(Form.GraphGroupingCombo);
             Form.GraphMouseDown(Form.GraphPaint,TMouseButton.mbLeft,[],20,20);
             Check((Form.WorkspaceTabs.ActiveTab=Form.DetailsTab) and (Form.DetailsList.Items.Count>0) and (Pos('Group:',Form.DetailsMemo.Text)>0),'Selecting a collapsed graph group opens its member/evidence list');
@@ -171,6 +173,7 @@ begin
               if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
               Bitmap.SaveToFile(TPath.Combine(Work,'details-native.png'));
             finally Bitmap.Free; end;
+            Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
             Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
             for Kind in ['Thumbnail','Fit','Native','Custom zoom','Full screen'] do begin
               Form.ScreenModeCombo.ItemIndex:=Form.ScreenModeCombo.Items.IndexOf(Kind); Form.ViewChange(nil); Application.ProcessMessages;
@@ -319,8 +322,8 @@ begin
                 'Native translation view compares source and actual cached DAT prose with provider provenance');
               Check(Form.TranslationMemo.ReadOnly and Form.TranslationMemo.WordWrap and Form.TranslationStatus.Text.Contains('needs_review'),
                 'Native translated content wraps, remains read-only and exposes review state');
-              Form.WorkspacePageCombo.ItemIndex:=Form.WorkspacePageCombo.Items.IndexOf('Translations'); Form.WorkspacePageChange(Form.WorkspacePageCombo);
-              Check(Form.WorkspaceTabs.ActiveTab=Form.TranslationTab,'Top-right page selector reaches the IDE-editable Translations page');
+              Check((Form.WorkspacePageCombo.Items.IndexOf('Translations')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Translation administration stays outside the learner and lesson-preparation menus');
+              Form.WorkspaceTabs.ActiveTab:=Form.TranslationTab;
               Application.ProcessMessages; Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
               try if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
                 Bitmap.SaveToFile(TPath.Combine(Root,'docs\completion-translations-native.png'));
@@ -349,7 +352,8 @@ begin
             Form.ValidateBundleClick(Form.ValidationUseCaptureButton);
             Check(Form.ValidationFingerprintEdit.Text=View.Document.GetValue<string>('semantics.input_fingerprint'),
               'Native validation explicitly copies expected identity from the opened capture');
-            Form.WorkspacePageCombo.ItemIndex:=Form.WorkspacePageCombo.Items.IndexOf('Validate bundle'); Form.WorkspacePageChange(Form.WorkspacePageCombo);
+            Check(Form.WorkspacePageCombo.Items.IndexOf('Validate bundle')<0,'Technical bundle validation stays outside the lesson-preparation menu');
+            Form.WorkspaceTabs.ActiveTab:=Form.ValidationTab;
             Check((Form.WorkspaceTabs.ActiveTab=Form.ValidationTab) and not Form.ValidationAllowStale.IsChecked and Form.ValidationMemo.ReadOnly,
               'Native validation is reachable, defaults to current-only and displays read-only reports');
             Form.ValidationMemo.Text:=ValidationReportText;

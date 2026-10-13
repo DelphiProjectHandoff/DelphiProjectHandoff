@@ -50,6 +50,9 @@ type
     class function DescribeBusinessProcess(ARow:TJSONObject):string;static;
     class function NewCalculation:TJSONObject;static;
     class function NewLearningLesson:TJSONObject;static;
+    class function NewLearningCard:TJSONObject;static;
+    class procedure ValidateLearningCard(ARecord:TJSONObject);static;
+    class function LearningCardBody(ARecord:TJSONObject):string;static;
     class procedure ValidateLearningLesson(ARecord:TJSONObject);static;
     class function LearningLessonBody(ARecord:TJSONObject):string;static;
     class function IsLearningLesson(ARow:TJSONObject):Boolean;static;
@@ -272,6 +275,48 @@ begin
  if ARow.TryGetValue<TJSONArray>('history',History) then for Value in History do if Value.GetValue<string>('revision','')=ARow.GetValue<string>('revision','') then Result:=Result+sLineBreak+'Current revision author: '+Value.GetValue<string>('editor','unknown');
 end;
 
+class function TDPHWorkspaceView.NewLearningCard:TJSONObject;
+var Fields:TJSONObject;Key:string;
+begin
+ Result:=TJSONObject.Create.AddPair('record_type','learning_card').AddPair('card_id',TGUID.NewGuid.ToString).AddPair('category','Screen');
+ Fields:=TJSONObject.Create;Result.AddPair('fields',Fields);
+ for Key in ['name','role','meaning','example','limits','help','practice'] do Fields.AddPair(Key,'Unknown');
+ Fields.RemovePair('role').Free;Fields.AddPair('role','All learners');
+end;
+class procedure TDPHWorkspaceView.ValidateLearningCard(ARecord:TJSONObject);
+var Fields,Picture:TJSONObject;Key:string;Pair:TJSONPair;ID:TGUID;Coordinate:Integer;C:Char;
+begin
+ if (ARecord=nil) or not (ARecord.Count in [4,5]) or (ARecord.GetValue<string>('record_type','')<>'learning_card') then raise EArgumentException.Create('Expected a teaching card');
+ if ARecord.Count=5 then begin
+  if not ARecord.TryGetValue<TJSONObject>('picture',Picture) or (Picture.Count<>3) then raise EArgumentException.Create('Picture callout needs its image and two coordinates');
+  Key:=Picture.GetValue<string>('image_sha256','');if Length(Key)<>64 then raise EArgumentException.Create('Invalid callout image identity');
+  for C in Key do if not CharInSet(C,['0'..'9','a'..'f']) then raise EArgumentException.Create('Invalid callout image identity');
+  for Key in ['x','y'] do begin
+   if not (Picture.GetValue(Key) is TJSONNumber) then raise EArgumentException.Create('Callout coordinates must be whole numbers');
+   Coordinate:=Picture.GetValue<Integer>(Key);if (Coordinate<0) or (Coordinate>10000) or (Picture.GetValue(Key).Value<>IntToStr(Coordinate)) then raise EArgumentException.Create('Callout coordinates must be within the picture');
+  end;
+ end;
+ if not (ARecord.GetValue('card_id') is TJSONString) then raise EArgumentException.Create('Teaching card identity must be text');
+ try ID:=StringToGUID(ARecord.GetValue<string>('card_id'));except raise EArgumentException.Create('Invalid teaching card identity');end;
+ if ID.ToString<>ARecord.GetValue<string>('card_id') then raise EArgumentException.Create('Invalid canonical teaching card identity');
+ if not MatchText(ARecord.GetValue<string>('category',''),['Screen','Field','Error or problem','Question and answer','Business rule','Output or report','Role or permission','Related system','Setting or option','Background work','History or design choice','Learning check']) then raise EArgumentException.Create('Choose a teaching card topic');
+ if not ARecord.TryGetValue<TJSONObject>('fields',Fields) or (Fields.Count<>7) then raise EArgumentException.Create('Complete the seven teaching fields');
+ for Pair in Fields do if not (Pair.JsonValue is TJSONString) then raise EArgumentException.Create('Teaching fields must be text');
+ for Key in ['name','role','meaning','example','limits','help','practice'] do
+  if (Fields.GetValue<string>(Key,'').Trim='') or (Length(Fields.GetValue<string>(Key))>4096) then raise EArgumentException.Create('Complete '+Key+' within 4096 characters, or explicitly enter Unknown');
+ for Key in ['name','meaning'] do if SameText(Fields.GetValue<string>(Key).Trim,'Unknown') then raise EArgumentException.Create('Supply '+Key+' for the learner');
+ if Length(Fields.GetValue<string>('name'))>200 then raise EArgumentException.Create('Teaching card name must fit within 200 characters');
+ if Length(ARecord.ToJSON)>65536 then raise EArgumentException.Create('Teaching card exceeds 64 KiB');
+end;
+class function TDPHWorkspaceView.LearningCardBody(ARecord:TJSONObject):string;
+const Keys:array[0..6] of string=('name','role','meaning','example','limits','help','practice');
+ Labels:array[0..6] of string=('Topic','Who this helps','What this means and why it matters','Worked example or good input','Rules, limits and mistakes to avoid','If the result differs: safe next step and who can help','Practice and expected answer');
+var I:Integer;Fields:TJSONObject;
+begin
+ ValidateLearningCard(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');Result:='LEARNING CARD: '+ARecord.GetValue<string>('category')+sLineBreak;
+ for I:=0 to High(Keys) do Result:=Result+sLineBreak+Labels[I]+sLineBreak+Fields.GetValue<string>(Keys[I])+sLineBreak;
+ if ARecord.GetValue('picture')<>nil then Result:=Result+sLineBreak+'Picture callout: this explanation belongs to the marked point on a supplied image. The image and the explanation are separate contributions.';
+end;
 class function TDPHWorkspaceView.NewLearningLesson:TJSONObject;
 var Fields:TJSONObject;Key:string;
 begin
@@ -280,9 +325,17 @@ begin
  for Key in DPHLessonKeys do Fields.AddPair(Key,'Unknown');
 end;
 class procedure TDPHWorkspaceView.ValidateLearningLesson(ARecord:TJSONObject);
-var Fields,Step:TJSONObject;Steps:TJSONArray;Pair:TJSONPair;V:TJSONValue;Key:string;ID:TGUID;
+var Fields,Step,Learning:TJSONObject;Steps:TJSONArray;Pair:TJSONPair;V:TJSONValue;Key:string;ID:TGUID;
 begin
- if (ARecord=nil) or (ARecord.Count<>4) or (ARecord.GetValue<string>('record_type','')<>'learning_lesson') then raise EArgumentException.Create('Expected task instructions');
+ if (ARecord=nil) or not (ARecord.Count in [4,5]) or (ARecord.GetValue<string>('record_type','')<>'learning_lesson') then raise EArgumentException.Create('Expected task instructions');
+ if ARecord.Count=5 then begin
+  if not ARecord.TryGetValue<TJSONObject>('learning',Learning) or (Learning.Count<>3) then raise EArgumentException.Create('Expected role, learning path and lesson order');
+  for Key in ['role','path'] do
+   if not (Learning.GetValue(Key) is TJSONString) or (Length(Learning.GetValue<string>(Key))>200) then raise EArgumentException.Create('Enter role and path text within 200 characters');
+  if not (Learning.GetValue('order') is TJSONNumber) or (Learning.GetValue<Integer>('order')<1) or
+    (Learning.GetValue<Integer>('order')>10000) or (Learning.GetValue('order').Value<>IntToStr(Learning.GetValue<Integer>('order'))) then
+    raise EArgumentException.Create('Lesson order must be a whole number from 1 to 10000');
+ end;
  if not (ARecord.GetValue('lesson_id') is TJSONString) then raise EArgumentException.Create('Task identity must be text');
  try ID:=StringToGUID(ARecord.GetValue<string>('lesson_id'));except raise EArgumentException.Create('Invalid task identity');end;
  if ID.ToString<>ARecord.GetValue<string>('lesson_id') then raise EArgumentException.Create('Invalid canonical task identity');
@@ -306,9 +359,11 @@ begin
 end;
 class function TDPHWorkspaceView.LearningLessonBody(ARecord:TJSONObject):string;
 const Labels:array[0..5] of string = ('Task','Purpose','Before you begin','Expected final result','If something goes wrong','Practice and check your understanding');
-var Fields:TJSONObject;I:Integer;V:TJSONValue;
+var Fields,Learning:TJSONObject;I:Integer;V:TJSONValue;
 begin
  ValidateLearningLesson(ARecord);Fields:=ARecord.GetValue<TJSONObject>('fields');Result:='TASK WALKTHROUGH'+sLineBreak;
+ if ARecord.TryGetValue<TJSONObject>('learning',Learning) then Result:=Result+sLineBreak+'User role: '+Learning.GetValue<string>('role')+
+  sLineBreak+'Learning path: '+Learning.GetValue<string>('path')+sLineBreak+'Lesson order: '+Learning.GetValue('order').Value+sLineBreak;
  for I:=0 to High(DPHLessonKeys) do Result:=Result+sLineBreak+Labels[I]+': '+Fields.GetValue<string>(DPHLessonKeys[I])+sLineBreak;
  I:=0;for V in ARecord.GetValue<TJSONArray>('steps') do begin Inc(I);
   Result:=Result+sLineBreak+IntToStr(I)+'. '+V.GetValue<string>('action')+sLineBreak+'Expected after this step: '+V.GetValue<string>('expected_result')+sLineBreak;

@@ -163,6 +163,12 @@ type
     ScreenshotZoom: TTrackBar;
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
+    ScreenshotHelp:TLabel;
+    ScreenshotKind:TComboBox;
+    ScreenshotCallout:TButton;
+    ScreenshotMarkers:TPaintBox;
+    ScreenshotMarkerStyle:TRectangle;
+    ScreenshotMarkerText:TText;
     ScreenshotDialog: TOpenDialog;
     DatabaseERTab:TTabItem;
     DatabaseERPurpose,DatabaseERStatus,DatabaseEREvidenceLabel:TLabel;
@@ -423,6 +429,14 @@ type
     TaskReaderScroll: TVertScrollBox;
     TaskPickerLabel: TLabel;
     TaskFilter: TEdit;
+    TaskRoleFilter,TaskPathFilter,TaskLearner: TEdit;
+    TaskProgressLabel: TLabel;
+    TaskContextExpander:TExpander;
+    TaskRoleLabel,TaskPathLabel,TaskLearnerLabel:TLabel;
+    TaskCheckStep,TaskResetProgress: TButton;
+    TutorRole,TutorPath,TutorOrder: TEdit;
+    TutorLearningLayout: THorzScrollBox;
+    TutorRoleLabel,TutorPathLabel,TutorOrderLabel: TLabel;
     TaskNextPage: TButton;
     TaskList: TListBox;
     TaskPicker: TLayout;
@@ -474,6 +488,18 @@ type
     AnalysisSettingsExpander: TExpander;
     AnalysisSettingsLayout: TLayout;
     SetupButton: TButton;
+    PracticeButton:TButton;
+    CardLibraryTab,CardEditorTab:TTabItem;
+    CardToolbar,CardEditToolbar:THorzScrollBox;
+    CardFilter,CardRole,CardAuthor:TEdit;
+    CardCategory:TComboBox;
+    CardList:TListBox;
+    CardReader:TMemo;
+    CardNew,CardEdit,CardRelated,CardSave,CardCancel:TButton;
+    CardPurpose,CardEditorPurpose:TLabel;
+    CardEditorScroll:TVertScrollBox;
+    Card_name,Card_role,Card_meaning,Card_example,Card_limits,Card_help,Card_practice:TMemo;
+    Card_name_label,Card_role_label,Card_meaning_label,Card_example_label,Card_limits_label,Card_help_label,Card_practice_label:TLabel;
     CoverageTab: TTabItem;
     CoverageMemo: TMemo;
     CoverageList: TListBox;
@@ -595,6 +621,9 @@ type
     procedure HelpClick(Sender: TObject);
     procedure ImportScreenshotClick(Sender: TObject);
     procedure ScreenshotClick(Sender: TObject);
+    procedure ScreenshotPoint(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
+    procedure ScreenshotMarkerPaint(Sender:TObject;Canvas:TCanvas);
+    procedure ScreenshotCalloutClick(Sender:TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
     procedure DatabaseERFilterChange(Sender:TObject);
@@ -684,6 +713,15 @@ type
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
     procedure RelocateClick(Sender: TObject);
     procedure TaskFilterChange(Sender: TObject);
+    procedure TaskProgressClick(Sender: TObject);
+    procedure PracticeClick(Sender:TObject);
+    procedure CardFilterChange(Sender:TObject);
+    procedure CardSelectionChange(Sender:TObject);
+    procedure CardEditClick(Sender:TObject);
+    procedure CardSaveClick(Sender:TObject);
+    procedure CardCancelClick(Sender:TObject);
+    procedure CardChanged(Sender:TObject);
+    procedure CardRelatedClick(Sender:TObject);
     procedure TaskSelectionChange(Sender: TObject);
     procedure TaskNavigate(Sender: TObject);
     procedure TaskEditClick(Sender: TObject);
@@ -766,6 +804,11 @@ type
     FImages: TJSONArray;
     FCatalog: TDPHWorkspaceCatalog;
     FCatalogPaths: TList<string>;
+    FCardRows:TList<TJSONObject>;
+    FCardDraft:TJSONObject;
+    FCardSavingID:string;
+    FPictureX,FPictureY:Integer;
+    FPicturePointValid:Boolean;
     FContinuity: TJSONArray;
     FSearchResults: TJSONArray;
     FSearchOffset: Integer;
@@ -869,7 +912,7 @@ type
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
   public
-    procedure OpenSelection(const AEntry,ADatabase: string);
+    procedure OpenSelection(const AEntry,ADatabase: string;APractice:Boolean=False);
     procedure LoadView(ADocument: TJSONObject);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
@@ -881,7 +924,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DPH.Storage.Database,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
@@ -911,6 +954,7 @@ begin
   FLayoutRows:=TList<TJSONObject>.Create;
   TryStrToInt(LayoutWidthEdit.Text,FLayoutWidthDelta);TryStrToInt(LayoutHeightEdit.Text,FLayoutHeightDelta);
   FCatalogPaths:=TList<string>.Create;
+  FCardRows:=TList<TJSONObject>.Create;
   try FCatalog:=TDPHWorkspaceCatalog.Create(TDPHWorkspaceCatalog.DefaultPath);
   except on E: Exception do StatusLabel.Text:='Workspace catalog unavailable: '+E.Message; end;
   RefreshProjectsClick(nil);
@@ -941,6 +985,7 @@ var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
+  FCardRows.Free;FCardDraft.Free;
   FContinuity.Free;
   FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
@@ -1015,28 +1060,170 @@ begin
     end;
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
+procedure TDPHMainForm.CardFilterChange(Sender:TObject);
+var V:TJSONValue;R,Card:TJSONObject;
+begin
+ if FCardRows=nil then Exit;FCardRows.Clear;CardList.Items.Clear;
+ if FKnowledge<>nil then for V in FKnowledge do begin
+  R:=V as TJSONObject;if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
+  Card:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject;
+  try
+   if (Card=nil) or (Card.GetValue<string>('record_type','')<>'learning_card') then Continue;
+   if (CardFilter.Text.Trim<>'') and not ContainsText(R.GetValue<string>('title')+' '+R.GetValue<string>('body'),CardFilter.Text.Trim) then Continue;
+   if (CardRole.Text.Trim<>'') and not SameText(Card.GetValue<string>('fields.role'),'All learners') and not SameText(Card.GetValue<string>('fields.role'),CardRole.Text.Trim) then Continue;
+   FCardRows.Add(R);CardList.Items.Add(Card.GetValue<string>('category')+': '+R.GetValue<string>('title'));
+  finally Card.Free;end;
+ end;
+ if CardList.Count>0 then CardList.ItemIndex:=0;CardSelectionChange(nil);
+end;
+procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
+var R,Card,Fields:TJSONObject;V:TJSONValue;Key,LinkKind:string;
+begin
+ CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
+ CardReader.Text:='Choose an explanation. Prepare lessons can add screen and field guides, worked examples, troubleshooting, questions and answers, business rules and output explanations for this application.';
+ if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then Exit;
+ R:=FCardRows[CardList.ItemIndex];Card:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
+ try
+  Fields:=Card.GetValue<TJSONObject>('fields');CardReader.Text:=Fields.GetValue<string>('name')+sLineBreak+Fields.GetValue<string>('meaning')+sLineBreak+sLineBreak+
+   'Worked example'+sLineBreak+Fields.GetValue<string>('example')+sLineBreak+sLineBreak+
+   'Rules and mistakes to avoid'+sLineBreak+Fields.GetValue<string>('limits')+sLineBreak+sLineBreak+
+   'If the result differs'+sLineBreak+Fields.GetValue<string>('help')+sLineBreak+sLineBreak+
+   'Practice and expected answer'+sLineBreak+Fields.GetValue<string>('practice')+sLineBreak+sLineBreak+
+   'For: '+Fields.GetValue<string>('role')+'. Supplied by '+R.GetValue<string>('owner')+'. Review status: '+R.GetValue<string>('state').Replace('_',' ')+'.';
+ finally Card.Free;end;
+ CardEdit.Enabled:=True;
+ if FView<>nil then for LinkKind in ['links','rich_links'] do begin
+  if R.GetValue(LinkKind)<>nil then for V in R.GetValue<TJSONArray>(LinkKind) do begin
+   Key:=V.GetValue<string>('canonical_key','');if (Key<>'') and (FView.Symbol(Key)<>nil) then begin CardRelated.TagString:=Key;CardRelated.Enabled:=True;Break;end;
+  end;
+  if CardRelated.Enabled then Break;
+ end;
+end;
+procedure TDPHMainForm.CardRelatedClick(Sender:TObject);
+begin
+ if (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then Exit;
+ if (FView=nil) or (FView.Symbol(CardRelated.TagString)=nil) then Exit;
+ SelectSymbol(CardRelated.TagString);WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.CardChanged(Sender:TObject);
+begin if not FBinding and (FCardDraft<>nil) then begin FKnowledgeEdited:=True;FStructuredEditorPending:=True;end;end;
+procedure TDPHMainForm.CardEditClick(Sender:TObject);
+var Key,ID:string;I:Integer;
+begin
+ if FBusy or (FView=nil) then Exit;
+ if FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current draft first';Exit;end;
+ if Sender=CardNew then begin NewKnowledgeClick(nil);FCardDraft:=TDPHWorkspaceView.NewLearningCard;end
+ else begin
+  if (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then Exit;
+  ID:=FCardRows[CardList.ItemIndex].GetValue<string>('id');PendingKnowledgeCheck.IsChecked:=False;KnowledgeFilterChange(nil);
+  for I:=0 to FKnowledgeRows.Count-1 do if FKnowledgeRows[I].GetValue<string>('id')=ID then begin KnowledgeList.ItemIndex:=I;KnowledgeClick(nil);Break;end;
+  FreeAndNil(FCardDraft);FCardDraft:=TJSONObject.ParseJSONValue(FKnowledgeStructuredJSON) as TJSONObject;
+ end;
+ FBinding:=True;
+ try
+  for Key in ['name','role','meaning','example','limits','help','practice'] do (FindComponent('Card_'+Key) as TMemo).Text:=FCardDraft.GetValue<string>('fields.'+Key);
+  CardCategory.ItemIndex:=CardCategory.Items.IndexOf(FCardDraft.GetValue<string>('category'));CardAuthor.Text:=KnowledgeAuthorEdit.Text;Card_name.ReadOnly:=FKnowledgeID<>0;
+ finally FBinding:=False;end;
+ FKnowledgeEdited:=True;FStructuredEditorPending:=True;WorkspaceTabs.ActiveTab:=CardEditorTab;
+end;
+procedure TDPHMainForm.CardCancelClick(Sender:TObject);
+begin if FBusy then Exit;DiscardKnowledgeClick(nil);FreeAndNil(FCardDraft);WorkspaceTabs.ActiveTab:=CardLibraryTab;end;
+procedure TDPHMainForm.CardSaveClick(Sender:TObject);
+var Key:string;Fields:TJSONObject;
+begin
+ if FBusy or (FView=nil) or (FCardDraft=nil) then Exit;
+ try
+  Fields:=FCardDraft.GetValue<TJSONObject>('fields');
+  for Key in ['name','role','meaning','example','limits','help','practice'] do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Card_'+Key) as TMemo).Text.Trim);end;
+  if CardCategory.ItemIndex<0 then raise EArgumentException.Create('Choose a teaching topic');
+  FCardDraft.RemovePair('category').Free;FCardDraft.AddPair('category',CardCategory.Selected.Text);TDPHWorkspaceView.ValidateLearningCard(FCardDraft);
+  if (CardAuthor.Text.Trim='') or SameText(CardAuthor.Text.Trim,'Unknown') then raise EArgumentException.Create('Enter the person supplying this explanation');
+  FBinding:=True;
+  try
+   KnowledgeTitleEdit.Text:=Fields.GetValue<string>('name').Trim;KnowledgeAuthorEdit.Text:=CardAuthor.Text.Trim;
+   KnowledgeBodyMemo.Text:=TDPHWorkspaceView.LearningCardBody(FCardDraft);FKnowledgeStructuredJSON:=FCardDraft.ToJSON;FKnowledgeQuestionJSON:='';
+   KnowledgeKindCombo.ItemIndex:=KnowledgeKindCombo.Items.IndexOf('user_help');KnowledgeDocumentCombo.ItemIndex:=KnowledgeDocumentCombo.Items.IndexOf('user');KnowledgeAudienceCombo.ItemIndex:=KnowledgeAudienceCombo.Items.IndexOf('all');
+  finally FBinding:=False;end;
+  FStructuredEditorPending:=False;FCardSavingID:=FCardDraft.GetValue<string>('card_id');Submit('save_knowledge');
+  if FBusy then begin CardEditorScroll.Enabled:=False;CardEditToolbar.Enabled:=False;end else FCardSavingID:='';
+ except on E:Exception do StatusLabel.Text:=E.Message;end;
+end;
 procedure TDPHMainForm.TaskFilterChange(Sender:TObject);
-var V:TJSONValue;R:TJSONObject;Count:Integer;
+var V:TJSONValue;R,Lesson,Learning:TJSONObject;Count:Integer;Candidates:TList<TJSONObject>;
 begin
  if FTaskRows=nil then Exit;
  if Sender=TaskNextPage then Inc(FTaskOffset,50) else FTaskOffset:=0;
  FTaskRows.Clear;TaskList.Items.Clear;TaskNextPage.Enabled:=False;Count:=0;
+ Candidates:=TList<TJSONObject>.Create;
+ try
  if FKnowledge<>nil then for V in FKnowledge do begin
   R:=V as TJSONObject;
   if MatchText(R.GetValue<string>('state'),['retired','rejected']) then Continue;
   if not MatchText(R.GetValue<string>('kind'),['user_help','troubleshooting']) then Continue;
   if (TaskFilter.Text.Trim<>'') and not ContainsText(R.GetValue<string>('title')+' '+R.GetValue<string>('body'),TaskFilter.Text.Trim) then Continue;
+  Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject;
+  try
+   Learning:=nil;if Lesson<>nil then Learning:=Lesson.GetValue<TJSONObject>('learning',nil);
+   if (Lesson<>nil) and (Lesson.GetValue<string>('record_type','')<>'') and (Lesson.GetValue<string>('record_type','')<>'learning_lesson') then Continue;
+   if (TaskRoleFilter.Text.Trim<>'') and (Learning<>nil) and (Learning.GetValue<string>('role','').Trim<>'') and
+     not SameText(Learning.GetValue<string>('role'),TaskRoleFilter.Text.Trim) then Continue;
+   if (TaskPathFilter.Text.Trim<>'') and ((Learning=nil) or not SameText(Learning.GetValue<string>('path'),TaskPathFilter.Text.Trim)) then Continue;
+   Candidates.Add(R);
+  finally Lesson.Free;end;
+ end;
+ Candidates.Sort(TComparer<TJSONObject>.Construct(function(const L,R:TJSONObject):Integer
+ var LeftLesson,RightLesson:TJSONObject;
+ begin
+  LeftLesson:=TJSONObject.ParseJSONValue(L.GetValue<string>('structured_json','{}')) as TJSONObject;
+  RightLesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject;
+  try
+   Result:=CompareText(LeftLesson.GetValue<string>('learning.path',''),RightLesson.GetValue<string>('learning.path',''));
+   if Result=0 then Result:=CompareValue(LeftLesson.GetValue<Integer>('learning.order',10000),RightLesson.GetValue<Integer>('learning.order',10000));
+   if Result=0 then Result:=CompareText(L.GetValue<string>('title'),R.GetValue<string>('title'));
+  finally LeftLesson.Free;RightLesson.Free;end;
+ end));
+ for R in Candidates do begin
   if (Count>=FTaskOffset) and (FTaskRows.Count<50) then begin FTaskRows.Add(R);TaskList.Items.Add(R.GetValue<string>('title'));end;Inc(Count);
  end;
+ finally Candidates.Free;end;
  TaskNextPage.Enabled:=Count>FTaskOffset+FTaskRows.Count;
  if TaskList.Count>0 then TaskList.ItemIndex:=0;
  TaskSelectionChange(nil);
 end;
 procedure TDPHMainForm.TaskSelectionChange(Sender:TObject);
-begin FTaskStep:=0;TaskNavigate(nil);end;
-procedure TDPHMainForm.TaskNavigate(Sender:TObject);
-var R,Lesson,Fields,Step:TJSONObject;Steps:TJSONArray;
+var R,Lesson:TJSONObject;
 begin
+ FTaskStep:=0;
+ if (FCatalog<>nil) and (FDatabase<>'') and (FTaskRows<>nil) and (TaskList.ItemIndex>=0) and (TaskList.ItemIndex<FTaskRows.Count) then begin
+  R:=FTaskRows[TaskList.ItemIndex];
+  if TDPHWorkspaceView.IsLearningLesson(R) then begin
+   Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
+   try FTaskStep:=FCatalog.LearningProgress(FDatabase,TaskLearner.Text,Lesson.GetValue<string>('lesson_id'),R.GetValue<Int64>('revision'));
+   finally Lesson.Free;end;
+  end;
+ end;
+ TaskNavigate(nil);
+end;
+procedure TDPHMainForm.TaskProgressClick(Sender:TObject);
+var R,Lesson:TJSONObject;Checked:Integer;
+begin
+ if (FCatalog=nil) or (FDatabase='') or (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
+ R:=FTaskRows[TaskList.ItemIndex];if not TDPHWorkspaceView.IsLearningLesson(R) then Exit;
+ Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
+ try
+  Checked:=FCatalog.LearningProgress(FDatabase,TaskLearner.Text,Lesson.GetValue<string>('lesson_id'),R.GetValue<Int64>('revision'));
+  if (Sender<>TaskResetProgress) and (Checked>=Lesson.GetValue<TJSONArray>('steps').Count) then Exit;
+  if Sender=TaskResetProgress then begin Checked:=0;FTaskStep:=0;end
+  else if FTaskStep=Checked then Inc(Checked) else raise EArgumentException.Create('Check each earlier step before marking this one');
+  FCatalog.SetLearningProgress(FDatabase,TaskLearner.Text,Lesson.GetValue<string>('lesson_id'),R.GetValue<Int64>('revision'),Checked);
+  FTaskStep:=Checked;TaskNavigate(nil);
+ except on E:Exception do StatusLabel.Text:='Progress was not saved: '+E.Message;end;
+ Lesson.Free;
+end;
+procedure TDPHMainForm.TaskNavigate(Sender:TObject);
+var R,Lesson,Fields,Step,Learning:TJSONObject;Steps:TJSONArray;Checked:Integer;
+begin
+ TaskCheckStep.Enabled:=False;TaskResetProgress.Enabled:=False;TaskProgressLabel.Text:='Enter your name to save your place on this computer.';
  TaskPrevious.Enabled:=False;TaskNext.Enabled:=False;TaskRestart.Enabled:=False;TaskEdit.Enabled:=False;TaskNotes.Enabled:=False;
  TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:='Select saved instructions on the left. If none are supplied, use Learn the project or ask the author to prepare one common task.';
  TaskStepLabel.Text:='Step instructions';TaskActionMemo.Text:='';TaskResultMemo.Text:='';
@@ -1049,9 +1236,18 @@ begin
  Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
  try
   TDPHWorkspaceView.ValidateLearningLesson(Lesson);Fields:=Lesson.GetValue<TJSONObject>('fields');Steps:=Lesson.GetValue<TJSONArray>('steps');
+  Checked:=0;if (FCatalog<>nil) and (FDatabase<>'') then Checked:=FCatalog.LearningProgress(FDatabase,TaskLearner.Text,Lesson.GetValue<string>('lesson_id'),R.GetValue<Int64>('revision'));
   if Sender=TaskNext then Inc(FTaskStep) else if Sender=TaskPrevious then Dec(FTaskStep) else if Sender=TaskRestart then FTaskStep:=0;
   FTaskStep:=EnsureRange(FTaskStep,0,Steps.Count-1);Step:=Steps.Items[FTaskStep] as TJSONObject;
   TaskContextMemo.Lines.Add('Purpose: '+Fields.GetValue<string>('purpose'));TaskContextMemo.Lines.Add('Before you begin: '+Fields.GetValue<string>('prerequisites'));
+  if Lesson.TryGetValue<TJSONObject>('learning',Learning) then begin
+   if Learning.GetValue<string>('role')<>'' then TaskContextMemo.Lines.Add('For: '+Learning.GetValue<string>('role'));
+   if Learning.GetValue<string>('path')<>'' then TaskContextMemo.Lines.Add('Learning path: '+Learning.GetValue<string>('path')+'; lesson '+Learning.GetValue('order').Value);
+  end;
+  if TaskLearner.Text.Trim<>'' then begin
+   TaskProgressLabel.Text:=Format('%s: %d of %d steps checked. This records your checks, not proof of mastery.',[TaskLearner.Text.Trim,Checked,Steps.Count]);
+   TaskCheckStep.Enabled:=(Checked<Steps.Count) and (FTaskStep=Checked);TaskResetProgress.Enabled:=Checked>0;
+  end;
   TaskStepLabel.Text:=Format('Step %d of %d',[FTaskStep+1,Steps.Count]);TaskActionMemo.Text:=Step.GetValue<string>('action');
   TaskResultMemo.Text:='Expected after this step: '+Step.GetValue<string>('expected_result');
   if FTaskStep=Steps.Count-1 then TaskResultMemo.Lines.Add('Expected final result: '+Fields.GetValue<string>('expected_result')+sLineBreak+'If something goes wrong: '+Fields.GetValue<string>('troubleshooting')+sLineBreak+'Practice: '+Fields.GetValue<string>('practice'));
@@ -1081,6 +1277,7 @@ begin
  try
   for Key in DPHLessonKeys do (FindComponent('Tutor_'+Key) as TMemo).Text:=FTaskDraft.GetValue<string>('fields.'+Key);
   TutorAuthor.Text:=KnowledgeAuthorEdit.Text;TutorSteps.Items.Clear;Steps:=FTaskDraft.GetValue<TJSONArray>('steps');
+  TutorRole.Text:=FTaskDraft.GetValue<string>('learning.role','');TutorPath.Text:=FTaskDraft.GetValue<string>('learning.path','');TutorOrder.Text:=IntToStr(FTaskDraft.GetValue<Integer>('learning.order',1));
   Tutor_name.ReadOnly:=FKnowledgeID<>0;
   for I:=0 to Steps.Count-1 do TutorSteps.Items.Add(IntToStr(I+1)+'. '+Steps.Items[I].GetValue<string>('action'));
   FTutorStep:= -1;TutorSteps.ItemIndex:= -1;TutorAction.Text:='';TutorExpected.Text:='Unknown';FTutorStepDirty:=False;
@@ -1144,13 +1341,15 @@ begin
  if FBusy or (FTaskDraft=nil) then Exit;DiscardKnowledgeClick(nil);WorkspaceTabs.ActiveTab:=TaskTab;
 end;
 procedure TDPHMainForm.TaskSaveClick(Sender:TObject);
-var Fields:TJSONObject;Key:string;
+var Fields:TJSONObject;Key:string;LessonOrder:Integer;
 begin
  if FBusy or (FView=nil) or (FTaskDraft=nil) then Exit;
  try
   if FTutorStepDirty then raise EArgumentException.Create('Keep the current step or undo its edit before saving');
   Fields:=FTaskDraft.GetValue<TJSONObject>('fields');
   for Key in DPHLessonKeys do begin Fields.RemovePair(Key).Free;Fields.AddPair(Key,(FindComponent('Tutor_'+Key) as TMemo).Text.Trim);end;
+  if not TryStrToInt(TutorOrder.Text,LessonOrder) then raise EArgumentException.Create('Enter a whole number for lesson order');
+  FTaskDraft.RemovePair('learning').Free;FTaskDraft.AddPair('learning',TJSONObject.Create.AddPair('role',TutorRole.Text.Trim).AddPair('path',TutorPath.Text.Trim).AddPair('order',TJSONNumber.Create(LessonOrder)));
   TDPHWorkspaceView.ValidateLearningLesson(FTaskDraft);
   if (TutorAuthor.Text.Trim='') or SameText(TutorAuthor.Text.Trim,'Unknown') then raise EArgumentException.Create('Enter the person supplying these instructions');
   FBinding:=True;
@@ -1396,7 +1595,20 @@ begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenCacheDialog.Execute then Exit; OpenSelection('',OpenCacheDialog.FileName);
 end;
-procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string);
+procedure TDPHMainForm.PracticeClick(Sender:TObject);
+var Entry,Database:string;
+begin
+ if FBusy or FKnowledgeEdited then begin StatusLabel.Text:='Save or cancel the current draft before opening the practice example.';Exit;end;
+ Entry:=TPath.Combine(FBaseDirectory,'samples\OrderPractice\OrderPractice.dproj');
+ if not TFile.Exists(Entry) then begin StatusLabel.Text:='The supplied practice source is missing. Keep the samples folder with DPH.';Exit;end;
+ Database:=TPath.Combine(DatabaseDialog.InitialDir,'OrderPractice.dphdb');
+ if TFile.Exists(Database) then begin
+  if SameFileName(ExcludeTrailingPathDelimiter(TDPHKnowledgeStore.ProjectRoot(Database)),ExcludeTrailingPathDelimiter(ExtractFilePath(Entry))) then begin OpenSelection('',Database);Exit;end;
+  Database:=TPath.Combine(DatabaseDialog.InitialDir,'OrderPractice-'+TGUID.NewGuid.ToString+'.dphdb');
+ end;
+ OpenSelection(Entry,Database,True);
+end;
+procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string;APractice:Boolean);
 var Request: TDPHWorkspaceRequest;
 begin
   if FBusy then Exit;
@@ -1404,6 +1616,7 @@ begin
   Request:=Default(TDPHWorkspaceRequest); Request.Entry:=AEntry; Request.Database:=ADatabase;
   if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   if AEntry='' then Request.Command:='open' else Request.Command:='incremental';
+  if APractice then Request.Kind:='practice_lessons';
   Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
   Request.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
   if AEntry<>'' then begin Request.Configuration:=''; Request.Platform:=''; end;
@@ -1428,6 +1641,7 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
@@ -1456,6 +1670,7 @@ begin
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='No imported screenshot is selected.';
+  FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
   FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
@@ -1507,9 +1722,21 @@ begin
       TaskEditorScroll.Enabled:=True;TaskEditorToolbar.Enabled:=True;
       if R.Failed then FTaskSavingID:='';
     end;
+    if not R.Busy and (FCardSavingID<>'') then begin
+      CardEditorScroll.Enabled:=True;CardEditToolbar.Enabled:=True;
+      if R.Failed then FCardSavingID:='';
+    end;
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON) then FKnowledgeEdited:=False;
       LoadKnowledge(R.Knowledge); R.Knowledge:=nil;
+      if FCardSavingID<>'' then begin
+        CardFilter.Text:='';CardRole.Text:='';CardFilterChange(nil);
+        for var CardIndex:=0 to FCardRows.Count-1 do begin
+          var SavedCard:=TJSONObject.ParseJSONValue(FCardRows[CardIndex].GetValue<string>('structured_json')) as TJSONObject;
+          try if SavedCard.GetValue<string>('card_id')=FCardSavingID then begin CardList.ItemIndex:=CardIndex;CardSelectionChange(nil);Break;end;finally SavedCard.Free;end;
+        end;
+        FCardSavingID:='';WorkspaceTabs.ActiveTab:=CardLibraryTab;
+      end;
       if FTaskSavingID<>'' then begin
         for var SavedTaskRow in FKnowledge do
           if TDPHWorkspaceView.IsLearningLesson(SavedTaskRow as TJSONObject) then begin
@@ -2477,7 +2704,7 @@ begin
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28}h1{margin:0;font-size:30px}main{padding:26px;max-width:1000px;margin:auto}'+
     'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>Learn an application with DPH</title></head><body><header><h1>Welcome to Delphi Project Handoff</h1>'+
-    '<p>Learn what a Delphi application does, how to use it, and how its parts work together.</p></header><main><section><h2>Your first ten minutes</h2><ol>'+
+    '<p>Learn what a Delphi application does, how to use it, and how its parts work together.</p></header><main><section><h2>Try a supplied example first</h2><p>Click <strong>Try practice example</strong> at the top. DPH opens a small order-calculation application with prepared lessons, field explanations, worked results and practice questions. Begin with Learn a task and the First day learning path. DPH reads this example without running it. Return to Choose application when you are ready to study your own program.</p></section><section><h2>Your first ten minutes</h2><ol>'+
     '<li><strong>Choose application.</strong> Click the button at the top left. Select the application''s .dproj, .dpr or .groupproj file. This identifies the program you want to learn.</li>'+
     '<li><strong>Keep its lessons.</strong> Accept the proposed file in the Databases folder. DPH stores what it learns there. If you have already done this, use <strong>Open saved lessons</strong> instead.</li>'+
     '<li><strong>Read Learn the project.</strong> This page opens when the application is ready. Begin with its purpose, then meet its screens and controls.</li>'+
@@ -2618,6 +2845,7 @@ begin
   Request.Command:='import_screenshot'; Request.Database:=FDatabase; Request.Entry:=FEntry;
   Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id'); Request.Body:=ScreenshotDialog.FileName;
   Request.Editor:=ScreenshotAuthor.Text; Request.Title:=ScreenshotCaption.Text; Request.EntityKey:=FSelected;
+  Request.Kind:=ScreenshotKind.Selected.Text;
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
@@ -2630,7 +2858,7 @@ begin
   FImages.Free; FImages:=ARows; ScreenshotList.Items.Clear;
   for V in ARows do begin R:=V as TJSONObject;
     LabelText:='ID '+R.GetValue('artifact_id').Value+' | gen '+R.GetValue('generation_id').Value+' | '+R.GetValue<string>('caption');HistoryBeforeCombo.Items.Add(LabelText);HistoryAfterCombo.Items.Add(LabelText);
-    Index:=ScreenshotList.Items.Add(R.GetValue<string>('caption')+' | generation '+R.GetValue('generation_id').Value);
+    Index:=ScreenshotList.Items.Add(R.GetValue<string>('image_kind','Screenshot')+': '+R.GetValue<string>('caption'));
     Path:=R.GetValue<string>('managed_path'); Thumbnail:=TBitmap.Create;
     try
       try
@@ -2646,19 +2874,68 @@ begin
   for Index:=0 to ARows.Count-1 do begin if ARows.Items[Index].GetValue<Int64>('artifact_id')=BeforeID then HistoryBeforeCombo.ItemIndex:=Index;if ARows.Items[Index].GetValue<Int64>('artifact_id')=AfterID then HistoryAfterCombo.ItemIndex:=Index;end;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
-var R: TJSONObject; Path: string;
+var R,Card,Picture:TJSONObject;V:TJSONValue;Path:string;Number:Integer;
 begin
+  FPicturePointValid:=False;ScreenshotCallout.Enabled:=False;
   if (FImages=nil) or (ScreenshotList.ItemIndex<0) then Exit;
   R:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject; Path:=R.GetValue<string>('managed_path');
   try
     if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Screenshot changed after validation');
     ScreenshotImage.Bitmap.LoadFromFile(Path); UpdateScreenshotBounds;
-    ScreenshotEvidence.Text:=R.GetValue<string>('caption')+sLineBreak+'Contributor: '+R.GetValue<string>('author')+sLineBreak+
-      'Imported: '+R.GetValue<string>('imported_utc')+' | generation '+R.GetValue('generation_id').Value+sLineBreak+
-      R.GetValue<string>('provenance')+sLineBreak+'Status: '+R.GetValue<string>('verification_state')+sLineBreak+
-      Format('Image: %d x %d pixels',[ScreenshotImage.Bitmap.Width,ScreenshotImage.Bitmap.Height])+sLineBreak+
-      'Linked object: '+R.GetValue<string>('entity_key','')+sLineBreak+'SHA256 '+R.GetValue<string>('image_sha256');
+    ScreenshotEvidence.Text:=R.GetValue<string>('image_kind','Screenshot')+': '+R.GetValue<string>('caption')+sLineBreak+'Supplied by '+R.GetValue<string>('author')+'. This image was supplied separately; its origin remains attributed to the contributor.';
+    Number:=0;
+    if FKnowledge<>nil then for V in FKnowledge do begin
+      if MatchText(V.GetValue<string>('state',''),['retired','rejected']) then Continue;
+      Card:=TJSONObject.ParseJSONValue(V.GetValue<string>('structured_json','{}')) as TJSONObject;
+      try
+        if Card=nil then Continue;Picture:=Card.GetValue<TJSONObject>('picture',nil);
+        if (Picture=nil) or (Picture.GetValue<string>('image_sha256')<>R.GetValue<string>('image_sha256')) then Continue;
+        Inc(Number);ScreenshotEvidence.Lines.Add(IntToStr(Number)+'. '+V.GetValue<string>('title')+': '+Card.GetValue<string>('fields.meaning')+' (by '+V.GetValue<string>('owner')+'; '+V.GetValue<string>('state').Replace('_',' ')+'). Open Learning library for its example and practice.');
+      finally Card.Free;end;
+    end;
+    ScreenshotMarkers.Repaint;
   except on E: Exception do begin ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Image unavailable: '+E.Message; end; end;
+end;
+procedure TDPHMainForm.ScreenshotPoint(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
+begin
+ if (Button<>TMouseButton.mbLeft) or ScreenshotImage.Bitmap.IsEmpty or (ScreenshotImage.Width<=0) or (ScreenshotImage.Height<=0) then Exit;
+ FPictureX:=EnsureRange(Round(X/ScreenshotImage.Width*10000),0,10000);FPictureY:=EnsureRange(Round(Y/ScreenshotImage.Height*10000),0,10000);
+ FPicturePointValid:=True;ScreenshotCallout.Enabled:=True;ScreenshotMarkers.Repaint;
+ StatusLabel.Text:='Point selected. Choose Explain this point to add its meaning, example and practice question.';
+end;
+procedure TDPHMainForm.ScreenshotCalloutClick(Sender:TObject);
+var Image:TJSONObject;
+begin
+ if not FPicturePointValid or (FImages=nil) or (ScreenshotList.ItemIndex<0) then Exit;
+ Image:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject;
+ CardEditClick(CardNew);if (FCardDraft=nil) or (WorkspaceTabs.ActiveTab<>CardEditorTab) then Exit;
+ FCardDraft.AddPair('picture',TJSONObject.Create.AddPair('image_sha256',Image.GetValue<string>('image_sha256')).AddPair('x',TJSONNumber.Create(FPictureX)).AddPair('y',TJSONNumber.Create(FPictureY)));
+ if Image.GetValue<string>('image_kind','Screenshot')='Sample output' then CardCategory.ItemIndex:=CardCategory.Items.IndexOf('Output or report');
+ if FView.Symbol(Image.GetValue<string>('entity_key',''))<>nil then FKnowledgeLink:=Image.GetValue<string>('entity_key');
+ Card_example.Text:='Unknown';
+end;
+procedure TDPHMainForm.ScreenshotMarkerPaint(Sender:TObject;Canvas:TCanvas);
+var V:TJSONValue;Card,Picture,Image:TJSONObject;Number:Integer;X,Y,Radius:Single;Bounds:TRectF;
+begin
+ if (FImages=nil) or (ScreenshotList.ItemIndex<0) or (ScreenshotList.ItemIndex>=FImages.Count) or ScreenshotImage.Bitmap.IsEmpty then Exit;
+ Image:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject;Number:=0;Radius:=ScreenshotMarkerStyle.Width/2;
+ if (ScreenshotMarkers.Width<Radius*2) or (ScreenshotMarkers.Height<Radius*2) then Exit;
+ Canvas.Font.Assign(ScreenshotMarkerText.TextSettings.Font);
+ if FKnowledge<>nil then for V in FKnowledge do begin
+  if MatchText(V.GetValue<string>('state',''),['retired','rejected']) then Continue;
+  Card:=TJSONObject.ParseJSONValue(V.GetValue<string>('structured_json','{}')) as TJSONObject;
+  try
+   if Card=nil then Continue;Picture:=Card.GetValue<TJSONObject>('picture',nil);
+   if (Picture=nil) or (Picture.GetValue<string>('image_sha256')<>Image.GetValue<string>('image_sha256')) then Continue;
+   Inc(Number);X:=EnsureRange(Picture.GetValue<Integer>('x')/10000*ScreenshotMarkers.Width,Radius,ScreenshotMarkers.Width-Radius);Y:=EnsureRange(Picture.GetValue<Integer>('y')/10000*ScreenshotMarkers.Height,Radius,ScreenshotMarkers.Height-Radius);
+   Bounds:=TRectF.Create(X-Radius,Y-Radius,X+Radius,Y+Radius);Canvas.Fill.Assign(ScreenshotMarkerStyle.Fill);Canvas.FillEllipse(Bounds,1);Canvas.Stroke.Assign(ScreenshotMarkerStyle.Stroke);Canvas.DrawEllipse(Bounds,1);
+   Canvas.Fill.Color:=ScreenshotMarkerText.TextSettings.FontColor;Canvas.FillText(Bounds,IntToStr(Number),False,1,[],TTextAlign.Center,TTextAlign.Center);
+  finally Card.Free;end;
+ end;
+ if FPicturePointValid then begin
+  X:=EnsureRange(FPictureX/10000*ScreenshotMarkers.Width,Radius,ScreenshotMarkers.Width-Radius);Y:=EnsureRange(FPictureY/10000*ScreenshotMarkers.Height,Radius,ScreenshotMarkers.Height-Radius);
+  Bounds:=TRectF.Create(X-Radius,Y-Radius,X+Radius,Y+Radius);Canvas.Stroke.Assign(ScreenshotMarkerStyle.Stroke);Canvas.DrawEllipse(Bounds,1);
+ end;
 end;
 procedure TDPHMainForm.DatabaseERFilterChange(Sender:TObject);
 var V:TJSONValue;Edge:TJSONObject;Limit,MaxColumns:Integer;
@@ -4194,7 +4471,7 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);end;
+begin FCardRows.Clear;CardList.Items.Clear;FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil);CardFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
@@ -4241,6 +4518,7 @@ procedure TDPHMainForm.NewKnowledgeClick(Sender: TObject);
 begin
   if (Sender<>nil) and FKnowledgeEdited then begin StatusLabel.Text:='Save the current authored text before starting another record'; Exit; end;
   FreeAndNil(FTaskDraft);FTutorStepDirty:=False;
+  FreeAndNil(FCardDraft);
   FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;FStructuredEditorPending:=False;FStructuredEditorID:='';
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:='';
   FBinding:=True; try FKnowledgeID:=0; FKnowledgeRevision:=0; KnowledgeTitleEdit.Text:=''; KnowledgeBodyMemo.Text:='';

@@ -105,7 +105,7 @@ class procedure TDPHPublisher.Export(AModel: TDPHDocumentModel; AStore: TDPHKnow
 var Directory,IndexText,Path,Relative,Anchor: string; V,W,LinkValue,RevisionValue: TJSONValue; R,J,Manifest,Hashes: TJSONObject; Lines,Page: TStringBuilder; Files: TArray<string>;
     ByFrom: TObjectDictionary<string,TList<TJSONObject>>; Neighbors: TList<TJSONObject>;
     Explanations: TDPHExplanationModel;
-    Images: TJSONArray; ImageValue: TJSONValue; ImageRow: TJSONObject; ImagePath: string;
+    Images: TJSONArray; ImageValue,CardValue: TJSONValue; ImageRow,CardRecord,PictureRecord:TJSONObject; ImagePath,CalloutLegend:string;CalloutNumber:Integer;
     SourcePages: TObjectDictionary<string,TJSONObject>; Navigation,SourceRecord: TJSONObject; SourceRows: TJSONArray;
     Source: TDPHSource; Diagnostics: TDPHDiagnostics; SourceLines: TArray<string>; SourceLine,ObjectPage,SourcePath: string; LineNumber,RenderedSources,OmittedSources: Integer;
     IncludedLines: TJSONArray; LineStarts: TArray<Integer>; LineMask: TArray<Boolean>; CharacterIndex,LineIndex,RenderedLines: Integer; SourceSymbol: TJSONValue; TaskSource,SkippingLines,LineAvailable: Boolean;
@@ -272,9 +272,22 @@ begin
       if LessonIndex=9 then LessonPage:=LessonPage.Replace('Open Author questions</a> to record a named reply.','Read the questions below</a>. Record replies in DPH through Prepare lessons, Author questions.');
       Lines.Append('<section id="lesson_'+IntToStr(LessonIndex)+'"><h2>'+TDPHExplanationModel.TopicTitle(LessonIndex)+'</h2>'+LessonPage+'</section>');
     end;
-    Lines.Append('<section id="screenshots"><h2>Supplied screenshots</h2><p>These images were supplied by named contributors. They are separate from reconstructed form designs.</p>');
+    Lines.Append('<style>.picture{position:relative;display:inline-block;max-width:100%}.picture img{display:block;max-width:100%;height:auto}.callout{position:absolute;transform:translate(-50%,-50%);background:#f28c28;color:#20364a;border:2px solid #146cb4;border-radius:50%;width:28px;height:28px;text-align:center;line-height:24px;font-weight:bold}</style><section id="screenshots"><h2>Supplied pictures and sample outputs</h2><p>These images were supplied by named contributors. They are separate from reconstructed form designs. Numbered callouts explain what to notice without changing the original picture.</p>');
     for V in AModel.Document.GetValue<TJSONArray>('screenshots') do begin R:=V as TJSONObject;
-      Lines.Append('<figure><img src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'"><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' &mdash; supplied by '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+'; user supplied, unverified.</figcaption></figure>');
+      Lines.Append('<figure><div class="picture"><img src="images/'+R.GetValue<string>('image')+'" alt="'+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+'">');CalloutLegend:='';CalloutNumber:=0;
+      for CardValue in AModel.Document.GetValue<TJSONArray>('knowledge') do begin
+        if MatchText(CardValue.GetValue<string>('state',''),['retired','rejected']) then Continue;
+        CardRecord:=CardValue.GetValue<TJSONObject>('structured_record',nil);
+        if CardRecord=nil then CardRecord:=TJSONObject.ParseJSONValue(CardValue.GetValue<string>('structured_json','{}')) as TJSONObject else CardRecord:=CardRecord.Clone as TJSONObject;
+        try
+          if CardRecord=nil then Continue;PictureRecord:=CardRecord.GetValue<TJSONObject>('picture',nil);
+          if (PictureRecord=nil) or (PictureRecord.GetValue<string>('image_sha256')<>R.GetValue<string>('image_sha256')) then Continue;
+          Inc(CalloutNumber);Lines.Append('<span class="callout" style="left:'+FloatToStr(PictureRecord.GetValue<Integer>('x')/100,TFormatSettings.Invariant)+'%;top:'+FloatToStr(PictureRecord.GetValue<Integer>('y')/100,TFormatSettings.Invariant)+'%">'+IntToStr(CalloutNumber)+'</span>');
+          CalloutLegend:=CalloutLegend+'<li><strong>'+TDPHDocumentModel.HTML(CardValue.GetValue<string>('title'))+'</strong>: '+TDPHDocumentModel.HTML(CardRecord.GetValue<string>('fields.meaning'))+'<br>Example: '+TDPHDocumentModel.HTML(CardRecord.GetValue<string>('fields.example'))+'<br>Practice and expected answer: '+TDPHDocumentModel.HTML(CardRecord.GetValue<string>('fields.practice'))+'<br>Supplied by '+TDPHDocumentModel.HTML(CardValue.GetValue<string>('owner'))+'; '+TDPHDocumentModel.HTML(CardValue.GetValue<string>('state'))+'.</li>';
+        finally CardRecord.Free;end;
+      end;
+      Lines.Append('</div><figcaption>'+TDPHDocumentModel.HTML(R.GetValue<string>('image_kind','Screenshot'))+': '+TDPHDocumentModel.HTML(R.GetValue<string>('caption'))+' &mdash; supplied by '+TDPHDocumentModel.HTML(R.GetValue<string>('author'))+'; user supplied, unverified.</figcaption>');
+      if CalloutLegend<>'' then Lines.Append('<ol>'+CalloutLegend+'</ol>');Lines.Append('</figure>');
     end;
     if AModel.Document.GetValue<TJSONArray>('screenshots').Count=0 then Lines.Append('<p>No screenshots have been supplied for this edition.</p>');
     Lines.Append('</section><section id="glossary"><h2>Business terms</h2>');LessonIndex:=0;

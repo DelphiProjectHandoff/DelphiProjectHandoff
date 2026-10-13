@@ -18,10 +18,23 @@ USER=[
 ('steps',['Extract the supplied DPH package into a local folder where you can save files. Open the extracted folder rather than running from inside the ZIP file.',
 'Double-click DelphiProjectHandoff.exe. Keep the other supplied files and folders together. The window opens maximized and displays Getting started.',
 'Read Your first ten minutes. Click Getting started in the header whenever you want to return to these directions.',
-'If lessons have already been prepared, click Open saved lessons. Otherwise, continue with Choose an application in the next chapter.']),
+'If lessons have already been prepared, click Open saved lessons. Otherwise, begin with the supplied practice example or the Choose an application chapter.']),
 ('p','The top-right selector chooses a learning page. Prepare lessons is a separate button for adding introductions, tasks, answers and images. The bottom status line tells you what DPH is doing.'),
 ('h','Understand the lessons'),
 ('p','DPH reads supplied source and form files without changing or running the selected application. These files reveal many connections, but they do not contain every business reason or operating procedure. Named contributions supply that knowledge. When an explanation is unavailable, DPH leaves a question to answer.')]),
+('Practice with a supplied example',[
+('h','Open the practice lessons'),
+('p','The supplied Practice order application is small enough to understand one complete task. Its prepared lessons explain the inputs, calculation, tax option, errors and displayed result. It does not save orders or transfer money.'),
+('steps',['Click Try practice example in the command strip at the top. DPH reads the supplied source and opens its prepared lessons without launching the example.',
+'Choose Learn a task in the top-right selector. Enter First day in Learning path and New learner in User role.',
+'Begin with Meet the practice application, then follow Predict a total without tax, Compare the tax alternatives and Understand an input error safely in that order.',
+'Read each action and expected result. You can complete these reading exercises without running another program.']),
+('h','Work through a result'),
+('p','For quantity 2 and unit price 10.00, the subtotal is 20.00. Without the example tax, the total stays 20.00. With the ten percent option selected, tax is 2.00 and the total is 22.00. This is a teaching rule, not a real tax policy.'),
+('image',('samples/OrderPractice/practice-result.png','The actual native Practice order application captured during its sample test. The checked example tax produces Total 22.00 from quantity 2 and unit price 10.00.')),
+('h','Check what you learned'),
+('p','Predict the result for quantity 3 and price 5.00. Without tax the answer is 15.00; with the example tax it is 16.50. Explain why 2.5 is not a valid quantity. Expected answer: this sample requires whole items from 1 to 1000.'),
+('p','Return to the practice example whenever you need it. DPH reopens its saved lessons rather than replacing your edits. When you are ready to study another program, use Choose application or Open saved lessons.')]),
 ('Choose an application',[
 ('h','Open a project for the first time'),
 ('p','Obtain the application source from the person responsible for it. Ask for its Delphi project file and associated source and form files. An executable by itself does not provide the same lessons.'),
@@ -48,6 +61,17 @@ USER=[
 ('p','Questions and answers presents saved replies and questions still to ask. Delphi terms explains programming words in ordinary language. Business glossary, in the top-right selector, contains terms particular to the selected application.'),
 ('h','Keep the first lesson small'),
 ('p','Explain one action in your own words: what starts it, what information it uses, what decision changes its path, and what result the user should check. Return to Start here when you need another route through the material.')]),
+('Read the learning library',[
+('h','Find an explanation in plain language'),
+('steps',['Choose Learning library in the top-right selector.',
+'Type a screen, field, question, exact error message, report or phrase into the search box. Clear it to see all explanations.',
+'If necessary, enter your User role. Explanations for All learners remain visible alongside explanations for that role.',
+'Choose an explanation on the left. Read its meaning first, then its worked example, rules and mistakes to avoid, safe help and practice answer. Scroll within the reading area for the rest.',
+'Use Explore related selection when available to open the actual linked control or operation. Use the top-right selector to return to Learning library.']),
+('image',('docs/learning-completion-practice-library-compact.png','The actual DPH learning library showing quantity guidance for the supplied Practice order application. Its explanation covers valid whole-item input and a practice answer.')),
+('h','Choose the question you need answered'),
+('p','Screen and Field explain what something is for and what to enter. Error or problem and Question and answer explain symptoms and safe next steps. Business rule, Output or report and Setting or option explain why a result differs. Related system, Role or permission, Background work and History or design choice provide context when it helps the task. Learning check provides an exercise and expected answer.'),
+('p','An explanation belongs to the selected application and keeps its contributor and review status. Unknown means the preparer must obtain an answer. A learning role filters instructions; it does not grant permission to use a production system.')]),
 ('Follow an action',[
 ('h','From a control to the responding operation'),
 ('steps',['Open Learn the project and choose Screens and actions or Follow an action.',
@@ -63,11 +87,19 @@ USER=[
 ('h','Follow the prepared steps'),
 ('steps',['Choose Learn a task in the top-right selector.',
 'Select a saved task from the left list. Type part of its name to narrow the list. More tasks loads another page when available.',
-'Read the purpose, contributor, review state and Before you begin. Check the prerequisites.',
+'Select a task, scrolling the task list if necessary. Open Before you begin and task context. Read the purpose, contributor, review state and prerequisites, then collapse it again to give the steps more space.',
 'Read the action and its expected result. Scroll within the instructions to see the result and further material.',
 'Click Next step to continue. Previous step returns to an earlier instruction; Start again returns to the first step.',
 'At the last step, compare the overall expected result and read the recovery and practice instructions. Explain how you would recognize a correct outcome.']),
-('image',('docs/lesson-preparation-task-reader-compact.png','The actual DPH task reader showing a two-step training example. Navigation stays available while the instructions scroll.')),
+('image',('docs/learning-completion-practice-task-compact.png','The actual DPH reader presenting a supplied Practice order task. The learner has checked one result and is reading the next step.')),
+('h','Choose a role and learning path'),
+('p','User role filters tasks prepared for a named role; tasks without a restricted role stay available. Learning path selects a named sequence. Lessons appear in the order set by the preparer. Read Before you begin for prerequisites and complete the earlier lesson when instructed.'),
+('h','Save your place'),
+('steps',['Enter your name in Your name for saved progress.',
+'After checking the result for the current step, click I checked this result. DPH saves that check and moves to the next step.',
+'Return to the task using the same name to resume at its next unchecked step. Previous step and Next step let you read without claiming completion.',
+'Use Clear my progress if you want to repeat the checks. Start again returns the reader to the first step without clearing your saved checks.']),
+('p','Progress is personal to this computer, learner name, application and instruction revision. Changed instructions require fresh checks. The count records what you checked; it is not proof of understanding, a recorded run or permission to perform a live task.'),
 ('h','Know where the task happens'),
 ('p','DPH displays instructions; it does not perform the task in the selected application. If practice requires running that application, use the environment and example data approved by its owner. Instructions should identify what is safe to try and what result to expect.'),
 ('p','If the list is empty, ask the preparer to add a common task. Older free-text instructions remain readable, but DPH does not invent steps for them. Instructions awaiting review remain visibly attributed to their contributor.')]),
@@ -81,10 +113,15 @@ USER=[
 ('h','Learn the vocabulary'),
 ('p','Choose Business glossary and search for a term used in the task. Read its definition, aliases and application context. A definition awaiting review still needs checking. Use Delphi terms in Learn the project for words such as form, event, procedure and unit.'),
 ('h','Supply a useful screenshot'),
-('p','The preparer can choose Screenshots, enter a named contributor and a caption describing the context, and click Import PNG to select an existing PNG. Select the relevant object first if the image should be associated with it. DPH copies the image into managed storage; it does not automatically launch or capture the selected application.')]),
+('p','The preparer can choose Screenshots, enter a named contributor and a caption describing the context, choose Screenshot, Sample output or Other teaching image, and click Import an existing PNG screenshot. Select the relevant object first if the image should be associated with it. DPH copies the image into managed storage; it does not automatically launch or capture the selected application.'),
+('h','Read and prepare picture callouts'),
+('steps',['Select a supplied picture in Screenshots. Numbered points identify explanations in the legend below it.',
+'Read what each point means. Open Learning library to find its full worked example and practice answer.',
+'To prepare a new callout, click the relevant point on the picture, then Explain this point.',
+'Complete the teaching fields and contributor, then Save explanation. Return to Screenshots and select the picture to read its numbered legend.']),
+('p','Callouts remain anchored when the image is resized or zoomed. They do not change the original image. A supplied sample output can explain expected fields or totals without being presented as a reconstructed screen.')]),
 ('Prepare useful lessons',[
 ('h','Describe the application'),
-('image',('docs/learning-guides-prepare-lessons.png','Prepare lessons provides direct buttons for the application description and task instructions. Source reading settings start collapsed.')),
 ('steps',['Open the application lessons and click Prepare lessons.',
 'Click Describe this application. Enter the contributor and a purpose explaining who uses the application and what it helps them accomplish.',
 'Complete relevant ownership, support and architecture information. Leave genuinely unknown answers marked Unknown.',
@@ -92,11 +129,20 @@ USER=[
 ('h','Prepare a common task'),
 ('steps',['In Prepare lessons, click Prepare task instructions. Alternatively, choose Prepare a new task in Learn a task.',
 'Enter the contributor, task name, what the learner will accomplish and the prerequisites.',
+'Enter an optional User role and Learning path name. Set Lesson order to a whole number from 1 to 10000; lower numbers appear first within that path.',
 'Describe the whole task result, recovery guidance and a practice exercise. Enter Unknown for a result that needs confirmation.',
 'Scroll to Steps in the order the learner follows. Click New step, enter the action and expected result, then Keep step.',
 'Repeat for each step. Select a step to edit it. Keep step accepts the edit; Undo step edit discards the unsaved step edit. Move up and Move down reorder steps. Remove step removes the selected step from this draft.',
 'Click Save task. DPH saves the instructions and returns to their first step in Learn a task. Cancel changes discards the task draft.']),
 ('p','Keep one action and one observable result in each step. Explain what to do when the result differs. A saved task retains its name; create a new task when you need a different identity.'),
+('h','Prepare a teaching explanation'),
+('steps',['Choose Learning library, then Prepare an explanation. Select the relevant source object first if the explanation should link to it.',
+'Choose the teaching topic and enter the person supplying the explanation.',
+'Enter a short topic name, the user role or All learners, and what the subject means and why it matters.',
+'Supply a worked example, valid input or interpreted sample output. State units, limits, permission requirements and mistakes to avoid.',
+'Explain the safe next step when the result differs and who can help. Add a practice question or exercise with its expected answer.',
+'Click Save explanation. The learning library opens the saved contribution. To revise it later, select it and choose Edit explanation. Its saved name identifies the same explanation.']),
+('p','Do not replace an unknown business rule with a guess. Enter Unknown in an unanswered field, obtain the answer from someone who knows the application and save the corrected explanation. Saving preserves attribution and does not perform independent review.'),
 ('h','Explain a button or business term'),
 ('p','Choose Action purposes in the preparation selector, select an action and open its editor. Supply the user purpose and instructions, click Apply explanation draft, then Save in Saved explanations. For a term, choose Business glossary, New term, complete its definition and context, then Apply to Knowledge draft and Save.')]),
 ('Ask questions and review answers',[
@@ -144,6 +190,9 @@ ENGINEERING=[
 ('h','Main responsibilities'),
 ('p','DPH.UI.Main.pas and its .fmx resource own navigation and native editors. DPH.Workspace.Worker.pas performs background capture, opening, saving and publication. DPH.Project.Analysis.pas orchestrates bounded read-only inventory and parsing. DPH.Analysis.Symbols.pas resolves supported relationships. DPH.Storage.Database.pas persists coherent source generations and immutable authored revisions.'),
 ('p','DPH.Workspace.Model.pas provides the captured view and typed task contract. DPH.Analysis.Explanations.pas generates beginner topics and object explanations from selected facts. DPH.Publish.Model.pas builds scoped, redacted publication data. DPH.Publish.Export.pas renders learning pages, technical indexes and editable guides. DPH.Publish.BrowserPolicy.pas restricts local navigation.'),
+('h','Maintain the supplied practice lessons'),
+('p','samples\\OrderPractice contains a deliberately small FMX application and its prepared lessons. Try practice example reads this source and imports the packaged nineteen attributed records into its own database. It never runs the example. The first import checks every declared source and picture hash and resolves each requested source link to exactly one captured object. Reopening uses the saved database and preserves edited lessons.'),
+('p','DPH.Tests.OrderSample validates the example calculation and captures the actual native form. DPH.Tests.Practice exercises the beginner route through DPH, the four ordered tasks, fourteen explanations, two images, source links, progress and shared edition. Only the designated sample test runs sample code; passive discovery remains read-only.'),
 ('h','Data route'),
 ('p','Selection leads to bounded input acquisition, syntax and relationship analysis, then coherent database publication. Captured facts and authored knowledge feed explanations. Native readers and exported pages use that material. Human instructions survive source reassessment.')]),
 ('Source and storage boundaries',[
@@ -152,6 +201,8 @@ ENGINEERING=[
 ('h','Persist reliable lessons'),
 ('p','Each selected project has a .dphdb SQLite store accessed through FireDAC, with numbered migrations under migrations. The workspace catalog remembers locations and preferences separately. Managed .dphdb.views material travels beside its database. Generation publication is atomic; failure or interruption preserves the last usable generation.'),
 ('p','SaveKnowledge uses expected revision values to prevent stale editors overwriting newer content. Edits and reviews create immutable history. learning_lesson records have a stable identity, six named fields and ordered action/expected_result steps. Storage validates their canonical body, contributor, scope and identity. Legacy free text retains its original instructions.'),
+('p','A lesson may include a learning object with role, path and integer order. The native reader filters by role/path and sorts the prepared sequence. Personal checked-step progress lives in the separate workspace catalog, keyed by database, learner, lesson identity and exact authored revision. A new instruction revision cannot inherit completion.'),
+('p','learning_card records contain a stable card identity, a teaching category and seven named fields. A canonical body agrees with those fields. Optional picture metadata identifies a previously imported image and a point normalized from 0 to 10000 on each axis. Save rejects nonexistent project pictures and out-of-bounds points. Native and HTML overlays preserve the original PNG bytes.'),
 ('h','Retain truthful explanations'),
 ('p','Hashes and source ranges identify evidence. They do not establish a successful run or a correct business rule. Rendering a lesson or hiding a page must not clear partial coverage. Preserve pending contributions and Unknown fields until someone supplies or verifies the missing knowledge.')]),
 ('Native interface and lesson generation',[
@@ -160,6 +211,7 @@ ENGINEERING=[
 ('h','Separate learning and preparation'),
 ('p','LessonPageCombo contains learner destinations. SetupTab holds preparation, with source settings collapsed in AnalysisSettingsExpander. WorkspacePageChange builds optional reports on demand. Opening lessons should not build every report for hidden pages.'),
 ('p','TaskTab presents saved instructions one step at a time. TaskEditorTab holds fields and the ordered draft. Keep step accepts a step edit; Save task persists the whole record through the worker and returns to the reader. Protect drafts during opening and saving. A failed save must retain entered instructions.'),
+('p','CardLibraryTab reads and searches teaching explanations; CardEditorTab edits their seven instructional fields. Save explanation persists a complete record through the same worker. ScreenshotMarkers draws numbered callouts using the serialized marker style. TaskContextExpander keeps prerequisites available while leaving room for the current action and result in a compact window.'),
 ('h','Generate from selected facts'),
 ('p','LessonHTML supplies twelve topics. ObjectLessonHTML introduces the selected object, linked human purpose, actual choices and bounded next connections. The source walkthrough remains optional. The native text fallback uses the same lesson. Unlinked global notes must not masquerade as the purpose of every object.')]),
 ('Build and run DPH',[
@@ -187,7 +239,7 @@ ENGINEERING=[
 ('p','Keep validation output under bin in clearly designated folders. Retain failure evidence until diagnosed, then remove obsolete generated workspaces. Preserve one reusable reference cache where useful. Never delete source fixtures, owner databases or authored material while cleaning tests.')]),
 ('Package and deploy',[
 ('h','Create the desktop folder'),
-('p','The package needs DelphiProjectHandoff.exe, WebView2Loader.dll, migrations, help, current guides and Databases instructions. DPH.ValidateHandoff.exe is an included technical validation tool. Microsoft WebView2 Runtime is a system prerequisite separate from its loader DLL.'),
+('p','The package needs DelphiProjectHandoff.exe, WebView2Loader.dll, migrations, help, current guides, Databases instructions and samples\\OrderPractice with its lesson pack and pictures. DPH.ValidateHandoff.exe is an included technical validation tool. Microsoft WebView2 Runtime is a system prerequisite separate from its loader DLL.'),
 ('steps',['Build and validate the application and publication validator.',
 'Run tools\\package-dph.ps1 through PowerShell with ExecutionPolicy Bypass. It creates a new versioned staging folder and refuses an existing one.',
 'Verify the checksum report and extract the ZIP into a different local folder.',
@@ -243,10 +295,10 @@ def build(filename,title,subtitle,chapters):
    elif kind=='p':doc.add_paragraph(value)
    elif kind=='steps':
     for i,step in enumerate(value,1):
-     p=doc.add_paragraph();p.paragraph_format.left_indent=Inches(.18);p.paragraph_format.first_line_indent=Inches(-.18);p.add_run(str(i)+'. ').bold=True;p.add_run(step)
+     p=doc.add_paragraph();p.paragraph_format.left_indent=Inches(.18);p.paragraph_format.first_line_indent=Inches(-.18);p.paragraph_format.keep_with_next=i<len(value);p.add_run(str(i)+'. ').bold=True;p.add_run(step)
    elif kind=='image':
     image,caption=value;p=doc.add_paragraph();p.paragraph_format.keep_with_next=True
-    picture=p.add_run().add_picture(str(ROOT/image),width=Inches(6.4));picture._inline.docPr.set('descr',caption);doc.add_paragraph(caption,'Caption')
+    p.alignment=1;picture=p.add_run().add_picture(str(ROOT/image),width=Inches(5 if image.startswith('samples/OrderPractice/') else 6.4));picture._inline.docPr.set('descr',caption);doc.add_paragraph(caption,'Caption')
  footer=section.footer.paragraphs[0];footer.add_run('Delphi Project Handoff    ');field(footer,'begin',' PAGE ');field(footer,'separate');footer.add_run('1');field(footer,'end')
  setting=OxmlElement('w:updateFields');setting.set(qn('w:val'),'true');doc.settings.element.append(setting)
  doc.save(ROOT/'docs/guides'/filename)
@@ -260,12 +312,12 @@ def help_page():
   for kind,value in blocks:
    if kind in ['h','p']:
     tag='h3' if kind=='h' else 'p'
-    prose=re.sub(r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Choose application|Open saved lessons|Prepare lessons|Learn the project|Learn a task|Share lessons|Preview lessons',lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(value))
+    prose=re.sub(r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Choose application|Open saved lessons|Prepare lessons|Learn the project|Learn a task|Learning library|Try practice example|Share lessons|Preview lessons',lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(value))
     content.append(f'<{tag}>{prose}</{tag}>')
    elif kind=='steps':
     content.append('<ol>')
     for step in value:
-     prose=re.sub(r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Choose application|Open saved lessons|Prepare lessons|Learn the project|Learn a task|Share lessons|Preview lessons',lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(step))
+     prose=re.sub(r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Choose application|Open saved lessons|Prepare lessons|Learn the project|Learn a task|Learning library|Try practice example|Share lessons|Preview lessons',lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(step))
      content.append('<li>'+prose+'</li>')
     content.append('</ol>')
    elif kind=='image':
@@ -279,5 +331,5 @@ if __name__=='__main__':
  build('DPH_Engineering_Guide.docx','Delphi Project Handoff Engineering Guide','Build maintain and validate the learning application',ENGINEERING)
  help_page()
  sources={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in list(ROOT.glob('DPH.*.pas'))+list(ROOT.glob('DPH.UI.*.fmx'))+[ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/guide-source-validation.json').write_text(json.dumps({'guide_version':40,'last_changed':date.today().isoformat(),'sources':sources,'basis':'Inspected native controls source and behavior'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/guide-source-validation.json').write_text(json.dumps({'guide_version':41,'last_changed':date.today().isoformat(),'sources':sources,'basis':'Inspected native controls source and behavior, including the supplied practice application'},indent=2)+'\n',encoding='utf-8')
  print('Created current manuals and matching HTML help')

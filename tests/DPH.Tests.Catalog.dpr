@@ -19,12 +19,19 @@ begin
     try
       Check(SameFileName(Catalog.LastDatabase,First),'Legacy last database migrates');
       Catalog.Remember(Second); Catalog.Remember(UpperCase(Second)); Catalog.Save;
+      Catalog.SetLearningProgress(First,'New learner','task-one',3,2);
     finally Catalog.Free; end;
     Catalog:=TDPHWorkspaceCatalog.Create(Settings);
     try
       Rows:=Catalog.Projects;
       try Check(Rows.Count=2,'Multiple entries persist without case duplicates'); finally Rows.Free; end;
       Check(SameFileName(Catalog.LastDatabase,Second),'Last successful project persists');
+      Check(Catalog.LearningProgress(First,'New learner','task-one',3)=2,'Checked steps persist after reopening the catalog');
+      Check(Catalog.LearningProgress(Second,'New learner','task-one',3)=0,'Progress is isolated to the selected application');
+      Check(Catalog.LearningProgress(First,'Different learner','task-one',3)=0,'Progress is isolated by learner');
+      Check(Catalog.LearningProgress(First,'New learner','task-one',4)=0,'Changed instructions require new checks instead of inheriting completion');
+      Catalog.SetLearningProgress(First,'New learner','task-one',3,0);
+      Check(Catalog.LearningProgress(First,'New learner','task-one',3)=0,'Learner can clear their own progress');
       TFile.WriteAllText(Second,'preserved'); Catalog.Forget(Second); Catalog.Save;
       Check(TFile.ReadAllText(Second)='preserved','Forget never deletes database contents');
     finally Catalog.Free; end;

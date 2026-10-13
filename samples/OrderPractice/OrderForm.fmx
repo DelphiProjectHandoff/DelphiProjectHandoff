@@ -1,0 +1,81 @@
+object PracticeOrderForm: TPracticeOrderForm
+  Caption = 'Practice order - DPH learning example'
+  ClientWidth = 640
+  ClientHeight = 400
+  Fill.Color = claWhite
+  object Heading: TLabel
+    Position.X = 24
+    Position.Y = 20
+    Width = 580
+    Height = 48
+    Text = 'Practice order'
+    StyledSettings = []
+    TextSettings.Font.Size = 26
+    TextSettings.FontColor = xFF146CB4
+  end
+  object InstructionLabel: TLabel
+    Position.X = 24
+    Position.Y = 72
+    Width = 580
+    Height = 54
+    WordWrap = True
+    Text = 'A safe teaching example. Calculate a total from quantity and unit price. No orders are saved and no money is transferred.'
+  end
+  object QuantityLabel: TLabel
+    Position.X = 24
+    Position.Y = 142
+    Width = 160
+    Height = 30
+    Text = 'Quantity (whole items)'
+  end
+  object QuantityEdit: TEdit
+    Position.X = 200
+    Position.Y = 142
+    Width = 160
+    Height = 30
+    Text = '2'
+    TabOrder = 0
+  end
+  object PriceLabel: TLabel
+    Position.X = 24
+    Position.Y = 186
+    Width = 160
+    Height = 30
+    Text = 'Unit price (practice units)'
+  end
+  object PriceEdit: TEdit
+    Position.X = 200
+    Position.Y = 186
+    Width = 160
+    Height = 30
+    Text = '10.00'
+    TabOrder = 1
+  end
+  object TaxCheck: TCheckBox
+    Position.X = 24
+    Position.Y = 234
+    Width = 340
+    Height = 30
+    Text = 'Add the example 10% tax'
+    TabOrder = 2
+  end
+  object CalculateButton: TButton
+    Position.X = 24
+    Position.Y = 282
+    Width = 160
+    Height = 36
+    Text = 'Calculate total'
+    TabOrder = 3
+    OnClick = CalculateClick
+  end
+  object ResultLabel: TLabel
+    Position.X = 200
+    Position.Y = 280
+    Width = 400
+    Height = 42
+    Text = 'Total: not calculated'
+    StyledSettings = []
+    TextSettings.Font.Size = 22
+    TextSettings.FontColor = xFF146CB4
+  end
+end

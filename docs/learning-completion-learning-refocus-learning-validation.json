@@ -1,0 +1,8 @@
+﻿{
+  "checks_passed": 121,
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\learning-refocus-tests-{10C1AEE4-66C3-4044-B4A0-55A1006748FD}",
+  "reference_cache": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\lesson-preparation\\reference.dphdb",
+  "human_acceptance": "not_run",
+  "guides_review": "Manual review and rendered-guide verification are recorded separately from this native learning suite",
+  "reference_learning_projection_ms": 5218
+}
