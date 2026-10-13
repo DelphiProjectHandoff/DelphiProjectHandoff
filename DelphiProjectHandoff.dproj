@@ -8,7 +8,7 @@
     <Config Condition="'$(Config)'==''">Debug</Config>
     <Platform Condition="'$(Platform)'==''">Win32</Platform>
     <AppType>Application</AppType>
-    <TargetedPlatforms>1</TargetedPlatforms>
+    <TargetedPlatforms>3</TargetedPlatforms>
     <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;FMX;$(DCC_Namespace)</DCC_Namespace>
     <DCC_DcuOutput>dcu\$(Platform)\$(Config)</DCC_DcuOutput>
     <DCC_ExeOutput>bin\$(Platform)\$(Config)</DCC_ExeOutput>
