@@ -1099,7 +1099,6 @@ begin
        SameText(W.GetValue<string>('group_key',''),GroupKey) then begin Group:=W as TJSONObject;Break;end;
    if Group=nil then begin
      DisplayTitle:=TRegEx.Replace(TPath.GetFileNameWithoutExtension(Title).Replace('_',' ').Replace('-',' '),'\s+',' ').Trim;
-     if Length(DisplayTitle)>46 then DisplayTitle:=Copy(DisplayTitle,1,24)+' ... '+Copy(DisplayTitle,Length(DisplayTitle)-15,16);
      Group:=TJSONObject.Create.AddPair('library_kind','document_group').AddPair('group_key',GroupKey)
        .AddPair('heading',DisplayTitle);
      GuideIndexes:=TJSONArray.Create;Group.AddPair('guide_indices',GuideIndexes);
@@ -1119,6 +1118,13 @@ begin
    if (Query<>'') and not ContainsText(Title+' '+R.GetValue<string>('source',''),Query) then Continue;
    FCardRows.Add(R);CardList.Items.Add('Screen: '+Title);
   end;
+ end;
+ for I:=0 to CardList.Count-1 do begin
+   CardList.ListItems[I].WordWrap:=True;
+   CardList.ListItems[I].Trimming:=TTextTrimming.None;
+   if Length(CardList.Items[I])>84 then CardList.ListItems[I].Height:=76
+   else if Length(CardList.Items[I])>42 then CardList.ListItems[I].Height:=54
+   else CardList.ListItems[I].Height:=30;
  end;
  if CardList.Count>0 then CardList.ItemIndex:=0;
  CardSelectionChange(nil);

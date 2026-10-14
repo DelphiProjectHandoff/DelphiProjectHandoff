@@ -557,7 +557,7 @@ end
 object CardList: TListBox
 Align = Left
 Width = 380
-ItemHeight = 30
+ItemHeight = 0
 Margins.Left = 12
 Margins.Right = 12
 OnChange = CardSelectionChange
