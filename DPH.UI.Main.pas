@@ -829,6 +829,11 @@ type
     FWholeGraph: Boolean;
     FLineageSeed,FLineageDirection:string;
     FPreviewPages: TList<string>;
+    FHelpLanguageGeneration: Cardinal;
+    FOverviewLanguageGeneration: Cardinal;
+    FLibraryLanguageGeneration: Cardinal;
+    FMapLanguageGeneration: Cardinal;
+    FGraphLanguageGeneration: Cardinal;
     FCoverage: TJSONObject;
     FLinkTargets,FEditableLinks: TJSONArray;
     FReviewTasks: TJSONArray;
@@ -1029,23 +1034,14 @@ begin
 end;
 procedure TDPHMainForm.LanguageChanged(Sender: TObject;
   const AOldLanguage, ANewLanguage: string; const AGeneration: Cardinal);
-var
-  PreviousTab: TTabItem;
 begin
   if FClosing or (FLearningDirectory = '') then Exit;
-  PreviousTab := WorkspaceTabs.ActiveTab;
-  try
-    HelpClick(nil);
-    if FExplanations <> nil then
-    begin
-      LearningClick(nil);
-      ShowExplanation;
-      CardSelectionChange(nil);
-      if FView <> nil then RefreshGraphics;
-    end;
-  finally
-    WorkspaceTabs.ActiveTab := PreviousTab;
-  end;
+  FHelpLanguageGeneration := 0;
+  FOverviewLanguageGeneration := 0;
+  FLibraryLanguageGeneration := 0;
+  FMapLanguageGeneration := 0;
+  FGraphLanguageGeneration := 0;
+  WorkspacePageChange(WorkspaceTabs);
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -1640,6 +1636,32 @@ begin
     InspectorSplitter.Visible:=InspectorLayout.Visible;
   end;
   if FView<>nil then FPendingWorkspaceTab:=WorkspaceTabs.ActiveTab;
+  if (FLearningDirectory = '') or (DATLanguageManager.Generation = 0) then Exit;
+  if (WorkspaceTabs.ActiveTab = HelpTab) and
+    (FHelpLanguageGeneration <> DATLanguageManager.Generation) then begin
+    HelpClick(nil);
+    FHelpLanguageGeneration := DATLanguageManager.Generation;
+  end else if (WorkspaceTabs.ActiveTab = OverviewTab) and
+    (FExplanations <> nil) and
+    (FOverviewLanguageGeneration <> DATLanguageManager.Generation) then begin
+    LearningClick(nil);
+    FOverviewLanguageGeneration := DATLanguageManager.Generation;
+  end else if (WorkspaceTabs.ActiveTab = CardLibraryTab) and
+    (FCardRows <> nil) and
+    (FLibraryLanguageGeneration <> DATLanguageManager.Generation) then begin
+    CardSelectionChange(nil);
+    FLibraryLanguageGeneration := DATLanguageManager.Generation;
+  end else if (WorkspaceTabs.ActiveTab = ExplainTab) and
+    (FExplanations <> nil) and
+    (FMapLanguageGeneration <> DATLanguageManager.Generation) then begin
+    ShowExplanation;
+    FMapLanguageGeneration := DATLanguageManager.Generation;
+  end else if (WorkspaceTabs.ActiveTab = GraphTab) and
+    (FView <> nil) and
+    (FGraphLanguageGeneration <> DATLanguageManager.Generation) then begin
+    RefreshGraphics;
+    FGraphLanguageGeneration := DATLanguageManager.Generation;
+  end;
 end;
 procedure TDPHMainForm.ProjectSearchClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Row: TJSONObject; Index: Integer; Key: string;
@@ -2904,15 +2926,19 @@ begin
   HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
-  Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
-  Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
-  OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+  OverviewMemo.Text:='';
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
-  try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
+  try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; OverviewMemo.Visible:=False; LearningBrowser.Visible:=True;
     LearningBrowser.Navigate('file://'+PreviewPath);
-  except on E: Exception do begin LearningBrowser.Visible:=False; StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message; end; end;
+  except on E: Exception do begin
+    Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
+    Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
+    OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+    LearningBrowser.Visible:=False; OverviewMemo.Visible:=True;
+    StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message;
+  end; end;
 end;
 procedure TDPHMainForm.ShowExplanation;
 var HTML,PreviewPath,Fallback: string;
@@ -2922,16 +2948,20 @@ begin
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
-  Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
-  Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
-  Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
-  ExplainFallback.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+  ExplainFallback.Text:='';
   PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FExplainDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
-  try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
+  try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainFallback.Visible:=False; ExplainBrowser.Visible:=True;
     ExplainBrowser.Navigate('file://'+PreviewPath);
-  except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
+  except on E: Exception do begin
+    Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
+    Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
+    Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
+    ExplainFallback.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
+    ExplainBrowser.Visible:=False; ExplainFallback.Visible:=True;
+    StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message;
+  end; end;
 end;
 procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
 var Directory,Fragment,NodeKey: string; P,I,J,ImageIndex: Integer; V: TJSONValue; S: TJSONObject; GuideIndexes,Guides: TJSONArray;

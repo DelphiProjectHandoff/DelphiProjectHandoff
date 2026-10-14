@@ -27,9 +27,11 @@ ShowLanguageCode = True
 end
 object LanguageLabel: TLabel
 Align = Right
-Width = 92
+Width = 104
 Margins.Top = 14
 Margins.Bottom = 14
+Margins.Left = 12
+Margins.Right = 12
 Text = 'Language:'
 TextSettings.HorzAlign = Trailing
 end
@@ -68,9 +70,11 @@ object BaselineLabel: TLabel
 Text = 'Delphi Project Handoff'
 Align = Client
 Margins.Left = 18
+Margins.Right = 18
 StyledSettings = []
 TextSettings.Font.Size = 32
 TextSettings.FontColor = xFF146CB4
+TextSettings.HorzAlign = Center
 end
 end
 object DATLanguageManager: TDATFMXLanguageManager
