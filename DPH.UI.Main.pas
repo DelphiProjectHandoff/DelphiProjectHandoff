@@ -2954,9 +2954,12 @@ begin
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
 var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Integer;
-  Thumbnail,Picture: TBitmap; LayoutRows,Files: TJSONArray;
-  Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash: string;
-  Bounds: TRectF; Scale: Single; Seen: TStringList;
+  Thumbnail,Picture,EmbeddedPicture: TBitmap; LayoutRows,Files: TJSONArray;
+  Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText: string;
+  Bounds: TRectF; Scale: Single; Seen: TStringList; ImageStream: TMemoryStream;
+  ImageStart,ImageEnd,NextObject,CharacterIndex,ByteCount,HighNibble,Nibble: Integer;
+  MenuX: Single;
+  ImageBytes: TBytes; ImageCharacter: Char;
 begin
   ARows.Free;
   HistorySelectionChange(nil); HistoryBeforeCombo.Items.Clear; HistoryAfterCombo.Items.Clear;
@@ -2985,6 +2988,12 @@ begin
           try
             LayoutRows:=Screen.GetValue<TJSONArray>('components',nil);
             if (LayoutRows=nil) or (LayoutRows.Count=0) then Continue;
+            FormText:='';
+            FormPath:=TPath.GetFullPath(TPath.Combine(FView.Document.GetValue<string>('root',''),Source.Replace('/',PathDelim)));
+            if StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(FView.Document.GetValue<string>('root',''))),FormPath) and
+              TFile.Exists(FormPath) and (TFile.GetSize(FormPath)<=16777216) and
+              SameText(THashSHA2.GetHashStringFromFile(FormPath),Screen.GetValue<string>('source_hash','')) then
+              FormText:=TFile.ReadAllText(FormPath,TEncoding.Default);
             Node:=LayoutRows.Items[0] as TJSONObject;
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
             H:=Round(EnsureRange(Node.GetValue<Double>('height',600),240.0,1000.0));
@@ -2992,25 +3001,138 @@ begin
             try
               Picture.Clear(TAlphaColors.White);
               Scale:=Min(W/Max(Node.GetValue<Double>('width',800),1),H/Max(Node.GetValue<Double>('height',600),1));
+              MenuX:=14*Scale;
               if Picture.Canvas.BeginScene then try
+                Picture.Canvas.Font.Family:='Segoe UI';
+                Picture.Canvas.Stroke.Thickness:=1;
                 for Part in LayoutRows do begin
                   Node:=Part as TJSONObject; ClassName:=LowerCase(Node.GetValue<string>('class',''));
+                  if not Node.GetValue<Boolean>('visible',True) or
+                    (ClassName='') or
+                    (ClassName='ttimer') or (ClassName='tdatasource') or
+                    (ClassName='timagelist') or (ClassName='topendialog') or
+                    StartsText('tfd',ClassName) or StartsText('tid',ClassName) or
+                    EndsText('field',ClassName) or
+                    ContainsText(ClassName,'binding') then Continue;
                   Bounds:=TRectF.Create(Node.GetValue<Double>('x')*Scale,Node.GetValue<Double>('y')*Scale,
                     (Node.GetValue<Double>('x')+Node.GetValue<Double>('width'))*Scale,
                     (Node.GetValue<Double>('y')+Node.GetValue<Double>('height'))*Scale);
                   if (Bounds.Width<3) or (Bounds.Height<3) then Continue;
-                  if ContainsText(ClassName,'label') or ContainsText(ClassName,'text') then begin
-                    Picture.Canvas.Fill.Color:=$FF143F68;
+                  if Part=LayoutRows.Items[0] then Continue;
+                  if ClassName='tmenuitem' then begin
+                    if SameText(Node.GetValue<string>('parent_class',''),'TMenuBar') then begin
+                      CaptionText:=Node.GetValue<string>('caption','');
+                      Picture.Canvas.Font.Size:=14*Scale;
+                      Picture.Canvas.Fill.Color:=$FF20364A;
+                      Bounds:=RectF(MenuX,0,MenuX+Max(70*Scale,Length(CaptionText)*9*Scale),28*Scale);
+                      Picture.Canvas.FillText(Bounds,CaptionText,True,1,[],TTextAlign.Center,TTextAlign.Center);
+                      MenuX:=Bounds.Right+4*Scale;
+                    end;
+                    Continue;
+                  end;
+                  Picture.Canvas.Font.Size:=EnsureRange(Node.GetValue<Double>('font_size',14),8.0,72.0)*Scale;
+                  Picture.Canvas.Fill.Color:=$FF20364A;
+                  ColorText:=Node.GetValue<string>('font_color','');
+                  if (Length(ColorText)=9) and (ColorText[1]='x') then
+                    Picture.Canvas.Fill.Color:=TAlphaColor(StrToInt64Def('$'+Copy(ColorText,2,8),$FF20364A))
+                  else if SameText(ColorText,'claMaroon') then Picture.Canvas.Fill.Color:=TAlphaColors.Maroon
+                  else if SameText(ColorText,'claBlack') then Picture.Canvas.Fill.Color:=TAlphaColors.Black
+                  // The blank design uses a light surface even when a runtime style
+                  // supplies the dark background intended for white text.
+                  else if SameText(ColorText,'claWhite') then Picture.Canvas.Fill.Color:=$FF20364A;
+                  if ContainsText(ClassName,'label') or (ClassName='ttext') then begin
+                    // A label is text on the parent surface, not a button-shaped box.
+                  end else if ContainsText(ClassName,'checkbox') or ContainsText(ClassName,'radiobutton') then begin
+                    Picture.Canvas.Fill.Color:=TAlphaColors.White;
+                    Picture.Canvas.FillRect(RectF(Bounds.Left+2,Bounds.CenterPoint.Y-8*Scale,
+                      Bounds.Left+18*Scale,Bounds.CenterPoint.Y+8*Scale),2,2,AllCorners,1);
+                    Picture.Canvas.Stroke.Color:=$FF687C8F;
+                    Picture.Canvas.DrawRect(RectF(Bounds.Left+2,Bounds.CenterPoint.Y-8*Scale,
+                      Bounds.Left+18*Scale,Bounds.CenterPoint.Y+8*Scale),2,2,AllCorners,1);
+                    Bounds.Left:=Bounds.Left+24*Scale;
+                  end else if ContainsText(ClassName,'image') then begin
+                    if FormText<>'' then begin
+                      ImageStart:=Pos('object '+Node.GetValue<string>('name','')+':',FormText);
+                      if ImageStart=0 then ImageStart:=Pos('inherited '+Node.GetValue<string>('name','')+':',FormText);
+                      if ImageStart>0 then begin
+                        NextObject:=PosEx(#10+'  object ',FormText,ImageStart+1);
+                        ImageStart:=PosEx('PNG = {',FormText,ImageStart);
+                        if (ImageStart>0) and ((NextObject=0) or (ImageStart<NextObject)) then begin
+                          ImageStart:=ImageStart+Length('PNG = {');
+                          ImageEnd:=PosEx('}',FormText,ImageStart);
+                          if (ImageEnd>ImageStart) and (ImageEnd-ImageStart<=16000000) then begin
+                            SetLength(ImageBytes,(ImageEnd-ImageStart) div 2);
+                            ByteCount:=0; HighNibble:=-1;
+                            for CharacterIndex:=ImageStart to ImageEnd-1 do begin
+                              ImageCharacter:=UpCase(FormText[CharacterIndex]); Nibble:=-1;
+                              if CharInSet(ImageCharacter,['0'..'9']) then Nibble:=Ord(ImageCharacter)-Ord('0')
+                              else if CharInSet(ImageCharacter,['A'..'F']) then Nibble:=Ord(ImageCharacter)-Ord('A')+10;
+                              if Nibble<0 then Continue;
+                              if HighNibble<0 then HighNibble:=Nibble
+                              else begin
+                                if ByteCount>=Length(ImageBytes) then Break;
+                                ImageBytes[ByteCount]:=Byte(HighNibble*16+Nibble);
+                                Inc(ByteCount); HighNibble:=-1;
+                              end;
+                            end;
+                            if (ByteCount>8) and (ImageBytes[0]=$89) and (ImageBytes[1]=$50) and
+                              (ImageBytes[2]=$4E) and (ImageBytes[3]=$47) then begin
+                              ImageStream:=TMemoryStream.Create; EmbeddedPicture:=TBitmap.Create;
+                              try
+                                ImageStream.WriteBuffer(ImageBytes[0],ByteCount);
+                                ImageStream.Position:=0;
+                                EmbeddedPicture.LoadFromStream(ImageStream);
+                                Picture.Canvas.DrawBitmap(EmbeddedPicture,
+                                  RectF(0,0,EmbeddedPicture.Width,EmbeddedPicture.Height),Bounds,1,True);
+                              finally EmbeddedPicture.Free; ImageStream.Free; end;
+                            end;
+                          end;
+                        end;
+                      end;
+                    end;
+                    Continue;
+                  end else if ContainsText(ClassName,'layout') then begin
+                    Continue;
                   end else begin
-                    Picture.Canvas.Fill.Color:=$FFF2F6FA;
-                    if ContainsText(ClassName,'edit') or ContainsText(ClassName,'memo') or ContainsText(ClassName,'list') then Picture.Canvas.Fill.Color:=TAlphaColors.White;
-                    Picture.Canvas.FillRect(Bounds,3,3,AllCorners,1);
-                    Picture.Canvas.Stroke.Color:=$FFB5CFE5; Picture.Canvas.DrawRect(Bounds,3,3,AllCorners,1);
-                    Picture.Canvas.Fill.Color:=$FF143F68;
+                    Picture.Canvas.Fill.Color:=TAlphaColors.White;
+                    if ContainsText(ClassName,'button') or ContainsText(ClassName,'navigator') then
+                      Picture.Canvas.Fill.Color:=$FFF1F5F8;
+                    if ContainsText(ClassName,'panel') or ContainsText(ClassName,'groupbox') or
+                      ContainsText(ClassName,'rectangle') then Picture.Canvas.Fill.Color:=$FFF7F9FB;
+                    ColorText:=Node.GetValue<string>('fill_color','');
+                    if (Length(ColorText)=9) and (ColorText[1]='x') then
+                      Picture.Canvas.Fill.Color:=TAlphaColor(StrToInt64Def('$'+Copy(ColorText,2,8),$FFFFFFFF))
+                    else if SameText(ColorText,'claNavy') then Picture.Canvas.Fill.Color:=TAlphaColors.Navy
+                    else if SameText(ColorText,'claSkyblue') then Picture.Canvas.Fill.Color:=TAlphaColors.Skyblue
+                    else if SameText(ColorText,'claCornflowerblue') then Picture.Canvas.Fill.Color:=TAlphaColors.Cornflowerblue
+                    else if SameText(ColorText,'claDarkorange') then Picture.Canvas.Fill.Color:=TAlphaColors.Darkorange
+                    else if SameText(ColorText,'claGold') then Picture.Canvas.Fill.Color:=TAlphaColors.Gold
+                    else if SameText(ColorText,'claGoldenrod') then Picture.Canvas.Fill.Color:=TAlphaColors.Goldenrod
+                    else if SameText(ColorText,'claKhaki') then Picture.Canvas.Fill.Color:=TAlphaColors.Khaki
+                    else if SameText(ColorText,'claSlateblue') then Picture.Canvas.Fill.Color:=TAlphaColors.Slateblue
+                    else if SameText(ColorText,'claWhite') then Picture.Canvas.Fill.Color:=TAlphaColors.White;
+                    if ClassName='tcircle' then Picture.Canvas.FillEllipse(Bounds,1)
+                    else Picture.Canvas.FillRect(Bounds,3,3,AllCorners,1);
+                    Picture.Canvas.Stroke.Color:=$FFB7C4CE;
+                    if ClassName='tcircle' then Picture.Canvas.DrawEllipse(Bounds,1)
+                    else Picture.Canvas.DrawRect(Bounds,3,3,AllCorners,1);
+                    Picture.Canvas.Fill.Color:=$FF20364A;
                   end;
                   CaptionText:=Node.GetValue<string>('caption','').Trim(['''',' ']).Replace('''''','''');
-                  if ContainsText(ClassName,'edit') or ContainsText(ClassName,'memo') or ContainsText(ClassName,'list') or ContainsText(ClassName,'image') then CaptionText:='';
-                  if CaptionText<>'' then Picture.Canvas.FillText(Bounds,Copy(CaptionText,1,90),True,1,[],TTextAlign.Center,TTextAlign.Center);
+                  if ContainsText(ClassName,'edit') or ContainsText(ClassName,'memo') or
+                    ContainsText(ClassName,'list') or ContainsText(ClassName,'grid') then CaptionText:='';
+                  if CaptionText<>'' then begin
+                    if ContainsText(ClassName,'label') or (ClassName='ttext') then
+                      Bounds.Inflate(0,3*Scale)
+                    else
+                      Bounds.Inflate(-4*Scale,-1*Scale);
+                    if SameText(Node.GetValue<string>('horizontal_alignment',''),'Trailing') then
+                      Picture.Canvas.FillText(Bounds,Copy(CaptionText,1,120),True,1,[],TTextAlign.Trailing,TTextAlign.Center)
+                    else if SameText(Node.GetValue<string>('horizontal_alignment',''),'Center') or
+                      ContainsText(ClassName,'button') then
+                      Picture.Canvas.FillText(Bounds,Copy(CaptionText,1,120),True,1,[],TTextAlign.Center,TTextAlign.Center)
+                    else Picture.Canvas.FillText(Bounds,Copy(CaptionText,1,120),True,1,[],TTextAlign.Leading,TTextAlign.Center);
+                  end;
                 end;
               finally Picture.Canvas.EndScene; end;
               Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(Source)+'.png');

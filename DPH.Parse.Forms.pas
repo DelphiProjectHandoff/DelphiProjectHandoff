@@ -189,10 +189,16 @@ begin
           end;
           Inc(Scan);
           if C>' ' then LastNonSpace:=Scan;
-          if Scan-ValueStart>1024*1024 then raise EReadError.Create('Text property size limit');
+          if Scan-ValueStart>16777216 then raise EReadError.Create('Text property size limit');
         until False;
         if Quote or (Depth<>0) then raise EReadError.Create('Unterminated serialized property');
-        Value:=Trim(Copy(S,ValueStart+1,Scan-ValueStart)); Position:=Scan;
+        if MatchText(PropertyName,['MultiResBitmap','Bitmap']) and (Scan-ValueStart>1024*1024) then
+          Value:='[embedded image]'
+        else begin
+          if Scan-ValueStart>1024*1024 then raise EReadError.Create('Text property size limit');
+          Value:=Trim(Copy(S,ValueStart+1,Scan-ValueStart));
+        end;
+        Position:=Scan;
         PropertyNode:=Add('property',PropertyName,Value,Stack.Last,LineStart,Scan,False);
         if (StartsText('On',PropertyName) or MatchText(PropertyName,['BeforePost','BeforeInsert','BeforeEdit','BeforeDelete','BeforeCancel','BeforeOpen'])) and (Value<>'') and not SameText(Value,'nil') then
           Add('event_binding',PropertyName,Value,PropertyNode,LineStart,Scan,False);
