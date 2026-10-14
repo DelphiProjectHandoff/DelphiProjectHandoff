@@ -646,7 +646,16 @@ begin
           if (MatchAt=0) and FormName.StartsWith('frm') and (Length(FormName)>6) then
             MatchAt:=Pos(LowerCase(Copy(FormName,4,MaxInt)),LowerCase(SourceText));
           if MatchAt=0 then Continue;
-          Excerpt:=Copy(SourceText,Max(1,MatchAt-110),420).Trim;
+          P:=Max(1,MatchAt-110);
+          if P>1 then
+            while (P<MatchAt) and not CharInSet(SourceText[P-1],[' ',#9,#10,#13]) do Inc(P);
+          Limit:=Min(Length(SourceText),P+419);
+          if Limit<Length(SourceText) then
+            while (Limit>P) and not CharInSet(SourceText[Limit],[' ',#9,#10,#13,'.','!','?']) do Dec(Limit);
+          if Limit<=P then Limit:=Min(Length(SourceText),P+419);
+          Excerpt:=Copy(SourceText,P,Limit-P+1).Trim;
+          if P>1 then Excerpt:='… '+Excerpt;
+          if Limit<Length(SourceText) then Excerpt:=Excerpt+' …';
           if SameText(R.GetValue<string>('format',''),'.log') then
             DetailHTML:=DetailHTML+'<p><strong>Recorded log excerpt:</strong> '+Encode(Excerpt)+'</p>'
           else DetailHTML:=DetailHTML+'<p>'+Encode(Excerpt)+'</p>';

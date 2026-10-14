@@ -205,6 +205,8 @@ begin
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','1. Purpose').AddPair('text','A source-supplied purpose for this application.'));
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','2. Getting started').AddPair('text','Begin with its own saved controls.'));
               GuideSections.AddElement(TJSONObject.Create.AddPair('heading','3. Convert a file').AddPair('text','Choose btnConvert on MainForm to begin the example conversion.'));
+              GuideSections.AddElement(TJSONObject.Create.AddPair('heading','4. Longer passage').AddPair('text',
+                StringOfChar('A',135)+' COMPLETEWORD btnConvert begins another documented action.'));
               GuideFacts.RemovePair('project_guides').Free;
               GuideFacts.AddPair('project_guides',TJSONArray.Create(
                 TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
@@ -231,6 +233,9 @@ begin
                   ContainsText(FlowText,'Choose btnConvert on MainForm') and
                   ContainsText(FlowText,'docs/Application_Guide.md'),
                   'A selected control shows its matching project-guide passage and source');
+                Check(ContainsText(FlowText,'COMPLETEWORD btnConvert') and
+                  not ContainsText(FlowText,StringOfChar('A',30)),
+                  'Document excerpts begin at complete words instead of clipping their first word');
                 Check(not ContainsText(FlowText,'How this lesson was prepared') and
                   not ContainsText(FlowText,'This is a saved part of a screen'),
                   'Learner page omits preparation metadata and stock control wording');
