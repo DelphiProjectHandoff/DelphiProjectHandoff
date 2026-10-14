@@ -835,6 +835,7 @@ type
     FLibraryLanguageGeneration: Cardinal;
     FMapLanguageGeneration: Cardinal;
     FGraphLanguageGeneration: Cardinal;
+    FPendingLanguageRefresh: Boolean;
     FCoverage: TJSONObject;
     FLinkTargets,FEditableLinks: TJSONArray;
     FReviewTasks: TJSONArray;
@@ -1042,11 +1043,16 @@ begin
   FLibraryLanguageGeneration := 0;
   FMapLanguageGeneration := 0;
   FGraphLanguageGeneration := 0;
-  WorkspacePageChange(WorkspaceTabs);
-  if FView <> nil then begin
-    RefreshExplorer;
-    ExplorerList.ItemIndex := FExplorerKeys.IndexOf(FSelected);
+  if (FView <> nil) and not FBusy then begin
+    StatusLabel.Text:=DATFormatText('DPH.UI.Main.Runtime.StatusLabel_Text.Text.27b34e6d78564198',
+      'Project information for %s is ready. Choose Learn the project to continue.',
+      [#$2066+FView.Document.GetValue<string>('entry')+#$2069]);
+    if not FView.Document.GetValue<Boolean>('analysis_complete') then
+      StatusLabel.Text:=StatusLabel.Text+' '+DATFormatText(
+        'DPH.UI.Main.Runtime.StatusLabel_Text.Text.994988eeb78b8d77',
+        '%s Some code could not be explained; check unanswered questions.', ['']);
   end;
+  FPendingLanguageRefresh := True;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -1948,6 +1954,14 @@ procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
 var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
+  if FPendingLanguageRefresh then begin
+    FPendingLanguageRefresh:=False;
+    WorkspacePageChange(WorkspaceTabs);
+    if (FView<>nil) and ExplorerLayout.Visible then begin
+      RefreshExplorer;
+      ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(FSelected);
+    end;
+  end;
   if FPreparationCompletionTicks>0 then begin
     Dec(FPreparationCompletionTicks);
     if FPreparationCompletionTicks=0 then ProjectPreparationLayout.Visible:=False;

@@ -14,7 +14,7 @@ var
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
   Runtime: TTranslationRuntime;
-  PackDirectory, PreferencePath, Caption, TitleText, Html: string;
+  PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html: string;
   Count, SafePaneRuleCount: Integer;
   PreferenceID: TGUID;
 begin
@@ -45,6 +45,11 @@ begin
               Descriptor.LanguageCode);
           TitleText := Runtime.Translate('DPHMainForm.BaselineLabel.Text',
             'Delphi Project Handoff');
+          if not Runtime.ActivePack.TryGetSource(
+            'DPHMainForm.BaselineLabel.Text', TitleSource) or
+            (TitleSource <> 'Delphi Project Handoff') then
+            raise Exception.Create('Incorrect main heading source in ' +
+              Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') and
             (TitleText = 'Delphi Project Handoff') then
             raise Exception.Create('Untranslated main heading in ' +

@@ -68,6 +68,7 @@ type
     FSourceByTranslatedTemplate: TDictionary<string, string>;
     FSourceByGeneratedTranslation: TDictionary<string, string>;
     FTranslatedStrings: TDictionary<string, Boolean>;
+    FDynamicMisses: TDictionary<string, Boolean>;
     FLayoutRules: TObjectList<TRuntimeLayoutRule>;
     FFontColors: TDictionary<string, string>;
   public
@@ -418,6 +419,8 @@ begin
     fallback. }
   FTranslatedStrings := TDictionary<string, Boolean>.Create(
     TIStringComparer.Ordinal);
+  FDynamicMisses := TDictionary<string, Boolean>.Create(
+    TIStringComparer.Ordinal);
   FLayoutRules := TObjectList<TRuntimeLayoutRule>.Create(True);
   FFontColors := TDictionary<string, string>.Create;
 end;
@@ -426,6 +429,7 @@ destructor TRuntimeLanguagePack.Destroy;
 begin
   FLayoutRules.Free;
   FFontColors.Free;
+  FDynamicMisses.Free;
   FTranslatedStrings.Free;
   FSourceByGeneratedTranslation.Free;
   FSourceByTranslatedTemplate.Free;
@@ -1008,6 +1012,11 @@ var
     FSourceByGeneratedTranslation.AddOrSetValue(AOutput, ASourceText);
   end;
 begin
+  if FDynamicMisses.ContainsKey(ASourceText) then
+  begin
+    ATranslatedText := ASourceText;
+    Exit(False);
+  end;
   { Dynamic refresh can see a value translated on an earlier pass.  Treat
     translated values as terminal so source prefixes such as Event -> Evento
     cannot grow by one character on every refresh. }
@@ -1131,6 +1140,7 @@ begin
       Exit(True);
     end;
   ATranslatedText := ASourceText;
+  FDynamicMisses.AddOrSetValue(ASourceText, True);
   Result := False;
 end;
 
