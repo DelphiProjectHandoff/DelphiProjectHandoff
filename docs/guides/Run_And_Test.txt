@@ -3,7 +3,7 @@ Last changed: 14 October 2026
 
 INSTALL AND START
 
-1. Download DPH-0.6.3-experimental-Windows.zip and extract the complete ZIP to
+1. Download DPH-0.6.4-experimental-Windows.zip and extract the complete ZIP to
    a writable local folder. Do not run the executable from inside the ZIP.
 2. On 64-bit Windows, open the Win64 subfolder and run
    DelphiProjectHandoff.exe. The Win32 subfolder contains the 32-bit edition.
@@ -63,7 +63,7 @@ CHECK REOPENING AND DISTRIBUTION
 12. Close DPH, restart it, and use Open saved project. Confirm that the same
     application, learning views, and generated screens reappear.
 13. To use or modify the complete Delphi source, extract
-    DPH_v0_6_2_Source_Distribution ZIP. Open DelphiProjectHandoff.dproj in RAD
+    DPH_v0_6_4_Source_Distribution ZIP. Open DelphiProjectHandoff.dproj in RAD
     Studio 37, select Win64 or Win32, and build the Release configuration.
     Keep the source folder structure intact. The source ZIP contains no
     personal .dphdb databases or Git history.

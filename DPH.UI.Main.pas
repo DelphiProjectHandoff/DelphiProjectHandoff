@@ -1042,6 +1042,10 @@ begin
   FMapLanguageGeneration := 0;
   FGraphLanguageGeneration := 0;
   WorkspacePageChange(WorkspaceTabs);
+  if FView <> nil then begin
+    RefreshExplorer;
+    ExplorerList.ItemIndex := FExplorerKeys.IndexOf(FSelected);
+  end;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -2070,9 +2074,13 @@ begin
     if not (R.Busy and ProjectPreparationLayout.Visible) then
       StatusLabel.Text:=R.MessageText;
     if (FView<>nil) and not R.Busy and not R.Failed then begin
-      StatusLabel.Text:='Project information for '+FView.Document.GetValue<string>('entry')+' is ready. Choose Learn the project to continue.';
+      StatusLabel.Text:=DATFormatText('DPH.UI.Main.Runtime.StatusLabel_Text.Text.27b34e6d78564198',
+        'Project information for %s is ready. Choose Learn the project to continue.',
+        [#$2066+FView.Document.GetValue<string>('entry')+#$2069]);
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
-        StatusLabel.Text:=StatusLabel.Text+' Some code could not be explained; check unanswered questions.';
+        StatusLabel.Text:=StatusLabel.Text+' '+DATFormatText(
+          'DPH.UI.Main.Runtime.StatusLabel_Text.Text.994988eeb78b8d77',
+          '%s Some code could not be explained; check unanswered questions.', ['']);
     end;
     if not R.Busy and FPreparingProject then begin
       FPreparingProject:=False;
@@ -4731,16 +4739,33 @@ begin
   else StatusLabel.Text:='This screenshot has no matching object in the current captured generation. Its image evidence remains available.';
 end;
 procedure TDPHMainForm.RefreshExplorer;
-var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,LabelText,Prefix: string; Depth: Integer;
+const KindKeys: array[1..19] of string =
+  ('unit','type','routine','anonymous','component','event','field','property',
+   'local','variable','parameter','resource','definition','async_operation',
+   'dynamic_control','output_artifact','sql_statement','sql_table','sql_column');
+var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,KindText,LabelText,Prefix,DisplayText: string;
+  Depth,Index: Integer; IsRightToLeft: Boolean;
 begin
-  if FView=nil then Exit; Kind:=''; if KindCombo.ItemIndex>0 then Kind:=KindCombo.Items[KindCombo.ItemIndex];
+  IsRightToLeft:=SameText(DATActiveTextDirection,'rtl');
+  if FView=nil then Exit; Kind:='';
+  if (KindCombo.ItemIndex>=Low(KindKeys)) and (KindCombo.ItemIndex<=High(KindKeys)) then
+    Kind:=KindKeys[KindCombo.ItemIndex];
   if FShowingBookmarks then begin
     FHierarchyVisible:=False; ExplorerExpandButton.Enabled:=False; NextPageButton.Enabled:=False;
     ExplorerList.Items.Clear; FExplorerKeys.Clear;
     for LabelText in FBookmarks do begin
       S:=FView.Symbol(LabelText);
-      if S<>nil then begin ExplorerList.Items.Add(S.GetValue<string>('kind')+'  '+S.GetValue<string>('name'));
+      if S<>nil then begin
+        DisplayText:=DATTranslateDynamicText(S.GetValue<string>('kind'))+'  '+S.GetValue<string>('name');
+        if IsRightToLeft then DisplayText:=#$2066+DisplayText+#$2069;
+        ExplorerList.Items.Add(DisplayText);
         FExplorerKeys.Add(LabelText); end;
+    end;
+    for Index:=0 to ExplorerList.Count-1 do begin
+      ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
+      ExplorerList.ListItems[Index].WordWrap:=True;
+      if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
+      else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
     end;
     BreadcrumbLabel.Text:='Saved places for this application ('+IntToStr(FExplorerKeys.Count)+')';
     Exit;
@@ -4766,7 +4791,16 @@ begin
           if Depth>0 then LabelText:=Copy(LabelText,LastDelimiter('.',LabelText)+1,MaxInt);
         end;
         if S.GetValue<string>('type','')<>'' then LabelText:=LabelText+' : '+S.GetValue<string>('type');
-        ExplorerList.Items.Add(Prefix+S.GetValue<string>('kind')+'  '+LabelText); FExplorerKeys.Add(S.GetValue<string>('key'));
+        KindText:=DATTranslateDynamicText(S.GetValue<string>('kind'));
+        DisplayText:=Prefix+KindText+'  '+LabelText;
+        if IsRightToLeft then DisplayText:=#$2066+DisplayText+#$2069;
+        ExplorerList.Items.Add(DisplayText); FExplorerKeys.Add(S.GetValue<string>('key'));
+      end;
+      for Index:=0 to ExplorerList.Count-1 do begin
+        ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
+        ExplorerList.ListItems[Index].WordWrap:=True;
+        if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
+        else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
       end;
     finally ExplorerList.Items.EndUpdate; end;
     BreadcrumbLabel.Text:='Learning '+TPath.GetFileNameWithoutExtension(FView.Document.GetValue<string>('entry'));

@@ -14,12 +14,24 @@ Constraints.MinHeight = 600
   FormFactor.Devices = [Desktop]
 object HeaderLayout: TLayout
 Align = Top
-Height = 68
+Height = 106
+object BaselineLabel: TLabel
+Text = 'Delphi Project Handoff'
+Align = Top
+Height = 58
+Margins.Left = 18
+Margins.Right = 18
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 28
+TextSettings.FontColor = xFF146CB4
+TextSettings.HorzAlign = Center
+end
 object LanguageCombo: TDATFMXLanguageComboBox
 Align = Right
 Width = 238
-Margins.Top = 14
-Margins.Bottom = 14
+Margins.Top = 4
+Margins.Bottom = 4
 Margins.Right = 18
 LanguageManager = DATLanguageManager
 AutoPopulate = True
@@ -28,8 +40,8 @@ end
 object LanguageLabel: TLabel
 Align = Right
 Width = 104
-Margins.Top = 14
-Margins.Bottom = 14
+Margins.Top = 4
+Margins.Bottom = 4
 Margins.Left = 12
 Margins.Right = 12
 Text = 'Language:'
@@ -65,16 +77,6 @@ Margins.Top = 12
 Margins.Bottom = 12
 Text = 'Start here'
 OnClick = HelpClick
-end
-object BaselineLabel: TLabel
-Text = 'Delphi Project Handoff'
-Align = Client
-Margins.Left = 18
-Margins.Right = 18
-StyledSettings = []
-TextSettings.Font.Size = 32
-TextSettings.FontColor = xFF146CB4
-TextSettings.HorzAlign = Center
 end
 end
 object DATLanguageManager: TDATFMXLanguageManager
@@ -487,6 +489,7 @@ end
 end
 object ExplorerList: TListBox
 Align = Client
+ItemHeight = 42
 OnClick = ExplorerClick
 OnDblClick = ExplorerExpandClick
 end
@@ -2000,7 +2003,10 @@ end
   Text = 'Learn the project'
 object LearningTopics: TListBox
 Align = Left
-Width = 188
+Width = 220
+Margins.Left = 16
+Margins.Right = 12
+ItemHeight = 40
 Items.Strings = (
 'Meet this app'
 'Learn a real task'
