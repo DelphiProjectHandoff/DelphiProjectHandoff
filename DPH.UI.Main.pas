@@ -1644,7 +1644,8 @@ begin
     R.PublicationLocale:=Trim(PublishLocaleEdit.Text);
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
-  FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Processing the selected request...';
+  FWorker.Submit(R); FBusy:=True;
+  if ACommand<>'full' then StatusLabel.Text:='Processing the selected request...';
   if ACommand='full' then begin
     ProjectPreparationMessage.Text:='Reading the selected application''s project files...';
     ProjectPreparationProgress.Value:=5;ProjectPreparationLayout.Visible:=True;
@@ -1683,7 +1684,7 @@ begin
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
-  FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
+  FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False;
   ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
   ProjectPreparationProgress.Value:=5; ProjectPreparationLayout.Visible:=True;
 end;
@@ -1872,8 +1873,8 @@ begin
     if R.RestoredDatabase<>'' then OpenSelection('',R.RestoredDatabase);
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
-    StatusLabel.Text:=R.MessageText;
-    if R.Busy and not R.Failed and (R.MessageText<>'') then StatusLabel.Text:=R.MessageText;
+    if not (R.Busy and ProjectPreparationLayout.Visible) then
+      StatusLabel.Text:=R.MessageText;
     if (FView<>nil) and not R.Busy and not R.Failed then begin
       StatusLabel.Text:='Project information for '+FView.Document.GetValue<string>('entry')+' is ready. Choose Learn the project to continue.';
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
