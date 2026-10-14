@@ -261,6 +261,8 @@ begin
           URL:=Match.Value.TrimRight(['.',',',';',')']);
           URI:=TURI.Create(URL); Host:=LowerCase(URI.Host);
           if (Host='localhost') or Host.EndsWith('.local') or Host.EndsWith('.internal') or
+            MatchText(Host,['example.com','www.example.com','example.org','www.example.org',
+              'example.net','www.example.net']) or
             TRegEx.IsMatch(Host,'^[0-9.]+$') or (Pos('.',Host)=0) then Continue;
           Site:=TJSONObject.Create.AddPair('url',URL).AddPair('source',RelativePath).AddPair('text','');
           Sites.AddElement(Site);

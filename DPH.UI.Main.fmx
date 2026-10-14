@@ -15,33 +15,24 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 56
-object FullScanButton: TButton
-Align = Right
-Width = 138
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Right = 8
-Text = 'Refresh lessons'
-OnClick = FullScanClick
-end
-
-object OpenCacheButton: TButton
-Align = Right
-Width = 145
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Right = 8
-Text = 'Open saved lessons'
-OnClick = OpenCacheClick
-end
 object OpenProjectButton: TButton
-Align = Right
+Align = Left
 Width = 145
 Margins.Top = 12
 Margins.Bottom = 12
-Margins.Right = 10
-Text = 'Choose application'
+Margins.Left = 12
+Margins.Right = 8
+Text = 'Open application'
 OnClick = OpenProjectClick
+end
+object OpenCacheButton: TButton
+Align = Left
+Width = 155
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 8
+Text = 'Open saved project'
+OnClick = OpenCacheClick
 end
 object LessonPageCombo: TComboBox
 Align = Right
@@ -64,16 +55,6 @@ Items.Strings = (
 'Saved explanations')
 OnChange = WorkspacePageChange
 end
-object SetupButton: TButton
-Align = Right
-Visible = False
-Width = 118
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Right = 8
-Text = 'Prepare lessons'
-OnClick = SetupClick
-end
 object HelpButton: TButton
 Align = Right
 Visible = False
@@ -87,7 +68,7 @@ end
 object BaselineLabel: TLabel
 Text = 'Delphi Project Handoff'
 Align = Client
-Margins.Left = 16
+Margins.Left = 20
 StyledSettings = []
 TextSettings.Font.Size = 25
 TextSettings.FontColor = xFF146CB4
@@ -143,6 +124,7 @@ Text = 'Learn the project'
 end
 end
 object LearnerTab2: TRectangle
+Visible = False
 Tag = 2
 Align = Left
 Width = 147
@@ -209,6 +191,7 @@ Text = 'Project map'
 end
 end
 object LearnerTab5: TRectangle
+Visible = False
 Tag = 5
 Align = Left
 Width = 147
@@ -281,6 +264,7 @@ Text = 'Graphs'
 end
 end
 object LearnerTab8: TRectangle
+Visible = False
 Tag = 8
 Align = Left
 Width = 147
@@ -326,6 +310,7 @@ Text = 'Search project'
 end
 end
 object LearnerTab10: TRectangle
+Visible = False
 Tag = 10
 Align = Left
 Width = 147
@@ -348,6 +333,7 @@ Text = 'Saved explanations'
 end
 end
 object LearnerTab11: TRectangle
+Visible = False
 Tag = 11
 Align = Left
 Width = 147
@@ -504,11 +490,12 @@ Height = 72
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Learn what the selected application does and how to use it. Read worked examples, field guidance, rules, answers and safe troubleshooting. Explanations are supplied by named contributors; Unknown means an answer is still needed.'
+Text = 'Explore information found in this application''s guides and help. Select a topic to read its explanation.'
 end
 object CardToolbar: THorzScrollBox
 Align = Top
 Height = 48
+Visible = False
 object CardNew: TButton
 Position.X = 12
 Position.Y = 6
@@ -545,6 +532,7 @@ end
 object CardRole: TEdit
 Align = Top
 Height = 34
+Visible = False
 Margins.Left = 12
 Margins.Right = 12
 TextPrompt = 'User role (blank means all; shared explanations always appear)'
@@ -889,6 +877,7 @@ end
 end
 object TaskTab: TTabItem
 Text = 'Learn a task'
+Visible = False
 object TaskPurposeLabel: TLabel
 Align = Top
 Margins.Left = 12
@@ -1957,14 +1946,14 @@ TextSettings.Font.Size = 16
 Lines.Strings = (
 'Learn what a Delphi application does, how to use it, and how its parts work together.'
 ''
-'1. Click Choose application at the top left and select its .dproj, .dpr or .groupproj file.'
-'2. Accept the proposed saved-lessons file in Databases. For an existing file, click Open saved lessons instead.'
-'3. Learn the project opens a route based on this application. Begin with Meet this app.'
-'4. Learn a real task shows supplied instructions, or a source-connected action that still needs an author.'
-'5. Explore related tasks, then Resolve unknowns to see what source alone cannot explain.'
+'1. Click Open application at the top left and select its .dproj, .dpr or .groupproj file.'
+'2. Accept the proposed project file in Databases. For an existing file, click Open saved project.'
+'3. Learn the project introduces this application and its starting screen.'
+'4. Learning library lists topics from this application''s guides and help.'
+'5. Screenshots shows available application images in fitted or native size.'
 ''
-'The two rows of tabs show the learning route. Prepare lessons contains settings and authoring tools for the person supplying explanations.'
-'Form designs are reconstructed layouts. Screenshots contains separately supplied images.'
+'Project map identifies forms, controls and connected actions. Graphs shows relationships.'
+'DPH does not invent screenshots when an application provides none.'
 'DPH reads the application files without changing or running them.'
 )
 end
@@ -2139,6 +2128,7 @@ end
 end
 object ScreenTab: TTabItem
 Text = 'Form designs'
+Visible = False
 object ScreenToolbar: THorzScrollBox
 Align = Top
 Height = 78
@@ -2215,10 +2205,11 @@ object ScreenshotTab: TTabItem
 Text = 'Screenshots'
 object ScreenshotToolbar: TLayout
 Align = Top
-Height = 118
+Height = 52
   Margins.Left = 12
   Margins.Right = 12
 object ScreenshotAuthor: TEdit
+Visible = False
 Position.X = 8
 Position.Y = 8
 Width = 300
@@ -2226,6 +2217,7 @@ Height = 30
 TextPrompt = 'Named screenshot contributor'
 end
 object ScreenshotCaption: TEdit
+Visible = False
 Position.X = 8
 Position.Y = 45
 Width = 500
@@ -2233,6 +2225,7 @@ Height = 30
 TextPrompt = 'Capture date, environment and what this image shows'
 end
   object ScreenshotKind: TComboBox
+  Visible = False
   Position.X = 516
   Position.Y = 45
   Width = 220
@@ -2241,6 +2234,7 @@ end
   ItemIndex = 0
   end
   object ScreenshotCallout: TButton
+  Visible = False
   Position.X = 753
   Position.Y = 82
   Width = 180
@@ -2250,6 +2244,7 @@ end
   OnClick = ScreenshotCalloutClick
   end
 object ImportScreenshotButton: TButton
+Visible = False
 Position.X = 8
 Position.Y = 82
 Width = 240
@@ -2258,8 +2253,8 @@ Text = 'Import an existing PNG screenshot'
 OnClick = ImportScreenshotClick
 end
 object ScreenshotModeCombo: TComboBox
-Position.X = 255
-Position.Y = 82
+Position.X = 8
+Position.Y = 8
 Width = 150
 Height = 30
 Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
@@ -2267,8 +2262,8 @@ ItemIndex = 0
 OnChange = ScreenshotViewChange
 end
 object ScreenshotZoom: TTrackBar
-Position.X = 415
-Position.Y = 82
+Position.X = 168
+Position.Y = 8
 Width = 140
 Height = 30
 Min = 25
@@ -2280,8 +2275,9 @@ ShowHint = True
 OnChange = ScreenshotViewChange
 end
 object ScreenshotInspectButton: TButton
-Position.X = 565
-Position.Y = 82
+Visible = False
+Position.X = 325
+Position.Y = 8
 Width = 180
 Height = 30
 Text = 'Explain linked object'
@@ -2290,7 +2286,7 @@ end
 end
 object ScreenshotEvidence: TMemo
 Align = Bottom
-  Height = 170
+  Height = 115
   Margins.Left = 12
   Margins.Right = 12
   Margins.Bottom = 12
@@ -2389,6 +2385,7 @@ end
 end
 object KnowledgeTab: TTabItem
 Text = 'Saved explanations'
+Visible = False
 object KnowledgeToolbar: TLayout
 Align = Top
 Height = 224
@@ -5894,6 +5891,7 @@ end
 end
 object GlossaryTab: TTabItem
 Text = 'Business glossary'
+Visible = False
 object GlossaryPurpose: TLabel
 Align = Top
 Height = 64

@@ -76,4 +76,9 @@
     <BuildConfiguration Include="Release"><Key>Cfg_2</Key><CfgParent>Base</CfgParent></BuildConfiguration>
   </ItemGroup>
   <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" />
+  <Target Name="CopyWebView2Loader" AfterTargets="Build">
+    <Copy SourceFiles="tools\WebView2\$(Platform)\WebView2Loader.dll"
+          DestinationFolder="$(DCC_ExeOutput)"
+          Condition="Exists('tools\WebView2\$(Platform)\WebView2Loader.dll')" />
+  </Target>
 </Project>

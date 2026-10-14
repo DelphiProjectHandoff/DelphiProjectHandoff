@@ -35,7 +35,8 @@ type
     class function ApplicationRouteTitle(AIndex: Integer): string; static;
   end;
 implementation
-uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.Defaults, DPH.Workspace.Graphs;
+uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.Defaults,
+  System.IOUtils, System.NetEncoding, DPH.Workspace.Graphs;
 
 class function TDPHExplanationModel.Encode(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
@@ -434,17 +435,28 @@ begin
 end;
 
 function TDPHExplanationModel.Page(const ATitle,ABody: string): string;
+var Logo,Directory,ImagePath: string; I: Integer;
 begin
+  Logo:=''; Directory:=ExtractFilePath(ParamStr(0));
+  for I:=0 to 5 do begin
+    ImagePath:=TPath.Combine(Directory,'images and icons\DPH-Emblem-128.png');
+    if TFile.Exists(ImagePath) then begin
+      Logo:='<img class="brand" src="data:image/png;base64,'+
+        TNetEncoding.Base64.EncodeBytesToString(TFile.ReadAllBytes(ImagePath))+'" alt="Delphi Project Handoff logo">';
+      Break;
+    end;
+    Directory:=ExtractFileDir(ExcludeTrailingPathDelimiter(Directory));
+  end;
   Result:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; base-uri ''none''"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+
-    Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;padding:26px;border-bottom:5px solid #f28c28}'+
+    Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;padding:26px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:20px}.brand{width:76px;height:76px;object-fit:contain;flex:none}'+
     'h1{font-size:28px;margin:0}body{overflow-wrap:anywhere}*{box-sizing:border-box}'+
     'h2{font-size:21px;color:#146cb4}h3{font-size:18px}'+
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+
     'pre{white-space:pre-wrap;font:15px/1.6 Segoe UI,Arial,sans-serif}table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:13px}td,th{border:1px solid #dce5ef;padding:9px;text-align:left;vertical-align:top;overflow-wrap:anywhere}'+
     'small{color:#53697f}.diagram{overflow:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
-    '.card{break-inside:avoid}}</style></head><body><header><h1>'+Encode(ATitle)+'</h1><p>'+
-    Encode(FFacts.GetValue<string>('project'))+'</p></header><main>'+
+    '.card{break-inside:avoid}}</style></head><body><header>'+Logo+'<div><h1>'+Encode(ATitle)+'</h1><p>'+
+    Encode(FFacts.GetValue<string>('project'))+'</p></div></header><main>'+
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+ABody+'</main></body></html>';
 end;
 function TDPHExplanationModel.ObjectHTML(const AKey: string): string;
@@ -1234,8 +1246,8 @@ begin
       finally LeftRecord.Free;RightRecord.Free;end;
     end));
     TaskTotal:=TaskRecords.Count;
-    Body.Append('<section class="card"><p><strong>Selected application:</strong> '+Encode(ProjectName)+
-      '. This route follows the project startup, saved screens, visible controls and connected code. Project documents add context where they exist. Each finding names its source.</p></section>');
+    Body.Append('<section class="card"><p><strong>'+Encode(ProjectName)+
+      '</strong> is explored through its starting screen, visible controls, connected actions and available help topics.</p></section>');
     case AIndex of
       0: begin
         Body.Append('<section class="card"><h2>What is this application for?</h2>');
@@ -1266,8 +1278,7 @@ begin
               ContainsText(GuideTitle,'about') or ContainsText(GuideTitle,'introduction')) then Continue;
             GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
             if GuideBody='' then Continue;
-            Body.Append('<p><strong>The <a href="#lesson_2">project documentation</a> explains:</strong> '+Encode(Copy(GuideBody,1,1800)).Replace(sLineBreak,'<br>')+
-              '</p><p><small>Source: '+Encode(Guide.GetValue<string>('source'))+'.</small></p>');
+            Body.Append('<p>'+Encode(Copy(GuideBody,1,1800)).Replace(sLineBreak,'<br>')+'</p>');
             HasPurpose:=True; Break;
           end;
           if HasPurpose then Break;
@@ -1295,19 +1306,19 @@ begin
                 Caption:=W.GetValue<string>('value'); Source:=S.GetValue<string>('range.source'); Break; end;
             if Caption<>'' then Break;
           end;
-          if Caption<>'' then Body.Append('<p><strong>The main form says:</strong> '+Encode(Caption)+
-            '. <small>Saved in '+Encode(Source)+'.</small></p>')
+          if Caption<>'' then Body.Append('<p>'+Encode(Caption)+'</p>')
           else Body.Append('<p>Begin with the project title and the window titles below; they show how the application presents itself.</p>');
         end;
         Body.Append('</section>');
-        if (Sites<>nil) and (Sites.Count>0) then begin
+        Count:=0;
+        if Sites<>nil then for V in Sites do
+          if Trim(V.GetValue<string>('text',''))<>'' then Inc(Count);
+        if Count>0 then begin
           Body.Append('<section class="card"><h2>Web information named by this project</h2>');
           for V in Sites do begin
             R:=V as TJSONObject;
-            Body.Append('<p><strong>'+Encode(R.GetValue<string>('url',''))+'</strong>');
-            if R.GetValue<string>('text','')<>'' then
-              Body.Append('<br>'+Encode(Copy(R.GetValue<string>('text',''),1,900)));
-            Body.Append('<br><small>Website reference found in '+Encode(R.GetValue<string>('source',''))+'.</small></p>');
+            if Trim(R.GetValue<string>('text',''))<>'' then
+              Body.Append('<p>'+Encode(Copy(R.GetValue<string>('text',''),1,900))+'</p>');
           end;
           Body.Append('</section>');
         end;
@@ -1331,13 +1342,13 @@ begin
           Inc(Count); if Count>=5 then Break;
         end;
         if Count=0 then Body.Append('<p>No initial form creation was identified in the captured project startup. Use the saved screens below to orient yourself.</p>');
-        Body.Append('</section><section class="card"><h2>Screens found in the saved design</h2>');
+        Body.Append('</section><section class="card"><h2>Application screens</h2>');
         Count:=0;
         if Screens<>nil then for V in Screens do begin
           Screen:=V as TJSONObject;
           Body.Append('<p><strong>'+Encode(Screen.GetValue<string>('title',Screen.GetValue<string>('name','Screen')))+
             '</strong> &mdash; <a href="#form_'+THashSHA2.GetHashString(Screen.GetValue<string>('source',''))+
-            '">open this form design</a>');
+            '">explore this screen</a>');
           for W in FFacts.GetValue<TJSONArray>('symbols') do begin
             S:=W as TJSONObject;
             if (S.GetValue<string>('kind','')='component') and
@@ -1346,18 +1357,12 @@ begin
               Body.Append(' &mdash; open '+Link(S.GetValue<string>('key'))); Break;
             end;
           end;
-          Body.Append(' <small>('+Encode(Screen.GetValue<string>('class',''))+'; '+
-            Encode(Screen.GetValue<string>('source',''))+':'+IntToStr(Screen.GetValue<Integer>('line',0))+')</small></p>');
+          Body.Append('</p>');
           Inc(Count);
         end;
         if Count=0 then Body.Append('<p>No saved form design was captured in the selected project files.</p>')
-        else Body.Append('<p>'+IntToStr(Count)+' saved screen design(s) found. '
-          +'<a href="#open_forms">Open their layouts and controls</a>.</p>');
-        if FFacts.GetValue<TJSONArray>('screenshots').Count=0 then
-          Body.Append('<p>No actual screenshot has been supplied for this application. Form designs are reconstructions, not screenshots. '
-            +'<a href="#open_screenshots">Open Screenshots</a> to see what is available.</p>')
-        else Body.Append('<p>'+IntToStr(FFacts.GetValue<TJSONArray>('screenshots').Count)+
-          ' actual picture(s) were supplied separately; <a href="#open_screenshots">open Screenshots</a> to inspect their captions and attribution.</p>');
+        else Body.Append('<p>'+IntToStr(Count)+' application forms were found. '
+          +'<a href="#open_screenshots">Open available screen images</a>.</p>');
         Body.Append('</section><section class="card"><p><a href="#lesson_1">Next: learn a task in '+Encode(ProjectName)+
           '</a></p></section>');
       end;

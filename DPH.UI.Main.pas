@@ -16,7 +16,7 @@ type
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
-    OpenProjectButton,OpenCacheButton,FullScanButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenProjectButton,OpenCacheButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -740,7 +740,6 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure OpenProjectClick(Sender: TObject);
     procedure OpenCacheClick(Sender: TObject);
-    procedure FullScanClick(Sender: TObject);
     procedure PollTimerTimer(Sender: TObject);
     procedure ChangeTimerTimer(Sender: TObject);
     procedure SearchChange(Sender: TObject);
@@ -1062,43 +1061,42 @@ begin
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
-var V:TJSONValue;R,Card:TJSONObject;
+var V,W:TJSONValue;R,Section:TJSONObject; Guides,Screens:TJSONArray; Title,SearchText:string;
 begin
  if FCardRows=nil then Exit;FCardRows.Clear;CardList.Items.Clear;
- if FKnowledge<>nil then for V in FKnowledge do begin
-  R:=V as TJSONObject;if MatchText(R.GetValue<string>('state',''),['retired','rejected']) then Continue;
-  Card:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json','{}')) as TJSONObject;
-  try
-   if (Card=nil) or (Card.GetValue<string>('record_type','')<>'learning_card') then Continue;
-   if (CardFilter.Text.Trim<>'') and not ContainsText(R.GetValue<string>('title')+' '+R.GetValue<string>('body'),CardFilter.Text.Trim) then Continue;
-   if (CardRole.Text.Trim<>'') and not SameText(Card.GetValue<string>('fields.role'),'All learners') and not SameText(Card.GetValue<string>('fields.role'),CardRole.Text.Trim) then Continue;
-   FCardRows.Add(R);CardList.Items.Add(Card.GetValue<string>('category')+': '+R.GetValue<string>('title'));
-  finally Card.Free;end;
+ if FLearningFacts<>nil then begin
+  Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides',nil);
+  if Guides<>nil then for V in Guides do begin
+   R:=V as TJSONObject;
+   for W in R.GetValue<TJSONArray>('sections') do begin
+    Section:=W as TJSONObject;
+    Title:=Section.GetValue<string>('heading','');
+    SearchText:=Title+' '+Section.GetValue<string>('text','');
+    if (CardFilter.Text.Trim<>'') and not ContainsText(SearchText,CardFilter.Text.Trim) then Continue;
+    if Trim(Section.GetValue<string>('text',''))='' then Continue;
+    FCardRows.Add(Section);CardList.Items.Add(Title);
+   end;
+  end;
+  Screens:=FLearningFacts.Document.GetValue<TJSONArray>('project_screens',nil);
+  if Screens<>nil then for V in Screens do begin
+   R:=V as TJSONObject;Title:=R.GetValue<string>('title','').Trim;
+   if Title='' then Title:=R.GetValue<string>('name','Screen');
+   if (CardFilter.Text.Trim<>'') and not ContainsText(Title,CardFilter.Text.Trim) then Continue;
+   FCardRows.Add(R);CardList.Items.Add('Screen: '+Title);
+  end;
  end;
  if CardList.Count>0 then CardList.ItemIndex:=0;CardSelectionChange(nil);
 end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
-var R,Card,Fields:TJSONObject;V:TJSONValue;Key,LinkKind:string;
+var R:TJSONObject;
 begin
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
- CardReader.Text:='Choose an explanation. Prepare lessons can add screen and field guides, worked examples, troubleshooting, questions and answers, business rules and output explanations for this application.';
+ CardReader.Text:='Choose a topic. DPH lists available guides, help topics and application screens automatically.';
  if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then Exit;
- R:=FCardRows[CardList.ItemIndex];Card:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
- try
-  Fields:=Card.GetValue<TJSONObject>('fields');CardReader.Text:=Fields.GetValue<string>('name')+sLineBreak+Fields.GetValue<string>('meaning')+sLineBreak+sLineBreak+
-   'Worked example'+sLineBreak+Fields.GetValue<string>('example')+sLineBreak+sLineBreak+
-   'Rules and mistakes to avoid'+sLineBreak+Fields.GetValue<string>('limits')+sLineBreak+sLineBreak+
-   'If the result differs'+sLineBreak+Fields.GetValue<string>('help')+sLineBreak+sLineBreak+
-   'Practice and expected answer'+sLineBreak+Fields.GetValue<string>('practice')+sLineBreak+sLineBreak+
-   'For: '+Fields.GetValue<string>('role')+'. Supplied by '+R.GetValue<string>('owner')+'. Review status: '+R.GetValue<string>('state').Replace('_',' ')+'.';
- finally Card.Free;end;
- CardEdit.Enabled:=True;
- if FView<>nil then for LinkKind in ['links','rich_links'] do begin
-  if R.GetValue(LinkKind)<>nil then for V in R.GetValue<TJSONArray>(LinkKind) do begin
-   Key:=V.GetValue<string>('canonical_key','');if (Key<>'') and (FView.Symbol(Key)<>nil) then begin CardRelated.TagString:=Key;CardRelated.Enabled:=True;Break;end;
-  end;
-  if CardRelated.Enabled then Break;
- end;
+ R:=FCardRows[CardList.ItemIndex];
+ if R.GetValue('text')<>nil then CardReader.Text:=R.GetValue<string>('heading','')+sLineBreak+sLineBreak+R.GetValue<string>('text','')
+ else CardReader.Text:=R.GetValue<string>('title',R.GetValue<string>('name','Screen'))+sLineBreak+sLineBreak+
+   'This screen is declared as '+R.GetValue<string>('class','a form')+'. Select it in the Project map to inspect its controls and connected actions. Open Screenshots to see any actual images provided with the application.';
 end;
 procedure TDPHMainForm.CardRelatedClick(Sender:TObject);
 begin
@@ -1709,8 +1707,6 @@ begin
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);NewKnowledgeClick(nil); FExportDirectory:=''; PreviewButton.Enabled:=False;
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
-procedure TDPHMainForm.FullScanClick(Sender: TObject);
-begin if FEntry='' then StatusLabel.Text:='Attach the source project first' else Submit('full'); end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
 var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
 begin
@@ -1818,9 +1814,9 @@ begin
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
     StatusLabel.Text:=R.MessageText;
-    if R.Busy and not R.Failed then StatusLabel.Text:='Preparing the selected application lessons...';
+    if R.Busy and not R.Failed then StatusLabel.Text:='Reading the selected application and its documentation...';
     if (FView<>nil) and not R.Busy and not R.Failed then begin
-      StatusLabel.Text:='Lessons for '+FView.Document.GetValue<string>('entry')+'. Choose Learn the project to continue.';
+      StatusLabel.Text:='Project information for '+FView.Document.GetValue<string>('entry')+' is ready. Choose Learn the project to continue.';
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
         StatusLabel.Text:=StatusLabel.Text+' Some code could not be explained; check unanswered questions.';
     end;
@@ -1829,7 +1825,7 @@ end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
 procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
-var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options: TJSONArray;
+var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options,Images: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
   FLineageSeed:=''; FLineageDirection:='both';
@@ -1898,6 +1894,10 @@ begin
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
   RefreshExplorer; RefreshLearning; RefreshQuestions;
+  Images:=TJSONArray.Create;
+  if FImages<>nil then for V in FImages do
+    if V.GetValue<Int64>('artifact_id',0)>0 then Images.AddElement(V.Clone as TJSONValue);
+  LoadScreenshots(Images);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
 end;
@@ -2616,6 +2616,7 @@ end;
 procedure TDPHMainForm.RefreshLearning;
 var ID: TGUID;
 begin
+  FCardRows.Clear; CardList.Items.Clear;
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); if FView=nil then Exit;
   FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,not FView.Document.GetValue<Boolean>('analysis_complete'),nil,True);
   FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
@@ -2625,18 +2626,20 @@ begin
     FFlowDirectory:=TPath.Combine(FLearningDirectory,'flow');
     TDirectory.CreateDirectory(FLearningDirectory); TDirectory.CreateDirectory(FExplainDirectory); TDirectory.CreateDirectory(FFlowDirectory);
   end;
-  LearningClick(nil); ShowExplanation; RefreshGraphics;
+  CardFilterChange(nil); LearningClick(nil); ShowExplanation; RefreshGraphics;
 end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
 var HTML,PreviewPath,Fallback: string;
 begin
   if FExplanations=nil then Exit;
   HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
+  HTML:=HTML.Replace('href="#','href="index.html#');
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
   OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
+  TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; LearningBrowser.Visible:=True;
     LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin LearningBrowser.Visible:=False; StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message; end; end;
@@ -2647,12 +2650,14 @@ begin
   if FExplanations=nil then Exit;
   if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
+  HTML:=HTML.Replace('href="#','href="index.html#');
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
   ExplainFallback.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
   PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
+  TFile.WriteAllBytes(TPath.Combine(FExplainDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
   try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainBrowser.Visible:=True;
     ExplainBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
@@ -2666,8 +2671,7 @@ begin
   ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,True); if ACancel then Exit;
   if EndsText('#open_forms',AURL) then begin
     ACancel:=True;
-    if FormCombo.Items.Count=0 then StatusLabel.Text:='No saved form design was captured for this application.'
-    else WorkspaceTabs.ActiveTab:=ScreenTab;
+    WorkspaceTabs.ActiveTab:=ScreenshotTab;
     Exit;
   end;
   P:=Pos('#form_',AURL);
@@ -2675,9 +2679,10 @@ begin
     ACancel:=True; Fragment:=Copy(AURL,P+6,MaxInt);
     for I:=0 to FormCombo.Items.Count-1 do
       if SameText(THashSHA2.GetHashString(FormCombo.Items[I]),Fragment) then begin
-        FormCombo.ItemIndex:=I; WorkspaceTabs.ActiveTab:=ScreenTab; RefreshGraphics; Exit;
+        FormCombo.ItemIndex:=I; WorkspaceTabs.ActiveTab:=ScreenshotTab;
+        StatusLabel.Text:='This form is identified in the project. Available real screen images are shown here.'; Exit;
       end;
-    StatusLabel.Text:='That saved form design is not available in this capture.'; Exit;
+    StatusLabel.Text:='This form is not available in the selected project.'; Exit;
   end;
   if EndsText('#open_screenshots',AURL) then begin ACancel:=True; WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit; end;
   if EndsText('#all_objects',AURL) or (Pos('#kind_',AURL)>0) then begin
@@ -2689,7 +2694,9 @@ begin
     FSelected:=''; FScope:=''; FPage:=0; FShowingBookmarks:=False;
     RefreshExplorer; ShowExplanation; WorkspaceTabs.ActiveTab:=ExplainTab; Exit;
   end;
-  if EndsText('#task_reader',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=TaskTab;Exit;end;
+  if EndsText('#task_reader',AURL) then begin
+    ACancel:=True;LearningTopics.ItemIndex:=1;LearningClick(nil);WorkspaceTabs.ActiveTab:=OverviewTab;Exit;
+  end;
   if EndsText('#ask_author',AURL) then begin ACancel:=True;WorkspaceTabs.ActiveTab:=QuestionsTab;Exit;end;
   P:=Pos('#lesson_',AURL);
   if P>0 then begin
@@ -2733,7 +2740,7 @@ begin
   end;
 end;
 procedure TDPHMainForm.HelpClick(Sender: TObject);
-var ID:TGUID; HTML,PreviewPath:string;
+var ID:TGUID; HTML,PreviewPath,Logo,ImagePath:string;
 begin
   WorkspaceTabs.ActiveTab:=HelpTab;
   if FLearningDirectory='' then begin
@@ -2741,23 +2748,18 @@ begin
     FExplainDirectory:=TPath.Combine(FLearningDirectory,'object'); FFlowDirectory:=TPath.Combine(FLearningDirectory,'flow');
     TDirectory.CreateDirectory(FLearningDirectory); TDirectory.CreateDirectory(FExplainDirectory); TDirectory.CreateDirectory(FFlowDirectory);
   end;
+  Logo:=''; ImagePath:=TPath.Combine(FBaseDirectory,'images and icons\DPH-Emblem-128.png');
+  if TFile.Exists(ImagePath) then Logo:='<img src="data:image/png;base64,'+
+    TNetEncoding.Base64.EncodeBytesToString(TFile.ReadAllBytes(ImagePath))+'" alt="Delphi Project Handoff logo">';
   HTML:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
-    '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
+    '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
     '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
-    'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28}h1{margin:0;font-size:30px}main{padding:26px;max-width:1000px;margin:auto}'+
+    'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:22px}header img{width:88px;height:88px;object-fit:contain}h1{margin:0;font-size:34px}main{padding:26px;max-width:1000px;margin:auto}'+
     'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
-    '*{box-sizing:border-box}a{color:#146cb4}</style><title>Learn an application with DPH</title></head><body><header><h1>Welcome to Delphi Project Handoff</h1>'+
-    '<p>Learn an unfamiliar Delphi application from its own screens, actions and supplied explanations.</p></header><main><section><h2>Begin with the application you want to learn</h2><p>Choose its Delphi project. DPH prepares a route for that application. It does not substitute lessons from another example. A knowledgeable contributor can add its purpose, complete task steps, real screenshots and expected results where source files cannot establish them.</p></section><section><h2>Your first ten minutes</h2><ol>'+
-    '<li><strong>Choose application.</strong> Click the button at the top left. Select the application''s .dproj, .dpr or .groupproj file. This identifies the program you want to learn.</li>'+
-    '<li><strong>Keep its lessons.</strong> Accept the proposed file in the Databases folder. DPH stores what it learns there. If you have already done this, use <strong>Open saved lessons</strong> instead.</li>'+
-    '<li><strong>Meet this app.</strong> Read its supplied purpose, saved screen designs and separately supplied pictures.</li>'+
-    '<li><strong>Learn a real task.</strong> Follow its own supplied steps. If no task is ready, DPH shows a source-connected action and identifies what the owner must explain.</li>'+
-    '<li><strong>Explore related tasks.</strong> Review other supplied tasks and actions found in this application.</li>'+
-    '<li><strong>Resolve unknowns.</strong> Ask for missing business meaning, expected results or actual screenshots. Source alone cannot establish them.</li></ol></section>'+
-    '<section><h2>You do not need compiler expertise to begin</h2><p>Use the two rows of tabs to follow your learning route. In Project map, the left-hand list finds parts by name and the right-hand panel explains your selection.</p>'+
-    '<p><strong>Prepare lessons</strong> is for the person supplying explanations or adjusting how source files are read. It holds the advanced settings; learners can leave them alone.</p></section>'+
-    '<section><h2>Understand what you are seeing</h2><p>Form designs are drawings made from the saved layout. Screenshots are separately supplied images of the application. An absent explanation is a question for the author, not a fact to guess.</p>'+
-    '<p>DPH reads the application''s files without changing or running it.</p></section></main></body></html>';
+    '*{box-sizing:border-box}a{color:#146cb4}</style><title>Explore an application with DPH</title></head><body><header>'+Logo+'<div><h1>Welcome to Delphi Project Handoff</h1>'+
+    '<p>Discover an unfamiliar Delphi application through its own files, help and screen images.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> at the top left and choose a .dproj, .dpr or .groupproj file. DPH reads the project and gathers its forms, connected actions, guides and help topics. The preparation message remains visible while this work is under way.</p><p>If DPH has already saved the project, choose <strong>Open saved project</strong>.</p></section>'+
+    '<section><h2>Find your way around</h2><ol><li><strong>Learn the project</strong> introduces its purpose, starting point and screens.</li><li><strong>Learning library</strong> lists topics found in that project''s guides and help.</li><li><strong>Project map</strong> lets you inspect forms, controls and connected actions.</li><li><strong>Screenshots</strong> displays available application images at fitted or native size.</li><li><strong>Graphs</strong> shows relationships between project parts.</li></ol></section>'+
+    '<section><h2>What the files can show</h2><p>DPH connects descriptions and visible controls to the source that defines their actions. A screen image is shown only when the application supplies an image; DPH does not invent one. The selected application is not run or changed during this inspection.</p></section></main></body></html>';
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
@@ -2892,13 +2894,56 @@ begin
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
-var V: TJSONValue; R: TJSONObject; Index: Integer; Thumbnail: TBitmap; Path,LabelText: string;BeforeID,AfterID:Int64;
+var V: TJSONValue; R,Asset: TJSONObject; Index: Integer; Thumbnail: TBitmap;
+  Path,LabelText,Root,RelativePath,TopicPath,TopicTitle,TopicBody,TopicDescription,ImageName: string;
+  Assets: TJSONArray; BeforeID,AfterID:Int64; Found: Boolean;
 begin
   BeforeID:=0;AfterID:=0;
   if (FImages<>nil) and (HistoryBeforeCombo.ItemIndex>=0) and (HistoryBeforeCombo.ItemIndex<FImages.Count) then BeforeID:=FImages.Items[HistoryBeforeCombo.ItemIndex].GetValue<Int64>('artifact_id');
   if (FImages<>nil) and (HistoryAfterCombo.ItemIndex>=0) and (HistoryAfterCombo.ItemIndex<FImages.Count) then AfterID:=FImages.Items[HistoryAfterCombo.ItemIndex].GetValue<Int64>('artifact_id');
   HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
   FImages.Free; FImages:=ARows; ScreenshotList.Items.Clear;
+  if FView<>nil then begin
+    Root:=IncludeTrailingPathDelimiter(TPath.GetFullPath(FView.Document.GetValue<string>('root','')));
+    Assets:=FView.Document.GetValue<TJSONArray>('project_assets',nil);
+    if Assets<>nil then for V in Assets do begin
+      if ARows.Count>=80 then Break;
+      Asset:=V as TJSONObject;
+      RelativePath:=Asset.GetValue<string>('source','');
+      if not MatchText(LowerCase(TPath.GetExtension(RelativePath)),['.png','.jpg','.jpeg']) then Continue;
+      Path:=TPath.GetFullPath(TPath.Combine(Root,RelativePath));
+      if not StartsText(Root,Path) or not TFile.Exists(Path) or (TFile.GetSize(Path)>16777216) then Continue;
+      ImageName:=TPath.GetFileName(Path); TopicTitle:=''; TopicDescription:='';
+      Found:=ContainsText(ImageName,'screenshot') or ContainsText(ImageName,'screen-shot');
+      TopicPath:=TPath.Combine(TPath.GetDirectoryName(TPath.GetDirectoryName(Path)),'topics');
+      if TDirectory.Exists(TopicPath) then
+        for var TopicFile in TDirectory.GetFiles(TopicPath,'*.html') do begin
+          if TFile.GetSize(TopicFile)>262144 then Continue;
+          TopicBody:=TFile.ReadAllText(TopicFile,TEncoding.UTF8);
+          if ContainsText(TopicBody,ImageName) then begin
+            Found:=True; TopicTitle:=TPath.GetFileNameWithoutExtension(TopicFile).Replace('-',' ');
+            if TRegEx.IsMatch(TopicBody,'(?is)<p\b[^>]*>(.*?)</p>') then
+              TopicDescription:=TRegEx.Match(TopicBody,'(?is)<p\b[^>]*>(.*?)</p>').Groups[1].Value;
+            TopicDescription:=TNetEncoding.HTML.Decode(TRegEx.Replace(TopicDescription,'<[^>]+>','')).Trim;
+            Break;
+          end;
+        end;
+      if not Found then Continue;
+      Thumbnail:=TBitmap.Create;
+      try
+        try Thumbnail.LoadFromFile(Path); except on E: Exception do Continue; end;
+        if (Thumbnail.Width<800) or (Thumbnail.Height<500) then Continue;
+      finally Thumbnail.Free; end;
+      if TopicTitle='' then TopicTitle:=TPath.GetFileNameWithoutExtension(Path).Replace('_',' ');
+      R:=TJSONObject.Create.AddPair('artifact_id',TJSONNumber.Create(-ARows.Count-1))
+        .AddPair('generation_id',TJSONNumber.Create(FView.Document.GetValue<Int64>('generation_id')))
+        .AddPair('caption',TopicTitle).AddPair('description',Copy(TopicDescription,1,900))
+        .AddPair('image_kind','Application screen')
+        .AddPair('author','Application help').AddPair('managed_path',Path)
+        .AddPair('image_sha256',THashSHA2.GetHashStringFromFile(Path));
+      ARows.AddElement(R);
+    end;
+  end;
   for V in ARows do begin R:=V as TJSONObject;
     LabelText:='ID '+R.GetValue('artifact_id').Value+' | gen '+R.GetValue('generation_id').Value+' | '+R.GetValue<string>('caption');HistoryBeforeCombo.Items.Add(LabelText);HistoryAfterCombo.Items.Add(LabelText);
     Index:=ScreenshotList.Items.Add(R.GetValue<string>('image_kind','Screenshot')+': '+R.GetValue<string>('caption'));
@@ -2911,10 +2956,11 @@ begin
       except on E: Exception do ScreenshotList.ListItems[Index].Text:='[Unavailable] '+ScreenshotList.ListItems[Index].Text; end;
     finally Thumbnail.Free; end;
   end;
-  ScreenshotEvidence.Text:='Imported images are contributor evidence, separate from the design-time reconstruction. Capture time and runtime origin require review.';
+  ScreenshotEvidence.Text:='Select an application screen image. Use Fit for a small view or Native pixels for full size.';
   ScreenshotImage.Bitmap.SetSize(0,0);
   if ARows.Count>0 then begin HistoryBeforeCombo.ItemIndex:=ARows.Count-1;HistoryAfterCombo.ItemIndex:=0;end;
   for Index:=0 to ARows.Count-1 do begin if ARows.Items[Index].GetValue<Int64>('artifact_id')=BeforeID then HistoryBeforeCombo.ItemIndex:=Index;if ARows.Items[Index].GetValue<Int64>('artifact_id')=AfterID then HistoryAfterCombo.ItemIndex:=Index;end;
+  if ScreenshotList.Count>0 then begin ScreenshotList.ItemIndex:=0; ScreenshotClick(nil); end;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
 var R,Card,Picture:TJSONObject;V:TJSONValue;Path:string;Number:Integer;
@@ -2925,7 +2971,8 @@ begin
   try
     if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Screenshot changed after validation');
     ScreenshotImage.Bitmap.LoadFromFile(Path); UpdateScreenshotBounds;
-    ScreenshotEvidence.Text:=R.GetValue<string>('image_kind','Screenshot')+': '+R.GetValue<string>('caption')+sLineBreak+'Supplied by '+R.GetValue<string>('author')+'. This image was supplied separately; its origin remains attributed to the contributor.';
+    ScreenshotEvidence.Text:=R.GetValue<string>('image_kind','Screenshot')+': '+
+      R.GetValue<string>('caption')+sLineBreak+R.GetValue<string>('description','');
     Number:=0;
     if FKnowledge<>nil then for V in FKnowledge do begin
       if MatchText(V.GetValue<string>('state',''),['retired','rejected']) then Continue;
@@ -4366,6 +4413,8 @@ begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
+  if (FSelected='') and (GraphCombo.ItemIndex>=0) and
+    MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FWholeGraph:=True;
   GraphPaint.Height:=4500;
   IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
   GraphLegend.Text:='Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence';
@@ -4392,10 +4441,12 @@ begin
   end;
   if (FGraph<>nil) and (FExplanations<>nil) then begin
     if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
+    HTML:=HTML.Replace('href="#','href="index.html#');
     GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
     if not FPreviewPages.Contains(GraphPath) then begin
       TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(GraphPath);
     end;
+    TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
     try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
       FlowBrowser.Navigate('file://'+GraphPath);
     except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML graph view unavailable; native graph retained: '+E.Message; end; end;
