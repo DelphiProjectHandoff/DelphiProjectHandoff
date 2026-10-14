@@ -8,7 +8,7 @@ uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITyp
 type
   TDPHMainForm = class(TForm)
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,GraphPurpose,InspectorTitle,InspectorPurpose: TLabel;
-    ProjectSearchProgress: TLayout;
+    ProjectSearchProgress,ProjectPreparationLayout: TLayout;
     ProjectSearchSpinner: TAniIndicator;
     ProjectSearchProgressText: TLabel;
     ProjectPreparationMessage: TLabel;
@@ -1644,8 +1644,11 @@ begin
     R.PublicationLocale:=Trim(PublishLocaleEdit.Text);
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
-  FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Working in background...';
-  if ACommand='full' then ProjectPreparationMessage.Visible:=True;
+  FWorker.Submit(R); FBusy:=True; StatusLabel.Text:='Processing the selected request...';
+  if ACommand='full' then begin
+    ProjectPreparationMessage.Text:='Reading the selected application''s project files...';
+    ProjectPreparationProgress.Value:=5;ProjectPreparationLayout.Visible:=True;
+  end;
     FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
@@ -1681,9 +1684,8 @@ begin
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False; StatusLabel.Text:='Checking selected project; the current workspace is retained until accepted...';
-  ProjectPreparationMessage.Visible:=True;
-  ProjectPreparationMessage.Text:='Reading the selected application and preparing its learning views...';
-  ProjectPreparationProgress.Value:=5; ProjectPreparationProgress.Visible:=True;
+  ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
+  ProjectPreparationProgress.Value:=5; ProjectPreparationLayout.Visible:=True;
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -1760,11 +1762,13 @@ begin
   while FWorker.Poll(R) do
   try
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
-    if R.Busy and ProjectPreparationProgress.Visible then begin
-      if ContainsText(R.MessageText,'guides') then ProjectPreparationProgress.Value:=45
-      else if ContainsText(R.MessageText,'Saving revision') then ProjectPreparationProgress.Value:=70
-      else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,15);
-      ProjectPreparationMessage.Text:=R.MessageText;
+    if R.Busy and ProjectPreparationLayout.Visible then begin
+      if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=25
+      else if ContainsText(R.MessageText,'Tracing forms') then ProjectPreparationProgress.Value:=50
+      else if ContainsText(R.MessageText,'Saving project findings') then ProjectPreparationProgress.Value:=65
+      else if ContainsText(R.MessageText,'Searching project-local') or ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=75
+      else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,5);
+      if R.MessageText<>'' then ProjectPreparationMessage.Text:=R.MessageText;
     end;
     if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
@@ -1777,8 +1781,7 @@ begin
     end;
     if not R.Busy then begin
       ProjectPreparationProgress.Value:=100;
-      ProjectPreparationProgress.Visible:=False;
-      ProjectPreparationMessage.Visible:=False;
+      ProjectPreparationLayout.Visible:=False;
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
@@ -1870,7 +1873,7 @@ begin
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
     StatusLabel.Text:=R.MessageText;
-    if R.Busy and not R.Failed then StatusLabel.Text:='Reading the selected application and its documentation...';
+    if R.Busy and not R.Failed and (R.MessageText<>'') then StatusLabel.Text:=R.MessageText;
     if (FView<>nil) and not R.Busy and not R.Failed then begin
       StatusLabel.Text:='Project information for '+FView.Document.GetValue<string>('entry')+' is ready. Choose Learn the project to continue.';
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
@@ -2973,7 +2976,7 @@ begin
         end;
         Seen.Clear; Done:=0;
         ImageDirectory:=TPath.Combine(FLearningDirectory,'screens'); TDirectory.CreateDirectory(ImageDirectory);
-        ProjectPreparationMessage.Visible:=True; ProjectPreparationProgress.Visible:=True;
+        ProjectPreparationLayout.Visible:=True;
         for V in Files do begin
           R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;

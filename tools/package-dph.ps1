@@ -1,4 +1,7 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.0')
+param(
+ [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.1',
+ [string]$Win32BuildDirectory='bin\Win32\Release'
+)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -11,7 +14,11 @@ foreach ($arch in @('Win32','Win64')) {
  $archRoot=Join-Path $packageRoot $arch
  [IO.Directory]::CreateDirectory($archRoot) | Out-Null
  foreach ($name in @('DelphiProjectHandoff.exe','WebView2Loader.dll')) {
-  Copy-Item -LiteralPath (Join-Path $projectRoot ('bin\'+$arch+'\Release\'+$name)) -Destination $archRoot
+  $buildDirectory='bin\'+$arch+'\Release'
+  if ($arch -eq 'Win32') {$buildDirectory=$Win32BuildDirectory}
+  $source=[IO.Path]::GetFullPath((Join-Path $projectRoot (Join-Path $buildDirectory $name)))
+  if (-not $source.StartsWith($projectRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {throw "Unsafe build path: $source"}
+  Copy-Item -LiteralPath $source -Destination $archRoot
  }
 }
 foreach ($directory in @('migrations','help','images and icons')) {

@@ -119,7 +119,12 @@ begin
       if FRequests.PopItem(Request)<>wrSignaled then Continue;
       try
         OpeningCached:=Request.Command='open';
-        Respond(nil,'Working in background...',True,False,False,False);
+        if Request.Command='open' then
+          Respond(nil,'Opening the saved project and locating its Delphi files...',True,False,False,False)
+        else if MatchText(Request.Command,['incremental','full','check','relocate']) then
+          Respond(nil,'Checking the selected application and its Delphi files...',True,False,False,False)
+        else
+          Respond(nil,'Processing the selected request...',True,False,False,False);
         if Request.Command='restore_backup' then begin
           TDPHProjectBackup.Restore(Request.Database,Request.ExportDirectory,TPath.Combine(FBaseDirectory,'migrations'));
           LifecycleResponse:=TDPHWorkspaceResponse.Create;
@@ -421,13 +426,13 @@ begin
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
               RunScan:=Changed;
-              if Changed then Respond(nil,'Source modification detected; analysis stale; reassessing...',True,True,False,False)
+              if Changed then Respond(nil,'The application files changed; reading the updated project...',True,True,False,False)
               else if OpeningCached then begin
                 Cached.RemovePair('project_guides').Free;
                 Cached.RemovePair('project_screens').Free;
                 Cached.RemovePair('project_assets').Free;
                 Cached.RemovePair('project_sites').Free;
-                Respond(nil,'Refreshing this application''s guides, logs and website references...',True,False,False,False);
+                Respond(nil,'Refreshing project-local guides, help, logs and referenced websites...',True,False,False,False);
                 TDPHLearningDiscovery.AddEvidence(Cached,Cached);
                 Respond(Cached.Clone as TJSONObject,'Cached project verified; application information refreshed',False,False,False,False,nil,'',nil,Request.Entry);
               end
@@ -440,18 +445,20 @@ begin
             Config:=Store.AddConfiguration(Request.Platform,'37.0',Defines.ToJSON,'[]',Text);
           finally Defines.Free; end;
           Store.SelectConfiguration(Config);
+          Respond(nil,'Reading Delphi project files and form definitions...',True,Changed,False,False);
           Scan:=Analyzer.Scan(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.Command<>'full',Request.CodePage);
           try
             if Terminated then Continue;
+            Respond(nil,'Tracing forms, controls, user actions and code connections...',True,Changed,False,False);
             Graph:=Semantic.Analyze(Scan,Request.Command<>'full');
             try
               if Terminated then Continue;
-              Respond(nil,'Saving revision-consistent analysis...',True,Changed,False,False);
+              Respond(nil,'Saving project findings and preparing learning views...',True,Changed,False,False);
               Generation:=TDPHSemanticPersistence.Stage(Scan,Graph,Store,Config);
               if Terminated then begin Store.FailGeneration(Generation,'Cancelled by user'); Continue; end;
               Document:=TDPHWorkspaceView.Capture(Scan,Graph,Generation,Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
               try
-                Respond(nil,'Reading this application''s guides, logs, screens and website references...',True,Changed,False,False);
+                Respond(nil,'Searching project-local guides, help, notes, logs and referenced websites...',True,Changed,False,False);
                 TDPHLearningDiscovery.AddEvidence(Document,Document);
                 Store.SaveWorkspaceView(Generation,Document.ToJSON);
                 if TDPHSemanticPersistence.Publish(Scan,Graph,Store,Generation) then MessageText:='Analysis current'

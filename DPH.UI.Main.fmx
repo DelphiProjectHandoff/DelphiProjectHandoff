@@ -365,26 +365,32 @@ WordWrap = True
 Margins.Left = 8
 Margins.Right = 8
 end
-object ProjectPreparationMessage: TLabel
+object ProjectPreparationLayout: TLayout
 Align = Top
-Height = 36
+Height = 42
 Visible = False
-Margins.Left = 16
-Margins.Right = 16
-StyledSettings = []
-TextSettings.Font.Size = 15
-TextSettings.FontColor = xFF146CB4
-Text = 'Reading this application''s source files, screens, guides, and logs. Please wait...'
-end
 object ProjectPreparationProgress: TProgressBar
-Align = Top
+Align = Right
+Width = 280
 Height = 12
-Visible = False
-Margins.Left = 16
+Margins.Left = 12
 Margins.Right = 16
+Margins.Top = 15
+Margins.Bottom = 15
 Min = 0
 Max = 100
 Value = 0
+endobject ProjectPreparationMessage: TLabel
+Align = Client
+Margins.Left = 16
+Margins.Right = 10
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 15
+TextSettings.FontColor = xFF146CB4
+Text = 'Checking the selected application...'
+end
+
 end
 object ExplorerLayout: TLayout
 Align = Left
