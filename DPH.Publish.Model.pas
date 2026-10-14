@@ -327,6 +327,9 @@ begin
       if AView.Document.GetValue('project_screens')<>nil then
         FDocument.AddPair('project_screens',CaptureValue(AView.Document.GetValue('project_screens')))
       else FDocument.AddPair('project_screens',TJSONArray.Create);
+      if AView.Document.GetValue('project_startup_forms')<>nil then
+        FDocument.AddPair('project_startup_forms',CaptureValue(AView.Document.GetValue('project_startup_forms')))
+      else FDocument.AddPair('project_startup_forms',TJSONArray.Create);
       if AView.Document.GetValue('project_assets')<>nil then
         FDocument.AddPair('project_assets',CaptureValue(AView.Document.GetValue('project_assets')))
       else FDocument.AddPair('project_assets',TJSONArray.Create);

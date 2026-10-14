@@ -1205,7 +1205,7 @@ var
   TaskRecords: TList<TJSONObject>;
   HandlerRelations: TList<TJSONObject>;
   ProjectName,ActionName,ControlName,EventName,Caption,Handler,Source,GuideTitle,GuideBody,EffectVerb: string;
-  Guides,GuideSections,Screens,Sites: TJSONArray; Guide,GuideSection: TJSONObject;
+  Guides,GuideSections,Screens,Sites,StartupForms: TJSONArray; Guide,GuideSection: TJSONObject;
   Count,TaskIndex,TaskTotal,ActionIndex,P,EffectCount: Integer;
   HasPurpose: Boolean;
 begin
@@ -1214,6 +1214,7 @@ begin
   ProjectName:=FFacts.GetValue<string>('project','the selected application');
   Guides:=FFacts.GetValue<TJSONArray>('project_guides',nil);
   Screens:=FFacts.GetValue<TJSONArray>('project_screens',nil);
+  StartupForms:=FFacts.GetValue<TJSONArray>('project_startup_forms',nil);
   Sites:=FFacts.GetValue<TJSONArray>('project_sites',nil);
   Body:=TStringBuilder.Create;
   TaskRecords:=TList<TJSONObject>.Create;
@@ -1331,15 +1332,31 @@ begin
         if Count=0 then Body.Append('<p>No Delphi project file was available in this capture.</p>');
         Body.Append('</section><section class="card"><h2>Where the application starts</h2>');
         Count:=0;
-        for V in FFacts.GetValue<TJSONArray>('startup') do begin
+        if StartupForms<>nil then for V in StartupForms do begin
           StartupRow:=V as TJSONObject;
-          if not ContainsText(StartupRow.GetValue<string>('text',''),'CreateForm') then Continue;
-          Body.Append('<p>The project creates a form with <code>'+Encode(StartupRow.GetValue<string>('text',''))+
-            '</code>. <small>'+Encode(StartupRow.GetValue<string>('range.source',''))+':'+
-            IntToStr(StartupRow.GetValue<Integer>('range.line',0))+'</small></p>');
-          Inc(Count); if Count>=5 then Break;
+          if Count=0 then Caption:='The first form registered for automatic creation is '
+          else Caption:='The program also registers ';
+          Source:=StartupRow.GetValue<string>('screen','');
+          if Screens<>nil then for W in Screens do begin
+            Screen:=W as TJSONObject;
+            if SameText(Screen.GetValue<string>('source',''),Source) and (Source<>'') then begin
+              GuideTitle:=Screen.GetValue<string>('title','');
+              if GuideTitle='' then GuideTitle:=StartupRow.GetValue<string>('instance','form');
+              Caption:=Caption+'<a href="#form_'+THashSHA2.GetHashString(Source)+'">'+
+                Encode(GuideTitle)+'</a> '; Break;
+            end;
+          end;
+          if not ContainsText(Caption,'</a>') then Caption:=Caption+
+            Encode(StartupRow.GetValue<string>('instance','form'))+' ';
+          Body.Append('<p>'+Caption+'(<code>'+Encode(StartupRow.GetValue<string>('class',''))+
+            '</code>).');
+          if StartupRow.GetValue<string>('unit','')<>'' then
+            Body.Append(' Its form class is declared in <code>'+Encode(StartupRow.GetValue<string>('unit',''))+'</code>.');
+          Body.Append(' <small>'+Encode(StartupRow.GetValue<string>('program',''))+':'+
+            IntToStr(StartupRow.GetValue<Integer>('line',0))+'</small></p>');
+          Inc(Count);
         end;
-        if Count=0 then Body.Append('<p>No initial form creation was identified in the captured project startup. Use the saved screens below to orient yourself.</p>');
+        if Count=0 then Body.Append('<p>The available project files do not identify which form opens first. Explore the screens below to find the application entry point.</p>');
         Body.Append('</section><section class="card"><h2>Application screens</h2>');
         Count:=0;
         if Screens<>nil then for V in Screens do begin

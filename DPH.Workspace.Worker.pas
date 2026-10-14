@@ -430,6 +430,7 @@ begin
               else if OpeningCached then begin
                 Cached.RemovePair('project_guides').Free;
                 Cached.RemovePair('project_screens').Free;
+                Cached.RemovePair('project_startup_forms').Free;
                 Cached.RemovePair('project_assets').Free;
                 Cached.RemovePair('project_sites').Free;
                 Respond(nil,'Refreshing project-local guides, help, logs and referenced websites...',True,False,False,False);

@@ -18,8 +18,8 @@ uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.Str
 
 class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject);
 var
-  Guides,Screens,Sections,Nodes,Files,Assets,Sites: TJSONArray;
-  FileRow,Node,Child,Screen,Guide,Section,Site: TJSONObject;
+  Guides,Screens,Sections,Nodes,Files,Assets,Sites,StartupForms: TJSONArray;
+  FileRow,Node,Child,Screen,Guide,Section,Site,StartupForm,UnitFile: TJSONObject;
   Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title,URL,Host: string;
   Converter,TempDir,OutputPath,CommandLine,ProfileURL,OutputFormat: string;
   Paths,PreferredPaths: TStringList;
@@ -34,6 +34,10 @@ var
   FileStream: TFileStream;
   Matches: TMatchCollection;
   Match: TMatch;
+  ProgramText,UnitText,FormClass,FormVariable,UnitPath,FormSource: string;
+  ProgramMatch,UnitMatch: TMatch;
+  ProgramBytes: TBytes;
+  ByteIndex,SourceLine: Integer;
   PageMatches,Paragraphs: TMatchCollection;
   PageMatch,Paragraph: TMatch;
   PageNumber: Integer;
@@ -117,8 +121,10 @@ var
   end;
 begin
   Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create; Sites:=TJSONArray.Create;
+  StartupForms:=TJSONArray.Create;
   AFacts.AddPair('project_guides',Guides); AFacts.AddPair('project_screens',Screens);
   AFacts.AddPair('project_assets',Assets); AFacts.AddPair('project_sites',Sites);
+  AFacts.AddPair('project_startup_forms',StartupForms);
   Root:=AWorkspace.GetValue<string>('root','');
   Files:=AWorkspace.GetValue<TJSONArray>('syntax.files',nil);
   if Files<>nil then for V in Files do begin
@@ -147,6 +153,77 @@ begin
     end;
   end;
   if (Root='') or not TDirectory.Exists(Root) then Exit;
+  // Delphi syntax is ASCII even when a legacy-encoded comment prevents the
+  // full parser from decoding a program file. Read that syntax without
+  // interpreting non-ASCII bytes, and keep the result tied to captured files.
+  if Files<>nil then for V in Files do begin
+    FileRow:=V as TJSONObject; Path:=FileRow.GetValue<string>('path','');
+    if not SameText(TPath.GetExtension(Path),'.dpr') or
+      StartsText('external/',Path) or (StartupForms.Count>0) then Continue;
+    RelativePath:=TPath.GetFullPath(TPath.Combine(Root,Path.Replace('/',PathDelim)));
+    if not StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(Root)),RelativePath) or
+      not TFile.Exists(RelativePath) then Continue;
+    try
+      if TFile.GetSize(RelativePath)>1048576 then Continue;
+      ProgramBytes:=TFile.ReadAllBytes(RelativePath);
+      if (Length(ProgramBytes)>=2) and (ProgramBytes[0]=$FF) and (ProgramBytes[1]=$FE) then
+        ProgramText:=TEncoding.Unicode.GetString(ProgramBytes,2,Length(ProgramBytes)-2)
+      else if (Length(ProgramBytes)>=2) and (ProgramBytes[0]=$FE) and (ProgramBytes[1]=$FF) then
+        ProgramText:=TEncoding.BigEndianUnicode.GetString(ProgramBytes,2,Length(ProgramBytes)-2)
+      else begin
+        SetLength(ProgramText,Length(ProgramBytes));
+        for ByteIndex:=0 to High(ProgramBytes) do
+          if ProgramBytes[ByteIndex]<128 then ProgramText[ByteIndex+1]:=Char(ProgramBytes[ByteIndex])
+          else ProgramText[ByteIndex+1]:=' ';
+      end;
+      for ProgramMatch in TRegEx.Matches(ProgramText,
+        '(?i)\bApplication\s*\.\s*CreateForm\s*\(\s*(T[A-Za-z_][A-Za-z_0-9]*)\s*,\s*([A-Za-z_][A-Za-z_0-9]*)\s*\)') do begin
+        FormClass:=ProgramMatch.Groups[1].Value;
+        FormVariable:=ProgramMatch.Groups[2].Value;
+        UnitPath:=''; FormSource:='';
+        UnitMatch:=TRegEx.Match(ProgramText,
+          '(?i)\b[A-Za-z_][A-Za-z_0-9.]*\s+in\s+''([^'']+\.pas)''\s*\{\s*'+
+          TRegEx.Escape(FormVariable)+'\s*\}');
+        if UnitMatch.Success then UnitPath:=UnitMatch.Groups[1].Value.Replace('\','/');
+        if UnitPath<>'' then begin
+          UnitFile:=nil;
+          for K:=0 to Files.Count-1 do
+            if SameText((Files.Items[K] as TJSONObject).GetValue<string>('path',''),UnitPath) then begin
+              UnitFile:=Files.Items[K] as TJSONObject; Break;
+            end;
+          if UnitFile<>nil then begin
+            RelativePath:=TPath.GetFullPath(TPath.Combine(Root,UnitPath.Replace('/',PathDelim)));
+            if StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(Root)),RelativePath) and
+              TFile.Exists(RelativePath) and (TFile.GetSize(RelativePath)<=4194304) then begin
+              ProgramBytes:=TFile.ReadAllBytes(RelativePath);
+              SetLength(UnitText,Length(ProgramBytes));
+              for ByteIndex:=0 to High(ProgramBytes) do
+                if ProgramBytes[ByteIndex]<128 then UnitText[ByteIndex+1]:=Char(ProgramBytes[ByteIndex])
+                else UnitText[ByteIndex+1]:=' ';
+              if not TRegEx.IsMatch(UnitText,'(?i)\b'+TRegEx.Escape(FormClass)+
+                '\s*=\s*class\s*\(\s*T[A-Za-z_][A-Za-z_0-9]*') then UnitPath:='';
+            end else UnitPath:='';
+          end else UnitPath:='';
+        end;
+        for K:=0 to Screens.Count-1 do begin
+          Screen:=Screens.Items[K] as TJSONObject;
+          if SameText(Screen.GetValue<string>('class',''),FormClass) and
+            ((UnitPath='') or SameText(TPath.ChangeExtension(Screen.GetValue<string>('source',''),'.pas'),UnitPath)) then begin
+            FormSource:=Screen.GetValue<string>('source',''); Break;
+          end;
+        end;
+        SourceLine:=1;
+        for ByteIndex:=1 to ProgramMatch.Index do
+          if ProgramText[ByteIndex]=#10 then Inc(SourceLine);
+        StartupForm:=TJSONObject.Create.AddPair('class',FormClass)
+          .AddPair('instance',FormVariable).AddPair('program',Path)
+          .AddPair('line',TJSONNumber.Create(SourceLine))
+          .AddPair('unit',UnitPath).AddPair('screen',FormSource);
+        StartupForms.AddElement(StartupForm);
+        if StartupForms.Count>=20 then Break;
+      end;
+    except on E: Exception do Continue; end;
+  end;
   Paths:=TStringList.Create; PreferredPaths:=TStringList.Create; Lines:=TStringList.Create;
   try
     Visit(Root,0); Paths.Sort; PreferredPaths.Sort;

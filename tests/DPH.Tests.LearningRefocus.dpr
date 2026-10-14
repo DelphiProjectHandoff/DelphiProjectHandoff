@@ -51,6 +51,12 @@ begin
         TPath.Combine(Work,'Engineering_Guide.docx'));
       TFile.WriteAllText(TPath.Combine(Work,'Training_Notes.rtf'),
         '{\rtf1\ansi The test application has a saved training note.}',TEncoding.ASCII);
+      TFile.WriteAllBytes(TPath.Combine(Work,'Legacy.dpr'),
+        TEncoding.GetEncoding(1252).GetBytes('program Legacy; // caf'+#$00E9+sLineBreak+
+          'uses MainForm in ''MainForm.pas'' {MainForm};'+sLineBreak+
+          'begin Application.CreateForm(TMainForm, MainForm); Application.Run; end.'));
+      TFile.WriteAllText(TPath.Combine(Work,'MainForm.pas'),
+        'unit MainForm; interface type TMainForm = class(TForm) end; implementation end.',TEncoding.ASCII);
       var ODTContent:=TPath.Combine(Work,'content.xml');
       TFile.WriteAllText(ODTContent,
         '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p>ODT learning guide explains the saved screen.</text:p></office:text></office:body></office:document-content>',TEncoding.UTF8);
@@ -62,7 +68,13 @@ begin
       TFile.Delete(ODTContent);
       var DiscoveryFacts:=TJSONObject.Create.AddPair('root',Work);
       try
+        DiscoveryFacts.AddPair('syntax',TJSONObject.Create.AddPair('files',TJSONArray.Create(
+          TJSONObject.Create.AddPair('path','Legacy.dpr'),
+          TJSONObject.Create.AddPair('path','MainForm.pas'))));
         TDPHLearningDiscovery.AddEvidence(DiscoveryFacts,DiscoveryFacts);
+        Check((DiscoveryFacts.GetValue<TJSONArray>('project_startup_forms').Count=1) and
+          SameText(DiscoveryFacts.GetValue<TJSONArray>('project_startup_forms').Items[0].GetValue<string>('unit',''),'MainForm.pas'),
+          'Project startup identifies the first form and confirms its class in the Pascal unit');
         var FoundLog:=False;
         var FoundPDF:=False;
         var FoundDOCX:=False;
