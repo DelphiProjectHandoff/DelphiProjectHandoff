@@ -30,7 +30,7 @@ Items.Strings = (
 'Project map'
 'Form designs'
 'Screenshots'
-'Graphs'
+'Application diagrams'
 'Business glossary'
 'Search project'
 'Saved explanations')
@@ -237,7 +237,7 @@ end
 object LearnerTab7: TRectangle
 Tag = 7
 Align = Left
-Width = 100
+Width = 155
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -253,7 +253,7 @@ StyledSettings = []
 TextSettings.Font.Size = 13
 TextSettings.FontColor = xFF125A92
 TextSettings.HorzAlign = Center
-Text = 'Graphs'
+Text = 'Application diagrams'
 end
 end
 end
@@ -393,7 +393,7 @@ end
 end
 object ExplorerLayout: TLayout
 Align = Left
-Width = 240
+Width = 300
 Margins.Left = 16
 object FilterLayout: TLayout
 Align = Top
@@ -407,7 +407,7 @@ end
 object KindCombo: TComboBox
 Position.X = 0
 Position.Y = 38
-Width = 220
+Width = 284
 Height = 28
 Items.Strings = (
 'All'
@@ -437,7 +437,7 @@ end
 object ExplorerExpandButton: TButton
 Position.X = 0
 Position.Y = 76
-Width = 220
+Width = 284
 Height = 28
 Text = 'Expand / collapse selected'
 OnClick = ExplorerExpandClick
@@ -1977,7 +1977,7 @@ Lines.Strings = (
 '4. Learning library lists topics from this application''s guides and help.'
 '5. Screenshots shows available application images in fitted or native size.'
 ''
-'Project map identifies forms, controls and connected actions. Graphs shows relationships.'
+'Project map identifies forms, controls and connected actions. Application diagrams show supported connections.'
 'DPH does not invent screenshots when an application provides none.'
 'DPH reads the application files without changing or running them.'
 )
@@ -1992,11 +1992,11 @@ end
 end
 object ExplainTab: TTabItem
 Text = 'Project map'
-object ProjectMapToolbar: THorzScrollBox
+object ProjectMapToolbar: TLayout
 Align = Top
-Height = 42
+Height = 72
 object ProjectMapToolbarItems: TLayout
-Width = 1160
+Align = Top
 Height = 40
 object BackButton: TButton
 Position.X = 8
@@ -2038,13 +2038,13 @@ Height = 30
 Text = 'Next results'
 OnClick = NextPageClick
 end
-object BreadcrumbLabel: TLabel
-Position.X = 556
-Position.Y = 5
-Width = 580
-Height = 30
-Text = 'Choose the application you want to learn, or open its saved lessons.'
 end
+object BreadcrumbLabel: TLabel
+Align = Bottom
+Height = 30
+Margins.Left = 8
+Margins.Right = 8
+Text = 'Choose the application you want to learn, or open its saved lessons.'
 end
 end
 object ExplainFallback: TMemo
@@ -2071,7 +2071,7 @@ TextSettings.Font.Size = 13
 end
 end
 object GraphTab: TTabItem
-Text = 'Graphs'
+Text = 'Application diagrams'
 object GraphToolbar: THorzScrollBox
 Align = Top
 Height = 130
@@ -2090,7 +2090,7 @@ Items.Strings = (
 'Data lineage'
 'Business process'
 )
-ItemIndex = 0
+ItemIndex = 3
 OnChange = ViewChange
 end
 object WholeProgramGraphButton: TButton
@@ -2098,7 +2098,7 @@ Position.X = 264
 Position.Y = 4
 Width = 150
 Height = 28
-Text = 'Whole program'
+Text = 'Code connections'
 OnClick = WholeProgramGraphClick
 end
 object AllFormsGraphButton: TButton
@@ -2106,7 +2106,7 @@ Position.X = 424
 Position.Y = 4
 Width = 130
 Height = 28
-Text = 'All forms'
+Text = 'Screen map'
 OnClick = AllFormsGraphClick
 end
 object AllDataGraphButton: TButton
@@ -2114,7 +2114,7 @@ Position.X = 564
 Position.Y = 4
 Width = 130
 Height = 28
-Text = 'Project data'
+Text = 'Information paths'
 OnClick = AllDataGraphClick
 end
 object GraphGroupingCombo: TComboBox
@@ -2127,14 +2127,14 @@ ItemIndex = 0
 OnChange = ViewChange
 end
 object GraphLegend: TLabel
-Text = 'Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence'
+Text = 'Blue: direct connection in the project files. Orange dashed: possible connection that needs interpretation. Select a box to see its details.'
 Position.Y = 83
 Width = 850
 Height = 38
 WordWrap = True
 end
 object GraphPurpose: TLabel
-Text = 'Use a graph to see how parts of the selected application connect. Choose a graph type above, then select a shape for details.'
+Text = 'Start with the screen map to see possible routes through this application. Select a screen or connection to learn more.'
 Position.Y = 36
 Width = 850
 Height = 42
@@ -6693,6 +6693,7 @@ OnTimer = PollTimerTimer
 end
 object ChangeTimer: TTimer
 Interval = 10000
+Enabled = False
 OnTimer = ChangeTimerTimer
 end
 end

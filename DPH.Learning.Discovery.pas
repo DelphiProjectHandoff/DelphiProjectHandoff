@@ -113,6 +113,7 @@ var
   function CleanText(const AText: string): string;
   begin
     Result:=TRegEx.Replace(AText,'(?is)<(script|style)\b[^>]*>.*?</\1>',' ');
+    Result:=TRegEx.Replace(Result,'(?is)<w:instrText\b[^>]*>.*?</w:instrText>',' ');
     Result:=TRegEx.Replace(Result,'(?i)<br\s*/?>',sLineBreak);
     Result:=TRegEx.Replace(Result,'(?i)</(p|h[1-6]|li|div|w:p|text:p|text:h)>',sLineBreak+sLineBreak);
     Result:=TRegEx.Replace(Result,'<[^>]+>',' ');

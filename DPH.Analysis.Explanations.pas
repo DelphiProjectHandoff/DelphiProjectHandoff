@@ -36,6 +36,7 @@ type
   end;
 implementation
 uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.Defaults,
+  System.RegularExpressions,
   System.IOUtils, System.NetEncoding, DPH.Workspace.Graphs;
 
 class function TDPHExplanationModel.Encode(const AText: string): string;
@@ -390,7 +391,23 @@ var Nodes,Edges: TJSONArray; Indices: TDictionary<string,Integer>;
 begin
   if AGraph.GetValue<string>('kind')='Business process' then Exit(Page('Business process diagram',TDPHGraphProjection.WorkflowSVG(AGraph)));
   Nodes:=AGraph.GetValue<TJSONArray>('nodes'); Edges:=AGraph.GetValue<TJSONArray>('edges');
-  if Nodes.Count=0 then Exit(Page(AGraph.GetValue<string>('kind'),'<section class="card"><h2>No supported graph objects</h2><p>Select an Explorer object or use Whole program, All forms or Project data. Review coverage gaps before inferring that behavior is absent.</p></section>'));
+  if Nodes.Count=0 then begin
+    if AGraph.GetValue<string>('kind')='Form navigation' then
+      Exit(Page('Screen map','<section class="card"><h2>No screen connections found</h2><p>Open Screenshots to inspect the saved forms. The project files did not establish a connection between screens for this diagram.</p></section>'));
+    Exit(Page(AGraph.GetValue<string>('kind'),'<section class="card"><h2>No supported connections found</h2><p>Select an object in the Project Map or choose another diagram.</p></section>'));
+  end;
+  if (AGraph.GetValue<string>('kind')='Form navigation') and (Edges.Count=0) then begin
+    Text:=TStringBuilder.Create;
+    try
+      Text.Append('<section class="card"><h2>Screens found</h2><p>DPH found these parts of the saved screen design, but no supported route between them. Select an item to inspect it in the Project Map.</p><ul>');
+      for V in Nodes do begin
+        Row:=V as TJSONObject;
+        Text.Append('<li><a href="#s_'+THashSHA2.GetHashString(Row.GetValue<string>('id'))+'">'+Encode(Row.GetValue<string>('label'))+'</a></li>');
+      end;
+      Text.Append('</ul></section>');
+      Exit(Page('Screen map',Text.ToString));
+    finally Text.Free; end;
+  end;
   Indices:=TDictionary<string,Integer>.Create; Links:=TObjectDictionary<Integer,TList<Integer>>.Create([doOwnsValues]); Queue:=TQueue<Integer>.Create; Text:=TStringBuilder.Create;
   try
     SetLength(Depths,Nodes.Count); SetLength(Incoming,Nodes.Count); SetLength(X,Nodes.Count); SetLength(Y,Nodes.Count); SetLength(Slots,9);
@@ -404,7 +421,11 @@ begin
     for I:=0 to Nodes.Count-1 do if Depths[I]<0 then begin Depths[I]:=0; Queue.Enqueue(I); Walk; end;
     Width:=700; Height:=160;
     for I:=0 to Nodes.Count-1 do begin X[I]:=25+Depths[I]*380; Y[I]:=25+Slots[Depths[I]]*150; Inc(Slots[Depths[I]]); Width:=Max(Width,X[I]+330); Height:=Max(Height,Y[I]+130); end;
-    Text.Append('<section class="card"><p><strong>Static relationship graph.</strong> Blue solid arrows show confirmed source facts; orange dashed arrows show qualified facts. Arrow labels describe the relationship, not runtime order. Scroll the diagram to inspect it. Select a node for details.</p>');
+    if AGraph.GetValue<string>('kind')='Form navigation' then
+      Text.Append('<section class="card"><h2>Possible routes between screens</h2><p>Each box is a screen or connected control found in the project. Follow an arrow to see where an action may lead. These connections come from saved forms and code; they do not show the order in which a person actually uses the application.</p>')
+    else
+      Text.Append('<section class="card"><p>This diagram connects parts found in the project files. Arrows describe possible relationships, not measured activity. Select a box for details.</p>');
+    Text.Append('<p>Blue solid arrows identify direct source connections; orange dashed arrows need interpretation. Scroll within the diagram when it is wider than this page.</p>');
     if AGraph.GetValue<string>('grouping','')<>'' then Text.Append('<p>Grouped by '+Encode(AGraph.GetValue<string>('grouping'))+'. Select a group to inspect its members. Counts cover the bounded captured projection; up to 16 evidence examples accompany each grouped connection.</p>');
     if AGraph.GetValue<Boolean>('truncated') then Text.Append('<p class="warning">This projection is truncated. Missing nodes or arrows do not prove absence of behavior. Focus an object or change the grouping.</p>');
     Text.Append('<div style="overflow:auto;max-height:75vh;border:1px solid #dce5ef"><svg xmlns="http://www.w3.org/2000/svg" width="'+IntToStr(Width)+'" height="'+IntToStr(Height)+'" role="img" aria-label="Captured static relationships"><defs><marker id="blueArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="orangeArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
@@ -424,7 +445,9 @@ begin
       else LabelText:=Row.GetValue<string>('range.source','')+':'+Row.GetValue<Integer>('range.line',0).ToString;
       Text.Append('<text x="'+IntToStr(X[I]+12)+'" y="'+IntToStr(Y[I]+87)+'" font-size="11" fill="#52697c">'+Encode(Copy(LabelText,1,42))+'</text></g></a>');
     end;
-    Text.Append('</svg></div></section>'); Result:=Page(AGraph.GetValue<string>('kind'),Text.ToString);
+    Text.Append('</svg></div></section>');
+    if AGraph.GetValue<string>('kind')='Form navigation' then Result:=Page('Screen map',Text.ToString)
+    else Result:=Page(AGraph.GetValue<string>('kind'),Text.ToString);
     if AGraph.GetValue<string>('kind')='Data lineage' then begin
      Text.Append('<section class="card"><h2>Unresolved breaks and boundaries</h2><ul>');
      for V in AGraph.GetValue<TJSONArray>('breaks') do Text.Append('<li>'+Encode(V.GetValue<string>('reason'))+'</li>');
@@ -449,7 +472,7 @@ begin
   end;
   Result:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; base-uri ''none''"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+
     Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;padding:26px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:20px}.brand{width:76px;height:76px;object-fit:contain;flex:none}'+
-    'h1{font-size:28px;margin:0}body{overflow-wrap:anywhere}*{box-sizing:border-box}'+
+    'h1{font-size:28px;margin:0}body{overflow-wrap:anywhere}main{width:100%;min-width:0}.card{min-width:0}*{box-sizing:border-box}'+
     'h2{font-size:21px;color:#146cb4}h3{font-size:18px}'+
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+
@@ -457,7 +480,8 @@ begin
     'small{color:#53697f}.diagram{overflow:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
     '.card{break-inside:avoid}}</style></head><body><header>'+Logo+'<div><h1>'+Encode(ATitle)+'</h1><p>'+
     Encode(FFacts.GetValue<string>('project'))+'</p></div></header><main>'+
-    IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+ABody+'</main></body></html>';
+    IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+
+    TRegEx.Replace(ABody,'(?i)\bPAGEREF\s+[_A-Za-z0-9.-]+(?:\s+\\[A-Za-z]+)*','')+'</main></body></html>';
 end;
 function TDPHExplanationModel.ObjectHTML(const AKey: string): string;
 var S,R: TJSONObject; Body,Kind,Key: string; Text: TStringBuilder; Rows: TList<TJSONObject>; Count,Pass: Integer; V,W: TJSONValue; Linked: Boolean;
