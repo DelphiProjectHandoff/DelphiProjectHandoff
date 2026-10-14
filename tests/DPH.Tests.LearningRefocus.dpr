@@ -37,7 +37,7 @@ begin
   CoInitialize(nil); Application.Initialize;
   try
     try
-      Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(ID); Work:=TPath.Combine(Root,'bin\learning-refocus-tests-'+GUIDToString(ID)); TDirectory.CreateDirectory(Work);
+      Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(ID); Work:=TPath.Combine(Root,'bin\lr-'+GUIDToString(ID)); TDirectory.CreateDirectory(Work);
       TFile.WriteAllText(TPath.Combine(Work,'README.md'),'The learning fixture has a documented first task.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Work,'Setup_Notes.txt'),
         'The Unicode setup note explains the first screen.',TEncoding.Unicode);
@@ -579,6 +579,30 @@ begin
           Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=BeforeHash,'Selected fixture source remains unchanged');
         finally View.Free; end;
       finally Store.Free; Semantic.Free; Analyzer.Free; end;
+      Form:=TDPHMainForm.Create(nil);
+      try
+        Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False; Form.Show;
+        Form.OpenSelection(TPath.Combine(Fixture,'Semantic.dproj'),TPath.Combine(Work,'progress-check.dphdb'));
+        Check(Form.ProjectPreparationLayout.Visible and (Form.ProjectPreparationProgress.Value=5),
+          'Project preparation starts with a small visible progress step');
+        var PreviousProgress:=Form.ProjectPreparationProgress.Value;
+        var SawIntermediateProgress:=False;
+        Watch:=TStopwatch.StartNew;
+        repeat
+          Application.ProcessMessages;
+          Form.PollTimerTimer(nil);
+          var CurrentProgress:=Form.ProjectPreparationProgress.Value;
+          if CurrentProgress<PreviousProgress then
+            raise Exception.CreateFmt('FAIL Project preparation regressed from %.0f to %.0f',[PreviousProgress,CurrentProgress]);
+          if (CurrentProgress>5) and (CurrentProgress<100) then SawIntermediateProgress:=True;
+          PreviousProgress:=CurrentProgress;
+          if (CurrentProgress=100) and (Form.WorkspaceView<>nil) then Break;
+          TThread.Sleep(20);
+        until Watch.ElapsedMilliseconds>30000;
+        Check(SawIntermediateProgress and (PreviousProgress=100) and (Form.WorkspaceView<>nil) and
+          (Form.ScreenshotList.Count>0),
+          'Project preparation advances without regression and completes after screen previews');
+      finally Form.Free; end;
       // Analyze a real generated Pascal body rather than manufacturing diagram edges.
       TDirectory.CreateDirectory(TPath.Combine(Work,'large-input'));
       LargeSource:='program Large;'+sLineBreak+'procedure Walk; var I: Integer; begin'+sLineBreak+'I := 0; while I < 100 do begin'+sLineBreak;
@@ -739,7 +763,7 @@ begin
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));
         TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\learning-refocus-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
-      if not StartsText(TPath.Combine(TPath.GetFullPath(Root),'bin\learning-refocus-tests-'),TPath.GetFullPath(Work)) then
+      if not StartsText(TPath.Combine(TPath.GetFullPath(Root),'bin\lr-{'),TPath.GetFullPath(Work)) then
         raise Exception.Create('Refusing cleanup outside the generated refocus test workspace');
       TDirectory.Delete(Work,True);
       Writeln('PASS Learning: ',Checks,' checks; disposable test workspace removed');

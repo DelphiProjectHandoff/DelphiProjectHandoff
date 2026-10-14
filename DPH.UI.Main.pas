@@ -790,7 +790,8 @@ type
     FPendingEntry,FPendingDatabase: string;
     FPendingWorkspaceTab: TTabItem;
     FPage: Integer;
-    FBusy,FDetached,FClosing,FBinding,FRenderingScreens: Boolean;
+    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject: Boolean;
+    FPreparationCompletionTicks: Integer;
     FScreenScale: Single;
     FScreenFullscreen: Boolean;
     FSavedBorder: TFmxFormBorderStyle;
@@ -918,7 +919,7 @@ type
     function GraphRect(AIndex: Integer): TRectF;
   public
     procedure OpenSelection(const AEntry,ADatabase: string);
-    procedure LoadView(ADocument: TJSONObject);
+    procedure LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray = nil);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
@@ -1779,6 +1780,7 @@ begin
   if ACommand<>'full' then StatusLabel.Text:='Processing the selected request...';
   if ACommand='full' then begin
     ProjectPreparationMessage.Text:='Reading the selected application''s project files...';
+    FPreparingProject:=True;FPreparationCompletionTicks:=0;
     ProjectPreparationProgress.Value:=5;ProjectPreparationLayout.Visible:=True;
   end;
     FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
@@ -1817,6 +1819,7 @@ begin
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False;
   ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
+  FPreparingProject:=True;FPreparationCompletionTicks:=0;
   ProjectPreparationProgress.Value:=5; ProjectPreparationLayout.Visible:=True;
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
@@ -1891,15 +1894,20 @@ procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
 var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
+  if FPreparationCompletionTicks>0 then begin
+    Dec(FPreparationCompletionTicks);
+    if FPreparationCompletionTicks=0 then ProjectPreparationLayout.Visible:=False;
+  end;
   if FWorker.Poll(R) then
   try
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
-    if R.Busy and ProjectPreparationLayout.Visible then begin
-      if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=25
-      else if ContainsText(R.MessageText,'Tracing forms') then ProjectPreparationProgress.Value:=50
-      else if ContainsText(R.MessageText,'Saving project findings') then ProjectPreparationProgress.Value:=65
-      else if ContainsText(R.MessageText,'Searching project-local') or ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=75
-      else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,5);
+    if R.Busy and FPreparingProject then begin
+      if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,25)
+      else if ContainsText(R.MessageText,'Tracing forms') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,45)
+      else if ContainsText(R.MessageText,'Saving project findings') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,60)
+      else if ContainsText(R.MessageText,'Searching project-local') or
+        ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,75)
+      else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
       if R.MessageText<>'' then ProjectPreparationMessage.Text:=R.MessageText;
     end;
     if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
@@ -1909,11 +1917,17 @@ begin
         ClearWorkspace; FEntry:=FPendingEntry; FDatabase:=FPendingDatabase;
         FPendingEntry:=''; FPendingDatabase:='';
       end;
-      LoadView(R.Document); R.Document:=nil;
-    end;
-    if not R.Busy then begin
-      ProjectPreparationProgress.Value:=100;
-      ProjectPreparationLayout.Visible:=False;
+      if FPreparingProject then begin
+        if R.Busy then begin
+          ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
+          ProjectPreparationMessage.Text:='Loading saved project information and screen previews...';
+        end else begin
+          ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80);
+          ProjectPreparationMessage.Text:='Preparing the learning library and screen previews...';
+        end;
+      end;
+      LoadView(R.Document,R.Screenshots); R.Document:=nil;
+      FreeAndNil(R.Screenshots);
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
@@ -2011,6 +2025,15 @@ begin
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
         StatusLabel.Text:=StatusLabel.Text+' Some code could not be explained; check unanswered questions.';
     end;
+    if not R.Busy and FPreparingProject then begin
+      FPreparingProject:=False;
+      if R.Failed then ProjectPreparationMessage.Text:='Project preparation stopped. Read the status message for details.'
+      else begin
+        ProjectPreparationProgress.Value:=100;
+        ProjectPreparationMessage.Text:='Project ready to explore.';
+      end;
+      FPreparationCompletionTicks:=5;
+    end;
   finally R.Free; end;
   if (FPendingWorkspaceTab<>nil) and (FPendingWorkspaceTab=WorkspaceTabs.ActiveTab) and (FView<>nil) then begin
     FPendingWorkspaceTab:=nil;
@@ -2039,7 +2062,7 @@ begin
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
-procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
+procedure TDPHMainForm.LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray);
 var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options,Images: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
@@ -2110,9 +2133,12 @@ begin
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
   RefreshExplorer; RefreshLearning; RefreshQuestions;
-  Images:=TJSONArray.Create;
-  if FImages<>nil then for V in FImages do
-    if V.GetValue<Int64>('artifact_id',0)>0 then Images.AddElement(V.Clone as TJSONValue);
+  if AScreenshots<>nil then Images:=AScreenshots.Clone as TJSONArray
+  else begin
+    Images:=TJSONArray.Create;
+    if FImages<>nil then for V in FImages do
+      if V.GetValue<Int64>('artifact_id',0)>0 then Images.AddElement(V.Clone as TJSONValue);
+  end;
   LoadScreenshots(Images);
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
@@ -3184,7 +3210,6 @@ begin
           ImageDirectory:=TPath.Combine(FLearningDirectory,'screens');
           TDirectory.CreateDirectory(ImageDirectory);
         end; end;
-        ProjectPreparationLayout.Visible:=True;
         for V in Files do begin
           R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
@@ -3404,10 +3429,15 @@ begin
               finally Thumbnail.Free; end;
           finally
             Picture.Free;
-            ProjectPreparationProgress.Value:=80+Round(20*Done/Max(Count,1));
-            ProjectPreparationMessage.Text:=Format('Preparing screen previews: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
-            ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
-            Application.ProcessMessages;
+            if FPreparingProject then begin
+              if WasBusy then
+                ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10+Round(10*Done/Max(Count,1)))
+              else
+                ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80+Round(18*Done/Max(Count,1)));
+              ProjectPreparationMessage.Text:=Format('Preparing screen previews: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
+              ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
+              Application.ProcessMessages;
+            end;
           end;
         end;
       finally Seen.Free; end;
@@ -3420,7 +3450,6 @@ begin
     FBusy:=WasBusy; WorkspaceTabs.Enabled:=WasTabsEnabled; PollTimer.Enabled:=WasTimerEnabled;
     FRenderingScreens:=False;
   end;
-  if not FBusy then ProjectPreparationLayout.Visible:=False;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
 var R,Card,Picture:TJSONObject;V:TJSONValue;Path:string;Number:Integer;
