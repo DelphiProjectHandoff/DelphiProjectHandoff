@@ -15,6 +15,24 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 68
+object LanguageCombo: TDATFMXLanguageComboBox
+Align = Right
+Width = 238
+Margins.Top = 14
+Margins.Bottom = 14
+Margins.Right = 18
+LanguageManager = DATLanguageManager
+AutoPopulate = True
+ShowLanguageCode = True
+end
+object LanguageLabel: TLabel
+Align = Right
+Width = 92
+Margins.Top = 14
+Margins.Bottom = 14
+Text = 'Language:'
+TextSettings.HorzAlign = Trailing
+end
 object LessonPageCombo: TComboBox
 Align = Right
 Visible = False
@@ -54,6 +72,26 @@ StyledSettings = []
 TextSettings.Font.Size = 32
 TextSettings.FontColor = xFF146CB4
 end
+end
+object DATLanguageManager: TDATFMXLanguageManager
+ApplicationId = 'DelphiProjectHandoff'
+LanguagesFolder = 'Localization\Languages'
+SourceLanguage = 'en-US'
+AutoLoadPreferred = True
+FirstRunUsesSystemLanguage = True
+AutoTranslateOwner = True
+AutoTranslateNewForms = True
+ReapplyOpenForms = True
+TranslateHiddenForms = False
+PreserveControlState = True
+PreferenceLocation = plLocalAppData
+PreferenceFileName = 'language.ini'
+MissingPackBehavior = mpUseSourceLanguage
+ErrorBehavior = ebNotifyAndContinue
+AutoRefreshDynamicText = True
+DynamicRefreshInterval = 1000
+TranslateBrowserContent = False
+OnLanguageChanged = LanguageChanged
 end
 object LearnerNavRow1: TLayout
 Align = Top

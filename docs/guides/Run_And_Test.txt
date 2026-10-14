@@ -1,17 +1,25 @@
 RUN AND TEST DELPHI PROJECT HANDOFF
-Last changed: 13 October 2026
+Last changed: 14 October 2026
 
 INSTALL AND START
 
-1. Download DPH-0.6.1-experimental-Windows.zip and extract the complete ZIP to
+1. Download DPH-0.6.2-experimental-Windows.zip and extract the complete ZIP to
    a writable local folder. Do not run the executable from inside the ZIP.
 2. On 64-bit Windows, open the Win64 subfolder and run
    DelphiProjectHandoff.exe. The Win32 subfolder contains the 32-bit edition.
    Keep WebView2Loader.dll beside the executable and keep the package's help,
-   migrations, and documentation folders in place.
+   migrations, documentation, and Localization folders in place.
 3. DPH opens maximized. The blue Delphi Project Handoff heading and all six
    learner tabs should appear on one row: Getting started, Learn the project,
-   Learning library, Project map, Screenshots, and Graphs.
+   Learning library, Project map, Screenshots, and Application diagrams. The
+   language selector should be visible beside the heading.
+
+CHOOSE A LANGUAGE
+
+Select a language in the header. DPH should change its labels and built-in
+learning pages immediately and remember the choice when reopened. English is
+the source language; the other 34 choices match VCL2FMXConverter v7. The
+selected application's own source and documents retain their original language.
 
 OPEN AN APPLICATION
 
@@ -42,11 +50,12 @@ CHECK THE LEARNING VIEWS
     complete screen or Native pixels for its full-size view. Form-derived
     images show saved controls and captions. They are not captures of the
     running target application, and custom painting or runtime data can differ.
-11. Open Graphs. Choose a graph type and read its purpose above the diagram.
+11. Open Application diagrams. Choose a diagram type and read its purpose above
+    the diagram.
     Form navigation shows possible screen connections; Execution and Caller /
     callee show routine connections; Data flow and Data lineage show possible
     information paths; Change impact shows dependencies. Select a shape to
-    inspect the underlying project part. Graphs reflect file evidence rather
+    inspect the underlying project part. Diagrams reflect file evidence rather
     than a recorded run.
 
 CHECK REOPENING AND DISTRIBUTION
@@ -54,7 +63,7 @@ CHECK REOPENING AND DISTRIBUTION
 12. Close DPH, restart it, and use Open saved project. Confirm that the same
     application, learning views, and generated screens reappear.
 13. To use or modify the complete Delphi source, extract
-    DPH_v0_6_1_Source_Distribution ZIP. Open DelphiProjectHandoff.dproj in RAD
+    DPH_v0_6_2_Source_Distribution ZIP. Open DelphiProjectHandoff.dproj in RAD
     Studio 37, select Win64 or Win32, and build the Release configuration.
     Keep the source folder structure intact. The source ZIP contains no
     personal .dphdb databases or Git history.

@@ -1,18 +1,18 @@
-Pinned Atlas offline dependency for Delphi Project Handoff
+Delphi App Translation v2 dependency for Delphi Project Handoff
 
-The owner identified the local VCL2FMX project as the Atlas reference. Its
-DelphiAppTranslation snapshot provides this Apache-2.0 runtime language-pack
-reader. DPH keeps its own copy of the three required Pascal units and license.
-SNAPSHOT.json records original paths, reference snapshot date and SHA256 hashes.
-Original source bytes are preserved. VCL2FMX is not modified or required to build
-or run DPH. No provider/cloud/client units are included.
+DPH uses the DAT FireMonkey language manager and language selector on its
+editable main form. The 14 Pascal units in source are pinned to the local
+VCL2FMXConverter v7 dependency, including its right-to-left reading-direction
+correction. DPH builds against this local source and runs with its own language
+packs in Localization\Languages; neither VCL2FMXConverter nor a translation
+provider is required on a user's computer.
 
-DPH calls LoadFromJson on explicitly selected local UTF-8 bytes. It does not use
-the DAT file-recovery writer, diagnostic file output or language-pack discovery.
-The adapter validates the application ID, locale and file-size limit. Pack hashes
-are part of the exact translation cache identity. These files are compiled into
-the application; end users do not need to install a Delphi component package.
+The three Pascal units beside this README remain for older DPH publishing and
+test scripts. The current DPH project and current test scripts search source
+first. SNAPSHOT.json records each bundled source path and SHA-256 digest.
 
-The three-phrase samples/translation pack demonstrates the interchange format.
-It is incomplete and unreviewed. Source prose is retained when a translation is
-missing. Human review remains required for localized wording.
+The DAT component integration kit in export\DAT-component-kit contains the
+RAD Studio 37 FMX design package and setup instructions. Install that package
+to edit the language manager and selector in the Object Inspector. End users
+only need the built DPH executable and the language packs. The license for
+this dependency is in LICENSE.

@@ -1,0 +1,198 @@
+﻿{
+  "schemaVersion": 1,
+  "mode": "component",
+  "applicationId": "DelphiProjectHandoff",
+  "framework": "FireMonkey",
+  "managerClass": "TDATFMXLanguageManager",
+  "selectorClass": "TDATFMXLanguageComboBox",
+  "designPackageName": "DATLanguageManagerFMXDesign.bpl",
+  "designPackageRelativePath": "DesignPackages/Win32/Release/DATLanguageManagerFMXDesign.bpl",
+  "packageInstallationMethod": "Delphi Component > Install Packages > Add",
+  "languagesFolder": "Localization\\Languages",
+  "sourceLanguage": "en-US",
+  "languages": [
+    {
+      "code": "id-ID",
+      "nativeName": "Bahasa Indonesia",
+      "fileName": "id-ID.json"
+    },
+    {
+      "code": "de-DE",
+      "nativeName": "Deutsch",
+      "fileName": "de-DE.json"
+    },
+    {
+      "code": "en-US",
+      "nativeName": "English",
+      "fileName": "en-US.json"
+    },
+    {
+      "code": "es-ES",
+      "nativeName": "Español",
+      "fileName": "es-ES.json"
+    },
+    {
+      "code": "fil-PH",
+      "nativeName": "Filipino (Pilipinas)",
+      "fileName": "fil-PH.json"
+    },
+    {
+      "code": "fr-FR",
+      "nativeName": "Français",
+      "fileName": "fr-FR.json"
+    },
+    {
+      "code": "hr-HR",
+      "nativeName": "Hrvatski",
+      "fileName": "hr-HR.json"
+    },
+    {
+      "code": "it-IT",
+      "nativeName": "Italiano",
+      "fileName": "it-IT.json"
+    },
+    {
+      "code": "hu-HU",
+      "nativeName": "Magyar",
+      "fileName": "hu-HU.json"
+    },
+    {
+      "code": "pl-PL",
+      "nativeName": "Polski",
+      "fileName": "pl-PL.json"
+    },
+    {
+      "code": "pt-BR",
+      "nativeName": "Português",
+      "fileName": "pt-BR.json"
+    },
+    {
+      "code": "ro-RO",
+      "nativeName": "Română",
+      "fileName": "ro-RO.json"
+    },
+    {
+      "code": "sk-SK",
+      "nativeName": "Slovenčina",
+      "fileName": "sk-SK.json"
+    },
+    {
+      "code": "sr-Cyrl-RS",
+      "nativeName": "Srpski",
+      "fileName": "sr-Cyrl-RS.json"
+    },
+    {
+      "code": "fi-FI",
+      "nativeName": "Suomi",
+      "fileName": "fi-FI.json"
+    },
+    {
+      "code": "sv-SE",
+      "nativeName": "Svenska",
+      "fileName": "sv-SE.json"
+    },
+    {
+      "code": "vi-VN",
+      "nativeName": "Tiếng Việt",
+      "fileName": "vi-VN.json"
+    },
+    {
+      "code": "tr-TR",
+      "nativeName": "Türkçe",
+      "fileName": "tr-TR.json"
+    },
+    {
+      "code": "cs-CZ",
+      "nativeName": "Čeština",
+      "fileName": "cs-CZ.json"
+    },
+    {
+      "code": "el-GR",
+      "nativeName": "Ελληνικά",
+      "fileName": "el-GR.json"
+    },
+    {
+      "code": "bg-BG",
+      "nativeName": "Български",
+      "fileName": "bg-BG.json"
+    },
+    {
+      "code": "ru-RU",
+      "nativeName": "Русский",
+      "fileName": "ru-RU.json"
+    },
+    {
+      "code": "uk-UA",
+      "nativeName": "Українська",
+      "fileName": "uk-UA.json"
+    },
+    {
+      "code": "he-IL",
+      "nativeName": "עברית",
+      "fileName": "he-IL.json"
+    },
+    {
+      "code": "ur-PK",
+      "nativeName": "اردو",
+      "fileName": "ur-PK.json"
+    },
+    {
+      "code": "ar-SA",
+      "nativeName": "العربية",
+      "fileName": "ar-SA.json"
+    },
+    {
+      "code": "fa-IR",
+      "nativeName": "فارسی",
+      "fileName": "fa-IR.json"
+    },
+    {
+      "code": "ps-AF",
+      "nativeName": "پښتو (افغانستان)",
+      "fileName": "ps-AF.json"
+    },
+    {
+      "code": "hi-IN",
+      "nativeName": "हिन्दी",
+      "fileName": "hi-IN.json"
+    },
+    {
+      "code": "bn-BD",
+      "nativeName": "বাংলা (বাংলাদেশ)",
+      "fileName": "bn-BD.json"
+    },
+    {
+      "code": "th-TH",
+      "nativeName": "ไทย",
+      "fileName": "th-TH.json"
+    },
+    {
+      "code": "zh-CN",
+      "nativeName": "中文",
+      "fileName": "zh-CN.json"
+    },
+    {
+      "code": "zh-TW",
+      "nativeName": "中文",
+      "fileName": "zh-TW.json"
+    },
+    {
+      "code": "ja-JP",
+      "nativeName": "日本語",
+      "fileName": "ja-JP.json"
+    },
+    {
+      "code": "ko-KR",
+      "nativeName": "한국어",
+      "fileName": "ko-KR.json"
+    }
+  ],
+  "scannerFormRoots": [
+    "DPHMainForm",
+    "DPHProjectProfileForm",
+    "DPHDatabaseDictionaryForm",
+    "DPHActionPurposeForm",
+    "DPHComponentDependencyForm",
+    "DPHGlossaryForm"
+  ]
+}

@@ -20,6 +20,13 @@ foreach ($arch in @('Win32','Win64')) {
   if (-not $source.StartsWith($projectRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {throw "Unsafe build path: $source"}
   Copy-Item -LiteralPath $source -Destination $archRoot
  }
+ $languageDestination=Join-Path $archRoot 'Localization\Languages'
+ [IO.Directory]::CreateDirectory($languageDestination) | Out-Null
+ $packDirectory=Join-Path $projectRoot ('bin\'+$arch+'\Release\Localization\Languages')
+ $packs=Get-ChildItem -LiteralPath $packDirectory -File -Filter '*.json' |
+   Where-Object {$_.Name -notlike '*.layout-proposal.json'}
+ if($packs.Count -ne 35) {throw "Expected 35 $arch language packs; found $($packs.Count)"}
+ foreach($pack in $packs) {Copy-Item -LiteralPath $pack.FullName -Destination $languageDestination}
 }
 foreach ($directory in @('migrations','help','images and icons')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
@@ -43,9 +50,12 @@ Experimental Windows desktop learning application
 2. On 64-bit Windows, open Win64 and double-click DelphiProjectHandoff.exe.
    Use the Win32 copy only when you need the 32-bit edition.
 3. Click Open application and select the Delphi project you want to learn.
-4. Use Learn the project, Learning library, Project map, Screenshots and Graphs.
+4. Use Learn the project, Learning library, Project map, Screenshots and
+   Application diagrams.
 5. Screenshots contains blank screen images generated inside DPH from that
    project's .fmx and .dfm form files. Runtime appearance can differ.
+6. Choose your language from the selector in the main header. All 35 language
+   packs work offline and remain beside each Windows edition.
 
 The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for
@@ -74,7 +84,7 @@ try {
  if ($LASTEXITCODE -ne 0) {throw 'Cannot enumerate source files'}
  foreach ($relative in $paths) {
   $include=($relative -match '^DPH\..*\.(pas|fmx)$') -or ($relative -match '^DelphiProjectHandoff\.(dpr|dproj|res)$') -or
-   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|images and icons|samples/(translation|OrderPractice)|docs/guides/source)/') -or
+   ($relative -match '^(migrations|dependencies|Localization|tests|tools)/') -or ($relative -match '^(help|images and icons|samples/(translation|OrderPractice)|docs/guides/source|export/DAT-component-kit)/') -or
    ($relative -match '^docs/(planning|requirements)/') -or
    ($relative -in @('README.md','.gitattributes','.gitignore','docs/PROJECT_LAYOUT.txt','docs/PROJECT_MOVE_MANIFEST.csv','docs/validation/reports/guide-source-validation.json','docs/validation/reports/reference-inventory.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/validation/images/learning-completion-practice-task-compact.png','docs/validation/images/learning-completion-practice-library-compact.png','docs/validation/images/learning-completion-practice-output.png','docs/validation/images/learning-completion-phase1-project-profile.png','docs/validation/images/learning-completion-tasks-preparation.png','Databases/README.txt'))
   $source=Join-Path $projectRoot $relative

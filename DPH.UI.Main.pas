@@ -3,10 +3,14 @@ interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
-  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DPH.Workspace.Model, DPH.Workspace.Worker,
+  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DAT.Components.FMX,
+  DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
   DPH.Publish.Model, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
 type
   TDPHMainForm = class(TForm)
+    DATLanguageManager: TDATFMXLanguageManager;
+    LanguageCombo: TDATFMXLanguageComboBox;
+    LanguageLabel: TLabel;
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,GraphPurpose,InspectorTitle,InspectorPurpose: TLabel;
     ProjectSearchProgress,ProjectPreparationLayout: TLayout;
     ProjectSearchSpinner: TAniIndicator;
@@ -779,6 +783,8 @@ type
     procedure PublishClick(Sender: TObject);
     procedure PreviewClick(Sender: TObject);
     procedure BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
+    procedure LanguageChanged(Sender: TObject; const AOldLanguage,
+      ANewLanguage: string; const AGeneration: Cardinal);
   private
     FWorker: TDPHWorkspaceWorker;
     FView: TDPHWorkspaceView;
@@ -930,7 +936,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DPH.Storage.Database,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
@@ -1020,6 +1026,26 @@ begin
       if TDirectory.Exists(Directory) then TDirectory.Delete(Directory,False);
     end;
   except end;
+end;
+procedure TDPHMainForm.LanguageChanged(Sender: TObject;
+  const AOldLanguage, ANewLanguage: string; const AGeneration: Cardinal);
+var
+  PreviousTab: TTabItem;
+begin
+  if FClosing or (FLearningDirectory = '') then Exit;
+  PreviousTab := WorkspaceTabs.ActiveTab;
+  try
+    HelpClick(nil);
+    if FExplanations <> nil then
+    begin
+      LearningClick(nil);
+      ShowExplanation;
+      CardSelectionChange(nil);
+      if FView <> nil then RefreshGraphics;
+    end;
+  finally
+    WorkspaceTabs.ActiveTab := PreviousTab;
+  end;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -1288,6 +1314,7 @@ begin
  HTML:=HTML+'</article></body></html>';
  end;
  if FLearningDirectory='' then Exit;
+ HTML:=DATTranslateHtmlText(HTML);
  Path:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
  try
    TFile.WriteAllBytes(Path,TEncoding.UTF8.GetBytes(HTML));
@@ -2876,6 +2903,7 @@ begin
   if FExplanations=nil then Exit;
   HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
+  HTML:=DATTranslateHtmlText(HTML);
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
   OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
@@ -2893,6 +2921,7 @@ begin
   if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
+  HTML:=DATTranslateHtmlText(HTML);
   Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
   Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
   Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
@@ -3036,7 +3065,8 @@ begin
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>Explore an application with DPH</title></head><body><header>'+Logo+'<div><h1>Welcome to Delphi Project Handoff</h1>'+
     '<p>Discover an unfamiliar Delphi application through its own files, help and screen images.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> at the top left and choose a .dproj, .dpr or .groupproj file. DPH reads the project and gathers its forms, connected actions, guides and help topics. The preparation message remains visible while this work is under way.</p><p>If DPH has already saved the project, choose <strong>Open saved project</strong>.</p></section>'+
     '<section><h2>Find your way around</h2><ol><li><strong>Learn the project</strong> introduces its purpose, starting point and screens.</li><li><strong>Learning library</strong> presents useful topics found in that project''s guides and help.</li><li><strong>Project map</strong> lets you inspect forms, controls and connected actions.</li><li><strong>Screenshots</strong> displays blank screen views generated by DPH from form files, at fitted or native size.</li><li><strong>Application diagrams</strong> shows possible screen routes and other connections supported by the project files.</li></ol></section>'+
-    '<section><h2>What the files can show</h2><p>DPH connects descriptions and visible controls to the source that defines their actions. A screen image is shown only when the application supplies an image; DPH does not invent one. The selected application is not run or changed during this inspection.</p></section></main></body></html>';
+    '<section><h2>What the files can show</h2><p>DPH connects descriptions and visible controls to the source that defines their actions. DPH generates blank screen views from the application''s .fmx and .dfm form files; runtime appearance may differ. The selected application is not run or changed during this inspection.</p></section></main></body></html>';
+  HTML:=DATTranslateHtmlText(HTML);
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
@@ -4042,7 +4072,7 @@ begin
   GraphGroupingCombo.Enabled:=False;
   GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
   GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);GraphPaint.Repaint;
-  HTML:=FExplanations.GraphHTML(FGraph);GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  HTML:=DATTranslateHtmlText(FExplanations.GraphHTML(FGraph));GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(GraphPath) then begin TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(GraphPath);end;
   WorkspaceTabs.ActiveTab:=GraphTab;FlowBrowser.Visible:=False;
   try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;FlowBrowser.Navigate('file://'+GraphPath);FlowBrowser.Visible:=True;
@@ -4950,6 +4980,7 @@ begin
   if (FGraph<>nil) and (FExplanations<>nil) then begin
     if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
     HTML:=HTML.Replace('href="#','href="index.html#');
+    HTML:=DATTranslateHtmlText(HTML);
     GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
     if not FPreviewPages.Contains(GraphPath) then begin
       TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(GraphPath);

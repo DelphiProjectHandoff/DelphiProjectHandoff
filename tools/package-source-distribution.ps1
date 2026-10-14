@@ -7,21 +7,31 @@ $projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $archiveName='DPH_v'+$Version.Replace('.','_')+'_Source_Distribution_'+(Get-Date -Format 'yyyy-MM-dd_HHmmss')+'.zip'
 $archivePath=Join-Path $projectRoot ('source distributions\'+$archiveName)
 if (Test-Path -LiteralPath $archivePath) {throw "Archive already exists: $archivePath"}
+$languagePacks=Get-ChildItem -LiteralPath (Join-Path $projectRoot 'Localization\Languages') -File -Filter '*.json' |
+  Where-Object {$_.Name -notlike '*.layout-proposal.json'}
+if($languagePacks.Count -ne 35) {throw "Expected 35 DPH language packs; found $($languagePacks.Count)"}
 
 $files=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach($relative in @('DelphiProjectHandoff.dpr','DelphiProjectHandoff.dproj',
-  'DelphiProjectHandoff.res','README.md','docs\guides\Run_And_Test.txt')) {
+  'DelphiProjectHandoff.res','README.md','docs\guides\Run_And_Test.txt',
+  'docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx',
+  'docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf')) {
  [void]$files.Add($relative)
 }
 foreach($file in Get-ChildItem -LiteralPath $projectRoot -File) {
  if($file.Name -match '^DPH\..*\.(pas|fmx)$') {[void]$files.Add($file.Name)}
 }
-foreach($folder in @('dependencies\DelphiAppTranslation','migrations','help',
-  'images and icons','tools\WebView2')) {
+foreach($folder in @('dependencies\DelphiAppTranslation','Localization','migrations','help',
+  'images and icons','tests','tools\WebView2','export\DAT-component-kit')) {
  $fullFolder=Join-Path $projectRoot $folder
  foreach($file in Get-ChildItem -LiteralPath $fullFolder -File -Recurse) {
   if($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw "Reparse point in source package: $($file.FullName)"}
   [void]$files.Add($file.FullName.Substring($projectRoot.Length+1))
+ }
+}
+foreach($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tools') -File) {
+ if($file.Extension -in @('.cmd','.ps1','.dpr','.py')) {
+  [void]$files.Add('tools\'+$file.Name)
  }
 }
 
@@ -30,18 +40,20 @@ DELPHI PROJECT HANDOFF - EDITABLE SOURCE DISTRIBUTION
 
 This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
-and the bundled build dependencies. It contains no personal .dphdb databases,
+all 35 offline language packs, and the bundled build dependencies. It contains no personal .dphdb databases,
 Git history, or compiled DPH executable.
 
 TO BUILD
 1. Extract the entire ZIP into a writable local folder. Do not build in the ZIP.
 2. Open DelphiProjectHandoff.dproj in RAD Studio 37 or later.
+   To edit the form in the designer, install the supplied DAT FMX design package
+   using export\DAT-component-kit\DelphiProjectHandoff\README.txt.
 3. Select Win64 or Win32 and the Release configuration; then choose Build.
 4. Find the executable in bin\Win64\Release or bin\Win32\Release. Keep the
    corresponding WebView2Loader.dll beside it. The project copies that loader
    automatically after a successful build.
 5. Run the executable from the extracted project folder. Keep migrations,
-   help, and images and icons in that folder. See docs\guides\Run_And_Test.txt
+   help, images and icons, and Localization in that folder. See docs\guides\Run_And_Test.txt
    for the application's first-use and validation steps.
 
 The Microsoft WebView2 Runtime is required for embedded HTML learning views.
@@ -56,7 +68,7 @@ DelphiProjectHandoff.dpr file references it.
 $hashLines=[Collections.Generic.List[string]]::new()
 $archive=[IO.Compression.ZipFile]::Open($archivePath,[IO.Compression.ZipArchiveMode]::Create)
 try {
- foreach($relative in @('bin/','dcu/','docs/guides/','docs/pdf/','export/','help/',
+ foreach($relative in @('bin/','dcu/','docs/guides/','docs/pdf/','export/','Localization/','help/',
    'images and icons/','samples/','source distributions/','tools/','Databases/')) {
    [void]$archive.CreateEntry($relative)
  }
@@ -82,7 +94,9 @@ try {
  foreach($entry in $check.Entries) {[void]$names.Add($entry.FullName)}
  foreach($required in @('DelphiProjectHandoff.dpr','DelphiProjectHandoff.dproj',
    'DelphiProjectHandoff.res','DPH.UI.Main.pas','DPH.UI.Main.fmx',
-   'images and icons/DPH-App.ico','SOURCE_DISTRIBUTION_README.txt','SHA256.txt')) {
+   'images and icons/DPH-App.ico','Localization/Languages/en-US.json',
+   'export/DAT-component-kit/DelphiProjectHandoff/README.txt',
+   'SOURCE_DISTRIBUTION_README.txt','SHA256.txt')) {
    if(-not $names.Contains($required)) {throw "Source archive verification failed: $required is absent"}
  }
  foreach($line in $hashLines) {

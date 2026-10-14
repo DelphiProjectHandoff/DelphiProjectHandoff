@@ -1,5 +1,5 @@
 Delphi Project Handoff project layout
-Last changed: 13 October 2026
+Last changed: 14 October 2026
 
 Project root
   DelphiProjectHandoff.dpr/.dproj/.res and DPH.*.pas/.fmx stay here so RAD Studio can open and edit the project and forms without path changes.
@@ -36,6 +36,12 @@ logs/development
   Historical developer logs formerly loose in bin.
 help
   Generated, searchable HTML User Help and its local image and translation assets.
+Localization
+  Languages holds the 35 offline DAT runtime packs, including en-US. Development holds the editable translation catalogs; Layout holds generated layout proposals for review. Builds copy runtime packs beside each executable.
+dependencies/DelphiAppTranslation
+  source holds the pinned DAT v2 FMX component runtime from VCL2FMXConverter v7. The root retains the prior three-unit publishing adapter for older test scripts. SNAPSHOT.json records dependency hashes.
+export/DAT-component-kit
+  DelphiProjectHandoff holds the DAT FMX IDE design package, source, license and setup instructions for editing the selector in RAD Studio.
 samples
   Practice example and test content.
 tools, tests, migrations, dependencies, export, source distributions, images and icons

@@ -1,30 +1,100 @@
 {
+  "name": "Delphi App Translation",
+  "purpose": "Pinned DPH FMX UI localization and legacy publishing adapter",
   "reference": "VCL2FMXConverterV7/dependencies/DelphiAppTranslation",
+  "reference_snapshot": "2026-09-09",
+  "copied_on": "2026-10-14",
+  "license": "Apache-2.0",
   "files": [
     {
-      "original_path": "source\\runtime\\DAT.Runtime.LanguagePack.pas",
-      "sha256": "ED36C46DB4084A915489B60515F2BF54F90360557F41A1EA2E634FF31E237E25",
-      "file": "DAT.Runtime.LanguagePack.pas"
+      "sha256": "3D97CD054160E63DC1EF90DD72E5AF1E3E560077FF6B01B7C8F4935EEEA9034E",
+      "original_path": "source\\components\\DAT.Components.Core.pas",
+      "file": "source\\DAT.Components.Core.pas"
     },
     {
-      "original_path": "source\\core\\DAT.Core.AtomicFile.pas",
+      "sha256": "D3821B7B428F091CD63CE079D6B9B5299EA885A099869E0785367DF362CC2C4D",
+      "original_path": "source\\components\\DAT.Components.FMX.LanguageSelector.pas",
+      "file": "source\\DAT.Components.FMX.LanguageSelector.pas"
+    },
+    {
+      "sha256": "3399A9BC67F3504D54AEF18C0C7298A694766F827A0DB2C34D92C7960968B07C",
+      "original_path": "source\\components\\DAT.Components.FMX.pas",
+      "file": "source\\DAT.Components.FMX.pas"
+    },
+    {
       "sha256": "D4415B44A2C6E931AFC184730A6516650252E5BD61A126A9078D2CBA02ED6900",
+      "original_path": "source\\core\\DAT.Core.AtomicFile.pas",
+      "file": "source\\DAT.Core.AtomicFile.pas"
+    },
+    {
+      "sha256": "087BB30B9881DEFA0366111954E19E95ECC71C9B35CE4487E44CED6F2122609A",
+      "original_path": "source\\core\\DAT.Core.Diagnostics.pas",
+      "file": "source\\DAT.Core.Diagnostics.pas"
+    },
+    {
+      "sha256": "8F75A1C53416BE45CE343D0188AA97505840939DD9F3519064F1EC2EF763D9A0",
+      "original_path": "source\\runtime\\DAT.Runtime.FMX.pas",
+      "file": "source\\DAT.Runtime.FMX.pas"
+    },
+    {
+      "sha256": "ED36C46DB4084A915489B60515F2BF54F90360557F41A1EA2E634FF31E237E25",
+      "original_path": "source\\runtime\\DAT.Runtime.LanguagePack.pas",
+      "file": "source\\DAT.Runtime.LanguagePack.pas"
+    },
+    {
+      "sha256": "6339734F48D8CBCCC09D45DDE462B59C45D82EDA90BB3565829BDD75160F83FD",
+      "original_path": "source\\runtime\\DAT.Runtime.LayoutOverrides.pas",
+      "file": "source\\DAT.Runtime.LayoutOverrides.pas"
+    },
+    {
+      "sha256": "0647BC54987D0EB1217684AEE24349180884A25C59169249A5C1E548933F5C2F",
+      "original_path": "source\\runtime\\DAT.Runtime.Manager.pas",
+      "file": "source\\DAT.Runtime.Manager.pas"
+    },
+    {
+      "sha256": "7858B816E7902BA032D7C6537CCB91ADA82EDC43740A01EA4EB9204CB78B7DCC",
+      "original_path": "source\\runtime\\DAT.Runtime.Preference.pas",
+      "file": "source\\DAT.Runtime.Preference.pas"
+    },
+    {
+      "sha256": "49D028662E0AC4401BF904F08B543265F0CA60087D4CB32EC1EDEEE66C064B41",
+      "original_path": "source\\runtime\\DAT.Runtime.SplashTranslation.FMX.pas",
+      "file": "source\\DAT.Runtime.SplashTranslation.FMX.pas"
+    },
+    {
+      "sha256": "C23B8942D96F2AA98C125BA927D11F052B46D660A19A917CB6463DFCEC8A716E",
+      "original_path": "source\\runtime\\DAT.Runtime.SplashTranslation.pas",
+      "file": "source\\DAT.Runtime.SplashTranslation.pas"
+    },
+    {
+      "sha256": "AAF4F1DE70510863A9C0C6F57F36B21EDC2BD1EF610AF8C1090148001B888191",
+      "original_path": "source\\runtime\\DAT.Runtime.TemplateRewrite.FMX.pas",
+      "file": "source\\DAT.Runtime.TemplateRewrite.FMX.pas"
+    },
+    {
+      "sha256": "787EC861FFAB984F148D3CAF6DB6DBFCE7308748FDE4C6772320107750F45E84",
+      "original_path": "source\\runtime\\DAT.Runtime.TemplateRewrite.pas",
+      "file": "source\\DAT.Runtime.TemplateRewrite.pas"
+    },
+    {
+      "sha256": "D4415B44A2C6E931AFC184730A6516650252E5BD61A126A9078D2CBA02ED6900",
+      "original_path": "legacy root copy",
       "file": "DAT.Core.AtomicFile.pas"
     },
     {
-      "original_path": "source\\core\\DAT.Core.Diagnostics.pas",
       "sha256": "087BB30B9881DEFA0366111954E19E95ECC71C9B35CE4487E44CED6F2122609A",
+      "original_path": "legacy root copy",
       "file": "DAT.Core.Diagnostics.pas"
     },
     {
-      "original_path": "LICENSE",
+      "sha256": "ED36C46DB4084A915489B60515F2BF54F90360557F41A1EA2E634FF31E237E25",
+      "original_path": "legacy root copy",
+      "file": "DAT.Runtime.LanguagePack.pas"
+    },
+    {
       "sha256": "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4",
+      "original_path": "legacy root copy",
       "file": "LICENSE"
     }
-  ],
-  "reference_snapshot": "2026-09-09",
-  "copied_on": "2026-10-11",
-  "license": "Apache-2.0",
-  "name": "Delphi App Translation",
-  "purpose": "Offline Atlas language-pack reader; independent pinned DPH source copy"
+  ]
 }
