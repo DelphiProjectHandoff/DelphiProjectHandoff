@@ -76,8 +76,7 @@ var
       end;
       if not MatchText(Ext,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
         '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
-        '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex','.csv',
-        '.json','.xml','.yml','.yaml','.ini']) or
+        '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex']) or
         (Paths.Count+PreferredPaths.Count>=300) then Continue;
       Preferred:=(ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
@@ -109,10 +108,12 @@ var
   function CleanText(const AText: string): string;
   begin
     Result:=TRegEx.Replace(AText,'(?is)<(script|style)\b[^>]*>.*?</\1>',' ');
-    Result:=TRegEx.Replace(Result,'(?i)</(p|h[1-6]|li|div|w:p|text:p|text:h)>',sLineBreak);
+    Result:=TRegEx.Replace(Result,'(?i)<br\s*/?>',sLineBreak);
+    Result:=TRegEx.Replace(Result,'(?i)</(p|h[1-6]|li|div|w:p|text:p|text:h)>',sLineBreak+sLineBreak);
     Result:=TRegEx.Replace(Result,'<[^>]+>',' ');
     Result:=TNetEncoding.HTML.Decode(Result);
     Result:=TRegEx.Replace(Result,'[ \t]+',' ');
+    Result:=TRegEx.Replace(Result,'(\r?\n){3,}',sLineBreak+sLineBreak);
   end;
 begin
   Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create; Sites:=TJSONArray.Create;
@@ -254,7 +255,23 @@ begin
       finally FileStream.Free; end;
       Guide.AddPair('format',Ext);
       Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
-      if Body='' then Continue;
+      if (Length(Trim(Body))<60) or
+        (Length(TRegEx.Replace(Body,'[A-Za-z]',''))>Length(Body)*0.85) or
+        TRegEx.IsMatch(Body,'[\x00-\x08\x0E-\x1F]') then Continue;
+      if Ext='.log' then begin
+        Lines.Text:=Body; Body:='';
+        for I:=0 to Lines.Count-1 do begin
+          Line:=Trim(Lines[I]);
+          if (Length(Line)<18) or (Length(Line)>260) or
+            not (ContainsText(Line,'error') or ContainsText(Line,'warning') or
+              ContainsText(Line,'failed') or ContainsText(Line,'complete') or
+              ContainsText(Line,'success')) then Continue;
+          if Body<>'' then Body:=Body+sLineBreak;
+          Body:=Body+'- '+Line;
+          if Length(Body)>2200 then Break;
+        end;
+        if Body='' then Continue;
+      end;
       if (Ext<>'.log') and (Sites.Count<3) then begin
         Matches:=TRegEx.Matches(Body,'https://[A-Za-z0-9][A-Za-z0-9.-]+(?:/[A-Za-z0-9_./?=&%#-]*)?');
         for Match in Matches do begin
@@ -272,14 +289,20 @@ begin
       Lines.Text:=Body; Heading:=TPath.GetFileNameWithoutExtension(Path); Value:='';
       for I:=0 to Lines.Count-1 do begin
         Line:=Trim(Lines[I]);
-        if Line='' then Continue;
+        if Line='' then begin
+          if (Value<>'') and not Value.EndsWith(sLineBreak+sLineBreak) then Value:=Value+sLineBreak;
+          Continue;
+        end;
         if (Line.StartsWith('# ') or Line.StartsWith('## ') or Line.StartsWith('### ')) then begin
           if Value<>'' then begin
             Section:=TJSONObject.Create.AddPair('heading',Heading).AddPair('text',Copy(Value,1,8000));
             Sections.AddElement(Section);
           end;
           Heading:=Trim(Line.TrimLeft(['#',' '])); Value:='';
-        end else if Length(Value)<8000 then Value:=Value+Line+sLineBreak;
+        end else if Length(Value)<8000 then begin
+          if Value<>'' then Value:=Value+sLineBreak;
+          Value:=Value+Line;
+        end;
         if Sections.Count>=40 then Break;
       end;
       if Value<>'' then Sections.AddElement(TJSONObject.Create.AddPair('heading',Heading).AddPair('text',Copy(Value,1,8000)));

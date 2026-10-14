@@ -14,9 +14,18 @@ Constraints.MinHeight = 600
   FormFactor.Devices = [Desktop]
 object HeaderLayout: TLayout
 Align = Top
-Height = 56
+Height = 68
+object OpenCacheButton: TButton
+Align = Right
+Width = 155
+Margins.Top = 12
+Margins.Bottom = 12
+Margins.Right = 8
+Text = 'Open saved project'
+OnClick = OpenCacheClick
+end
 object OpenProjectButton: TButton
-Align = Left
+Align = Right
 Width = 145
 Margins.Top = 12
 Margins.Bottom = 12
@@ -24,15 +33,6 @@ Margins.Left = 12
 Margins.Right = 8
 Text = 'Open application'
 OnClick = OpenProjectClick
-end
-object OpenCacheButton: TButton
-Align = Left
-Width = 155
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Right = 8
-Text = 'Open saved project'
-OnClick = OpenCacheClick
 end
 object LessonPageCombo: TComboBox
 Align = Right
@@ -68,9 +68,9 @@ end
 object BaselineLabel: TLabel
 Text = 'Delphi Project Handoff'
 Align = Client
-Margins.Left = 20
+Margins.Left = 18
 StyledSettings = []
-TextSettings.Font.Size = 25
+TextSettings.Font.Size = 32
 TextSettings.FontColor = xFF146CB4
 end
 end
@@ -213,12 +213,6 @@ TextSettings.HorzAlign = Center
 Text = 'Form designs'
 end
 end
-end
-object LearnerNavRow2: TLayout
-Align = Top
-Height = 34
-Margins.Left = 12
-Margins.Right = 12
 object LearnerTab6: TRectangle
 Tag = 6
 Align = Left
@@ -263,6 +257,13 @@ TextSettings.HorzAlign = Center
 Text = 'Graphs'
 end
 end
+end
+object LearnerNavRow2: TLayout
+Align = Top
+Height = 0
+Visible = False
+Margins.Left = 12
+Margins.Right = 12
 object LearnerTab8: TRectangle
 Visible = False
 Tag = 8
@@ -374,6 +375,16 @@ StyledSettings = []
 TextSettings.Font.Size = 15
 TextSettings.FontColor = xFF146CB4
 Text = 'Reading this application''s source files, screens, guides, and logs. Please wait...'
+end
+object ProjectPreparationProgress: TProgressBar
+Align = Top
+Height = 12
+Visible = False
+Margins.Left = 16
+Margins.Right = 16
+Min = 0
+Max = 100
+Value = 0
 end
 object ExplorerLayout: TLayout
 Align = Left
@@ -547,6 +558,7 @@ OnChange = CardSelectionChange
 end
 object CardReader: TMemo
 Align = Client
+Visible = False
 Margins.Right = 12
 Margins.Bottom = 12
 ReadOnly = True
@@ -554,6 +566,14 @@ WordWrap = True
 ShowScrollBars = True
 StyledSettings = []
 TextSettings.Font.Size = 17
+end
+object CardBrowser: TWebBrowser
+Align = Client
+Margins.Right = 12
+Margins.Bottom = 12
+WindowsEngine = None
+EnableCaching = False
+OnShouldLoadURL = LearningShouldLoad
 end
 end
 object CardEditorTab: TTabItem
@@ -2049,7 +2069,7 @@ object GraphTab: TTabItem
 Text = 'Graphs'
 object GraphToolbar: THorzScrollBox
 Align = Top
-Height = 96
+Height = 130
 object GraphCombo: TComboBox
 Position.X = 4
 Position.Y = 4
@@ -2103,10 +2123,20 @@ OnChange = ViewChange
 end
 object GraphLegend: TLabel
 Text = 'Static relationships | blue: confirmed | orange dash: uncertain | Objects, Types or Units changes grouping | select a group for members and evidence'
-Position.Y = 35
+Position.Y = 83
 Width = 850
 Height = 38
 WordWrap = True
+end
+object GraphPurpose: TLabel
+Text = 'Use a graph to see how parts of the selected application connect. Choose a graph type above, then select a shape for details.'
+Position.Y = 36
+Width = 850
+Height = 42
+WordWrap = True
+StyledSettings = []
+TextSettings.Font.Size = 15
+TextSettings.FontColor = xFF143F68
 end
 end
 object GraphScroll: TScrollBox
@@ -2302,7 +2332,7 @@ end
   Margins.Left = 12
   Margins.Right = 12
   WordWrap = True
-  Text = 'View supplied pictures and sample outputs here. To explain a detail, click its point on the picture, then choose Explain this point. Enter what to notice, an example and a practice question. The original image stays unchanged.'
+  Text = 'DPH generates these blank screen views from the application''s .fmx and .dfm files. Select a form, then use Fit or Native pixels. Custom painting and runtime data may differ.'
   end
 object ScreenshotList: TListBox
 Align = Left

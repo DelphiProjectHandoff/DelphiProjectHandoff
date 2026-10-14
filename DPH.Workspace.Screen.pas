@@ -3,7 +3,7 @@ interface
 uses System.JSON, DPH.Workspace.Model;
 type
   TDPHScreenLayout = class
-    class function Reconstruct(AView: TDPHWorkspaceView; const AFile: string): TJSONObject; static;
+    class function Reconstruct(AView: TDPHWorkspaceView; const AFile: string; AIncludeKeys: Boolean = True): TJSONObject; static;
     class function Gallery(AView: TDPHWorkspaceView): TJSONObject; static;
   end;
 implementation
@@ -31,7 +31,7 @@ begin
     Inc(Index); if Index>=60 then Break;
   end;
 end;
-class function TDPHScreenLayout.Reconstruct(AView: TDPHWorkspaceView; const AFile: string): TJSONObject;
+class function TDPHScreenLayout.Reconstruct(AView: TDPHWorkspaceView; const AFile: string; AIncludeKeys: Boolean): TJSONObject;
 var FileRow,N,P,R,Parent,S,Range: TJSONObject; Nodes,Rows: TJSONArray; V: TJSONValue;
     Positions: TDictionary<Integer,TJSONObject>; I,J: Integer; X,Y,W,H: Double; Name,Value,Caption: string;
 begin
@@ -47,7 +47,7 @@ begin
       N:=Nodes.Items[I] as TJSONObject; if not MatchText(N.GetValue<string>('kind'),['object','inherited','inline']) then Continue;
       Parent:=nil; Positions.TryGetValue(N.GetValue<Integer>('parent'),Parent);
       X:=0; Y:=0; W:=120; H:=32; if Parent=nil then begin W:=800; H:=600; end;
-      Caption:=N.GetValue<string>('name');
+      Caption:='';
       for J:=I+1 to Nodes.Count-1 do
       begin
         P:=Nodes.Items[J] as TJSONObject;
@@ -57,17 +57,18 @@ begin
         if MatchText(Name,['Top','Position.Y']) then Y:=StrToFloatDef(Value,Y,TFormatSettings.Invariant);
         if MatchText(Name,['Width','ClientWidth']) then W:=StrToFloatDef(Value,W,TFormatSettings.Invariant);
         if MatchText(Name,['Height','ClientHeight']) then H:=StrToFloatDef(Value,H,TFormatSettings.Invariant);
-        if MatchText(Name,['Caption','Text']) then Caption:=Value;
+        if MatchText(Name,['Caption','Text']) and not MatchText(LowerCase(N.GetValue<string>('value','')),['tedit','tmemo','tlistbox','tcombobox','timage']) then Caption:=Value;
       end;
       if Parent<>nil then begin X:=X+Parent.GetValue<Double>('x'); Y:=Y+Parent.GetValue<Double>('y'); end;
       R:=TJSONObject.Create; Rows.AddElement(R); Positions.Add(I,R);
       R.AddPair('name',N.GetValue<string>('name')); R.AddPair('class',N.GetValue<string>('value')); R.AddPair('caption',Caption);
       R.AddPair('x',TJSONNumber.Create(EnsureRange(X,-100000.0,100000.0))); R.AddPair('y',TJSONNumber.Create(EnsureRange(Y,-100000.0,100000.0)));
       R.AddPair('width',TJSONNumber.Create(EnsureRange(W,1.0,100000.0))); R.AddPair('height',TJSONNumber.Create(EnsureRange(H,1.0,100000.0)));
-      for V in AView.Document.GetValue<TJSONArray>('semantics.symbols') do
-      begin S:=V as TJSONObject; Range:=S.GetValue<TJSONObject>('range');
-        if (Range.GetValue<string>('source')=AFile) and (Range.GetValue<Int64>('start')=N.GetValue<Int64>('start')) then begin R.AddPair('key',S.GetValue<string>('key')); Break; end;
-      end;
+      if AIncludeKeys then
+        for V in AView.Document.GetValue<TJSONArray>('semantics.symbols') do
+        begin S:=V as TJSONObject; Range:=S.GetValue<TJSONObject>('range');
+          if (Range.GetValue<string>('source')=AFile) and (Range.GetValue<Int64>('start')=N.GetValue<Int64>('start')) then begin R.AddPair('key',S.GetValue<string>('key')); Break; end;
+        end;
     end;
   finally Positions.Free; end;
 end;

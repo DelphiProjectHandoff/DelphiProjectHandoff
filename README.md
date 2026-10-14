@@ -4,24 +4,20 @@ Delphi Project Handoff (DPH) helps a beginner learn one unfamiliar Delphi applic
 
 ## Run and learn
 
-1. Extract the desktop package into a writable local folder and double-click `DelphiProjectHandoff.exe`.
-2. Click **Choose application** and select the Delphi project or project group you need to learn. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
-3. In **Learn the project**, follow **Meet this app**, **Learn a real task**, **Explore related tasks**, and **Resolve unknowns**. These pages use the selected application's own captured screens and actions plus its supplied explanations.
-4. Use **Learn a task** for reviewed instructions and expected results, and **Learning library** for meanings and examples. If instructions are missing, ask someone who knows the app to prepare them; DPH does not invent business facts.
+1. Extract the Windows distribution into a writable local folder. Run `Win64\DelphiProjectHandoff.exe` on 64-bit Windows, or use the `Win32` edition.
+2. Click **Open application** and select the Delphi project or project group you need to learn. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
+3. Use **Learn the project**, **Learning library**, and **Project map** to follow the selected application's documented purpose, screens, controls, and actions.
+4. **Screenshots** contains blank screen images DPH generates internally from the project's `.fmx` and `.dfm` files. **Graphs** explains possible connections between screens, routines, and data.
 
 The [run and test directions](docs/guides/Run_And_Test.txt), [User Guide](docs/pdf/DPH_User_Guide.pdf), and [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) cover the current app-specific learning route. The guides also have editable DOCX editions in `docs/guides`.
 
-## Teaching features
+## Learning views
 
-- Application purpose, a beginner learning route and plain Delphi terms.
-- Screen and field meanings, worked examples, input limits, safe help and practice answers.
-- Ordered task steps, role filters, learning paths and personal revision-specific checked-step progress.
-- Source-linked action explanations with optional deeper detail.
-- Attributed FAQs, error recovery, business rules, settings, dependencies and output explanations.
-- Real supplied pictures and sample outputs with anchored numbered callouts. Source-based form reconstructions remain clearly labeled.
-- Search, business glossary, saved knowledge and shared offline lessons from the same records.
-
-Preparing a lesson cannot establish an unwritten business fact. A knowledgeable contributor supplies that information; DPH preserves attribution, unanswered points and review status. Checked steps record the learner's checks, not proof of mastery or a recorded application run.
+- The project introduction draws on project structure, form captions, and usable explanations found in the selected project's documents.
+- The Learning library formats material from project-local guides, help, notes, and useful log messages.
+- The Project map lists source files, forms, controls, units, routines, and variables with their available connections.
+- Screenshots shows DPH-generated empty form views at fitted or native size. Each image is derived from one `.fmx` or `.dfm` definition and contains no runtime data.
+- Graphs explains possible screen navigation, routine calls, data flow, and change impact. These relationships come from file evidence, not a recorded run.
 
 ## Build and validate
 

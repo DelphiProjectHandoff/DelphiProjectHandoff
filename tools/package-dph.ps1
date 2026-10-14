@@ -1,16 +1,20 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.5.2')
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.0')
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
-$packageName='DPH-'+$Version+'-experimental-Win32'
+$packageName='DPH-'+$Version+'-experimental-Windows'
 $packageRoot=Join-Path $projectRoot ('bin\distribution\'+$packageName)
 if (Test-Path -LiteralPath $packageRoot) {throw 'Package staging already exists; choose a fresh version'}
 [IO.Directory]::CreateDirectory($packageRoot) | Out-Null
-foreach ($name in @('DelphiProjectHandoff.exe','DPH.ValidateHandoff.exe','WebView2Loader.dll')) {
- Copy-Item -LiteralPath (Join-Path $projectRoot ('bin\Win32\Debug\'+$name)) -Destination $packageRoot
+foreach ($arch in @('Win32','Win64')) {
+ $archRoot=Join-Path $packageRoot $arch
+ [IO.Directory]::CreateDirectory($archRoot) | Out-Null
+ foreach ($name in @('DelphiProjectHandoff.exe','WebView2Loader.dll')) {
+  Copy-Item -LiteralPath (Join-Path $projectRoot ('bin\'+$arch+'\Release\'+$name)) -Destination $archRoot
+ }
 }
-foreach ($directory in @('migrations','help')) {
+foreach ($directory in @('migrations','help','images and icons')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
 }
 foreach ($relative in @('docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
@@ -29,19 +33,19 @@ Delphi Project Handoff
 Experimental Windows desktop learning application
 
 1. Extract this whole folder to a writable local location.
-2. Double-click DelphiProjectHandoff.exe.
-3. Click Choose application and select the Delphi project you want to learn.
-4. In Learn the project, use Meet this app, Learn a real task,
-   Explore related tasks and Resolve unknowns.
-5. Use the in-app Getting started page for first-session directions.
+2. On 64-bit Windows, open Win64 and double-click DelphiProjectHandoff.exe.
+   Use the Win32 copy only when you need the 32-bit edition.
+3. Click Open application and select the Delphi project you want to learn.
+4. Use Learn the project, Learning library, Project map, Screenshots and Graphs.
+5. Screenshots contains blank screen images generated inside DPH from that
+   project's .fmx and .dfm form files. Runtime appearance can differ.
 
 The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for
 embedded pages; its supplied loader is a separate file.
 
-DPH reads source without changing or running the selected application.
-Supplied tasks and answers remain attributed and may require review.
-Form designs are reconstructions; Screenshots contains supplied images.
+DPH reads source and project-local documents without changing or running the
+selected application. It generates empty design views from form definitions.
 This package contains no owner lesson databases or private documents.
 '@ | Set-Content -LiteralPath (Join-Path $packageRoot 'README.txt') -Encoding UTF8
 $hashes=[ordered]@{}
@@ -63,7 +67,7 @@ try {
  if ($LASTEXITCODE -ne 0) {throw 'Cannot enumerate source files'}
  foreach ($relative in $paths) {
   $include=($relative -match '^DPH\..*\.(pas|fmx)$') -or ($relative -match '^DelphiProjectHandoff\.(dpr|dproj|res)$') -or
-   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|samples/(translation|OrderPractice)|docs/guides/source)/') -or
+   ($relative -match '^(migrations|dependencies|tests|tools)/') -or ($relative -match '^(help|images and icons|samples/(translation|OrderPractice)|docs/guides/source)/') -or
    ($relative -match '^docs/(planning|requirements)/') -or
    ($relative -in @('README.md','.gitattributes','.gitignore','docs/PROJECT_LAYOUT.txt','docs/PROJECT_MOVE_MANIFEST.csv','docs/validation/reports/guide-source-validation.json','docs/validation/reports/reference-inventory.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/validation/images/learning-completion-practice-task-compact.png','docs/validation/images/learning-completion-practice-library-compact.png','docs/validation/images/learning-completion-practice-output.png','docs/validation/images/learning-completion-phase1-project-profile.png','docs/validation/images/learning-completion-tasks-preparation.png','Databases/README.txt'))
   $source=Join-Path $projectRoot $relative
