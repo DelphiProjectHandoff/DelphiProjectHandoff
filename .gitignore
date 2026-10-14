@@ -4,6 +4,7 @@
 !/dcu/.gitkeep
 /samples/reference-vcl2fmx-v6.0.0/
 *.res
+!DelphiProjectHandoff.res
 *.dproj.local
 *.identcache
 *.stat
