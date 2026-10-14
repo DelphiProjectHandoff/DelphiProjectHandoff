@@ -1106,7 +1106,9 @@ begin
 end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
 var R,Section,Symbol:TJSONObject; V,W:TJSONValue; Body,Title,HTML,Line,Path,ParagraphText,
-  Source,CaptionText:string; Lines:TStringList; Sections,Symbols:TJSONArray; I,Count:Integer;
+  Source,CaptionText,NextLine,CellText:string; Lines:TStringList; Sections,Symbols:TJSONArray;
+  Cells:TArray<string>; I,J,Count:Integer; InTable,InList,InCode,IsTableHeader,
+    IsOrderedItem,ListOrdered,IsStandaloneHeading:Boolean;
 begin
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
  CardReader.Text:='Choose a topic to explore this application.';
@@ -1155,28 +1157,78 @@ begin
    CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
  end;
  if R.GetValue<string>('library_kind','')<>'route' then begin
- HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2{color:#146cb4;font-size:22px;margin-top:32px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal}</style></head><body><article><h1>'+
+ HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2,h3{color:#146cb4;line-height:1.3;margin-top:32px}h2{font-size:23px}h3{font-size:19px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal;overflow-wrap:anywhere}ul{padding-left:26px}code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #d7e2ec}th{background:#e8f2fa;color:#145c99}tr:nth-child(even) td{background:#f8fbfd}</style></head><body><article><h1>'+
    TNetEncoding.HTML.Encode(Title)+'</h1>';
  Lines:=TStringList.Create;
  try
    Lines.Text:=Body;
-   ParagraphText:='';
+   ParagraphText:='';InTable:=False;InList:=False;InCode:=False;ListOrdered:=False;
    for I:=0 to Lines.Count-1 do begin
      Line:=Trim(Lines[I]);
-     if (Line='') or Line.StartsWith('# ') or Line.StartsWith('## ') or Line.StartsWith('- ') or Line.StartsWith('* ') then begin
-       if ParagraphText<>'' then begin HTML:=HTML+'<p>'+TNetEncoding.HTML.Encode(ParagraphText)+'</p>';ParagraphText:='';end;
+     NextLine:='';if I<Lines.Count-1 then NextLine:=Trim(Lines[I+1]);
+     IsOrderedItem:=TRegEx.IsMatch(Line,'^\d+[.)]\s+');
+     IsStandaloneHeading:=(Length(Line)<90) and Line.EndsWith(':') and
+       (NextLine.StartsWith('|') or ((NextLine='') and (I<Lines.Count-2) and
+         Trim(Lines[I+2]).StartsWith('|')));
+     if Line.StartsWith('```') then begin
+       if ParagraphText<>'' then begin HTML:=HTML+'<p>'+ParagraphText+'</p>';ParagraphText:='';end;
+       if InList then begin if ListOrdered then HTML:=HTML+'</ol>' else HTML:=HTML+'</ul>';InList:=False;end;
+       if InTable then begin HTML:=HTML+'</tbody></table></div>';InTable:=False;end;
+       if InCode then HTML:=HTML+'</code></pre>' else HTML:=HTML+'<pre><code>';
+       InCode:=not InCode;Continue;
      end;
+     if InCode then begin HTML:=HTML+TNetEncoding.HTML.Encode(Lines[I])+sLineBreak;Continue;end;
+     if InTable and not Line.StartsWith('|') then begin HTML:=HTML+'</tbody></table></div>';InTable:=False;end;
+     if InList and not (Line.StartsWith('- ') or Line.StartsWith('* ') or IsOrderedItem) then begin
+       if ListOrdered then HTML:=HTML+'</ol>' else HTML:=HTML+'</ul>';InList:=False;
+     end;
+     if (Line='') or Line.StartsWith('# ') or Line.StartsWith('## ') or
+       Line.StartsWith('### ') or Line.StartsWith('- ') or Line.StartsWith('* ') or
+       IsOrderedItem or IsStandaloneHeading or Line.StartsWith('|') or Line.StartsWith('> ') then
+       if ParagraphText<>'' then begin HTML:=HTML+'<p>'+ParagraphText+'</p>';ParagraphText:='';end;
      if Line='' then Continue;
-     if Line.StartsWith('# ') or Line.StartsWith('## ') then
-       HTML:=HTML+'<h2>'+TNetEncoding.HTML.Encode(Line.TrimLeft(['#',' ']))+'</h2>'
-     else if Line.StartsWith('- ') or Line.StartsWith('* ') then
-       HTML:=HTML+'<p style="padding-left:18px">&#8226; '+TNetEncoding.HTML.Encode(Copy(Line,3,MaxInt))+'</p>'
+     if Line.StartsWith('|') and TRegEx.IsMatch(Line,'^[|:\-\s]+$') then Continue;
+     if Line.StartsWith('|') and (InTable or TRegEx.IsMatch(NextLine,'^[|:\-\s]+$')) then begin
+       IsTableHeader:=not InTable;
+       if not InTable then begin HTML:=HTML+'<div class="table-scroll"><table><thead><tr>';InTable:=True;end
+       else HTML:=HTML+'<tr>';
+       Cells:=Line.Split(['|']);
+       for J:=Low(Cells) to High(Cells) do begin
+         if ((J=Low(Cells)) or (J=High(Cells))) and (Trim(Cells[J])='') then Continue;
+         CellText:=TNetEncoding.HTML.Encode(Trim(Cells[J]));
+         CellText:=TRegEx.Replace(CellText,'`([^`]+)`','<code>$1</code>');
+         CellText:=TRegEx.Replace(CellText,'\*\*([^*]+)\*\*','<strong>$1</strong>');
+         if IsTableHeader then HTML:=HTML+'<th>'+CellText+'</th>' else HTML:=HTML+'<td>'+CellText+'</td>';
+       end;
+       if IsTableHeader then HTML:=HTML+'</tr></thead><tbody>' else HTML:=HTML+'</tr>';
+       Continue;
+     end;
+     Line:=TNetEncoding.HTML.Encode(Line);
+     Line:=TRegEx.Replace(Line,'`([^`]+)`','<code>$1</code>');
+     Line:=TRegEx.Replace(Line,'\*\*([^*]+)\*\*','<strong>$1</strong>');
+     Line:=TRegEx.Replace(Line,'\[([^\]]+)\]\(https?://[^)]+\)','$1');
+     if IsStandaloneHeading then HTML:=HTML+'<h2>'+Line+'</h2>'
+     else if Line.StartsWith('# ') or Line.StartsWith('## ') or Line.StartsWith('### ') then begin
+       if Line.StartsWith('### ') then HTML:=HTML+'<h3>'+Copy(Line,5,MaxInt)+'</h3>'
+       else HTML:=HTML+'<h2>'+Line.TrimLeft(['#',' '])+'</h2>';
+     end else if Line.StartsWith('- ') or Line.StartsWith('* ') then begin
+       if InList and ListOrdered then begin HTML:=HTML+'</ol>';InList:=False;end;
+       if not InList then begin HTML:=HTML+'<ul>';InList:=True;ListOrdered:=False;end;
+       HTML:=HTML+'<li>'+Copy(Line,3,MaxInt)+'</li>';
+     end else if IsOrderedItem then begin
+       if InList and not ListOrdered then begin HTML:=HTML+'</ul>';InList:=False;end;
+       if not InList then begin HTML:=HTML+'<ol>';InList:=True;ListOrdered:=True;end;
+       HTML:=HTML+'<li>'+TRegEx.Replace(Line,'^\d+[.)]\s+','')+'</li>';
+     end else if Line.StartsWith('&gt; ') then HTML:=HTML+'<blockquote>'+Copy(Line,6,MaxInt)+'</blockquote>'
      else begin
        if ParagraphText<>'' then ParagraphText:=ParagraphText+' ';
        ParagraphText:=ParagraphText+Line;
      end;
    end;
-   if ParagraphText<>'' then HTML:=HTML+'<p>'+TNetEncoding.HTML.Encode(ParagraphText)+'</p>';
+   if ParagraphText<>'' then HTML:=HTML+'<p>'+ParagraphText+'</p>';
+   if InList then begin if ListOrdered then HTML:=HTML+'</ol>' else HTML:=HTML+'</ul>';end;
+   if InTable then HTML:=HTML+'</tbody></table></div>';
+   if InCode then HTML:=HTML+'</code></pre>';
  finally Lines.Free;end;
  if R.GetValue<TJSONArray>('sections',nil)=nil then
    HTML:=HTML+'<p><a href="index.html#form_'+THashSHA2.GetHashString(R.GetValue<string>('source',''))+'">Open this screen</a></p>';
@@ -2807,6 +2859,21 @@ begin
     StatusLabel.Text:='This form is not available in the selected project.'; Exit;
   end;
   if EndsText('#open_screenshots',AURL) then begin ACancel:=True; WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit; end;
+  P:=Pos('#library_',AURL);
+  if P>0 then begin
+    ACancel:=True; Fragment:=Copy(AURL,P+9,MaxInt);
+    CardFilter.Text:=''; CardFilterChange(nil);
+    for I:=0 to FCardRows.Count-1 do begin
+      S:=FCardRows[I];
+      if (S.GetValue<TJSONArray>('sections',nil)<>nil) and
+        SameText(THashSHA2.GetHashString(S.GetValue<string>('source','')),Fragment) then begin
+        CardList.ItemIndex:=I; CardSelectionChange(nil); WorkspaceTabs.ActiveTab:=CardLibraryTab;
+        StatusLabel.Text:='Showing '+TPath.GetFileName(S.GetValue<string>('source'))+' in the Learning library.';
+        Exit;
+      end;
+    end;
+    StatusLabel.Text:='This document is not available in the selected project.'; Exit;
+  end;
   if EndsText('#all_objects',AURL) or (Pos('#kind_',AURL)>0) then begin
     ACancel:=True; FBinding:=True;
     try

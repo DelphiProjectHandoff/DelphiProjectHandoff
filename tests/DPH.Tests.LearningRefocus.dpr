@@ -200,9 +200,10 @@ begin
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'Extra learning screen') and
                   ContainsText(GuideModel.ApplicationRouteHTML(0),'2 application forms were found'),
                   'A form design appears even when no class-link relationship was resolved');
-                Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'Begin with its own saved controls.') and
-                  ContainsText(GuideModel.ApplicationRouteHTML(2),'Getting started'),
-                  'Application guide enriches the first task and related topics');
+                Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'2. Getting started') and
+                  ContainsText(GuideModel.ApplicationRouteHTML(2),'#library_'+
+                    THashSHA2.GetHashString('docs/Application_Guide.md')),
+                  'Application guide offers readable document links from task routes');
                 var ControlKey: string:='';
                 for var SymbolValue in GuideFacts.GetValue<TJSONArray>('symbols') do
                   if (SymbolValue.GetValue<string>('kind','')='component') and
@@ -401,6 +402,18 @@ begin
                 'Learning library groups document pages under their filename');
               WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
               Check(True,'A discovered project document opens as readable content');
+              WaitHTML(Form.CardBrowser,'document.querySelector("table thead th").innerText','Unit');
+              WaitHTML(Form.CardBrowser,'document.querySelector("table tbody td").innerText','Main.pas');
+              WaitHTML(Form.CardBrowser,'String(document.querySelectorAll("ul li").length)','2');
+              WaitHTML(Form.CardBrowser,'String(document.querySelectorAll("ol li").length)','2');
+              WaitHTML(Form.CardBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
+              Check(True,'Learning library formats source tables and instructions instead of showing Markdown syntax');
+              Failed:=False;
+              Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+
+                '#library_'+THashSHA2.GetHashString('README.md'),Failed);
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.CardLibraryTab) and
+                StartsText('Document: README',Form.CardList.Items[Form.CardList.ItemIndex]),
+                'Application route opens its document in the formatted Learning library');
               Form.CardFilter.Text:='MainForm';Form.CardFilterChange(nil);
               Check((Form.CardList.Count>0) and StartsText('Screen:',Form.CardList.Items[0]),
                 'Learning library includes the selected application screen');
@@ -662,8 +675,8 @@ begin
                       'The actual Carillon guide supplies purpose and attribution in the learner view');
                     Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil);
                     Check(ContainsText(Form.OverviewMemo.Text,'Read this application') and
-                      ContainsText(Form.OverviewMemo.Text,'playlist form is responsible for'),
-                      'The task route retains selected-project guide substance in its text fallback');
+                      ContainsText(Form.OverviewMemo.Text,'Learning library'),
+                      'The task route points to readable selected-project guides');
                     Form.LearningTopics.ItemIndex:=3; Form.LearningClick(nil);
                     Check(not ContainsText(Form.OverviewMemo.Text,'purpose and first screen need confirmation') and
                       ContainsText(Form.OverviewMemo.Text,'Permissions, external services and recovery behavior'),

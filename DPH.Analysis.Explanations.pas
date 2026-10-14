@@ -1442,7 +1442,7 @@ begin
           Body.Append('<p>Explore the other actions captured in this application’s saved screens and source below.</p>');
         Body.Append('</section>');
         if (Guides<>nil) and (Guides.Count>0) then begin
-          Body.Append('<section class="card"><h2>Read this application’s own documents</h2><p>These passages come from files in the selected project folder and are identified by file and fingerprint.</p>');
+          Body.Append('<section class="card"><h2>Read this application’s own documents</h2><p>Open a relevant guide in the Learning library to read its formatted headings, tables and examples.</p><ul>');
           Count:=0;
           for V in Guides do begin
             Guide:=V as TJSONObject;
@@ -1458,12 +1458,13 @@ begin
               if AIndex=1 then begin
                 if Count>=8 then Break;
               end else if Count>=8 then Break;
-              Body.Append('<details class="card"><summary>'+Encode(GuideTitle)+'</summary><pre>'+Encode(GuideBody)+
-                '</pre><small>From '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
+              Body.Append('<li><a href="#library_'+THashSHA2.GetHashString(Guide.GetValue<string>('source'))+'">'+
+                Encode(GuideTitle)+'</a> <small>in '+Encode(Guide.GetValue<string>('source'))+'</small></li>');
               Inc(Count);
             end;
           end;
-          if Count=0 then Body.Append('<p>The local guides do not have a clearly labeled getting-started or task section. Explore their headings below and use the forms and actions in this route.</p>');
+          Body.Append('</ul>');
+          if Count=0 then Body.Append('<p>The local guides do not have a clearly labeled getting-started or task section. Explore their headings in the Learning library and use the forms and actions in this route.</p>');
           Body.Append('</section>');
         end;
         begin
@@ -1552,19 +1553,13 @@ begin
         end;
         if AIndex=2 then begin
           if (Guides<>nil) and (Guides.Count>0) then begin
-            Body.Append('<section class="card"><h2>More from the project’s documentation</h2><p>Open a topic to read the corresponding passage from the selected application’s own guide.</p>');
+            Body.Append('<section class="card"><h2>More from the project’s documentation</h2><p>Open a document in the Learning library to read its formatted contents.</p>');
             for V in Guides do begin
               Guide:=V as TJSONObject;
-              Body.Append('<h3>'+Encode(Guide.GetValue<string>('source'))+'</h3>');
+              Body.Append('<h3><a href="#library_'+THashSHA2.GetHashString(Guide.GetValue<string>('source'))+'">'+
+                Encode(Guide.GetValue<string>('source'))+'</a></h3>');
               if Guide.GetValue<TJSONArray>('sections').Count=0 then
                 Body.Append('<p><small>No selectable text could be extracted from this file. It may contain only images, require a password, or need a document converter.</small></p>');
-              for W in Guide.GetValue<TJSONArray>('sections') do begin
-                GuideSection:=W as TJSONObject;
-                GuideBody:=Trim(GuideSection.GetValue<string>('text',''));
-                if GuideBody='' then Continue;
-                Body.Append('<details class="card"><summary>'+Encode(GuideSection.GetValue<string>('heading','Topic'))+
-                  '</summary><pre>'+Encode(GuideBody)+'</pre><small>Source: '+Encode(Guide.GetValue<string>('source'))+'</small></details>');
-              end;
             end;
             Body.Append('</section>');
           end;
