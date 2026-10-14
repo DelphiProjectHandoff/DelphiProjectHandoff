@@ -1,16 +1,20 @@
 RUN AND TEST DELPHI PROJECT HANDOFF
 Last changed: 14 October 2026
 
-INSTALL AND START
+BUILD AND START FROM SOURCE
 
-1. Download DPH-0.6.4-experimental-Windows.zip and extract the complete ZIP to
-   a writable local folder. Do not run the executable from inside the ZIP.
-2. On 64-bit Windows, open the Win64 subfolder and run
-   DelphiProjectHandoff.exe. The Win32 subfolder contains the 32-bit edition.
-   Keep WebView2Loader.dll beside the executable and keep the package's help,
-   migrations, documentation, and Localization folders in place.
-3. DPH opens maximized. The blue Delphi Project Handoff heading and all six
-   learner tabs should appear on one row: Getting started, Learn the project,
+1. Clone the public source repository or use GitHub's Code > Download ZIP,
+   then extract the source to a writable local folder. Open
+   DelphiProjectHandoff.dproj in RAD Studio 37 and build Win64 or Win32,
+   Debug or Release. Install the supplied DAT design package first if you
+   intend to edit its translation controls in the form designer.
+2. Run bin\Win64\Release\DelphiProjectHandoff.exe if you built Win64 Release;
+   otherwise use the matching bin\platform\configuration folder. Keep
+   WebView2Loader.dll beside the executable and keep help, migrations,
+   images and icons, and Localization in the source root.
+3. DPH opens maximized. The logo and blue Delphi Project Handoff heading
+   should appear above the six learner tabs, which share one row: Getting
+   started, Learn the project,
    Learning library, Project map, Screenshots, and Application diagrams. The
    language selector should be visible beside the heading.
 
@@ -58,15 +62,14 @@ CHECK THE LEARNING VIEWS
     inspect the underlying project part. Diagrams reflect file evidence rather
     than a recorded run.
 
-CHECK REOPENING AND DISTRIBUTION
+CHECK REOPENING AND SOURCE BUILD
 
 12. Close DPH, restart it, and use Open saved project. Confirm that the same
     application, learning views, and generated screens reappear.
-13. To use or modify the complete Delphi source, extract
-    DPH_v0_6_4_Source_Distribution ZIP. Open DelphiProjectHandoff.dproj in RAD
-    Studio 37, select Win64 or Win32, and build the Release configuration.
-    Keep the source folder structure intact. The source ZIP contains no
-    personal .dphdb databases or Git history.
+13. To modify the complete Delphi source, work in the extracted repository
+    or source archive and rebuild in RAD Studio 37. Keep the source folder
+    structure intact. Do not include personal .dphdb databases in a shared
+    source archive.
 
 If embedded HTML does not display, install the Microsoft WebView2 Runtime.
 The project map and source-based analysis still require no target execution.

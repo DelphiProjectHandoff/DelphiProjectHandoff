@@ -1,37 +1,53 @@
+![Delphi Project Handoff](images%20and%20icons/DPH-Logo-Horizontal-720.png)
+
 # Delphi Project Handoff
 
-Delphi Project Handoff (DPH) helps a beginner learn one unfamiliar Delphi application: what it does, how to use its screens, what inputs mean, how an action reaches its operation, and how to recognize a result. DPH reads selected source without changing, compiling or running that application.
+**Learn an unfamiliar Delphi application from the files it already has.**
 
-## Run and learn
+Imagine joining a company after its programmer has left. Nobody can explain the application, and there are no prepared lessons or screenshots. Delphi Project Handoff (DPH) helps you find a starting point: it reads the project's structure, forms, Pascal code, and any useful documents it finds, then presents an application-specific route through the screens and actions. It does not compile, run, or change the application being studied.
 
-1. Extract the Windows distribution into a writable local folder. Run `Win64\DelphiProjectHandoff.exe` on 64-bit Windows, or use the `Win32` edition.
-2. Click **Open application** and select the Delphi project or project group you need to learn. Keep its `.dphdb` outside the selected source tree, together with its adjacent `.dphdb.views` folder.
-3. Use **Learn the project**, **Learning library**, and **Project map** to follow the selected application's documented purpose, screens, controls, and actions.
-4. **Screenshots** contains blank screen images DPH generates internally from the project's `.fmx` and `.dfm` files. **Application diagrams** explains possible connections between screens, routines, and data.
-5. Choose a language from the selector in the header. DPH includes the same 35 offline language choices as VCL2FMXConverter v7, with English as the source language. The selected application's own source and documents remain in the language in which they were written.
+DPH is experimental Windows desktop software. **This repository is an editable Delphi source project.** To run a checkout, build it with RAD Studio as described below; the first step is not to unpack a Windows distribution.
 
-The [run and test directions](docs/guides/Run_And_Test.txt), [User Guide](docs/pdf/DPH_User_Guide.pdf), and [Engineering Guide](docs/pdf/DPH_Engineering_Guide.pdf) cover the current app-specific learning route. The guides also have editable DOCX editions in `docs/guides`.
+## Build and start from source
 
-## Learning views
+1. Clone this repository or download GitHub's **Code → Download ZIP** source archive, then extract it to a writable folder.
+2. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. Build **Win64** or **Win32**, in **Debug** or **Release**. The project uses FireMonkey and the bundled DelphiAppTranslation source in `dependencies/DelphiAppTranslation`.
+3. Run `bin/Win64/Release/DelphiProjectHandoff.exe` for a Win64 Release build, or the executable under the platform and configuration you selected. Keep `WebView2Loader.dll` beside it, and keep `Localization`, `migrations`, `help`, and `images and icons` in the source folder. Embedded pages also require the Microsoft WebView2 Runtime.
 
-- The project introduction draws on project structure, form captions, and usable explanations found in the selected project's documents.
-- The Learning library formats material from project-local guides, help, notes, and useful log messages.
-- The Project map lists source files, forms, controls, units, routines, and variables with their available connections.
-- Screenshots shows DPH-generated empty form views at fitted or native size. Each image is derived from one `.fmx` or `.dfm` definition and contains no runtime data.
-- Application diagrams explains possible screen navigation, routine calls, data flow, and change impact. These relationships come from file evidence, not a recorded run.
+The main form is editable in the RAD Studio designer. To edit its DelphiAppTranslation controls visually, install the supplied design package using [the DAT component-kit instructions](export/DAT-component-kit/DelphiProjectHandoff/README.txt). The [run and test directions](docs/guides/Run_And_Test.txt) give a fuller first-use check.
 
-## Build and validate
+## Explore an application
 
-Use the configured RAD Studio toolchain from an elevated developer prompt. `tools\build-wp0.cmd` builds DPH and verifies the serialized FMX controls. `tools\build-learning-refocus.cmd` checks the app-specific learning route and source-linked explanations. Detailed test directions are in [Developer test directions](docs/guides/Developer_Test_Directions.txt).
+Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. Save the resulting `.dphdb` outside the application source tree, together with its adjacent `.dphdb.views` folder. Later, **Open saved project** restores that analysis and its generated screen images.
 
-Forms and ordinary controls remain editable in the IDE. The selected application is a read-only input. Runtime observation, live service access and selected-project execution are not part of passive discovery.
+While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It also looks for useful local guides, help, notes, and logs. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. Document discovery stays within the selected project's directory and screens material before showing it.
 
-The DAT FMX language manager and selector are editable on the main form. Their pinned source is in `dependencies/DelphiAppTranslation/source`; the matching IDE design package and instructions are in `export/DAT-component-kit/DelphiProjectHandoff`. Each build copies `Localization/Languages` beside its executable. The installed app uses these packs offline; translation-provider credentials are needed only to regenerate them.
+When documents mention eligible HTTPS websites, DPH may read a small amount of public page text if Internet access is available. That is an optional source of context; opening and learning a local project do not require a connection. DPH does not offer a general web search engine.
 
-## Current scope
+The six learner views are:
 
-[The learning reconciliation](docs/requirements/Learning_Requirements_Reconciliation.txt) records all 533 original requirement dispositions; its CSV and JSON retain each original status, limitation and remaining work. The revised learning contract supersedes dedicated enterprise administration, specialist analysis expansion and agent infrastructure. A scope decision does not claim that an original technical requirement was implemented. The historical ledger remains unchanged.
+| View | What you can do |
+| --- | --- |
+| **Getting started** | See how to open a project and move through DPH. |
+| **Learn the project** | Read the inferred purpose, starting form, screens, and a route into the application's real tasks. |
+| **Learning library** | Read grouped, formatted topics drawn from the project's available documents and screen information. |
+| **Project map** | Select units, types, objects, controls, procedures, functions, variables, and their connections; follow links to the relevant detail or screen. |
+| **Screenshots** | Inspect blank screen views generated inside DPH from `.fmx` and `.dfm` definitions, using Fit or Native pixels. These are form-derived designs, not captures of the running application. |
+| **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. Arrows indicate possible relationships in the files, not measured runtime behavior. |
 
-[Project layout](docs/PROJECT_LAYOUT.txt) explains where current guides, original plans, validation reports, images, logs, compiled units, and databases live. [The move manifest](docs/PROJECT_MOVE_MANIFEST.csv) maps every reorganized file to its former location and records its SHA-256 hash.
+DPH shows the source behind its explanations where available and marks conclusions that need checking. A form file cannot reveal every runtime change, and a call site alone cannot prove when an action completes. The application under study is never executed as part of passive discovery.
 
-Independent first-time learner acceptance is reported separately from software validation. The converter reference is passive test input and is never a DPH build or runtime dependency.
+## Languages and offline use
+
+The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
+
+The selected application's documents, form captions, identifiers, and source text stay in their original language. DPH does not send that material to a translation provider. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access.
+
+## Guides, checks, and project layout
+
+- [User Guide (PDF)](docs/pdf/DPH_User_Guide.pdf) and [Engineering Guide (PDF)](docs/pdf/DPH_Engineering_Guide.pdf); editable DOCX copies are in `docs/guides`.
+- [Developer test directions](docs/guides/Developer_Test_Directions.txt) cover the available build and regression scripts. `tools/build-ui-translation.cmd` checks all 35 language packs, and `tools/build-learning-refocus.cmd` checks the learning route and source-linked explanations.
+- [Project layout](docs/PROJECT_LAYOUT.txt) maps the source, guides, tests, graphics, and generated outputs.
+- [Learning requirements reconciliation](docs/requirements/Learning_Requirements_Reconciliation.txt) records the scope decisions and remaining work. A scope decision does not imply an old requirement was implemented.
+
+Independent testing with a first-time learner is separate from compilation and automated checks. DPH is designed to make an unknown project more understandable, while leaving uncertain behavior explicit.

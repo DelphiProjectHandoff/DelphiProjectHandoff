@@ -17,7 +17,8 @@ type
     ProjectSearchProgressText: TLabel;
     ProjectPreparationMessage: TLabel;
     ProjectPreparationProgress: TProgressBar;
-    HeaderLayout,LearnerNavRow1,LearnerNavRow2,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
+    HeaderLayout,HeaderBrandRow,LearnerNavRow1,LearnerNavRow2,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
+    HeaderLogo: TImage;
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;

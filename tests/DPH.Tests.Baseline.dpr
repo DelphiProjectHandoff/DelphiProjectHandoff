@@ -16,7 +16,11 @@ begin
       raise Exception.Create('FMX resource did not bind the baseline label');
     if BaselineForm.BaselineLabel.Owner <> BaselineForm then
       raise Exception.Create('FMX resource ownership is invalid');
-    Writeln('PASS WP0-TEST: FMX resource instantiation and component binding');
+    if not Assigned(BaselineForm.HeaderLogo) then
+      raise Exception.Create('FMX resource did not bind the header logo');
+    if BaselineForm.HeaderLogo.Bitmap.IsEmpty then
+      raise Exception.Create('Header logo image is empty');
+    Writeln('PASS WP0-TEST: FMX resource, header logo, and component binding');
   finally
     BaselineForm.Free;
   end;
