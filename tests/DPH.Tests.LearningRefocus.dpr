@@ -429,11 +429,14 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Up one level remains visible in Project map');
               Failed:=False;Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#screens',Failed);
               Check(not Failed,'Project map allows its screen-definition link to scroll to the screen list');
+              Check(Form.ScreenshotList.Count>0,'The fixture has a generated screen to navigate to');
+              Form.ScreenshotList.ItemIndex:=-1; Form.ScreenshotImage.Bitmap.SetSize(0,0);
               Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+
                 '#form_'+THashSHA2.GetHashString(Form.FormCombo.Items[0]),Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab) and
-                (Form.FormCombo.ItemIndex=0),
-                'A linked screen opens its generated view');
+                (Form.FormCombo.ItemIndex=0) and (Form.ScreenshotList.ItemIndex=0) and
+                not Form.ScreenshotImage.Bitmap.IsEmpty and ContainsText(Form.ScreenshotEvidence.Text,'Main.fmx'),
+                'A linked screen selects and displays its own generated preview');
               Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#open_screenshots',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab),
                 'Project map opens the actual-screenshot page directly');
