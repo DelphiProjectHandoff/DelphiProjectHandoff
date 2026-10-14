@@ -478,7 +478,9 @@ begin
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               Form.LoadKnowledge(Store.KnowledgeJSON);
               Form.WorkspaceTabs.ActiveTab:=Form.ActionPurposeTab;Form.WorkspacePageChange(nil);
-              Check(Form.ActionPurposeList.Count>0,'Requesting action purposes builds their real preparation report');
+              Check(Form.ActionPurposeList.Count=0,'Changing pages leaves expensive preparation until the next UI tick');
+              Form.PollTimerTimer(nil);
+              Check(Form.ActionPurposeList.Count>0,'The next UI tick builds the requested preparation report');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
 
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Meet this app: Semantic.dproj'); Check(True,'Real WebView2 renders the selected application route');
@@ -525,10 +527,12 @@ begin
               finally BrowserBitmap.Free; end;
               Form.GraphGroupingCombo.ItemIndex:=0; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(Form.GraphCombo);
               Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+              Form.PollTimerTimer(nil);
               WaitHTML(Form.FlowBrowser,'String(document.querySelectorAll("svg a").length > 1)','true');
               Check(True,'Choosing Execution opens connected application code rather than one selected routine');
               Form.GraphGroupingCombo.ItemIndex:=2; Form.ViewChange(Form.GraphGroupingCombo);
               Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+              Form.PollTimerTimer(nil);
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
               WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
               Check(True,'Native grouped graph renders labeled source relationships in WebView2');

@@ -788,6 +788,7 @@ type
     FDetails: TJSONArray;
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
     FPendingEntry,FPendingDatabase: string;
+    FPendingWorkspaceTab: TTabItem;
     FPage: Integer;
     FBusy,FDetached,FClosing,FBinding,FRenderingScreens: Boolean;
     FScreenScale: Single;
@@ -1563,7 +1564,7 @@ begin
   end else if Index=11 then WorkspaceTabs.ActiveTab:=SetupTab;
 end;
 procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
-var Index: Integer; Choice: TComboBox; V:TJSONValue; TabShape: TRectangle;
+var Index: Integer; Choice: TComboBox; TabShape: TRectangle;
 begin
   if FBinding then Exit;
   if (Sender=WorkspacePageCombo) or (Sender=LessonPageCombo) then begin
@@ -1603,29 +1604,7 @@ begin
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
     InspectorSplitter.Visible:=InspectorLayout.Visible;
   end;
-  if FView<>nil then begin
-    if ((WorkspaceTabs.ActiveTab=ActionPurposeTab) or (WorkspaceTabs.ActiveTab=KeyboardTab) or
-      (WorkspaceTabs.ActiveTab=CommandsTab) or (WorkspaceTabs.ActiveTab=DependencyTab) or
-      (WorkspaceTabs.ActiveTab=LayoutTab)) and (FKeyboard=nil) then FKeyboard:=TDPHKeyboardInspector.Inspect(FView);
-    if (WorkspaceTabs.ActiveTab=ActionPurposeTab) and (FActionPurposes=nil) then begin FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end;
-    if WorkspaceTabs.ActiveTab=KeyboardTab then KeyboardFilterChange(nil);
-    if (WorkspaceTabs.ActiveTab=CommandsTab) and (FCommands=nil) then begin FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard);CommandsFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=DependencyTab) and (FDependencies=nil) then begin FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=LayoutTab) and (FLayout=nil) then begin FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=InheritanceTab) and (FInheritance=nil) then begin FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=DynamicTab) and (FDynamic=nil) then begin FDynamic:=TDPHDynamicControls.Inspect(FView);DynamicFilterChange(nil);end;
-    if ((WorkspaceTabs.ActiveTab=DatabaseSchemaTab) or (WorkspaceTabs.ActiveTab=DatabaseERTab)) and (FDatabaseSchema=nil) then begin FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);end;
-    if WorkspaceTabs.ActiveTab=DatabaseERTab then DatabaseERFilterChange(nil);
-    if (WorkspaceTabs.ActiveTab=DatabaseInventoryTab) and (FDatabaseInventory=nil) then begin FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=CalculationEvidenceTab) and (FCalculationEvidence=nil) then begin FCalculationEvidence:=FView.Calculations;CalculationEvidenceFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=FileFormatsTab) and (FFileFormats=nil) then begin FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);end;
-    if (WorkspaceTabs.ActiveTab=ProjectsTab) and (FProjectMembers=nil) then begin
-      FProjectMembers:=FView.ProjectMembers;for V in FProjectMembers do ProjectMembersList.Items.Add(V.GetValue<string>('name'));end;
-    if WorkspaceTabs.ActiveTab=QuestionsTab then RefreshQuestions;
-    if WorkspaceTabs.ActiveTab=CoverageTab then RefreshCoverage;
-    if WorkspaceTabs.ActiveTab=QualityTab then QualityClick(nil);
-    if (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) then RefreshGraphics;
-  end;
+  if FView<>nil then FPendingWorkspaceTab:=WorkspaceTabs.ActiveTab;
 end;
 procedure TDPHMainForm.ProjectSearchClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Row: TJSONObject; Index: Integer; Key: string;
@@ -2026,6 +2005,30 @@ begin
         StatusLabel.Text:=StatusLabel.Text+' Some code could not be explained; check unanswered questions.';
     end;
   finally R.Free; end;
+  if (FPendingWorkspaceTab<>nil) and (FPendingWorkspaceTab=WorkspaceTabs.ActiveTab) and (FView<>nil) then begin
+    FPendingWorkspaceTab:=nil;
+    if ((WorkspaceTabs.ActiveTab=ActionPurposeTab) or (WorkspaceTabs.ActiveTab=KeyboardTab) or
+      (WorkspaceTabs.ActiveTab=CommandsTab) or (WorkspaceTabs.ActiveTab=DependencyTab) or
+      (WorkspaceTabs.ActiveTab=LayoutTab)) and (FKeyboard=nil) then FKeyboard:=TDPHKeyboardInspector.Inspect(FView);
+    if (WorkspaceTabs.ActiveTab=ActionPurposeTab) and (FActionPurposes=nil) then begin FActionPurposes:=TDPHActionPurposes.Inspect(FView,FKeyboard,FKnowledge);ActionPurposeFilterChange(nil);end;
+    if WorkspaceTabs.ActiveTab=KeyboardTab then KeyboardFilterChange(nil);
+    if (WorkspaceTabs.ActiveTab=CommandsTab) and (FCommands=nil) then begin FCommands:=TDPHCommandInventory.Inspect(FView,FKeyboard);CommandsFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=DependencyTab) and (FDependencies=nil) then begin FDependencies:=TDPHComponentDependencies.Inspect(FView,FKeyboard);DependencyFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=LayoutTab) and (FLayout=nil) then begin FLayout:=TDPHLayoutRules.Inspect(FKeyboard);LayoutFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=InheritanceTab) and (FInheritance=nil) then begin FInheritance:=TDPHFormInheritance.Inspect(FView);InheritanceFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=DynamicTab) and (FDynamic=nil) then begin FDynamic:=TDPHDynamicControls.Inspect(FView);DynamicFilterChange(nil);end;
+    if ((WorkspaceTabs.ActiveTab=DatabaseSchemaTab) or (WorkspaceTabs.ActiveTab=DatabaseERTab)) and (FDatabaseSchema=nil) then begin FDatabaseSchema:=TDPHDatabaseSchema.Inspect(FView);DatabaseSchemaFilterChange(nil);end;
+    if WorkspaceTabs.ActiveTab=DatabaseERTab then DatabaseERFilterChange(nil);
+    if (WorkspaceTabs.ActiveTab=DatabaseInventoryTab) and (FDatabaseInventory=nil) then begin FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);DatabaseInventoryFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=CalculationEvidenceTab) and (FCalculationEvidence=nil) then begin FCalculationEvidence:=FView.Calculations;CalculationEvidenceFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=FileFormatsTab) and (FFileFormats=nil) then begin FFileFormats:=FView.FileFormats;FileFormatsFilterChange(nil);end;
+    if (WorkspaceTabs.ActiveTab=ProjectsTab) and (FProjectMembers=nil) then begin
+      FProjectMembers:=FView.ProjectMembers;for Value in FProjectMembers do ProjectMembersList.Items.Add(Value.GetValue<string>('name'));end;
+    if WorkspaceTabs.ActiveTab=QuestionsTab then RefreshQuestions;
+    if WorkspaceTabs.ActiveTab=CoverageTab then RefreshCoverage;
+    if WorkspaceTabs.ActiveTab=QualityTab then QualityClick(nil);
+    if (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) then RefreshGraphics;
+  end;
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
@@ -2033,6 +2036,7 @@ procedure TDPHMainForm.LoadView(ADocument: TJSONObject);
 var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options,Images: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
+  FPendingWorkspaceTab:=nil;
   FLineageSeed:=''; FLineageDirection:='both';
   HistorySelectionChange(nil);
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
