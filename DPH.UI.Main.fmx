@@ -368,26 +368,26 @@ object ProjectPreparationLayout: TLayout
 Align = Top
 Height = 50
 Visible = False
-object ProjectPreparationProgress: TProgressBar
-Align = Right
-Width = 340
-Height = 24
-Margins.Left = 12
-Margins.Right = 16
-Margins.Top = 13
-Margins.Bottom = 13
-Min = 0
-Max = 100
-Value = 0
-endobject ProjectPreparationMessage: TLabel
-Align = Client
+object ProjectPreparationMessage: TLabel
+Align = Left
+Width = 520
 Margins.Left = 16
-Margins.Right = 10
 WordWrap = True
 StyledSettings = []
 TextSettings.Font.Size = 15
 TextSettings.FontColor = xFF146CB4
 Text = 'Checking the selected application...'
+end
+object ProjectPreparationProgress: TProgressBar
+Align = Left
+Width = 300
+Height = 24
+Margins.Left = 96
+Margins.Top = 13
+Margins.Bottom = 13
+Min = 0
+Max = 100
+Value = 0
 end
 
 end
