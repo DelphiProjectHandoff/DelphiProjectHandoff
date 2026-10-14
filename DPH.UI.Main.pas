@@ -4778,7 +4778,7 @@ end;
 procedure TDPHMainForm.ViewChange(Sender: TObject);
 begin
   if FBinding then Exit;
-  if Sender=GraphCombo then FWholeGraph:=False;
+  if Sender=GraphCombo then FWholeGraph:=GraphCombo.ItemIndex=0;
   if Sender=ScreenZoom then begin FBinding:=True; try ScreenModeCombo.ItemIndex:=3; finally FBinding:=False; end; end;
   if (Sender=ScreenModeCombo) and (ScreenModeCombo.ItemIndex=4) and not FScreenFullscreen then FullscreenClick(nil);
   RefreshGraphics;
@@ -4845,6 +4845,14 @@ begin
   else if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
   else if GraphCombo.ItemIndex=1 then FGraph:=FView.Graph('Procedure CFG',FSelected,Limit)
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
+  if (GraphCombo.ItemIndex=0) and not FWholeGraph and (FSelected<>'') and
+    (FGraph<>nil) and (FGraph.GetValue<TJSONArray>('nodes').Count=1) and
+    (FGraph.GetValue<TJSONArray>('edges').Count=0) then begin
+    FreeAndNil(FGraph);
+    FGraph:=FView.Graph('Execution','',Limit);
+    FWholeGraph:=True;
+    GraphPurpose.Text:='No code connection was found from the selected object. Showing the application-wide code connections instead.';
+  end;
   if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
   end;

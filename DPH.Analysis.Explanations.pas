@@ -396,6 +396,13 @@ begin
       Exit(Page('Screen map','<section class="card"><h2>No screen connections found</h2><p>Open Screenshots to inspect the saved forms. The project files did not establish a connection between screens for this diagram.</p></section>'));
     Exit(Page(AGraph.GetValue<string>('kind'),'<section class="card"><h2>No supported connections found</h2><p>Select an object in the Project Map or choose another diagram.</p></section>'));
   end;
+  if (AGraph.GetValue<string>('kind')='Execution') and (Edges.Count=0) and
+    (AGraph.GetValue<string>('grouping','')='') then begin
+    if Nodes.Count=1 then
+      Exit(Page('Code connections','<section class="card"><h2>No code connection found for this routine</h2><p>'+Encode(Nodes.Items[0].GetValue<string>('label'))+
+        ' has no captured outgoing code connection. Select <strong>Code connections</strong> above to see the application-wide view, or choose another object in Project map.</p></section>'));
+    Exit(Page('Code connections','<section class="card"><h2>No code connections found</h2><p>The saved project files did not establish a connection between the routines in this view. Use Project map to inspect individual routines and their source.</p></section>'));
+  end;
   if (AGraph.GetValue<string>('kind')='Form navigation') and (Edges.Count=0) then begin
     Text:=TStringBuilder.Create;
     try
@@ -423,9 +430,14 @@ begin
     for I:=0 to Nodes.Count-1 do begin X[I]:=25+Depths[I]*380; Y[I]:=25+Slots[Depths[I]]*150; Inc(Slots[Depths[I]]); Width:=Max(Width,X[I]+330); Height:=Max(Height,Y[I]+130); end;
     if AGraph.GetValue<string>('kind')='Form navigation' then
       Text.Append('<section class="card"><h2>Possible routes between screens</h2><p>Each box is a screen or connected control found in the project. Follow an arrow to see where an action may lead. These connections come from saved forms and code; they do not show the order in which a person actually uses the application.</p>')
+    else if (Edges.Count=0) and (AGraph.GetValue<string>('grouping','')<>'') then
+      Text.Append('<section class="card"><p>No connections between these groups are visible. Select a group to inspect its members and the relationships inside it.</p>')
+    else if Edges.Count=0 then
+      Text.Append('<section class="card"><p>These objects have no visible connections in this view. Select an object for details, or choose another diagram.</p>')
     else
       Text.Append('<section class="card"><p>This diagram connects parts found in the project files. Arrows describe possible relationships, not measured activity. Select a box for details.</p>');
-    Text.Append('<p>Blue solid arrows identify direct source connections; orange dashed arrows need interpretation. Select a box to read its details.</p>');
+    if Edges.Count>0 then
+      Text.Append('<p>Blue solid arrows identify direct source connections; orange dashed arrows need interpretation. Select a box to read its details.</p>');
     if AGraph.GetValue<string>('grouping','')<>'' then Text.Append('<p>Grouped by '+Encode(AGraph.GetValue<string>('grouping'))+'. Select a group to inspect its members.</p>');
     if AGraph.GetValue<Boolean>('truncated') then Text.Append('<p class="warning">This overview reached its display limit. It shows '+
       IntToStr(Nodes.Count)+' boxes and '+IntToStr(Edges.Count)+' connections; additional connections may exist. '+

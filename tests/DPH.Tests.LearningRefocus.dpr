@@ -15,7 +15,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, 
 var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArtifact,ReferenceBundle: string; ID: TGUID;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Store: TDPHKnowledgeStore; View: TDPHWorkspaceView; Model,ImageModel: TDPHDocumentModel; Explain: TDPHExplanationModel;
-    Config,Generation: Int64; Rows: TJSONArray; V: TJSONValue; Row,Report: TJSONObject;
+    Config,Generation: Int64; Rows: TJSONArray; V: TJSONValue; Row,Report,Diagram: TJSONObject;
     Checks,I: Integer; Failed,Done: Boolean; Form: TDPHMainForm; Watch,Attempt: TStopwatch; Bitmap,BrowserBitmap: TBitmap; ReferenceViewMS: Int64;
     PortableStore: TDPHKnowledgeStore; ImageBytes: TBytes; LargeSource,FlowText: string;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
@@ -136,6 +136,13 @@ begin
             Check(ContainsText(Explain.ObjectText(Key),'Sender > 0'),'Explanation carries the actual branch condition');
             Check(ContainsText(Explain.TraceHTML(Key),'possible_dynamic'),'Execution trace preserves asynchronous or dispatch uncertainty');
             Check(ContainsText(Explain.FlowSVG(Key),'true') and ContainsText(Explain.FlowSVG(Key),'false'),'Flow diagram uses captured branch edges');
+            Diagram:=TJSONObject.ParseJSONValue('{"kind":"Execution","nodes":[{"id":"isolated","label":"Isolated.Work","kind":"routine"}],"edges":[]}') as TJSONObject;
+            try
+              FlowText:=Explain.GraphHTML(Diagram);
+              Check(ContainsText(FlowText,'No code connection found for this routine') and
+                ContainsText(FlowText,'Isolated.Work') and not ContainsText(FlowText,'Blue solid arrows'),
+                'A routine with no visible connection gets an honest explanation instead of an empty diagram');
+            finally Diagram.Free; end;
             Check(ContainsText(Explain.ObjectHTML(Key),'Fixture explanation supplied'),'Attributed knowledge appears in the linked explanation');
             Check(not ContainsText(Explain.ObjectHTML(Key),'"source_hash":'),'Explanation is not a raw JSON dump');
             Check(ContainsText(Explain.ObjectHTML(Key),'never a call'),'Captured source comment is available as author documentation');
@@ -501,7 +508,11 @@ begin
                 Bitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-learning-workspace.png'));
               finally Bitmap.Free; end;
               finally BrowserBitmap.Free; end;
-              Form.GraphGroupingCombo.ItemIndex:=2; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(nil);
+              Form.GraphGroupingCombo.ItemIndex:=0; Form.GraphCombo.ItemIndex:=0; Form.ViewChange(Form.GraphCombo);
+              Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+              WaitHTML(Form.FlowBrowser,'String(document.querySelectorAll("svg a").length > 1)','true');
+              Check(True,'Choosing Execution opens connected application code rather than one selected routine');
+              Form.GraphGroupingCombo.ItemIndex:=2; Form.ViewChange(Form.GraphGroupingCombo);
               Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
               WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
