@@ -2956,9 +2956,10 @@ procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
 var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Integer;
   Thumbnail,Picture,EmbeddedPicture: TBitmap; LayoutRows,Files: TJSONArray;
   Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText: string;
-  Bounds: TRectF; Scale: Single; Seen: TStringList; ImageStream: TMemoryStream;
+  Bounds,NavigatorBounds: TRectF; Scale: Single; Seen: TStringList; ImageStream: TMemoryStream;
   ImageStart,ImageEnd,NextObject,CharacterIndex,ByteCount,HighNibble,Nibble: Integer;
-  MenuX: Single;
+  MenuX: Single; TextColor: TAlphaColor; NavigatorButtons: TArray<string>;
+  NavigatorIndex: Integer; NavigatorLabel: string;
   ImageBytes: TBytes; ImageCharacter: Char;
 begin
   ARows.Free;
@@ -2978,14 +2979,22 @@ begin
           end;
         end;
         Seen.Clear; Done:=0;
-        ImageDirectory:=TPath.Combine(FLearningDirectory,'screens'); TDirectory.CreateDirectory(ImageDirectory);
+        if FDatabase<>'' then
+          ImageDirectory:=TPath.Combine(TPath.Combine(ExtractFilePath(TPath.GetFullPath(FDatabase)),'Screen Previews'),
+            THashSHA2.GetHashString(LowerCase(TPath.GetFullPath(FDatabase))))
+        else ImageDirectory:=TPath.Combine(FLearningDirectory,'screens');
+        try TDirectory.CreateDirectory(ImageDirectory);
+        except on E: Exception do begin
+          ImageDirectory:=TPath.Combine(FLearningDirectory,'screens');
+          TDirectory.CreateDirectory(ImageDirectory);
+        end; end;
         ProjectPreparationLayout.Visible:=True;
         for V in Files do begin
           R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
           Seen.Add(Source); Inc(Done);
           Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v2')+'.png');
+            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v3')+'.png');
           Picture:=TBitmap.Create;
           try
             if not TFile.Exists(Path) then begin
@@ -3003,7 +3012,7 @@ begin
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
             H:=Round(EnsureRange(Node.GetValue<Double>('height',600),240.0,1000.0));
             Picture.SetSize(W,H);
-              Picture.Clear(TAlphaColors.White);
+              Picture.Clear($FFF2F7FB);
               Scale:=Min(W/Max(Node.GetValue<Double>('width',800),1),H/Max(Node.GetValue<Double>('height',600),1));
               MenuX:=14*Scale;
               if Picture.Canvas.BeginScene then try
@@ -3044,6 +3053,7 @@ begin
                   // The blank design uses a light surface even when a runtime style
                   // supplies the dark background intended for white text.
                   else if SameText(ColorText,'claWhite') then Picture.Canvas.Fill.Color:=$FF20364A;
+                  TextColor:=Picture.Canvas.Fill.Color;
                   if ContainsText(ClassName,'label') or (ClassName='ttext') then begin
                     // A label is text on the parent surface, not a button-shaped box.
                   end else if ContainsText(ClassName,'checkbox') or ContainsText(ClassName,'radiobutton') then begin
@@ -3054,6 +3064,34 @@ begin
                     Picture.Canvas.DrawRect(RectF(Bounds.Left+2,Bounds.CenterPoint.Y-8*Scale,
                       Bounds.Left+18*Scale,Bounds.CenterPoint.Y+8*Scale),2,2,AllCorners,1);
                     Bounds.Left:=Bounds.Left+24*Scale;
+                  end else if ContainsText(ClassName,'navigator') then begin
+                    NavigatorButtons:=Node.GetValue<string>('navigator_buttons','').Replace('[','').Replace(']','')
+                      .Split([','],TStringSplitOptions.ExcludeEmpty);
+                    if Length(NavigatorButtons)=0 then NavigatorButtons:=['Navigator'];
+                    for NavigatorIndex:=0 to High(NavigatorButtons) do begin
+                      NavigatorLabel:=Trim(NavigatorButtons[NavigatorIndex]);
+                      if SameText(NavigatorLabel,'nbInsert') then NavigatorLabel:='Add'
+                      else if SameText(NavigatorLabel,'nbDelete') then NavigatorLabel:='Delete'
+                      else if SameText(NavigatorLabel,'nbPost') then NavigatorLabel:='Save'
+                      else if SameText(NavigatorLabel,'nbCancel') then NavigatorLabel:='Cancel'
+                      else if SameText(NavigatorLabel,'nbFirst') then NavigatorLabel:='First'
+                      else if SameText(NavigatorLabel,'nbPrior') then NavigatorLabel:='Previous'
+                      else if SameText(NavigatorLabel,'nbNext') then NavigatorLabel:='Next'
+                      else if SameText(NavigatorLabel,'nbLast') then NavigatorLabel:='Last'
+                      else if SameText(NavigatorLabel,'nbEdit') then NavigatorLabel:='Edit'
+                      else if SameText(NavigatorLabel,'nbRefresh') then NavigatorLabel:='Refresh';
+                      NavigatorBounds:=RectF(Bounds.Left+Bounds.Width*NavigatorIndex/Length(NavigatorButtons),
+                        Bounds.Top,Bounds.Left+Bounds.Width*(NavigatorIndex+1)/Length(NavigatorButtons),Bounds.Bottom);
+                      Picture.Canvas.Fill.Color:=$FFF1F5F8;
+                      Picture.Canvas.FillRect(NavigatorBounds,4*Scale,4*Scale,AllCorners,1);
+                      Picture.Canvas.Stroke.Color:=$FF92B3CC;
+                      Picture.Canvas.DrawRect(NavigatorBounds,4*Scale,4*Scale,AllCorners,1);
+                      Picture.Canvas.Font.Size:=Min(12*Scale,Max(8*Scale,
+                        (NavigatorBounds.Width-8*Scale)/Max(Length(NavigatorLabel)*0.55,1)));
+                      Picture.Canvas.Fill.Color:=$FF20364A;
+                      Picture.Canvas.FillText(NavigatorBounds,NavigatorLabel,True,1,[],TTextAlign.Center,TTextAlign.Center);
+                    end;
+                    Continue;
                   end else if ContainsText(ClassName,'image') then begin
                     if FormText<>'' then begin
                       ImageStart:=Pos('object '+Node.GetValue<string>('name','')+':',FormText);
@@ -3116,12 +3154,14 @@ begin
                     else if SameText(ColorText,'claSlateblue') then Picture.Canvas.Fill.Color:=TAlphaColors.Slateblue
                     else if SameText(ColorText,'claWhite') then Picture.Canvas.Fill.Color:=TAlphaColors.White;
                     if ClassName='tcircle' then Picture.Canvas.FillEllipse(Bounds,1)
+                    else if ContainsText(ClassName,'button') then Picture.Canvas.FillRect(Bounds,6*Scale,6*Scale,AllCorners,1)
                     else Picture.Canvas.FillRect(Bounds,3,3,AllCorners,1);
-                    Picture.Canvas.Stroke.Color:=$FFB7C4CE;
+                    Picture.Canvas.Stroke.Color:=$FF92B3CC;
                     if ClassName='tcircle' then Picture.Canvas.DrawEllipse(Bounds,1)
+                    else if ContainsText(ClassName,'button') then Picture.Canvas.DrawRect(Bounds,6*Scale,6*Scale,AllCorners,1)
                     else Picture.Canvas.DrawRect(Bounds,3,3,AllCorners,1);
-                    Picture.Canvas.Fill.Color:=$FF20364A;
                   end;
+                  Picture.Canvas.Fill.Color:=TextColor;
                   CaptionText:=Node.GetValue<string>('caption','').Trim(['''',' ']).Replace('''''','''');
                   if ContainsText(ClassName,'edit') or ContainsText(ClassName,'memo') or
                     ContainsText(ClassName,'list') or ContainsText(ClassName,'grid') then CaptionText:='';

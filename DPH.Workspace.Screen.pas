@@ -34,7 +34,7 @@ end;
 class function TDPHScreenLayout.Reconstruct(AView: TDPHWorkspaceView; const AFile: string; AIncludeKeys: Boolean): TJSONObject;
 var FileRow,N,P,R,Parent,S,Range: TJSONObject; Nodes,Rows: TJSONArray; V: TJSONValue;
     Positions: TDictionary<Integer,TJSONObject>; I,J: Integer; X,Y,W,H,FontSize: Double;
-    Name,Value,Caption,FontColor,FillColor,HorzAlign: string; Visible: Boolean;
+    Name,Value,Caption,FontColor,FillColor,HorzAlign,NavigatorButtons: string; Visible: Boolean;
     TextPart: TMatch; CharacterCode: Integer;
 begin
   Result:=TJSONObject.Create; Rows:=TJSONArray.Create; Result.AddPair('components',Rows);
@@ -49,7 +49,8 @@ begin
       N:=Nodes.Items[I] as TJSONObject; if not MatchText(N.GetValue<string>('kind'),['object','inherited','inline']) then Continue;
       Parent:=nil; Positions.TryGetValue(N.GetValue<Integer>('parent'),Parent);
       X:=0; Y:=0; W:=120; H:=32; if Parent=nil then begin W:=800; H:=600; end;
-      Caption:=''; FontSize:=14; FontColor:=''; FillColor:=''; HorzAlign:='Leading'; Visible:=True;
+      Caption:=''; FontSize:=14; FontColor:=''; FillColor:=''; HorzAlign:='Leading';
+      NavigatorButtons:=''; Visible:=True;
       for J:=I+1 to Nodes.Count-1 do
       begin
         P:=Nodes.Items[J] as TJSONObject;
@@ -63,6 +64,7 @@ begin
         if Name='TextSettings.FontColor' then FontColor:=Value;
         if Name='Fill.Color' then FillColor:=Value;
         if Name='TextSettings.HorzAlign' then HorzAlign:=Value;
+        if Name='VisibleButtons' then NavigatorButtons:=Value;
         if Name='Visible' then Visible:=not SameText(Value,'False');
         if MatchText(Name,['Caption','Text']) and not MatchText(LowerCase(N.GetValue<string>('value','')),['tedit','tmemo','tlistbox','tcombobox','timage']) then begin
           Caption:='';
@@ -85,6 +87,7 @@ begin
       else R.AddPair('parent_class','');
       R.AddPair('font_size',TJSONNumber.Create(EnsureRange(FontSize,7.0,72.0)));
       R.AddPair('font_color',FontColor); R.AddPair('fill_color',FillColor);
+      R.AddPair('navigator_buttons',NavigatorButtons);
       R.AddPair('horizontal_alignment',HorzAlign); R.AddPair('visible',TJSONBool.Create(Visible));
       R.AddPair('x',TJSONNumber.Create(EnsureRange(X,-100000.0,100000.0))); R.AddPair('y',TJSONNumber.Create(EnsureRange(Y,-100000.0,100000.0)));
       R.AddPair('width',TJSONNumber.Create(EnsureRange(W,1.0,100000.0))); R.AddPair('height',TJSONNumber.Create(EnsureRange(H,1.0,100000.0)));

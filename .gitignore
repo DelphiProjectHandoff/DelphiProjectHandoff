@@ -18,3 +18,4 @@ __recovery/
 *.dphdb-wal
 *.dphdb-shm
 *.dphdb.views/
+/Databases/Screen Previews/
