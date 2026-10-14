@@ -6,7 +6,7 @@
 
 Imagine joining a company after its programmer has left. Nobody can explain the application, and there are no prepared lessons or screenshots. Delphi Project Handoff (DPH) helps you find a starting point: it reads the project's structure, forms, Pascal code, and any useful documents it finds, then presents an application-specific route through the screens and actions. It does not compile, run, or change the application being studied.
 
-DPH is experimental Windows desktop software. **This repository is an editable Delphi source project.** To run a checkout, build it with RAD Studio as described below; the first step is not to unpack a Windows distribution.
+DPH is experimental Delphi software, built on Delphi 13.1. **This repository is an editable Delphi source project.** To run a checkout, build it with RAD Studio as described below.
 
 ## Build and start from source
 
