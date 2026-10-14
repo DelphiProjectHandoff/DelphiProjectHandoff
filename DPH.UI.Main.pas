@@ -1120,6 +1120,7 @@ begin
   end;
  end;
  for I:=0 to CardList.Count-1 do begin
+   CardList.ListItems[I].StyledSettings:=CardList.ListItems[I].StyledSettings-[TStyledSetting.Other];
    CardList.ListItems[I].WordWrap:=True;
    CardList.ListItems[I].Trimming:=TTextTrimming.None;
    if Length(CardList.Items[I])>84 then CardList.ListItems[I].Height:=76

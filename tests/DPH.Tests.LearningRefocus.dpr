@@ -1,7 +1,7 @@
 ﻿program DPH.Tests.LearningRefocus;
 {$APPTYPE CONSOLE}
 {$SETPEFLAGS $20}
-uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
+uses FMX.Objects, FMX.Types, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
@@ -109,6 +109,8 @@ begin
       TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs'));
       TFile.WriteAllText(TPath.Combine(Fixture,'docs\README.md'),
         'The second README explains the same application from a different project folder. It retains its own document location.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Fixture,'docs\Westminster_Chimes_and_Carillon_Bells_8_1_Engineering_Guide.txt'),
+        'The test application has a long-titled guide.',TEncoding.UTF8);
       BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
       Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
       Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'fixture.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
@@ -428,6 +430,17 @@ begin
               Form.CardSelectionChange(Form.CardDocumentLocation);
               WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
               Check(True,'Selecting another document location opens its distinct content');
+              Form.CardFilter.Text:='Westminster_Chimes';Form.CardFilterChange(nil);
+              Check((Form.CardList.Count=1) and
+                ContainsText(Form.CardList.Items[0],'Westminster Chimes and Carillon Bells 8 1 Engineering Guide') and
+                not ContainsText(Form.CardList.Items[0],'...') and
+                (Form.CardList.ListItems[0].Height>30),
+                'Learning library keeps the complete long document title in a taller row');
+              Form.CardList.ListItems[0].ApplyStyleLookup;
+              var LibraryItemText:=Form.CardList.ListItems[0].FindStyleResource('text') as TText;
+              Check((LibraryItemText<>nil) and LibraryItemText.WordWrap and
+                (LibraryItemText.Trimming=TTextTrimming.None),
+                'The actual FireMonkey list-item style wraps instead of clipping the title');
               Failed:=False;
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+
                 '#library_'+THashSHA2.GetHashString('README.md'),Failed);
