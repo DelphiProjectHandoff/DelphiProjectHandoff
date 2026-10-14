@@ -6641,6 +6641,13 @@ Margins.Bottom = 36
 Fill.Color = xFFF7F7F7
 Stroke.Color = xFF146CB4
 end
+object ScreenBackgroundStyle: TRectangle
+Visible = False
+Width = 20
+Height = 20
+Fill.Color = xFFE3EDF5
+Stroke.Kind = None
+end
 object HeaderStyle: TRectangle
 Visible = False
 Width = 20

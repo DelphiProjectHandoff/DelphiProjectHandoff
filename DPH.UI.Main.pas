@@ -36,7 +36,7 @@ type
     OverviewMemo,SourceMemo,InspectorMemo: TMemo;
     GraphScroll,ScreenScroll: TScrollBox;
     GraphPaint,ScreenPaint: TPaintBox;
-    GraphNodeStyle,ScreenNodeStyle,HeaderStyle: TRectangle;
+    GraphNodeStyle,ScreenNodeStyle,ScreenBackgroundStyle,HeaderStyle: TRectangle;
     OpenProjectDialog,OpenCacheDialog: TOpenDialog;
     DatabaseDialog: TSaveDialog;
     PollTimer,ChangeTimer: TTimer;
@@ -2994,7 +2994,7 @@ begin
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
           Seen.Add(Source); Inc(Done);
           Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v3')+'.png');
+            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v4')+'.png');
           Picture:=TBitmap.Create;
           try
             if not TFile.Exists(Path) then begin
@@ -3012,7 +3012,7 @@ begin
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
             H:=Round(EnsureRange(Node.GetValue<Double>('height',600),240.0,1000.0));
             Picture.SetSize(W,H);
-              Picture.Clear($FFF2F7FB);
+              Picture.Clear(ScreenBackgroundStyle.Fill.Color);
               Scale:=Min(W/Max(Node.GetValue<Double>('width',800),1),H/Max(Node.GetValue<Double>('height',600),1));
               MenuX:=14*Scale;
               if Picture.Canvas.BeginScene then try
