@@ -789,7 +789,7 @@ type
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
     FPendingEntry,FPendingDatabase: string;
     FPage: Integer;
-    FBusy,FDetached,FClosing,FBinding: Boolean;
+    FBusy,FDetached,FClosing,FBinding,FRenderingScreens: Boolean;
     FScreenScale: Single;
     FScreenFullscreen: Boolean;
     FSavedBorder: TFmxFormBorderStyle;
@@ -1021,6 +1021,7 @@ end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
+  if FRenderingScreens then begin CanClose:=False; Exit; end;
   CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; end;
 end;
 procedure TDPHMainForm.RefreshProjectsClick(Sender: TObject);
@@ -1760,7 +1761,7 @@ procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
 var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
-  while FWorker.Poll(R) do
+  if FWorker.Poll(R) then
   try
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
     if R.Busy and ProjectPreparationLayout.Visible then begin
@@ -2962,7 +2963,11 @@ var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Intege
   MenuX: Single; TextColor: TAlphaColor; NavigatorButtons: TArray<string>;
   NavigatorIndex: Integer; NavigatorLabel: string;
   ImageBytes: TBytes; ImageCharacter: Char;
+  WasBusy,WasTabsEnabled,WasTimerEnabled: Boolean;
 begin
+  WasBusy:=FBusy; WasTabsEnabled:=WorkspaceTabs.Enabled; WasTimerEnabled:=PollTimer.Enabled;
+  FRenderingScreens:=True; FBusy:=True; WorkspaceTabs.Enabled:=False; PollTimer.Enabled:=False;
+  try
   ARows.Free;
   HistorySelectionChange(nil); HistoryBeforeCombo.Items.Clear; HistoryAfterCombo.Items.Clear;
   FreeAndNil(FImages); FImages:=TJSONArray.Create; ScreenshotList.Items.Clear;
@@ -3202,6 +3207,7 @@ begin
             ProjectPreparationProgress.Value:=80+Round(20*Done/Max(Count,1));
             ProjectPreparationMessage.Text:=Format('Preparing screen previews: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
             ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
+            Application.ProcessMessages;
           end;
         end;
       finally Seen.Free; end;
@@ -3210,6 +3216,10 @@ begin
   ScreenshotEvidence.Text:='Select a DPH-generated blank screen. Use Fit for a small view or Native pixels for full size.';
   ScreenshotImage.Bitmap.SetSize(0,0);
   if ScreenshotList.Count>0 then begin ScreenshotList.ItemIndex:=0; ScreenshotClick(nil); end;
+  finally
+    FBusy:=WasBusy; WorkspaceTabs.Enabled:=WasTabsEnabled; PollTimer.Enabled:=WasTimerEnabled;
+    FRenderingScreens:=False;
+  end;
   if not FBusy then ProjectPreparationLayout.Visible:=False;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
