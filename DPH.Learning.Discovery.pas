@@ -22,10 +22,11 @@ var
   FileRow,Node,Child,Screen,Guide,Section,Site,StartupForm,UnitFile: TJSONObject;
   Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title,URL,Host: string;
   Converter,TempDir,OutputPath,CommandLine,ProfileURL,OutputFormat: string;
-  Paths,PreferredPaths: TStringList;
+  Paths,PreferredPaths,SeenDocumentHashes: TStringList;
   Lines: TStringList;
   V: TJSONValue;
   I,K,DocumentCount,LogCount,EncodingOffset: Integer;
+  FileHash: string;
   TotalBytes: Int64;
   Data: TBytes;
   Zip: TZipFile;
@@ -224,13 +225,15 @@ begin
       end;
     except on E: Exception do Continue; end;
   end;
-  Paths:=TStringList.Create; PreferredPaths:=TStringList.Create; Lines:=TStringList.Create;
+  Paths:=TStringList.Create; PreferredPaths:=TStringList.Create;
+  SeenDocumentHashes:=TStringList.Create; Lines:=TStringList.Create;
   try
     Visit(Root,0); Paths.Sort; PreferredPaths.Sort;
     for I:=PreferredPaths.Count-1 downto 0 do Paths.Insert(0,PreferredPaths[I]);
     TotalBytes:=0; DocumentCount:=0; LogCount:=0;
     for Path in Paths do begin
       Ext:=LowerCase(TPath.GetExtension(Path));
+      if (Ext='.pdf') and TFile.Exists(TPath.ChangeExtension(Path,'.docx')) then Continue;
       if (Ext='.log') and (LogCount>=8) then Continue;
       if (Ext<>'.log') and (DocumentCount>=24) then Continue;
       if Ext='.log' then begin
@@ -239,6 +242,13 @@ begin
         '.odt','.ott','.sxw','.fodt','.rtf','.wpd','.wpt','.wps','.wri']) then begin
         if TotalBytes+65536>4194304 then Continue;
       end else if TotalBytes+TFile.GetSize(Path)>4194304 then Continue;
+      try
+        FileStream:=TFileStream.Create(Path,fmOpenRead or fmShareDenyNone);
+        try FileHash:=THashSHA2.GetHashString(FileStream);
+        finally FileStream.Free; end;
+      except on E: Exception do Continue; end;
+      if SeenDocumentHashes.IndexOf(FileHash)>=0 then Continue;
+      SeenDocumentHashes.Add(FileHash);
       RelativePath:=Path.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/');
       Body:=''; Data:=nil;
       try
@@ -327,12 +337,10 @@ begin
       if Ext='.log' then Inc(LogCount) else Inc(DocumentCount);
       Guide:=TJSONObject.Create; Guides.AddElement(Guide);
       Guide.AddPair('source',RelativePath);
-      FileStream:=TFileStream.Create(Path,fmOpenRead or fmShareDenyNone);
-      try Guide.AddPair('sha256',THashSHA2.GetHashString(FileStream));
-      finally FileStream.Free; end;
+      Guide.AddPair('sha256',FileHash);
       Guide.AddPair('format',Ext);
       Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
-      if (Length(Trim(Body))<60) or
+      if (Length(Trim(Body))<18) or
         (Length(TRegEx.Replace(Body,'[A-Za-z]',''))>Length(Body)*0.85) or
         TRegEx.IsMatch(Body,'[\x00-\x08\x0E-\x1F]') then Continue;
       if Ext='.log' then begin
@@ -386,7 +394,7 @@ begin
     end;
     HTTP:=THTTPClient.Create;
     try
-      HTTP.ConnectionTimeout:=2500; HTTP.ResponseTimeout:=4000;
+      HTTP.ConnectionTimeout:=1000; HTTP.ResponseTimeout:=2000;
       HTTP.HandleRedirects:=False;
       for V in Sites do begin
         Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
@@ -402,7 +410,7 @@ begin
         except on E: Exception do Continue; end;
       end;
     finally HTTP.Free; end;
-  finally Lines.Free; PreferredPaths.Free; Paths.Free; end;
+  finally Lines.Free; SeenDocumentHashes.Free; PreferredPaths.Free; Paths.Free; end;
 end;
 
 end.

@@ -410,7 +410,7 @@ begin
           end;
           Store.InitializeProject(ExtractFileName(Request.Entry),'Delphi');
           RunScan:=True; Changed:=False;
-          if Request.Command='check' then
+          if MatchText(Request.Command,['check','incremental']) then
           begin
             Cached:=nil; Text:=Store.LoadWorkspaceView;
             if Text<>'' then Cached:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
@@ -428,14 +428,20 @@ begin
               RunScan:=Changed;
               if Changed then Respond(nil,'The application files changed; reading the updated project...',True,True,False,False)
               else if OpeningCached then begin
-                Cached.RemovePair('project_guides').Free;
-                Cached.RemovePair('project_screens').Free;
-                Cached.RemovePair('project_startup_forms').Free;
-                Cached.RemovePair('project_assets').Free;
-                Cached.RemovePair('project_sites').Free;
-                Respond(nil,'Refreshing project-local guides, help, logs and referenced websites...',True,False,False,False);
-                TDPHLearningDiscovery.AddEvidence(Cached,Cached);
-                Respond(Cached.Clone as TJSONObject,'Cached project verified; application information refreshed',False,False,False,False,nil,'',nil,Request.Entry);
+                Respond(nil,'Saved project verified; Delphi source unchanged',False,False,False,False);
+              end
+              else if Request.Command='incremental' then
+              begin
+                Knowledge:=nil; Images:=nil;
+                try
+                  Knowledge:=Store.KnowledgeJSON;
+                  try Images:=Store.ScreenshotsJSON;
+                  except on E: Exception do Images:=TJSONArray.Create; end;
+                  Respond(Cached.Clone as TJSONObject,
+                    'Saved project opened; Delphi source unchanged',False,False,False,False,
+                    Knowledge,'',Images,Request.Entry);
+                  Knowledge:=nil; Images:=nil;
+                finally Knowledge.Free; Images.Free; end;
               end
               else Respond(nil,'Source fingerprints unchanged',False,False,False,False);
             finally Cached.Free; end;

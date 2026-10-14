@@ -15,25 +15,6 @@ Constraints.MinHeight = 600
 object HeaderLayout: TLayout
 Align = Top
 Height = 68
-object OpenCacheButton: TButton
-Align = Right
-Width = 155
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Right = 8
-Text = 'Open saved project'
-OnClick = OpenCacheClick
-end
-object OpenProjectButton: TButton
-Align = Right
-Width = 145
-Margins.Top = 12
-Margins.Bottom = 12
-Margins.Left = 12
-Margins.Right = 8
-Text = 'Open application'
-OnClick = OpenProjectClick
-end
 object LessonPageCombo: TComboBox
 Align = Right
 Visible = False
@@ -76,13 +57,31 @@ end
 end
 object LearnerNavRow1: TLayout
 Align = Top
-Height = 34
+Height = 42
 Margins.Left = 12
 Margins.Right = 12
+object OpenProjectButton: TButton
+Align = Left
+Width = 132
+Margins.Top = 3
+Margins.Bottom = 3
+Margins.Right = 6
+Text = 'Open application'
+OnClick = OpenProjectClick
+end
+object OpenCacheButton: TButton
+Align = Left
+Width = 142
+Margins.Top = 3
+Margins.Bottom = 3
+Margins.Right = 12
+Text = 'Open saved project'
+OnClick = OpenCacheClick
+end
 object LearnerTab0: TRectangle
 Tag = 0
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -104,7 +103,7 @@ end
 object LearnerTab1: TRectangle
 Tag = 1
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -127,7 +126,7 @@ object LearnerTab2: TRectangle
 Visible = False
 Tag = 2
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -149,7 +148,7 @@ end
 object LearnerTab3: TRectangle
 Tag = 3
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -171,7 +170,7 @@ end
 object LearnerTab4: TRectangle
 Tag = 4
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -194,7 +193,7 @@ object LearnerTab5: TRectangle
 Visible = False
 Tag = 5
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -216,7 +215,7 @@ end
 object LearnerTab6: TRectangle
 Tag = 6
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -238,7 +237,7 @@ end
 object LearnerTab7: TRectangle
 Tag = 7
 Align = Left
-Width = 147
+Width = 100
 Margins.Right = 6
 Margins.Top = 3
 Margins.Bottom = 3
@@ -367,16 +366,16 @@ Margins.Right = 8
 end
 object ProjectPreparationLayout: TLayout
 Align = Top
-Height = 42
+Height = 50
 Visible = False
 object ProjectPreparationProgress: TProgressBar
 Align = Right
-Width = 280
-Height = 12
+Width = 340
+Height = 24
 Margins.Left = 12
 Margins.Right = 16
-Margins.Top = 15
-Margins.Bottom = 15
+Margins.Top = 13
+Margins.Bottom = 13
 Min = 0
 Max = 100
 Value = 0

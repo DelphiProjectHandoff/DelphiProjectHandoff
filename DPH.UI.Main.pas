@@ -2984,8 +2984,13 @@ begin
           R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
           Seen.Add(Source); Inc(Done);
-          Screen:=TDPHScreenLayout.Reconstruct(FView,Source,False);
+          Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
+            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v2')+'.png');
+          Picture:=TBitmap.Create;
           try
+            if not TFile.Exists(Path) then begin
+            Screen:=TDPHScreenLayout.Reconstruct(FView,Source,False);
+            try
             LayoutRows:=Screen.GetValue<TJSONArray>('components',nil);
             if (LayoutRows=nil) or (LayoutRows.Count=0) then Continue;
             FormText:='';
@@ -2997,8 +3002,7 @@ begin
             Node:=LayoutRows.Items[0] as TJSONObject;
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
             H:=Round(EnsureRange(Node.GetValue<Double>('height',600),240.0,1000.0));
-            Picture:=TBitmap.Create(W,H);
-            try
+            Picture.SetSize(W,H);
               Picture.Clear(TAlphaColors.White);
               Scale:=Min(W/Max(Node.GetValue<Double>('width',800),1),H/Max(Node.GetValue<Double>('height',600),1));
               MenuX:=14*Scale;
@@ -3135,8 +3139,9 @@ begin
                   end;
                 end;
               finally Picture.Canvas.EndScene; end;
-              Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(Source)+'.png');
               Picture.SaveToFile(Path);
+            finally Screen.Free; end;
+            end else Picture.LoadFromFile(Path);
               ImageHash:=THashSHA2.GetHashStringFromFile(Path);
               if Seen.IndexOf('image:'+ImageHash)>=0 then Continue;
               Seen.Add('image:'+ImageHash);
@@ -3151,11 +3156,10 @@ begin
               Thumbnail:=TBitmap.Create;
               try Thumbnail.Assign(Picture); Thumbnail.Resize(128,96); ScreenshotList.ListItems[Index].ItemData.Bitmap.Assign(Thumbnail);
               finally Thumbnail.Free; end;
-            finally Picture.Free; end;
           finally
-            Screen.Free;
+            Picture.Free;
             ProjectPreparationProgress.Value:=80+Round(20*Done/Max(Count,1));
-            ProjectPreparationMessage.Text:=Format('Generating blank screens: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
+            ProjectPreparationMessage.Text:=Format('Preparing screen previews: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
             ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
           end;
         end;
@@ -3165,6 +3169,7 @@ begin
   ScreenshotEvidence.Text:='Select a DPH-generated blank screen. Use Fit for a small view or Native pixels for full size.';
   ScreenshotImage.Bitmap.SetSize(0,0);
   if ScreenshotList.Count>0 then begin ScreenshotList.ItemIndex:=0; ScreenshotClick(nil); end;
+  if not FBusy then ProjectPreparationLayout.Visible:=False;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
 var R,Card,Picture:TJSONObject;V:TJSONValue;Path:string;Number:Integer;
