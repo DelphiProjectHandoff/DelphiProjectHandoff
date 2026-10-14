@@ -508,6 +508,10 @@ begin
               Check(True,'Native grouped graph renders labeled source relationships in WebView2');
               WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && graph.getBoundingClientRect().width <= graph.parentElement.clientWidth+1})())','true');
               Check(True,'Diagram scales to the available reading width');
+              WaitHTML(Form.FlowBrowser,'String((()=>{const hero=document.querySelector("header").getBoundingClientRect();const card=document.querySelector("main .card").getBoundingClientRect();const diagram=document.querySelector(".diagram").getBoundingClientRect();return Math.abs(hero.left-card.left)<2 && Math.abs(hero.right-card.right)<2 && diagram.left>=card.left && diagram.right<=card.right})())','true');
+              Check((Form.GraphPurpose.Position.X=46) and (Form.GraphLegend.Position.X=46) and
+                (Form.GraphCombo.Items[1]='Procedure flow (control-flow graph)'),
+                'Diagram banner and toolbar use aligned margins and the graph name is explained');
               WaitHTML(Form.FlowBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Grouped graph keeps wide diagrams inside their scrollable viewport');
                 WaitHTML(Form.FlowBrowser,'(()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");if(!graph)return "WAIT";graph.scrollIntoView();return "GRAPH_VISIBLE";})()','GRAPH_VISIBLE');

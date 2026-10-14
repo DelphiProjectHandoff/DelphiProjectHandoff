@@ -162,7 +162,7 @@ begin
             Check((Form.GraphCombo.ItemIndex=Form.GraphCombo.Items.IndexOf('Data flow')) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Project data command opens the whole captured data projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Project data projection preserves the inspected object context');
             Form.BookmarkClick(nil); Form.BookmarksClick(nil); Check(Form.ExplorerList.Items.Count=1,'Canonical selection can be bookmarked');
-            for Kind in ['Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact'] do begin Form.GraphCombo.ItemIndex:=Form.GraphCombo.Items.IndexOf(Kind); Form.ViewChange(nil); end;
+            for Kind in ['Execution','Procedure flow (control-flow graph)','Caller / callee','Form navigation','Data flow','Change impact'] do begin Form.GraphCombo.ItemIndex:=Form.GraphCombo.Items.IndexOf(Kind); Form.ViewChange(nil); end;
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;
             Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
               if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;

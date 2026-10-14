@@ -4817,7 +4817,7 @@ begin
   IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
   if GraphCombo.ItemIndex>=0 then case GraphCombo.ItemIndex of
     0: GraphPurpose.Text:='Execution shows which routines may call other routines. Follow a connection to understand how an action moves through the code.';
-    1: GraphPurpose.Text:='Procedure flow shows the branches within one routine. Use it to see possible decisions and return paths.';
+    1: GraphPurpose.Text:='A control-flow graph shows the paths through one procedure, including choices, loops and exits.';
     2: GraphPurpose.Text:='Caller / callee shows which routines use a selected routine and which routines it uses.';
     3: GraphPurpose.Text:='Form navigation shows connections between screens and controls. Use it to explore where a user action may lead.';
     4: GraphPurpose.Text:='Data flow shows where inputs, stored information and outputs are referenced in the application.';
@@ -4843,6 +4843,7 @@ begin
    GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
   end
   else if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
+  else if GraphCombo.ItemIndex=1 then FGraph:=FView.Graph('Procedure CFG',FSelected,Limit)
   else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
   if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;

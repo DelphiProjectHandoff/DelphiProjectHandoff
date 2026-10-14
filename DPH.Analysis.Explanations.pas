@@ -425,10 +425,12 @@ begin
       Text.Append('<section class="card"><h2>Possible routes between screens</h2><p>Each box is a screen or connected control found in the project. Follow an arrow to see where an action may lead. These connections come from saved forms and code; they do not show the order in which a person actually uses the application.</p>')
     else
       Text.Append('<section class="card"><p>This diagram connects parts found in the project files. Arrows describe possible relationships, not measured activity. Select a box for details.</p>');
-    Text.Append('<p>Blue solid arrows identify direct source connections; orange dashed arrows need interpretation. The diagram fits the available width; select a box to read its details.</p>');
-    if AGraph.GetValue<string>('grouping','')<>'' then Text.Append('<p>Grouped by '+Encode(AGraph.GetValue<string>('grouping'))+'. Select a group to inspect its members. Counts cover the bounded captured projection; up to 16 evidence examples accompany each grouped connection.</p>');
-    if AGraph.GetValue<Boolean>('truncated') then Text.Append('<p class="warning">This projection is truncated. Missing nodes or arrows do not prove absence of behavior. Focus an object or change the grouping.</p>');
-    Text.Append('<div style="overflow:auto;max-height:75vh;border:1px solid #dce5ef"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+IntToStr(Width)+' '+IntToStr(Height)+'" style="display:block;width:100%;height:auto" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Captured static relationships"><defs><marker id="blueArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="orangeArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
+    Text.Append('<p>Blue solid arrows identify direct source connections; orange dashed arrows need interpretation. Select a box to read its details.</p>');
+    if AGraph.GetValue<string>('grouping','')<>'' then Text.Append('<p>Grouped by '+Encode(AGraph.GetValue<string>('grouping'))+'. Select a group to inspect its members.</p>');
+    if AGraph.GetValue<Boolean>('truncated') then Text.Append('<p class="warning">This overview reached its display limit. It shows '+
+      IntToStr(Nodes.Count)+' boxes and '+IntToStr(Edges.Count)+' connections; additional connections may exist. '+
+      'To explore a smaller area, select an item in Project map and return here, or choose Types or Units in the grouping menu above.</p>');
+    Text.Append('<div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+IntToStr(Width)+' '+IntToStr(Height)+'" style="display:block;width:100%;max-width:100%;height:auto" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Captured static relationships"><defs><marker id="blueArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="orangeArrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
     for V in Edges do begin Row:=V as TJSONObject;
       if not Indices.TryGetValue(Row.GetValue('from').Value,A) or not Indices.TryGetValue(Row.GetValue('to').Value,B) then Continue;
       Kind:=Row.GetValue<string>('kind').Replace('_',' '); Colour:='#146cb4'; Dash:=''; Href:='blueArrow';
@@ -471,13 +473,13 @@ begin
     Directory:=ExtractFileDir(ExcludeTrailingPathDelimiter(Directory));
   end;
   Result:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; base-uri ''none''"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+
-    Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;padding:26px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:20px}.brand{width:76px;height:76px;object-fit:contain;flex:none}'+
+    Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;width:calc(100% - 52px);max-width:1048px;margin:26px auto 0;padding:20px;border-bottom:5px solid #f28c28;border-radius:9px 9px 0 0;display:flex;align-items:center;gap:20px}.brand{width:76px;height:76px;object-fit:contain;flex:none}'+
     'h1{font-size:28px;margin:0}body{overflow-wrap:anywhere}main{width:100%;min-width:0}.card{min-width:0}*{box-sizing:border-box}'+
     'h2{font-size:21px;color:#146cb4}h3{font-size:18px}'+
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+
     'pre{white-space:pre-wrap;font:15px/1.6 Segoe UI,Arial,sans-serif}table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:13px}td,th{border:1px solid #dce5ef;padding:9px;text-align:left;vertical-align:top;overflow-wrap:anywhere}'+
-    'small{color:#53697f}.diagram{overflow:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
+    'small{color:#53697f}.diagram{width:100%;max-width:100%;overflow:auto;max-height:75vh;border:1px solid #dce5ef}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
     '.card{break-inside:avoid}}</style></head><body><header>'+Logo+'<div><h1>'+Encode(ATitle)+'</h1><p>'+
     Encode(FFacts.GetValue<string>('project'))+'</p></div></header><main>'+
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+
