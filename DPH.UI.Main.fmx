@@ -556,8 +556,25 @@ OnChange = CardFilterChange
 end
 object CardList: TListBox
 Align = Left
-Width = 320
+Width = 380
+ItemHeight = 30
 Margins.Left = 12
+Margins.Right = 12
+OnChange = CardSelectionChange
+end
+object CardReadingArea: TLayout
+Align = Client
+object CardDocumentLocationLabel: TLabel
+Align = Top
+Height = 24
+Visible = False
+Margins.Right = 12
+Text = 'Document location (choose which copy to read)'
+end
+object CardDocumentLocation: TComboBox
+Align = Top
+Height = 34
+Visible = False
 Margins.Right = 12
 OnChange = CardSelectionChange
 end
@@ -580,6 +597,7 @@ Margins.Bottom = 12
 WindowsEngine = None
 EnableCaching = False
 OnShouldLoadURL = LearningShouldLoad
+end
 end
 end
 object CardEditorTab: TTabItem

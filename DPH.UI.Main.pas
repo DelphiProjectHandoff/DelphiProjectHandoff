@@ -495,12 +495,12 @@ type
     CardLibraryTab,CardEditorTab:TTabItem;
     CardToolbar,CardEditToolbar:THorzScrollBox;
     CardFilter,CardRole,CardAuthor:TEdit;
-    CardCategory:TComboBox;
+    CardCategory,CardDocumentLocation:TComboBox;
     CardList:TListBox;
     CardReader:TMemo;
     CardBrowser:TWebBrowser;
     CardNew,CardEdit,CardRelated,CardSave,CardCancel:TButton;
-    CardPurpose,CardEditorPurpose:TLabel;
+    CardPurpose,CardEditorPurpose,CardDocumentLocationLabel:TLabel;
     CardEditorScroll:TVertScrollBox;
     Card_name,Card_role,Card_meaning,Card_example,Card_limits,Card_help,Card_practice:TMemo;
     Card_name_label,Card_role_label,Card_meaning_label,Card_example_label,Card_limits_label,Card_help_label,Card_practice_label:TLabel;
@@ -1065,11 +1065,12 @@ begin
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
-var V,W:TJSONValue;R,Section,Route:TJSONObject; Guides,Screens:TJSONArray;
-  Title,Query,Source:string; I:Integer; MatchesQuery:Boolean;
+var V,W:TJSONValue;R,Section,Route,Group:TJSONObject; Guides,Screens,GuideIndexes:TJSONArray;
+  Title,Query,Source,GroupKey,DisplayTitle:string; I,J:Integer; MatchesQuery:Boolean;
 begin
  if FCardRows=nil then Exit;
  FCardRows.Clear;CardList.Items.Clear;FreeAndNil(FLibraryEntries);FLibraryEntries:=TJSONArray.Create;
+ CardDocumentLocation.TagString:='';CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
  Query:=CardFilter.Text.Trim;
  if FLearningFacts<>nil then begin
   for I:=0 to LearningTopics.Count-1 do begin
@@ -1080,8 +1081,8 @@ begin
    FLibraryEntries.AddElement(Route);FCardRows.Add(Route);CardList.Items.Add('Start here: '+Title);
   end;
   Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides',nil);
-  if Guides<>nil then for V in Guides do begin
-   R:=V as TJSONObject;
+  if Guides<>nil then for I:=0 to Guides.Count-1 do begin
+   R:=Guides.Items[I] as TJSONObject;
    Source:=R.GetValue<string>('source','');Title:=TPath.GetFileName(Source);
    MatchesQuery:=(Query='') or ContainsText(Source,Query);
    if not MatchesQuery then for W in R.GetValue<TJSONArray>('sections') do begin
@@ -1091,7 +1092,24 @@ begin
     end;
    end;
    if not MatchesQuery then Continue;
-   FCardRows.Add(R);CardList.Items.Add('Document: '+Title);
+   GroupKey:=LowerCase(TPath.GetFileNameWithoutExtension(Title));Group:=nil;
+   for W in FLibraryEntries do
+     if (W.GetValue<string>('library_kind','')='document_group') and
+       SameText(W.GetValue<string>('group_key',''),GroupKey) then begin Group:=W as TJSONObject;Break;end;
+   if Group=nil then begin
+     DisplayTitle:=TRegEx.Replace(TPath.GetFileNameWithoutExtension(Title).Replace('_',' ').Replace('-',' '),'\s+',' ').Trim;
+     if Length(DisplayTitle)>46 then DisplayTitle:=Copy(DisplayTitle,1,24)+' ... '+Copy(DisplayTitle,Length(DisplayTitle)-15,16);
+     Group:=TJSONObject.Create.AddPair('library_kind','document_group').AddPair('group_key',GroupKey)
+       .AddPair('heading',DisplayTitle);
+     GuideIndexes:=TJSONArray.Create;Group.AddPair('guide_indices',GuideIndexes);
+     FLibraryEntries.AddElement(Group);FCardRows.Add(Group);
+     CardList.Items.Add('Document: '+DisplayTitle);
+   end else GuideIndexes:=Group.GetValue<TJSONArray>('guide_indices');
+   GuideIndexes.AddElement(TJSONNumber.Create(I));
+   if GuideIndexes.Count>1 then begin
+     J:=FCardRows.IndexOf(Group);
+     CardList.Items[J]:='Document: '+Group.GetValue<string>('heading')+' ('+GuideIndexes.Count.ToString+' locations)';
+   end;
   end;
   Screens:=FLearningFacts.Document.GetValue<TJSONArray>('project_screens',nil);
   if Screens<>nil then for V in Screens do begin
@@ -1105,17 +1123,41 @@ begin
  CardSelectionChange(nil);
 end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
-var R,Section,Symbol:TJSONObject; V,W:TJSONValue; Body,Title,HTML,Line,Path,ParagraphText,
+var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSONArray; Body,Title,HTML,Line,Path,ParagraphText,
   Source,CaptionText,NextLine,CellText:string; Lines:TStringList; Sections,Symbols:TJSONArray;
-  Cells:TArray<string>; I,J,Count:Integer; InTable,InList,InCode,IsTableHeader,
-    IsOrderedItem,ListOrdered,IsStandaloneHeading:Boolean;
+  Cells:TArray<string>; I,J,Count,GuideIndex:Integer; InTable,InList,InCode,IsTableHeader,
+    IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding:Boolean;
 begin
+ if FBinding and (Sender=CardDocumentLocation) then Exit;
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
  CardReader.Text:='Choose a topic to explore this application.';
  if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then begin
+   CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
    CardBrowser.Visible:=False;CardReader.Visible:=True;Exit;
  end;
  R:=FCardRows[CardList.ItemIndex];
+ if R.GetValue<string>('library_kind','')='document_group' then begin
+   Group:=R;GuideIndexes:=Group.GetValue<TJSONArray>('guide_indices');
+   Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides');
+   if CardDocumentLocation.TagString<>Group.GetValue<string>('group_key') then begin
+     OldBinding:=FBinding;FBinding:=True;
+     try
+       CardDocumentLocation.Items.Clear;
+       for V in GuideIndexes do begin
+         GuideIndex:=StrToInt(V.Value);
+         CardDocumentLocation.Items.Add(Guides.Items[GuideIndex].GetValue<string>('source').Replace('/','  >  '));
+       end;
+       CardDocumentLocation.ItemIndex:=0;
+       CardDocumentLocation.TagString:=Group.GetValue<string>('group_key');
+     finally FBinding:=OldBinding;end;
+   end;
+   CardDocumentLocation.Visible:=GuideIndexes.Count>1;
+   CardDocumentLocationLabel.Visible:=CardDocumentLocation.Visible;
+   GuideIndex:=StrToInt(GuideIndexes.Items[Max(0,CardDocumentLocation.ItemIndex)].Value);
+   R:=Guides.Items[GuideIndex] as TJSONObject;
+ end else begin
+   CardDocumentLocation.TagString:='';CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
+ end;
  if R.GetValue<string>('library_kind','')='route' then begin
    Title:=R.GetValue<string>('heading','Learning route');
    HTML:=FExplanations.ApplicationRouteHTML(R.GetValue<Integer>('route_index',0));
@@ -1157,7 +1199,9 @@ begin
    CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
  end;
  if R.GetValue<string>('library_kind','')<>'route' then begin
- HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2,h3{color:#146cb4;line-height:1.3;margin-top:32px}h2{font-size:23px}h3{font-size:19px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal;overflow-wrap:anywhere}ul{padding-left:26px}code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #d7e2ec}th{background:#e8f2fa;color:#145c99}tr:nth-child(even) td{background:#f8fbfd}</style></head><body><article><h1>'+
+ HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2,h3{color:#146cb4;line-height:1.3;margin-top:32px}h2{font-size:23px}h3{font-size:19px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal;overflow-wrap:anywhere}ul{padding-left:26px}'+
+   'code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}'+
+   'table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #d7e2ec}th{background:#e8f2fa;color:#145c99}tr:nth-child(even) td{background:#f8fbfd}</style></head><body><article><h1>'+
    TNetEncoding.HTML.Encode(Title)+'</h1>';
  Lines:=TStringList.Create;
  try
@@ -2824,7 +2868,7 @@ begin
   except on E: Exception do begin ExplainBrowser.Visible:=False; StatusLabel.Text:='Object preview unavailable; text fallback is shown: '+E.Message; end; end;
 end;
 procedure TDPHMainForm.LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
-var Directory,Fragment,NodeKey: string; P,I,ImageIndex: Integer; V: TJSONValue; S: TJSONObject;
+var Directory,Fragment,NodeKey: string; P,I,J,ImageIndex: Integer; V: TJSONValue; S: TJSONObject; GuideIndexes,Guides: TJSONArray;
   FormSources: TJSONArray;
 begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
@@ -2863,13 +2907,20 @@ begin
   if P>0 then begin
     ACancel:=True; Fragment:=Copy(AURL,P+9,MaxInt);
     CardFilter.Text:=''; CardFilterChange(nil);
+    Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides');
     for I:=0 to FCardRows.Count-1 do begin
       S:=FCardRows[I];
-      if (S.GetValue<TJSONArray>('sections',nil)<>nil) and
-        SameText(THashSHA2.GetHashString(S.GetValue<string>('source','')),Fragment) then begin
-        CardList.ItemIndex:=I; CardSelectionChange(nil); WorkspaceTabs.ActiveTab:=CardLibraryTab;
-        StatusLabel.Text:='Showing '+TPath.GetFileName(S.GetValue<string>('source'))+' in the Learning library.';
-        Exit;
+      GuideIndexes:=S.GetValue<TJSONArray>('guide_indices',nil);
+      if GuideIndexes=nil then Continue;
+      for J:=0 to GuideIndexes.Count-1 do begin
+        S:=Guides.Items[StrToInt(GuideIndexes.Items[J].Value)] as TJSONObject;
+        if SameText(THashSHA2.GetHashString(S.GetValue<string>('source','')),Fragment) then begin
+          CardList.ItemIndex:=I;CardSelectionChange(nil);
+          CardDocumentLocation.ItemIndex:=J;CardSelectionChange(CardDocumentLocation);
+          WorkspaceTabs.ActiveTab:=CardLibraryTab;
+          StatusLabel.Text:='Showing '+TPath.GetFileName(S.GetValue<string>('source'))+' in the Learning library.';
+          Exit;
+        end;
       end;
     end;
     StatusLabel.Text:='This document is not available in the selected project.'; Exit;

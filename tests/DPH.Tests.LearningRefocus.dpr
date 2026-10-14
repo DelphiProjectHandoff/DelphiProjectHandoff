@@ -103,7 +103,13 @@ begin
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
           'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
       finally DiscoveryFacts.Free;end;
-      Fixture:=TPath.Combine(Root,'tests\fixtures\semantics'); BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
+      Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
+      for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
+        TFile.Copy(Path,TPath.Combine(Fixture,TPath.GetFileName(Path)));
+      TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs'));
+      TFile.WriteAllText(TPath.Combine(Fixture,'docs\README.md'),
+        'The second README explains the same application from a different project folder. It retains its own document location.',TEncoding.UTF8);
+      BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
       Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
       Store:=TDPHKnowledgeStore.Create(TPath.Combine(Work,'fixture.dphdb'),Fixture,TPath.Combine(Root,'migrations'));
       try
@@ -405,8 +411,11 @@ begin
               WaitHTML(Form.CardBrowser,'document.body.innerText','What is this application for?');
               Check(True,'Learning library displays its selected topic in the reading pane');
               Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
-              Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]),
-                'Learning library groups document pages under their filename');
+              Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]) and
+                Form.CardDocumentLocation.Visible and (Form.CardDocumentLocation.Items.Count=2),
+                'Learning library groups same-named documents while retaining both locations');
+              Form.CardDocumentLocation.ItemIndex:=Form.CardDocumentLocation.Items.IndexOf('README.md');
+              Form.CardSelectionChange(Form.CardDocumentLocation);
               WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
               Check(True,'A discovered project document opens as readable content');
               WaitHTML(Form.CardBrowser,'document.querySelector("table thead th").innerText','Unit');
@@ -415,12 +424,18 @@ begin
               WaitHTML(Form.CardBrowser,'String(document.querySelectorAll("ol li").length)','2');
               WaitHTML(Form.CardBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Learning library formats source tables and instructions instead of showing Markdown syntax');
+              Form.CardDocumentLocation.ItemIndex:=1-Form.CardDocumentLocation.ItemIndex;
+              Form.CardSelectionChange(Form.CardDocumentLocation);
+              WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
+              Check(True,'Selecting another document location opens its distinct content');
               Failed:=False;
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+
                 '#library_'+THashSHA2.GetHashString('README.md'),Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.CardLibraryTab) and
                 StartsText('Document: README',Form.CardList.Items[Form.CardList.ItemIndex]),
                 'Application route opens its document in the formatted Learning library');
+              WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
+              Check(True,'A direct document link selects the correct copy within its group');
               Form.CardFilter.Text:='MainForm';Form.CardFilterChange(nil);
               Check((Form.CardList.Count>0) and StartsText('Screen:',Form.CardList.Items[0]),
                 'Learning library includes the selected application screen');
