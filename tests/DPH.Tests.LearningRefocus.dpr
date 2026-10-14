@@ -130,7 +130,7 @@ begin
               ContainsText(Explain.ProjectMapHTML,'Procedures and functions') and
               ContainsText(Explain.ProjectMapHTML,'Main.pas') and
               ContainsText(Explain.ProjectMapHTML,'Example.contract.json') and
-              ContainsText(Explain.ProjectMapHTML,'#open_forms'),
+              ContainsText(Explain.ProjectMapHTML,'#screens'),
               'Project map groups source, a related contract and searchable objects');
             Check(ContainsText(Explain.ObjectText(Key),'Worker.PublicWork'),'Object explanation identifies a real cross-unit dependency');
             Check(ContainsText(Explain.ObjectText(Key),'Sender > 0'),'Explanation carries the actual branch condition');
@@ -169,7 +169,7 @@ begin
                 not ContainsText(FlowText,'OrderPractice'),'Each main learning step belongs to the selected application');
             end;
             Check(ContainsText(Explain.ApplicationRouteHTML(0),'MainForm') and
-              ContainsText(Explain.ApplicationRouteHTML(0),'Screens found in the saved design') and
+              ContainsText(Explain.ApplicationRouteHTML(0),'Application screens') and
               (Model.Document.GetValue<TJSONArray>('project_screens').Count>0),
               'App introduction lists captured form roots and their evidence');
             Check(ContainsText(Explain.ApplicationRouteHTML(1),'Start with the first labeled action') and
@@ -195,11 +195,10 @@ begin
                 TJSONObject.Create.AddPair('source','docs/Application_Guide.md').AddPair('sections',GuideSections)));
               var GuideModel:=TDPHExplanationModel.Create(GuideFacts);
               try
-                Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'A source-supplied purpose for this application.') and
-                  ContainsText(GuideModel.ApplicationRouteHTML(0),'docs/Application_Guide.md'),
-                  'Selected project guide supplies an attributed purpose');
+                Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'A source-supplied purpose for this application.'),
+                  'Selected project guide supplies the application purpose');
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(0),'Extra learning screen') and
-                  ContainsText(GuideModel.ApplicationRouteHTML(0),'2 saved screen design(s)'),
+                  ContainsText(GuideModel.ApplicationRouteHTML(0),'2 application forms were found'),
                   'A form design appears even when no class-link relationship was resolved');
                 Check(ContainsText(GuideModel.ApplicationRouteHTML(1),'Begin with its own saved controls.') and
                   ContainsText(GuideModel.ApplicationRouteHTML(2),'Getting started'),
@@ -371,7 +370,7 @@ begin
             Form:=TDPHMainForm.Create(nil);
             try
               Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False; Form.Show;
-              WaitHTML(Form.HelpBrowser,'document.body.innerText','Your first ten minutes');
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Welcome to Delphi Project Handoff');
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
@@ -392,6 +391,23 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'Learner page selector returns from preparation to learning');
               Form.LoadView(View.Document.Clone as TJSONObject);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
+              Check((Form.CardList.Count>=4) and StartsText('Start here:',Form.CardList.Items[0]),
+                'Learning library opens with application-specific learning routes');
+              Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
+              WaitHTML(Form.CardBrowser,'document.body.innerText','What is this application for?');
+              Check(True,'Learning library displays its selected topic in the reading pane');
+              Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
+              Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]),
+                'Learning library groups document pages under their filename');
+              WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
+              Check(True,'A discovered project document opens as readable content');
+              Form.CardFilter.Text:='MainForm';Form.CardFilterChange(nil);
+              Check((Form.CardList.Count>0) and StartsText('Screen:',Form.CardList.Items[0]),
+                'Learning library includes the selected application screen');
+              WaitHTML(Form.CardBrowser,'document.body.innerText','Convert example');
+              Check(True,'Screen topic includes a real control caption from its saved design');
+              Form.CardFilter.Text:='';Form.CardFilterChange(nil);
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               Check((Form.DatabaseInventoryList.Count=0) and (Form.QualityList.Count=0) and (Form.ActionPurposeList.Count=0),'Opening a lesson leaves unrequested preparation reports unloaded');
               Check(not Form.ExplorerLayout.Visible and not Form.InspectorLayout.Visible,'Guided lessons reserve width for learning instead of technical side panels');
               Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Project map');
@@ -411,14 +427,13 @@ begin
                 'Saved places opens its visible list in Project map');
               Form.ParentClick(nil);
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Up one level remains visible in Project map');
-              Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#open_forms',Failed);
-              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenTab),
-                'Project map opens the saved form designs directly');
+              Failed:=False;Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#screens',Failed);
+              Check(not Failed,'Project map allows its screen-definition link to scroll to the screen list');
               Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+
                 '#form_'+THashSHA2.GetHashString(Form.FormCombo.Items[0]),Failed);
-              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenTab) and
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab) and
                 (Form.FormCombo.ItemIndex=0),
-                'A linked screen opens its specific saved form design');
+                'A linked screen opens its generated view');
               Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#open_screenshots',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.ScreenshotTab),
                 'Project map opens the actual-screenshot page directly');
@@ -428,16 +443,17 @@ begin
               Check(Form.ActionPurposeList.Count>0,'Requesting action purposes builds their real preparation report');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
 
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Selected application'); Check(True,'Real WebView2 renders the selected application route');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Meet this app: Semantic.dproj'); Check(True,'Real WebView2 renders the selected application route');
 
               Failed:=False; Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#lesson_3',Failed);
               Check(Failed and (Form.LearningTopics.ItemIndex=3) and (Form.LearningTopics.Count=4),'Route link opens Resolve unknowns without external navigation');
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#task_reader',Failed);
-              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.TaskTab),'Task walkthrough link opens the native step reader');
+              Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.OverviewTab) and
+                (Form.LearningTopics.ItemIndex=1),'Task link opens this application''s first-task route');
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#ask_author',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.QuestionsTab),'Question lesson link opens the existing named-answer workflow');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','What the captured files cannot confirm');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Start with a task');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
@@ -474,6 +490,8 @@ begin
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
               WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
               Check(True,'Native grouped graph renders labeled source relationships in WebView2');
+              WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && graph.getBoundingClientRect().width <= graph.parentElement.clientWidth+1})())','true');
+              Check(True,'Diagram scales to the available reading width');
               WaitHTML(Form.FlowBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Grouped graph keeps wide diagrams inside their scrollable viewport');
                 WaitHTML(Form.FlowBrowser,'(()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");if(!graph)return "WAIT";graph.scrollIntoView();return "GRAPH_VISIBLE";})()','GRAPH_VISIBLE');

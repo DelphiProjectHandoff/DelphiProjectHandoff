@@ -808,6 +808,7 @@ type
     FCatalog: TDPHWorkspaceCatalog;
     FCatalogPaths: TList<string>;
     FCardRows:TList<TJSONObject>;
+    FLibraryEntries:TJSONArray;
     FCardDraft:TJSONObject;
     FCardSavingID:string;
     FPictureX,FPictureY:Integer;
@@ -987,7 +988,7 @@ var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
   FCatalog.Free; FCatalogPaths.Free;
-  FCardRows.Free;FCardDraft.Free;
+  FCardRows.Free;FLibraryEntries.Free;FCardDraft.Free;
   FContinuity.Free;
   FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
@@ -1064,53 +1065,96 @@ begin
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
-var V,W:TJSONValue;R,Section:TJSONObject; Guides,Screens:TJSONArray; Title,SearchText:string; Seen:TStringList;
+var V,W:TJSONValue;R,Section,Route:TJSONObject; Guides,Screens:TJSONArray;
+  Title,Query,Source:string; I:Integer; MatchesQuery:Boolean;
 begin
- if FCardRows=nil then Exit;FCardRows.Clear;CardList.Items.Clear;
- Seen:=TStringList.Create;
- try
- Seen.Sorted:=True;Seen.Duplicates:=dupIgnore;Seen.CaseSensitive:=False;
+ if FCardRows=nil then Exit;
+ FCardRows.Clear;CardList.Items.Clear;FreeAndNil(FLibraryEntries);FLibraryEntries:=TJSONArray.Create;
+ Query:=CardFilter.Text.Trim;
  if FLearningFacts<>nil then begin
+  for I:=0 to LearningTopics.Count-1 do begin
+   Title:=LearningTopics.Items[I];
+   if (Query<>'') and not ContainsText(Title,Query) then Continue;
+   Route:=TJSONObject.Create.AddPair('library_kind','route').AddPair('heading',Title)
+     .AddPair('route_index',TJSONNumber.Create(I));
+   FLibraryEntries.AddElement(Route);FCardRows.Add(Route);CardList.Items.Add('Start here: '+Title);
+  end;
   Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides',nil);
   if Guides<>nil then for V in Guides do begin
    R:=V as TJSONObject;
-   for W in R.GetValue<TJSONArray>('sections') do begin
+   Source:=R.GetValue<string>('source','');Title:=TPath.GetFileName(Source);
+   MatchesQuery:=(Query='') or ContainsText(Source,Query);
+   if not MatchesQuery then for W in R.GetValue<TJSONArray>('sections') do begin
     Section:=W as TJSONObject;
-    Title:=Section.GetValue<string>('heading','');
-    SearchText:=Title+' '+Section.GetValue<string>('text','');
-    if (CardFilter.Text.Trim<>'') and not ContainsText(SearchText,CardFilter.Text.Trim) then Continue;
-    if Length(Trim(Section.GetValue<string>('text','')))<60 then Continue;
-    if Seen.IndexOf(SearchText)>=0 then Continue;
-    Seen.Add(SearchText);
-    FCardRows.Add(Section);CardList.Items.Add(Title);
+    if ContainsText(Section.GetValue<string>('heading','')+' '+Section.GetValue<string>('text',''),Query) then begin
+     MatchesQuery:=True;Break;
+    end;
    end;
+   if not MatchesQuery then Continue;
+   FCardRows.Add(R);CardList.Items.Add('Document: '+Title);
   end;
   Screens:=FLearningFacts.Document.GetValue<TJSONArray>('project_screens',nil);
   if Screens<>nil then for V in Screens do begin
    R:=V as TJSONObject;Title:=R.GetValue<string>('title','').Trim;
    if Title='' then Title:=R.GetValue<string>('name','Screen');
-   if (CardFilter.Text.Trim<>'') and not ContainsText(Title,CardFilter.Text.Trim) then Continue;
+   if (Query<>'') and not ContainsText(Title+' '+R.GetValue<string>('source',''),Query) then Continue;
    FCardRows.Add(R);CardList.Items.Add('Screen: '+Title);
   end;
  end;
- finally Seen.Free;end;
- if CardList.Count>0 then CardList.ItemIndex:=0;CardSelectionChange(nil);
+ if CardList.Count>0 then CardList.ItemIndex:=0;
+ CardSelectionChange(nil);
 end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
-var R:TJSONObject; Body,Title,HTML,Line,Path,ParagraphText:string; Lines:TStringList; I:Integer;
+var R,Section,Symbol:TJSONObject; V,W:TJSONValue; Body,Title,HTML,Line,Path,ParagraphText,
+  Source,CaptionText:string; Lines:TStringList; Sections,Symbols:TJSONArray; I,Count:Integer;
 begin
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
- CardReader.Text:='Choose a topic. DPH lists available guides, help topics and application screens automatically.';
+ CardReader.Text:='Choose a topic to explore this application.';
  if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then begin
    CardBrowser.Visible:=False;CardReader.Visible:=True;Exit;
  end;
  R:=FCardRows[CardList.ItemIndex];
- if R.GetValue('text')<>nil then begin Title:=R.GetValue<string>('heading','Topic');Body:=R.GetValue<string>('text','');end
- else begin
+ if R.GetValue<string>('library_kind','')='route' then begin
+   Title:=R.GetValue<string>('heading','Learning route');
+   HTML:=FExplanations.ApplicationRouteHTML(R.GetValue<Integer>('route_index',0));
+   Body:=TRegEx.Replace(HTML,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
+   CardReader.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Body,'<[^>]+>','')).Trim;
+ end else if R.GetValue<TJSONArray>('sections',nil)<>nil then begin
+   Source:=R.GetValue<string>('source','');Title:=TPath.GetFileName(Source);
+   Body:='';Sections:=R.GetValue<TJSONArray>('sections');
+   for V in Sections do begin
+     Section:=V as TJSONObject;Line:=Section.GetValue<string>('heading','').Trim;
+     if (Line<>'') and not TRegEx.IsMatch(Line,'^Page\s+\d+$',[roIgnoreCase]) then
+       Body:=Body+sLineBreak+sLineBreak+'## '+Line;
+     ParagraphText:=Section.GetValue<string>('text','').Trim;
+     if ParagraphText<>'' then Body:=Body+sLineBreak+sLineBreak+ParagraphText;
+   end;
+   Body:=TRegEx.Replace(Body,'(?i)\bPAGEREF\s+[_A-Za-z0-9.-]+(?:\s+\\[A-Za-z]+)*','').Trim;
+   CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
+ end else begin
    Title:=R.GetValue<string>('title',R.GetValue<string>('name','Screen'));
-   Body:='This screen is defined in '+R.GetValue<string>('source','the project')+'. Open it in Screenshots to view the blank design generated by DPH. The Project map shows its controls and connected actions.';
+   Source:=R.GetValue<string>('source','');
+   Body:='This screen is defined in '+Source+'. DPH can show its saved controls in the Screenshots tab.';
+   Symbols:=FLearningFacts.Document.GetValue<TJSONArray>('symbols',nil);Count:=0;
+   if Symbols<>nil then for V in Symbols do begin
+     Symbol:=V as TJSONObject;
+     if (Symbol.GetValue<string>('kind','')<>'component') or
+       not SameText(Symbol.GetValue<string>('range.source',''),Source) or
+       (Symbol.GetValue<TJSONArray>('serialized_properties',nil)=nil) then Continue;
+     CaptionText:='';
+     for W in Symbol.GetValue<TJSONArray>('serialized_properties') do
+       if MatchText(W.GetValue<string>('name',''),['Text','Caption']) then begin
+         CaptionText:=W.GetValue<string>('value','').Trim(['''',' ']);Break;
+       end;
+     if (CaptionText='') or (Length(CaptionText)>120) then Continue;
+     if Count=0 then Body:=Body+sLineBreak+sLineBreak+'## Controls visible in the saved design';
+     Body:=Body+sLineBreak+'- '+CaptionText;Inc(Count);
+     if Count>=24 then Break;
+   end;
+   if Count=0 then Body:=Body+sLineBreak+sLineBreak+'No labeled controls were captured for this screen.';
+   CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
  end;
- CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
+ if R.GetValue<string>('library_kind','')<>'route' then begin
  HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2{color:#146cb4;font-size:22px;margin-top:32px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal}</style></head><body><article><h1>'+
    TNetEncoding.HTML.Encode(Title)+'</h1>';
  Lines:=TStringList.Create;
@@ -1134,11 +1178,15 @@ begin
    end;
    if ParagraphText<>'' then HTML:=HTML+'<p>'+TNetEncoding.HTML.Encode(ParagraphText)+'</p>';
  finally Lines.Free;end;
+ if R.GetValue<TJSONArray>('sections',nil)=nil then
+   HTML:=HTML+'<p><a href="index.html#form_'+THashSHA2.GetHashString(R.GetValue<string>('source',''))+'">Open this screen</a></p>';
  HTML:=HTML+'</article></body></html>';
+ end;
  if FLearningDirectory='' then Exit;
- Path:=TPath.Combine(FLearningDirectory,'library-'+THashSHA2.GetHashString(HTML)+'.html');
+ Path:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
  try
    TFile.WriteAllBytes(Path,TEncoding.UTF8.GetBytes(HTML));
+   TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
    CardBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;CardReader.Visible:=False;CardBrowser.Visible:=True;
    CardBrowser.Navigate('file://'+Path);
  except on E:Exception do begin CardBrowser.Visible:=False;CardReader.Visible:=True;end;end;

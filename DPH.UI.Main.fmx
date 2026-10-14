@@ -506,7 +506,7 @@ Height = 72
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Explore information found in this application''s guides and help. Select a topic to read its explanation.'
+Text = 'Explore this application through its learning route, project documents and screens. Select a topic to read what DPH found.'
 end
 object CardToolbar: THorzScrollBox
 Align = Top
@@ -542,7 +542,7 @@ Align = Top
 Height = 34
 Margins.Left = 12
 Margins.Right = 12
-TextPrompt = 'Find a topic, question, error message or example'
+TextPrompt = 'Find a learning topic, document or screen'
 OnChange = CardFilterChange
 end
 object CardRole: TEdit
@@ -556,14 +556,14 @@ OnChange = CardFilterChange
 end
 object CardList: TListBox
 Align = Left
-Width = 260
+Width = 320
 Margins.Left = 12
 Margins.Right = 12
 OnChange = CardSelectionChange
 end
 object CardReader: TMemo
 Align = Client
-Visible = False
+Visible = True
 Margins.Right = 12
 Margins.Bottom = 12
 ReadOnly = True
@@ -574,6 +574,7 @@ TextSettings.Font.Size = 17
 end
 object CardBrowser: TWebBrowser
 Align = Client
+Visible = False
 Margins.Right = 12
 Margins.Bottom = 12
 WindowsEngine = None
