@@ -1147,7 +1147,10 @@ begin
         Row:=V as TJSONObject; Path:=Row.GetValue<string>('source','');
         if KnownPaths.ContainsKey(LowerCase(Path)) then Continue;
         Kind:=Row.GetValue<string>('format',''); I:=2;
-        if MatchText(Kind,['.md','.txt','.html','.htm','.docx','.pdf','.rtf',
+        if MatchText(Kind,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
+          '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
+          '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps',
+          '.wri','.tex','.csv',
           '.contract','.schema','.json','.xml','.ini','.config','.yml','.yaml']) or
           ContainsText(Path,'contract') or ContainsText(Path,'spec') then I:=0
         else if MatchText(Kind,['.png','.jpg','.jpeg','.svg','.bmp','.rc','.res']) then I:=1;
@@ -1173,7 +1176,7 @@ begin
         Row:=V as TJSONObject;
         Body.Append('<p><code>'+Encode(Row.GetValue<string>('source',''))+'</code></p>'); Inc(Count);
       end;
-      if Count=0 then Body.Append('<p>No matching guide, README, help file or note was found in the scanned project folders.</p>');
+      if Count=0 then Body.Append('<p>No matching document or log was found in the scanned project folders.</p>');
       Body.Append('<p><a href="#lesson_2">Read extracted passages in Explore related tasks</a>.</p></section>');
     end;
     Result:=Page('Project map: '+FFacts.GetValue<string>('project','selected application'),Body.ToString);
@@ -1509,8 +1512,8 @@ begin
             for V in Guides do begin
               Guide:=V as TJSONObject;
               Body.Append('<h3>'+Encode(Guide.GetValue<string>('source'))+'</h3>');
-              if Guide.GetValue<string>('format','')='.pdf' then
-                Body.Append('<p><small>PDF found. Its text is not indexed in this capture.</small></p>');
+              if Guide.GetValue<TJSONArray>('sections').Count=0 then
+                Body.Append('<p><small>No selectable text could be extracted from this file. It may contain only images, require a password, or need a document converter.</small></p>');
               for W in Guide.GetValue<TJSONArray>('sections') do begin
                 GuideSection:=W as TJSONObject;
                 GuideBody:=Trim(GuideSection.GetValue<string>('text',''));

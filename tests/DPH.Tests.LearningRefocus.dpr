@@ -1,7 +1,7 @@
 ﻿program DPH.Tests.LearningRefocus;
 {$APPTYPE CONSOLE}
 {$SETPEFLAGS $20}
-uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors,
+uses System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
@@ -39,16 +39,57 @@ begin
     try
       Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(ID); Work:=TPath.Combine(Root,'bin\learning-refocus-tests-'+GUIDToString(ID)); TDirectory.CreateDirectory(Work);
       TFile.WriteAllText(TPath.Combine(Work,'README.md'),'The learning fixture has a documented first task.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Work,'Setup_Notes.txt'),
+        'The Unicode setup note explains the first screen.',TEncoding.Unicode);
+      TFile.WriteAllText(TPath.Combine(Work,'Miscellaneous.txt'),
+        'The unfamiliar application keeps another useful instruction here.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Work,'activity.log'),StringOfChar('x',1100000)+sLineBreak+
         'The Convert action completed at 10:30.',TEncoding.UTF8);
+      TFile.Copy(TPath.Combine(Root,'docs\pdf\DPH_User_Guide.pdf'),
+        TPath.Combine(Work,'User_Guide.pdf'));
+      TFile.Copy(TPath.Combine(Root,'docs\guides\DPH_Engineering_Guide.docx'),
+        TPath.Combine(Work,'Engineering_Guide.docx'));
+      TFile.WriteAllText(TPath.Combine(Work,'Training_Notes.rtf'),
+        '{\rtf1\ansi The test application has a saved training note.}',TEncoding.ASCII);
+      var ODTContent:=TPath.Combine(Work,'content.xml');
+      TFile.WriteAllText(ODTContent,
+        '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p>ODT learning guide explains the saved screen.</text:p></office:text></office:body></office:document-content>',TEncoding.UTF8);
+      var ODTZip:=TZipFile.Create;
+      try
+        ODTZip.Open(TPath.Combine(Work,'Learning_Guide.odt'),zmWrite);
+        ODTZip.Add(ODTContent,'content.xml');
+      finally ODTZip.Free;end;
+      TFile.Delete(ODTContent);
       var DiscoveryFacts:=TJSONObject.Create.AddPair('root',Work);
       try
         TDPHLearningDiscovery.AddEvidence(DiscoveryFacts,DiscoveryFacts);
         var FoundLog:=False;
+        var FoundPDF:=False;
+        var FoundDOCX:=False;
+        var FoundRTF:=False;
+        var FoundODT:=False;
+        var FoundTXT:=False;
+        var FoundUnlabelledTXT:=False;
         for var Discovered in DiscoveryFacts.GetValue<TJSONArray>('project_guides') do
-          if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
-            ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
+          begin
+            if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
+              ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'User_Guide.pdf') and
+              ContainsText(Discovered.ToJSON,'Delphi Project Handoff User Guide') then FoundPDF:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Engineering_Guide.docx') and
+              ContainsText(Discovered.ToJSON,'Delphi Project Handoff Engineering Guide') then FoundDOCX:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Training_Notes.rtf') and
+              ContainsText(Discovered.ToJSON,'saved training note') then FoundRTF:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Learning_Guide.odt') and
+              ContainsText(Discovered.ToJSON,'ODT learning guide') then FoundODT:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Setup_Notes.txt') and
+              ContainsText(Discovered.ToJSON,'Unicode setup note') then FoundTXT:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Miscellaneous.txt') and
+              ContainsText(Discovered.ToJSON,'another useful instruction') then FoundUnlabelledTXT:=True;
+          end;
         Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
+        Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
+          'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
       finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Root,'tests\fixtures\semantics'); BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
       Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;

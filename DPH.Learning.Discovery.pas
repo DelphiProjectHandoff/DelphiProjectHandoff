@@ -21,10 +21,11 @@ var
   Guides,Screens,Sections,Nodes,Files,Assets,Sites: TJSONArray;
   FileRow,Node,Child,Screen,Guide,Section,Site: TJSONObject;
   Root,Path,RelativePath,Ext,Body,Line,Heading,Value,Title,URL,Host: string;
-  Paths: TStringList;
+  Converter,TempDir,OutputPath,CommandLine,ProfileURL,OutputFormat: string;
+  Paths,PreferredPaths: TStringList;
   Lines: TStringList;
   V: TJSONValue;
-  I,K,DocumentCount,LogCount: Integer;
+  I,K,DocumentCount,LogCount,EncodingOffset: Integer;
   TotalBytes: Int64;
   Data: TBytes;
   Zip: TZipFile;
@@ -33,9 +34,17 @@ var
   FileStream: TFileStream;
   Matches: TMatchCollection;
   Match: TMatch;
+  PageMatches,Paragraphs: TMatchCollection;
+  PageMatch,Paragraph: TMatch;
+  PageNumber: Integer;
   HTTP: THTTPClient;
   Response: IHTTPResponse;
   URI: TURI;
+  DetectedEncoding: TEncoding;
+  ScanID: TGUID;
+  StartupInfo: TStartupInfo;
+  ProcessInfo: TProcessInformation;
+  WaitResult: Cardinal;
   function SafeFolder(const AFolder: string): Boolean;
   var Attr: Cardinal;
   begin
@@ -43,7 +52,7 @@ var
     Result:=(Attr<>INVALID_FILE_ATTRIBUTES) and ((Attr and FILE_ATTRIBUTE_REPARSE_POINT)=0);
   end;
   procedure Visit(const AFolder: string; ADepth: Integer);
-  var Entry,Base,LowerName: string; FileEntries,FolderEntries: TArray<string>;
+  var Entry,Base,LowerName: string; FileEntries,FolderEntries: TArray<string>; Preferred: Boolean;
   begin
     if (ADepth>4) or (Assets.Count>=2000) or not SafeFolder(AFolder) then Exit;
     try FileEntries:=TDirectory.GetFiles(AFolder); FolderEntries:=TDirectory.GetDirectories(AFolder);
@@ -56,21 +65,38 @@ var
         ContainsText(LowerName,'.env') or ContainsText(LowerName,'private') then Continue;
       if (GetFileAttributes(PChar(Entry)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then Continue;
       if MatchText(Ext,['.pas','.dpr','.dproj','.groupproj','.fmx','.dfm',
-        '.md','.txt','.log','.html','.htm','.docx','.pdf','.rtf','.json','.xml',
+        '.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text','.nfo','.log',
+        '.html','.htm','.docx','.docm','.doc','.dot','.dotx','.odt','.ott','.sxw',
+        '.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex','.csv','.json','.xml',
         '.ini','.config','.yml','.yaml','.sql','.contract','.schema',
         '.png','.jpg','.jpeg','.svg','.bmp','.rc','.res']) then begin
         Assets.AddElement(TJSONObject.Create.AddPair('source',
           Entry.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/'))
           .AddPair('format',Ext));
       end;
-      if not MatchText(Ext,['.md','.txt','.html','.htm','.docx','.pdf','.log']) or (Paths.Count>=300) then Continue;
-      if not (ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
+      if not MatchText(Ext,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
+        '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
+        '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex','.csv',
+        '.json','.xml','.yml','.yaml','.ini']) or
+        (Paths.Count+PreferredPaths.Count>=300) then Continue;
+      Preferred:=(ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
         ContainsText(LowerName,'notes') or ContainsText(LowerName,'getting start') or
+        ContainsText(LowerName,'about') or ContainsText(LowerName,'overview') or
+        ContainsText(LowerName,'instruction') or ContainsText(LowerName,'spec') or
+        ContainsText(LowerName,'faq') or ContainsText(LowerName,'release') or
+        ContainsText(LowerName,'requirement') or ContainsText(LowerName,'workflow') or
+        ContainsText(LowerName,'architecture') or ContainsText(LowerName,'design') or
+        ContainsText(LowerName,'contract') or ContainsText(LowerName,'training') or
         ContainsText(AFolder,'docs') or ContainsText(AFolder,'help') or
-        (Ext='.log')) then Continue;
+        (Ext='.log'));
       if ((Ext='.log') and (TFile.GetSize(Entry)<=16777216)) or
-        ((Ext<>'.log') and (TFile.GetSize(Entry)<=1048576)) then Paths.Add(Entry);
+        (MatchText(Ext,['.pdf','.docx','.docm','.doc','.dot','.dotx','.odt',
+          '.ott','.sxw','.fodt','.rtf','.wpd','.wpt','.wps','.wri']) and
+          (TFile.GetSize(Entry)<=16777216)) or
+        ((Ext<>'.log') and (TFile.GetSize(Entry)<=1048576)) then begin
+        if Preferred then PreferredPaths.Add(Entry) else Paths.Add(Entry);
+      end;
     end;
     for Entry in FolderEntries do begin
       Base:=LowerCase(TPath.GetFileName(Entry));
@@ -83,7 +109,7 @@ var
   function CleanText(const AText: string): string;
   begin
     Result:=TRegEx.Replace(AText,'(?is)<(script|style)\b[^>]*>.*?</\1>',' ');
-    Result:=TRegEx.Replace(Result,'(?i)</(p|h[1-6]|li|div|w:p)>',sLineBreak);
+    Result:=TRegEx.Replace(Result,'(?i)</(p|h[1-6]|li|div|w:p|text:p|text:h)>',sLineBreak);
     Result:=TRegEx.Replace(Result,'<[^>]+>',' ');
     Result:=TNetEncoding.HTML.Decode(Result);
     Result:=TRegEx.Replace(Result,'[ \t]+',' ');
@@ -120,18 +146,23 @@ begin
     end;
   end;
   if (Root='') or not TDirectory.Exists(Root) then Exit;
-  Paths:=TStringList.Create; Lines:=TStringList.Create;
+  Paths:=TStringList.Create; PreferredPaths:=TStringList.Create; Lines:=TStringList.Create;
   try
-    Visit(Root,0); Paths.Sort; TotalBytes:=0; DocumentCount:=0; LogCount:=0;
+    Visit(Root,0); Paths.Sort; PreferredPaths.Sort;
+    for I:=PreferredPaths.Count-1 downto 0 do Paths.Insert(0,PreferredPaths[I]);
+    TotalBytes:=0; DocumentCount:=0; LogCount:=0;
     for Path in Paths do begin
       Ext:=LowerCase(TPath.GetExtension(Path));
       if (Ext='.log') and (LogCount>=8) then Continue;
       if (Ext<>'.log') and (DocumentCount>=24) then Continue;
       if Ext='.log' then begin
         if TotalBytes+Min(TFile.GetSize(Path),7500)>4194304 then Continue;
+      end else if MatchText(Ext,['.pdf','.docx','.docm','.doc','.dot','.dotx',
+        '.odt','.ott','.sxw','.fodt','.rtf','.wpd','.wpt','.wps','.wri']) then begin
+        if TotalBytes+65536>4194304 then Continue;
       end else if TotalBytes+TFile.GetSize(Path)>4194304 then Continue;
       RelativePath:=Path.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/');
-      Body:='';
+      Body:=''; Data:=nil;
       try
         if Ext='.log' then begin
           FileStream:=TFileStream.Create(Path,fmOpenRead or fmShareDenyNone);
@@ -140,27 +171,81 @@ begin
             FileStream.Position:=FileStream.Size-Length(Data);
             if Length(Data)>0 then FileStream.ReadBuffer(Data[0],Length(Data));
           finally FileStream.Free;end;
-        end else Data:=TFile.ReadAllBytes(Path);
-        if Ext='.docx' then begin
+        end else if not MatchText(Ext,['.pdf','.docx','.docm','.doc','.dot',
+          '.dotx','.odt','.ott','.sxw','.fodt','.rtf','.wpd','.wpt','.wps','.wri']) then
+          Data:=TFile.ReadAllBytes(Path);
+        if MatchText(Ext,['.docx','.docm','.dotx','.odt','.ott','.sxw']) then begin
           Zip:=TZipFile.Create;
           try
             Zip.Open(Path,zmRead);
             Stream:=nil;
-            Zip.Read('word/document.xml',Stream,Header);
+            if MatchText(Ext,['.docx','.docm','.dotx']) then
+              Zip.Read('word/document.xml',Stream,Header)
+            else Zip.Read('content.xml',Stream,Header);
             try
-              if (Stream<>nil) and (Stream.Size<=2097152) then begin
+              if (Stream<>nil) and (Stream.Size<=4194304) then begin
                 SetLength(Data,Stream.Size); Stream.Position:=0;
                 if Length(Data)>0 then Stream.ReadBuffer(Data[0],Length(Data));
                 Body:=CleanText(TEncoding.UTF8.GetString(Data));
               end;
             finally Stream.Free; end;
           finally Zip.Free; end;
-        end else if Ext<>'.pdf' then begin
-          Body:=TEncoding.UTF8.GetString(Data);
+        end else if MatchText(Ext,['.pdf','.doc','.dot','.rtf','.wpd','.wpt',
+          '.wps','.wri','.fodt']) then begin
+          Converter:='C:\Program Files\LibreOffice\program\soffice.com';
+          if TFile.Exists(Converter) then begin
+            CreateGUID(ScanID);
+            TempDir:=TPath.Combine(TPath.GetTempPath,'DPH-document-scan-'+GUIDToString(ScanID));
+            TDirectory.CreateDirectory(TempDir);
+            try
+              ProfileURL:='file:///'+TempDir.Replace('\','/').Replace(' ','%20')+'/profile';
+              if Ext='.pdf' then begin OutputFormat:='fodg'; OutputPath:=TPath.Combine(TempDir,TPath.GetFileNameWithoutExtension(Path)+'.fodg'); end
+              else begin OutputFormat:='txt:Text'; OutputPath:=TPath.Combine(TempDir,TPath.GetFileNameWithoutExtension(Path)+'.txt'); end;
+              CommandLine:='"'+Converter+'" "-env:UserInstallation='+ProfileURL+'" --headless --convert-to "'+
+                OutputFormat+'" --outdir "'+TempDir+'" "'+Path+'"';
+              UniqueString(CommandLine);
+              FillChar(StartupInfo,SizeOf(StartupInfo),0);
+              StartupInfo.cb:=SizeOf(StartupInfo);
+              StartupInfo.dwFlags:=STARTF_USESHOWWINDOW;
+              StartupInfo.wShowWindow:=SW_HIDE;
+              if CreateProcess(nil,PChar(CommandLine),nil,nil,False,CREATE_NO_WINDOW,nil,nil,
+                StartupInfo,ProcessInfo) then begin
+                try
+                  WaitResult:=WaitForSingleObject(ProcessInfo.hProcess,45000);
+                  if WaitResult=WAIT_TIMEOUT then TerminateProcess(ProcessInfo.hProcess,1);
+                finally
+                  CloseHandle(ProcessInfo.hThread); CloseHandle(ProcessInfo.hProcess);
+                end;
+              end;
+              if TFile.Exists(OutputPath) and (TFile.GetSize(OutputPath)<=33554432) then begin
+                Value:=TFile.ReadAllText(OutputPath,TEncoding.UTF8);
+                if Ext='.pdf' then begin
+                  PageMatches:=TRegEx.Matches(Value,'(?is)<draw:page\b[^>]*>(.*?)</draw:page>');
+                  PageNumber:=0;
+                  for PageMatch in PageMatches do begin
+                    Inc(PageNumber); Body:=Body+'# Page '+IntToStr(PageNumber)+sLineBreak;
+                    Paragraphs:=TRegEx.Matches(PageMatch.Groups[1].Value,
+                      '(?is)<text:p\b[^>]*>(.*?)</text:p>');
+                    for Paragraph in Paragraphs do
+                      Body:=Body+CleanText(Paragraph.Groups[1].Value).Trim+sLineBreak;
+                    if (PageNumber>=60) or (Length(Body)>=300000) then Break;
+                  end;
+                end else Body:=Value;
+              end;
+            finally
+              try TDirectory.Delete(TempDir,True); except on E: Exception do ; end;
+            end;
+          end;
+        end else begin
+          DetectedEncoding:=nil;
+          EncodingOffset:=TEncoding.GetBufferEncoding(Data,DetectedEncoding,TEncoding.UTF8);
+          Body:=DetectedEncoding.GetString(Data,EncodingOffset,Length(Data)-EncodingOffset);
+          if (EncodingOffset=0) and ContainsText(Body,#$FFFD) then
+            Body:=TEncoding.Default.GetString(Data);
           if MatchText(Ext,['.html','.htm']) then Body:=CleanText(Body);
         end;
       except on E: Exception do Continue; end;
-      Inc(TotalBytes,Length(Data));
+      Inc(TotalBytes,Length(Body));
       if Ext='.log' then Inc(LogCount) else Inc(DocumentCount);
       Guide:=TJSONObject.Create; Guides.AddElement(Guide);
       Guide.AddPair('source',RelativePath);
@@ -169,7 +254,7 @@ begin
       finally FileStream.Free; end;
       Guide.AddPair('format',Ext);
       Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
-      if Ext='.pdf' then Continue;
+      if Body='' then Continue;
       if (Ext<>'.log') and (Sites.Count<3) then begin
         Matches:=TRegEx.Matches(Body,'https://[A-Za-z0-9][A-Za-z0-9.-]+(?:/[A-Za-z0-9_./?=&%#-]*)?');
         for Match in Matches do begin
@@ -215,7 +300,7 @@ begin
         except on E: Exception do Continue; end;
       end;
     finally HTTP.Free; end;
-  finally Lines.Free; Paths.Free; end;
+  finally Lines.Free; PreferredPaths.Free; Paths.Free; end;
 end;
 
 end.
