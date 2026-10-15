@@ -578,7 +578,7 @@ const PurposeFields:array[0..7] of string=('action_name','screen','trigger','pur
       PurposeLabels:array[0..7] of string=('Action name','Screen and user role','What starts it','Why the user needs it','Before you begin','How to use it','Expected result','If something goes wrong');
 var Body: TStringBuilder; S,R,Metadata,Fields,Section: TJSONObject; V,W: TJSONValue; Rows,LessonRows: TList<TJSONObject>;
     Kind,DetailHTML,Target,Verb,PropertyName,PropertyValue,Meaning,ControlName,FormName,CaptionText,Excerpt,SourceText: string;
-    Count,P,Limit,I,Pass,MatchAt: Integer; Linked,Found: Boolean;
+    Count,P,Limit,I,Pass,MatchAt,UnresolvedCount: Integer; Linked,Found: Boolean;
 begin
   if not FSymbols.TryGetValue(AKey,S) then Exit(Page('Explain this selection','<p>Choose a screen control, action or operation to begin.</p>'));
   Body:=TStringBuilder.Create;
@@ -609,7 +609,7 @@ begin
     end
     else if Kind='event' then Body.Append('<p>This is an event: the connection between an action and the operation that responds to it.</p>')
     else if MatchText(Kind,['routine','anonymous']) then Body.Append('<p>This is an operation in the application. A procedure performs work; a function also returns a result. Read its connections below to see the part it plays.</p>')
-    else if Kind='unit' then Body.Append('<p>This is a unit: a source file grouping related definitions and operations.</p>')
+    else if Kind='unit' then Body.Append('<p>This source unit contains the declarations and operations listed in its connections below.</p>')
     else if MatchText(Kind,['field','variable','local','parameter','property']) then
       Body.Append('<p>This is a '+Encode(Kind)+' that holds or exposes information used by the application.</p>')
     else Body.Append('<p>This '+Encode(Kind)+' is part of the selected application. Its connections help explain where it fits.</p>');
@@ -619,6 +619,17 @@ begin
       Body.Append('<p><strong>Declaration:</strong> <code>'+Encode(S.GetValue<string>('signature'))+'</code></p>');
     Body.Append('<p><small>Source: '+Encode(S.GetValue<string>('range.source',''))+':'+
       IntToStr(S.GetValue<Integer>('range.line',0))+'</small></p>');
+    if Kind='unit' then begin
+      Count:=0;
+      if FOutgoing.TryGetValue(AKey,Rows) then for R in Rows do begin
+        if (R.GetValue<string>('kind')<>'owns') or
+          not FSymbols.ContainsKey(R.GetValue<string>('to','')) then Continue;
+        if Count=0 then Body.Append('<p><strong>Declared here:</strong></p><ul>');
+        Body.Append('<li>'+Link(R.GetValue<string>('to'))+'</li>');
+        Inc(Count); if Count>=12 then Break;
+      end;
+      if Count>0 then Body.Append('</ul>');
+    end;
     Body.Append('</section>');
     if (Kind='component') and (S.GetValue('serialized_properties')<>nil) then begin
       Body.Append('<section class="card"><h2>What the learner sees and can enter</h2>');Found:=False;
@@ -718,22 +729,23 @@ begin
       if (Pass=0) and not MatchText(Kind,['if','case','while','repeat','for']) then Continue;
       if (Pass=1) and MatchText(Kind,['if','case','while','repeat','for']) then Continue;
       if Length(PropertyValue)>180 then PropertyValue:=Copy(PropertyValue,1,180)+'...';
-      if Kind='if' then Meaning:='It makes a choice by testing '+PropertyValue+'. A true result follows one branch; a false result follows the other.'
-      else if Kind='case' then Meaning:='It chooses among several alternatives using '+PropertyValue+'.'
-      else if Kind='while' then Meaning:='It can repeat work while '+PropertyValue+' is true. The work may run zero times.'
-      else if Kind='repeat' then Meaning:='It tests '+PropertyValue+' after doing the repeated work. A false result repeats it; a true result stops repeating.'
-      else if Kind='for' then Meaning:='It repeats work for the range or items described by '+PropertyValue+'.'
-      else if Kind='try_finally' then Meaning:='It arranges cleanup after the protected work, including paths that leave early.'
-      else if Kind='try_except' then Meaning:='It has a place to handle an error raised during the protected work.'
-      else if Kind='raise' then Meaning:='This path can report an error: '+PropertyValue+'. It does not mean every run fails.'
-      else if Kind='exit' then Meaning:='This path can leave the operation early: '+PropertyValue+'.';
-      if Meaning='' then Continue;DetailHTML:=DetailHTML+'<p>'+Encode(Meaning)+'</p>';Inc(Count);if Count>=4 then Break;
+      if Kind='if' then Meaning:='Condition'
+      else if Kind='case' then Meaning:='Alternatives'
+      else if MatchText(Kind,['while','repeat','for']) then Meaning:='Loop'
+      else if Kind='try_finally' then Meaning:='Cleanup'
+      else if Kind='try_except' then Meaning:='Error handler'
+      else if Kind='raise' then Meaning:='Raises an error'
+      else if Kind='exit' then Meaning:='Early exit';
+      if Meaning='' then Continue;
+      DetailHTML:=DetailHTML+'<li><strong>'+Meaning+'</strong>';
+      if PropertyValue<>'' then DetailHTML:=DetailHTML+': <code>'+Encode(PropertyValue)+'</code>';
+      DetailHTML:=DetailHTML+'</li>';Inc(Count);if Count>=4 then Break;
       end;
     end;
     finally LessonRows.Free;end;
-    if Count>0 then Body.Append('<section class="card"><h2>Choices and stopping points</h2>'+DetailHTML+
-      '<p>These are examples from this operation, not a record of a run. Read the optional walkthrough for all supported paths and their order.</p></section>');
-    Body.Append('<section class="card"><h2>Follow what happens next</h2>'); Count:=0;
+    if Count>0 then Body.Append('<section class="card"><h2>Choices and stopping points</h2><p>A true result follows one branch and a false result follows the other. Conditions found in this operation:</p><ul>'+DetailHTML+
+      '</ul><p>Inspect the source walkthrough for branch order and other paths.</p></section>');
+    Body.Append('<section class="card"><h2>Follow what happens next</h2>'); Count:=0;UnresolvedCount:=0;
     if FOutgoing.TryGetValue(AKey,Rows) then for R in Rows do begin
       Kind:=R.GetValue<string>('kind'); Target:=R.GetValue<string>('to','');
       if not MatchText(Kind,['calls','binds','reads','writes','shows_form','shows_modal_form','closes_form','schedules','passes_callback']) then Continue;
@@ -745,14 +757,16 @@ begin
       if MatchText(Kind,['shows_form','shows_modal_form']) then Verb:='Can open the screen';
       if Kind='closes_form' then Verb:='Can close the screen';
       if MatchText(Kind,['schedules','passes_callback']) then Verb:='Supplies work that may run later in';
+      if not FSymbols.ContainsKey(Target) then begin Inc(UnresolvedCount); Continue; end;
       Body.Append('<p>'+Verb+' '+Link(Target)+'.</p>');
       if R.GetValue<string>('resolution')<>'confirmed_static' then Body.Append('<p><small>This connection needs confirmation; the source alone does not establish its exact target or timing.</small></p>');
       Inc(Count); if Count>=8 then Break;
     end;
-    if Count=0 then Body.Append('<p>No supported next operation was found directly here. For a screen control, open its event in the left-hand list. For code, inspect the walkthrough below or ask the author about missing connections.</p>');
+    if UnresolvedCount>0 then Body.Append('<p><small>'+IntToStr(UnresolvedCount)+' possible connection(s) have no resolved target in this capture. Inspect source details before relying on them.</small></p>');
+    if (Count=0) and (UnresolvedCount=0) then Body.Append('<p>No supported next operation was found directly here. For a screen control, open its event in the left-hand list. For code, inspect the walkthrough below or ask the author about missing connections.</p>');
     if Count>=8 then Body.Append('<p>Eight connections are shown to keep this lesson focused. Further connections are in the optional details.</p>');
-    Body.Append('<p>These are possible source paths. Conditions and user input determine which paths a real run takes.</p></section>'+
-      '<section class="card"><h2>Check your understanding</h2><p>Explain what starts this operation, what information it uses, and what it can change. Which user result is documented, and which part still needs an answer?</p></section>');
+    if Count>0 then Body.Append('<p>These are possible source paths. Conditions and user input determine which paths a real run takes.</p>');
+    Body.Append('</section><section class="card"><h2>Check your understanding</h2><p>Explain what starts this operation, what information it uses, and what it can change. Which user result is documented, and which part still needs an answer?</p></section>');
     DetailHTML:=ObjectHTML(AKey); P:=Pos('<main>',DetailHTML);
     if P>0 then begin
       DetailHTML:=Copy(DetailHTML,P+6,MaxInt); P:=Pos('</main>',DetailHTML);

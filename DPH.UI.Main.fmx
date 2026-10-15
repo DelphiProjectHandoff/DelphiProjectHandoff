@@ -3336,7 +3336,7 @@ Position.Y = 8
 Width = 150
 Height = 30
 Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
-ItemIndex = 0
+ItemIndex = 1
 OnChange = ScreenshotViewChange
 end
 object ScreenshotZoom: TTrackBar
@@ -3351,6 +3351,15 @@ Frequency = 25
 Hint = 'Screenshot zoom: 25 to 400 percent'
 ShowHint = True
 OnChange = ScreenshotViewChange
+end
+object ScreenshotReturnButton: TButton
+Position.X = 325
+Position.Y = 8
+Width = 180
+Height = 30
+Text = 'Back'
+Enabled = False
+OnClick = ScreenshotReturnClick
 end
 object ScreenshotInspectButton: TButton
 Visible = False
@@ -3376,11 +3385,13 @@ ReadOnly = True
 end
   object ScreenshotHelp: TLabel
   Align = Top
-  Height = 44
+  Height = 82
   Margins.Left = 12
   Margins.Right = 12
   WordWrap = True
-  Text = 'DPH generates these blank screen views from the application''s .fmx and .dfm files. Select a form, then use Fit or Native pixels. Custom painting and runtime data may differ.'
+  StyledSettings = []
+  TextSettings.Font.Size = 16
+  Text = 'Select a form on the left. The preview starts at Native pixels so text stays readable; scroll to see the rest. Choose Fit for an overview or use the zoom slider for another size. This is a reconstruction of saved .fmx or .dfm controls, not a running screen; custom drawing and live data may differ.'
   end
 object ScreenshotList: TListBox
 Align = Left

@@ -50,7 +50,7 @@ begin
       Parent:=nil; Positions.TryGetValue(N.GetValue<Integer>('parent'),Parent);
       X:=0; Y:=0; W:=120; H:=32; if Parent=nil then begin W:=800; H:=600; end;
       Caption:=''; FontSize:=14; FontColor:=''; FillColor:=''; HorzAlign:='Leading';
-      NavigatorButtons:=''; Visible:=True;
+      NavigatorButtons:=''; Visible:=(Parent=nil) or Parent.GetValue<Boolean>('visible',True);
       for J:=I+1 to Nodes.Count-1 do
       begin
         P:=Nodes.Items[J] as TJSONObject;
@@ -65,7 +65,9 @@ begin
         if Name='Fill.Color' then FillColor:=Value;
         if Name='TextSettings.HorzAlign' then HorzAlign:=Value;
         if Name='VisibleButtons' then NavigatorButtons:=Value;
-        if Name='Visible' then Visible:=not SameText(Value,'False');
+        if Name='Visible' then Visible:=Visible and not SameText(Value,'False');
+        if (Name='IsSelected') and SameText(N.GetValue<string>('value',''),'TTabItem') then
+          Visible:=Visible and not SameText(Value,'False');
         if MatchText(Name,['Caption','Text']) and not MatchText(LowerCase(N.GetValue<string>('value','')),['tedit','tmemo','tlistbox','tcombobox','timage']) then begin
           Caption:='';
           for TextPart in TRegEx.Matches(Value,'''((?:''''|[^''])*)''|#(\d+)') do begin

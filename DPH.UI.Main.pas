@@ -171,6 +171,7 @@ type
     ScreenshotScroll: TScrollBox;
     ScreenshotModeCombo: TComboBox;
     ScreenshotZoom: TTrackBar;
+    ScreenshotReturnButton: TButton;
     ScreenshotInspectButton: TButton;
     ScreenshotEvidence: TMemo;
     ScreenshotHelp:TLabel;
@@ -637,6 +638,7 @@ type
     procedure ScreenshotCalloutClick(Sender:TObject);
     procedure ScreenshotViewChange(Sender: TObject);
     procedure ScreenshotInspectClick(Sender: TObject);
+    procedure ScreenshotReturnClick(Sender: TObject);
     procedure DatabaseERFilterChange(Sender:TObject);
     procedure DatabaseERFocusClick(Sender:TObject);
     procedure DatabaseERSelectionChange(Sender:TObject);
@@ -801,6 +803,7 @@ type
     FLoadingNetworkPreference: Boolean;
     FPendingEntry,FPendingDatabase: string;
     FPendingWorkspaceTab: TTabItem;
+    FScreenshotOriginTab: TTabItem;
     FPage: Integer;
     FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject: Boolean;
     FPreparationCompletionTicks: Integer;
@@ -1011,6 +1014,7 @@ begin
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Text:='Choose an application or open saved lessons. Its own purpose, screens, actions and supplied tasks will shape the learning route.';
   HelpClick(nil);
+  LanguageCombo.RefreshLanguages;
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
@@ -1723,6 +1727,10 @@ procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
 var Index: Integer; Choice: TComboBox; TabShape: TRectangle;
 begin
   if FBinding then Exit;
+  if WorkspaceTabs.ActiveTab<>ScreenshotTab then begin
+    FScreenshotOriginTab:=nil;
+    ScreenshotReturnButton.Enabled:=False;
+  end;
   if (Sender=WorkspacePageCombo) or (Sender=LessonPageCombo) then begin
     Choice:=Sender as TComboBox;
     if Choice.ItemIndex<0 then Exit;
@@ -2051,6 +2059,7 @@ begin
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Open an application to generate its blank screen views.';
+  FScreenshotOriginTab:=nil; ScreenshotReturnButton.Enabled:=False;
   FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
@@ -2080,6 +2089,7 @@ begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
   if FPendingLanguageRefresh then begin
     FPendingLanguageRefresh:=False;
+    LanguageCombo.RefreshLanguages;
     WorkspacePageChange(WorkspaceTabs);
     if (FView<>nil) and ExplorerLayout.Visible then begin
       RefreshExplorer;
@@ -3181,6 +3191,8 @@ begin
   if ACancel then Exit;
   if EndsText('#open_forms',AURL) then begin
     ACancel:=True;
+    if WorkspaceTabs.ActiveTab<>ScreenshotTab then FScreenshotOriginTab:=WorkspaceTabs.ActiveTab;
+    ScreenshotReturnButton.Enabled:=FScreenshotOriginTab<>nil;
     WorkspaceTabs.ActiveTab:=ScreenshotTab;
     Exit;
   end;
@@ -3189,6 +3201,8 @@ begin
     ACancel:=True; Fragment:=Copy(AURL,P+6,MaxInt);
     for I:=0 to FormCombo.Items.Count-1 do
       if SameText(THashSHA2.GetHashString(FormCombo.Items[I]),Fragment) then begin
+        if WorkspaceTabs.ActiveTab<>ScreenshotTab then FScreenshotOriginTab:=WorkspaceTabs.ActiveTab;
+        ScreenshotReturnButton.Enabled:=FScreenshotOriginTab<>nil;
         FormCombo.ItemIndex:=I; WorkspaceTabs.ActiveTab:=ScreenshotTab;
         if FImages<>nil then for ImageIndex:=0 to FImages.Count-1 do begin
           S:=FImages.Items[ImageIndex] as TJSONObject;
@@ -3206,7 +3220,12 @@ begin
       end;
     StatusLabel.Text:='This form is not available in the selected project.'; Exit;
   end;
-  if EndsText('#open_screenshots',AURL) then begin ACancel:=True; WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit; end;
+  if EndsText('#open_screenshots',AURL) then begin
+    ACancel:=True;
+    if WorkspaceTabs.ActiveTab<>ScreenshotTab then FScreenshotOriginTab:=WorkspaceTabs.ActiveTab;
+    ScreenshotReturnButton.Enabled:=FScreenshotOriginTab<>nil;
+    WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit;
+  end;
   P:=Pos('#library_',AURL);
   if P>0 then begin
     ACancel:=True; Fragment:=Copy(AURL,P+9,MaxInt);
@@ -3229,7 +3248,7 @@ begin
     end;
     StatusLabel.Text:='This document is not available in the selected project.'; Exit;
   end;
-  if EndsText('#all_objects',AURL) or (Pos('#kind_',AURL)>0) then begin
+  if EndsText('#all_objects',AURL) or EndsText('#objects',AURL) or (Pos('#kind_',AURL)>0) then begin
     ACancel:=True; FBinding:=True;
     try
       SearchEdit.Text:=''; KindCombo.ItemIndex:=0;
@@ -3483,7 +3502,7 @@ begin
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
           Seen.Add(Source); Inc(Done);
           Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v4')+'.png');
+            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v5')+'.png');
           Picture:=TBitmap.Create;
           try
             if not TFile.Exists(Path) then begin
@@ -3511,6 +3530,7 @@ begin
                   Node:=Part as TJSONObject; ClassName:=LowerCase(Node.GetValue<string>('class',''));
                   if not Node.GetValue<Boolean>('visible',True) or
                     (ClassName='') or
+                    (ClassName='ttabitem') or (ClassName='ttabcontrol') or
                     (ClassName='ttimer') or (ClassName='tdatasource') or
                     (ClassName='timagelist') or (ClassName='topendialog') or
                     StartsText('tfd',ClassName) or StartsText('tid',ClassName) or
@@ -3759,6 +3779,7 @@ end;
 procedure TDPHMainForm.ScreenshotPoint(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Single);
 begin
  if (Button<>TMouseButton.mbLeft) or ScreenshotImage.Bitmap.IsEmpty or (ScreenshotImage.Width<=0) or (ScreenshotImage.Height<=0) then Exit;
+  if not ScreenshotCallout.Visible then Exit;
  FPictureX:=EnsureRange(Round(X/ScreenshotImage.Width*10000),0,10000);FPictureY:=EnsureRange(Round(Y/ScreenshotImage.Height*10000),0,10000);
  FPicturePointValid:=True;ScreenshotCallout.Enabled:=True;ScreenshotMarkers.Repaint;
  StatusLabel.Text:='Point selected. Choose Explain this point to add its meaning, example and practice question.';
@@ -4950,6 +4971,12 @@ begin
   Row:=FImages.Items[ScreenshotList.ItemIndex] as TJSONObject; Key:=Row.GetValue<string>('entity_key','');
   if (Key<>'') and (FView.Symbol(Key)<>nil) then begin SelectSymbol(Key); WorkspaceTabs.ActiveTab:=ExplainTab; end
   else StatusLabel.Text:='This screenshot has no matching object in the current captured generation. Its image evidence remains available.';
+end;
+procedure TDPHMainForm.ScreenshotReturnClick(Sender: TObject);
+begin
+  if FScreenshotOriginTab<>nil then WorkspaceTabs.ActiveTab:=FScreenshotOriginTab;
+  FScreenshotOriginTab:=nil;
+  ScreenshotReturnButton.Enabled:=False;
 end;
 procedure TDPHMainForm.RefreshExplorer;
 const KindKeys: array[1..19] of string =
