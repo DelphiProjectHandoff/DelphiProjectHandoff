@@ -3283,30 +3283,27 @@ object ScreenshotTab: TTabItem
 Text = 'Screenshots'
 object ScreenshotToolbar: TLayout
 Align = Top
-Height = 52
+Height = 82
   Margins.Left = 12
   Margins.Right = 12
 object ScreenshotAuthor: TEdit
-Visible = False
 Position.X = 8
-Position.Y = 8
-Width = 300
+Position.Y = 46
+Width = 220
 Height = 30
 TextPrompt = 'Named screenshot contributor'
 end
 object ScreenshotCaption: TEdit
-Visible = False
-Position.X = 8
-Position.Y = 45
+Position.X = 236
+Position.Y = 46
 Width = 500
 Height = 30
 TextPrompt = 'Capture date, environment and what this image shows'
 end
   object ScreenshotKind: TComboBox
-  Visible = False
-  Position.X = 516
-  Position.Y = 45
-  Width = 220
+  Position.X = 744
+  Position.Y = 46
+  Width = 180
   Height = 30
   Items.Strings = ('Screenshot' 'Sample output' 'Other teaching image')
   ItemIndex = 0
@@ -3322,9 +3319,8 @@ end
   OnClick = ScreenshotCalloutClick
   end
 object ImportScreenshotButton: TButton
-Visible = False
-Position.X = 8
-Position.Y = 82
+Position.X = 516
+Position.Y = 8
 Width = 240
 Height = 30
 Text = 'Import an existing PNG screenshot'
@@ -3391,7 +3387,7 @@ end
   WordWrap = True
   StyledSettings = []
   TextSettings.Font.Size = 16
-  Text = 'Select a form on the left. The preview starts at Native pixels so text stays readable; scroll to see the rest. Choose Fit for an overview or use the zoom slider for another size. This is a reconstruction of saved .fmx or .dfm controls, not a running screen; custom drawing and live data may differ.'
+  Text = 'Select a form on the left. Use Native pixels and scroll to read the generated design preview, or choose Fit for an overview. It is reconstructed from saved .fmx or .dfm controls and may differ from the running app. For a real runtime image, enter the contributor and capture details above, then import a PNG you captured from the app.'
   end
 object ScreenshotList: TListBox
 Align = Left

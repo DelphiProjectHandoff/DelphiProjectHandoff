@@ -1124,6 +1124,7 @@ begin
 end;
 procedure TDPHMainForm.LanguageChanged(Sender: TObject;
   const AOldLanguage, ANewLanguage: string; const AGeneration: Cardinal);
+var PreviousScreen: Integer; SavedScreens: TJSONArray; ScreenRow: TJSONValue;
 begin
   if FClosing or (FLearningDirectory = '') then Exit;
   FHelpLanguageGeneration := 0;
@@ -1141,7 +1142,18 @@ begin
         '%s Some code could not be explained; check unanswered questions.', ['']);
   end;
   UpdateLearnerNavigation;
-  ScreenshotClick(nil);
+  if (FView<>nil) and not FBusy then begin
+    PreviousScreen:=ScreenshotList.ItemIndex;
+    SavedScreens:=TJSONArray.Create;
+    if FImages<>nil then for ScreenRow in FImages do
+      if ScreenRow.GetValue<Int64>('artifact_id',0)>0 then
+        SavedScreens.AddElement(ScreenRow.Clone as TJSONValue);
+    LoadScreenshots(SavedScreens);
+    if (PreviousScreen>=0) and (PreviousScreen<ScreenshotList.Count) then begin
+      ScreenshotList.ItemIndex:=PreviousScreen;
+      ScreenshotClick(nil);
+    end;
+  end else ScreenshotClick(nil);
   FPendingLanguageRefresh := True;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1212,7 +1224,7 @@ begin
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
-var V,W:TJSONValue;R,Section,Route,Group:TJSONObject; Guides,Screens,GuideIndexes:TJSONArray;
+var V,W:TJSONValue;R,Section,Group:TJSONObject; Guides,Screens,GuideIndexes:TJSONArray;
   Title,Query,Source,GroupKey,DisplayTitle:string; I,J:Integer; MatchesQuery:Boolean;
 begin
  if FCardRows=nil then Exit;
@@ -1220,13 +1232,6 @@ begin
  CardDocumentLocation.TagString:='';CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
  Query:=CardFilter.Text.Trim;
  if FLearningFacts<>nil then begin
-  for I:=0 to LearningTopics.Count-1 do begin
-   Title:=LearningTopics.Items[I];
-   if (Query<>'') and not ContainsText(Title,Query) then Continue;
-   Route:=TJSONObject.Create.AddPair('library_kind','route').AddPair('heading',Title)
-     .AddPair('route_index',TJSONNumber.Create(I));
-   FLibraryEntries.AddElement(Route);FCardRows.Add(Route);CardList.Items.Add('Start here: '+Title);
-  end;
   Guides:=FLearningFacts.Document.GetValue<TJSONArray>('project_guides',nil);
   if Guides<>nil then for I:=0 to Guides.Count-1 do begin
    R:=Guides.Items[I] as TJSONObject;
@@ -3460,7 +3465,9 @@ end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
 var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Integer;
   Thumbnail,Picture,EmbeddedPicture: TBitmap; LayoutRows,Files,FormSources: TJSONArray;
-  Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText: string;
+  Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText,
+    CatalogPath,CatalogHash,RootName,CaptionKey: string;
+  GermanCatalog,GermanStrings: TJSONObject;
   Bounds,NavigatorBounds: TRectF; Scale: Single; Seen: TStringList; ImageStream: TMemoryStream;
   ImageStart,ImageEnd,NextObject,CharacterIndex,ByteCount,HighNibble,Nibble: Integer;
   MenuX: Single; TextColor: TAlphaColor; NavigatorButtons: TArray<string>;
@@ -3468,10 +3475,27 @@ var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Intege
   ImageBytes: TBytes; ImageCharacter: Char;
   WasBusy,WasTabsEnabled,WasTimerEnabled: Boolean;
 begin
+  GermanCatalog:=nil; GermanStrings:=nil; CatalogHash:='original';
+  if (FView<>nil) and SameText(DATLanguageManager.CurrentLanguageCode,'de-DE') then begin
+    CatalogPath:=TPath.Combine(TPath.Combine(FView.Document.GetValue<string>('root',''),
+      'Localization'),TPath.Combine('Languages','de-DE.json'));
+    if TFile.Exists(CatalogPath) and (TFile.GetSize(CatalogPath)<8388608) then begin
+      try
+        GermanCatalog:=TJSONObject.ParseJSONValue(TFile.ReadAllText(CatalogPath,TEncoding.UTF8)) as TJSONObject;
+        if GermanCatalog<>nil then begin
+          GermanStrings:=GermanCatalog.GetValue<TJSONObject>('strings',nil);
+          if GermanStrings<>nil then CatalogHash:=THashSHA2.GetHashStringFromFile(CatalogPath);
+        end;
+      except
+        FreeAndNil(GermanCatalog);
+        GermanStrings:=nil;
+        CatalogHash:='original';
+      end;
+    end;
+  end;
   WasBusy:=FBusy; WasTabsEnabled:=WorkspaceTabs.Enabled; WasTimerEnabled:=PollTimer.Enabled;
   FRenderingScreens:=True; FBusy:=True; WorkspaceTabs.Enabled:=False; PollTimer.Enabled:=False;
   try
-  ARows.Free;
   HistorySelectionChange(nil); HistoryBeforeCombo.Items.Clear; HistoryAfterCombo.Items.Clear;
   FreeAndNil(FImages); FImages:=TJSONArray.Create; ScreenshotList.Items.Clear;
   if FView<>nil then begin
@@ -3502,7 +3526,7 @@ begin
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
           Seen.Add(Source); Inc(Done);
           Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v5')+'.png');
+            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v6|'+CatalogHash)+'.png');
           Picture:=TBitmap.Create;
           try
             if not TFile.Exists(Path) then begin
@@ -3517,6 +3541,7 @@ begin
               SameText(THashSHA2.GetHashStringFromFile(FormPath),Screen.GetValue<string>('source_hash','')) then
               FormText:=TFile.ReadAllText(FormPath,TEncoding.Default);
             Node:=LayoutRows.Items[0] as TJSONObject;
+            RootName:=Node.GetValue<string>('name','');
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
             H:=Round(EnsureRange(Node.GetValue<Double>('height',600),240.0,1000.0));
             Picture.SetSize(W,H);
@@ -3544,6 +3569,9 @@ begin
                   if ClassName='tmenuitem' then begin
                     if SameText(Node.GetValue<string>('parent_class',''),'TMenuBar') then begin
                       CaptionText:=Node.GetValue<string>('caption','');
+                      if GermanStrings<>nil then
+                        CaptionText:=GermanStrings.GetValue<string>(RootName+'.'+
+                          Node.GetValue<string>('name','')+'.Text',CaptionText);
                       Picture.Canvas.Font.Size:=14*Scale;
                       Picture.Canvas.Fill.Color:=$FF20364A;
                       Bounds:=RectF(MenuX,0,MenuX+Max(70*Scale,Length(CaptionText)*9*Scale),28*Scale);
@@ -3672,6 +3700,11 @@ begin
                   end;
                   Picture.Canvas.Fill.Color:=TextColor;
                   CaptionText:=Node.GetValue<string>('caption','').Trim(['''',' ']).Replace('''''','''');
+                  if GermanStrings<>nil then begin
+                    CaptionKey:=RootName+'.'+Node.GetValue<string>('name','');
+                    CaptionText:=GermanStrings.GetValue<string>(CaptionKey+'.Text',
+                      GermanStrings.GetValue<string>(CaptionKey+'.Caption',CaptionText));
+                  end;
                   if ContainsText(ClassName,'edit') or ContainsText(ClassName,'memo') or
                     ContainsText(ClassName,'list') or ContainsText(ClassName,'grid') then CaptionText:='';
                   if CaptionText<>'' then begin
@@ -3734,12 +3767,27 @@ begin
       finally Seen.Free; end;
     end;
   end;
-  ScreenshotEvidence.Text:='Select a DPH-generated blank screen. Use Fit for a small view or Native pixels for full size.';
+  if ARows<>nil then for V in ARows do begin
+    R:=V as TJSONObject;
+    if (R.GetValue<string>('managed_path','')='') or
+      (R.GetValue<string>('image_sha256','')='') then Continue;
+    FImages.AddElement(R.Clone as TJSONObject);
+    Index:=ScreenshotList.Items.Add(R.GetValue<string>('caption','Imported screenshot'));
+    Thumbnail:=TBitmap.Create;
+    try
+      Thumbnail.LoadFromFile(R.GetValue<string>('managed_path'));
+      Thumbnail.Resize(128,96);
+      ScreenshotList.ListItems[Index].ItemData.Bitmap.Assign(Thumbnail);
+    finally Thumbnail.Free; end;
+  end;
+  ScreenshotEvidence.Text:='Select a generated form preview or an imported runtime screenshot.';
   ScreenshotImage.Bitmap.SetSize(0,0);
   if ScreenshotList.Count>0 then begin ScreenshotList.ItemIndex:=0; ScreenshotClick(nil); end;
   finally
     FBusy:=WasBusy; WorkspaceTabs.Enabled:=WasTabsEnabled; PollTimer.Enabled:=WasTimerEnabled;
     FRenderingScreens:=False;
+    GermanCatalog.Free;
+    ARows.Free;
   end;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
@@ -5004,6 +5052,8 @@ begin
     for Index:=0 to ExplorerList.Count-1 do begin
       ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
       ExplorerList.ListItems[Index].WordWrap:=True;
+      ExplorerList.ListItems[Index].Height:=Max(42,
+        16+24*Ceil(Length(ExplorerList.Items[Index])/Max(18,(ExplorerList.Width-32)/7)));
       if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
       else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
     end;
@@ -5039,6 +5089,8 @@ begin
       for Index:=0 to ExplorerList.Count-1 do begin
         ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
         ExplorerList.ListItems[Index].WordWrap:=True;
+        ExplorerList.ListItems[Index].Height:=Max(42,
+          16+24*Ceil(Length(ExplorerList.Items[Index])/Max(18,(ExplorerList.Width-32)/7)));
         if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
         else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
       end;

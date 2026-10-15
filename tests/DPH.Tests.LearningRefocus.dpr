@@ -474,11 +474,16 @@ begin
                 'The selected learner tab is white with an orange border');
               Form.LoadView(View.Document.Clone as TJSONObject);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
-              Check((Form.CardList.Count>=4) and StartsText('Start here:',Form.CardList.Items[0]),
-                'Learning library opens with application-specific learning routes');
+              Form.LoadScreenshots(Store.ScreenshotsJSON);
+              Check(Form.ScreenshotList.Count>0,'Imported runtime images appear beside generated design previews');
+              Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Count-1; Form.ScreenshotClick(nil);
+              Check((Form.ScreenshotImage.Bitmap.Width=80) and (Form.ScreenshotImage.Bitmap.Height=60),
+                'Selecting imported evidence displays the original PNG, not a generated form image');
+              Check((Form.CardList.Count>0) and not StartsText('Start here:',Form.CardList.Items[0]) and
+                (StartsText('Document:',Form.CardList.Items[0]) or StartsText('Screen:',Form.CardList.Items[0])),
+                'Learning library opens with project documents and screens, without duplicating learning routes');
               Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
-              WaitHTML(Form.CardBrowser,'document.body.innerText','What is this application for?');
-              Check(True,'Learning library displays its selected topic in the reading pane');
+              Form.CardList.ItemIndex:=0; Form.CardSelectionChange(nil);
               Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
               Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]) and
                 Form.CardDocumentLocation.Visible and (Form.CardDocumentLocation.Items.Count=2),

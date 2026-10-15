@@ -1416,6 +1416,12 @@ begin
         end;
         if Count>0 then Body.Append('</ol>');
         if Count=0 then Body.Append('<p>The available project files do not identify which form opens first. Explore the screens below to find the application entry point.</p>');
+        if (Screens<>nil) and (Screens.Count=1) and (StartupForms<>nil) and
+          (StartupForms.Count=1) and (Count=1) and
+          SameText((Screens.Items[0] as TJSONObject).GetValue<string>('source',''),
+            (StartupForms.Items[0] as TJSONObject).GetValue<string>('screen','')) then begin
+          Body.Append('<p><a href="#open_screenshots">Inspect the saved form design</a>.</p></section>');
+        end else begin
         Body.Append('</section><section class="card"><h2>Application screens</h2>');
         Count:=0;
         if Screens<>nil then for V in Screens do begin
@@ -1437,7 +1443,9 @@ begin
         if Count=0 then Body.Append('<p>No saved form design was captured in the selected project files.</p>')
         else Body.Append('<p>'+IntToStr(Count)+' application forms were found. '
           +'<a href="#open_screenshots">Open available screen images</a>.</p>');
-        Body.Append('</section><section class="card"><p><a href="#lesson_1">Next: learn a task in '+Encode(ProjectName)+
+        Body.Append('</section>');
+        end;
+        Body.Append('<section class="card"><p><a href="#lesson_1">Next: learn a task in '+Encode(ProjectName)+
           '</a></p></section>');
       end;
       1,2: begin
