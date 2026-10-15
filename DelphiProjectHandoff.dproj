@@ -72,6 +72,7 @@
     <DCCReference Include="DPH.Publish.Export.pas" />
     <DCCReference Include="DPH.Publish.Translation.pas" />
     <DCCReference Include="DPH.Publish.BrowserPolicy.pas" />
+    <DCCReference Include="DPH.Publish.OfflinePreview.pas" />
     <BuildConfiguration Include="Debug"><Key>Cfg_1</Key><CfgParent>Base</CfgParent></BuildConfiguration>
     <BuildConfiguration Include="Release"><Key>Cfg_2</Key><CfgParent>Base</CfgParent></BuildConfiguration>
   </ItemGroup>

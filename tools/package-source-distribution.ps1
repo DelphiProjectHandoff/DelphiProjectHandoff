@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.1')
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.7')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -42,7 +42,8 @@ DELPHI PROJECT HANDOFF - EDITABLE SOURCE DISTRIBUTION
 This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
 guide source, guide illustrations, the OrderPractice example, all 35 offline
-language packs, and the bundled build dependencies. It contains no personal .dphdb databases,
+interface language packs, the experimental bundled English-to-German project-text
+model, and the bundled build dependencies. It contains no personal .dphdb databases,
 Git history, or compiled DPH executable.
 
 TO BUILD
@@ -55,7 +56,9 @@ TO BUILD
    corresponding WebView2Loader.dll beside it. The project copies that loader
    automatically after a successful build.
 5. Run the executable from the extracted project folder. Keep migrations,
-   help, images and icons, and Localization in that folder. See docs\guides\Run_And_Test.txt
+   help, images and icons, and Localization in that folder. The German project-text
+   trial reads its WebAssembly model from Localization\OfflineTranslation without Internet access.
+   See docs\guides\Run_And_Test.txt
    for the application's first-use and validation steps.
 
 The Microsoft WebView2 Runtime is required for embedded HTML learning views.

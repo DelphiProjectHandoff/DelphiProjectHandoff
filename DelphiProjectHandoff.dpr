@@ -30,7 +30,8 @@ uses
   DPH.Publish.Model in 'DPH.Publish.Model.pas',
   DPH.Publish.Export in 'DPH.Publish.Export.pas',
   DPH.Publish.Translation in 'DPH.Publish.Translation.pas',
-  DPH.Publish.BrowserPolicy in 'DPH.Publish.BrowserPolicy.pas';
+  DPH.Publish.BrowserPolicy in 'DPH.Publish.BrowserPolicy.pas',
+  DPH.Publish.OfflinePreview in 'DPH.Publish.OfflinePreview.pas';
 
 {$R *.res}
 

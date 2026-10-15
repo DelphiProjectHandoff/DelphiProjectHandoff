@@ -5,7 +5,7 @@ uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITyp
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
   FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser, DAT.Components.FMX,
   DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
-  DPH.Publish.Model, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
+  DPH.Publish.Model, DPH.Publish.OfflinePreview, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
 type
   TDPHMainForm = class(TForm)
     DATLanguageManager: TDATFMXLanguageManager;
@@ -813,6 +813,7 @@ type
     FLearningFacts: TDPHDocumentModel;
     FExplanations: TDPHExplanationModel;
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
+    FOfflinePreview: TDPHOfflinePreview;
     FImages: TJSONArray;
     FCatalog: TDPHWorkspaceCatalog;
     FCatalogPaths: TList<string>;
@@ -918,6 +919,7 @@ type
     procedure RefreshKnowledgeLinks;
     procedure RefreshCoverage;
     procedure RefreshLearning;
+    function PrepareOfflineProjectTranslation(var AHTML: string): Boolean;
     procedure ShowExplanation;
     procedure Submit(const ACommand: string);
     procedure RefreshExplorer;
@@ -1008,6 +1010,7 @@ begin
   FContinuity.Free;
   FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
   FImages.Free; FExplanations.Free; FLearningFacts.Free;
+  FOfflinePreview.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
   FProjectMembers.Free; FComparison.Free; FQualityRows.Free;FTaskRows.Free;FTaskDraft.Free;
@@ -3017,19 +3020,54 @@ begin
   end;
   CardFilterChange(nil); LearningClick(nil); ShowExplanation; RefreshGraphics;
 end;
+function TDPHMainForm.PrepareOfflineProjectTranslation(var AHTML: string): Boolean;
+var
+  AssetsDirectory: string;
+begin
+  Result := False;
+  if not SameText(DATLanguageManager.CurrentLanguageCode, 'de-DE') or
+     not AHTML.Contains('class="project-prose"') then Exit;
+  try
+    if FOfflinePreview = nil then begin
+      AssetsDirectory := TPath.Combine(FBaseDirectory, 'Localization\OfflineTranslation');
+      FOfflinePreview := TDPHOfflinePreview.Create(FLearningDirectory, AssetsDirectory);
+    end;
+  except
+    on E: Exception do begin
+      StatusLabel.Text := 'Offline project translation unavailable: ' + E.Message;
+      Exit;
+    end;
+  end;
+  AHTML := AHTML.Replace('script-src ''none''; connect-src ''none'';',
+    'script-src ''self'' ''wasm-unsafe-eval''; worker-src ''self''; connect-src ''self'';');
+  AHTML := TRegEx.Replace(AHTML, '<html\b',
+    '<html class="offline-translation-pending"', [roIgnoreCase]);
+  AHTML := AHTML.Replace('</head>',
+    '<style>.offline-translation-pending .project-prose{opacity:0;animation:dph-show-original 0s 8s forwards}' +
+    '@keyframes dph-show-original{to{opacity:1}}' +
+    '#offline-translation-status{margin:0 0 16px}</style></head>');
+  AHTML := AHTML.Replace('<main>',
+    '<main><p id="offline-translation-status" class="warning" lang="de">' +
+    'Der Projekttext wird lokal ins Deutsche übersetzt…</p>');
+  AHTML := AHTML.Replace('</body>', '<script type="module" src="' +
+    FOfflinePreview.ScriptURL + '"></script></body>');
+  Result := True;
+end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
-var HTML,PreviewPath,Fallback: string;
+var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
   if FExplanations=nil then Exit;
   HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
+  Offline:=PrepareOfflineProjectTranslation(HTML);
   OverviewMemo.Text:='';
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; OverviewMemo.Visible:=False; LearningBrowser.Visible:=True;
-    LearningBrowser.Navigate('file://'+PreviewPath);
+    if Offline then LearningBrowser.Navigate(FOfflinePreview.URLForPage(PreviewPath))
+    else LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin
     Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
     Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
@@ -3039,19 +3077,21 @@ begin
   end; end;
 end;
 procedure TDPHMainForm.ShowExplanation;
-var HTML,PreviewPath,Fallback: string;
+var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
   if FExplanations=nil then Exit;
   if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
+  Offline:=PrepareOfflineProjectTranslation(HTML);
   ExplainFallback.Text:='';
   PreviewPath:=TPath.Combine(FExplainDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FExplainDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
   try ExplainBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; ExplainFallback.Visible:=False; ExplainBrowser.Visible:=True;
-    ExplainBrowser.Navigate('file://'+PreviewPath);
+    if Offline then ExplainBrowser.Navigate(FOfflinePreview.URLForPage(PreviewPath))
+    else ExplainBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin
     Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
     Fallback:=TRegEx.Replace(Fallback,'<details\b[^>]*>.*?</details>','',[roSingleLine,roIgnoreCase]);
@@ -3068,7 +3108,9 @@ begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=FLearningDirectory;
-  ACancel:=not TDPHBrowserPolicy.Allowed(AURL,Directory,False,True); if ACancel then Exit;
+  ACancel:=not (TDPHBrowserPolicy.Allowed(AURL,Directory,False,True) or
+    ((FOfflinePreview<>nil) and FOfflinePreview.Allows(AURL,Directory)));
+  if ACancel then Exit;
   if EndsText('#open_forms',AURL) then begin
     ACancel:=True;
     WorkspaceTabs.ActiveTab:=ScreenshotTab;
