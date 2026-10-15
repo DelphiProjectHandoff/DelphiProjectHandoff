@@ -423,11 +423,12 @@ begin
                   or (Cached.GetValue<string>('syntax.analyzer','')<>DPHAnalyzerVersion)
                   or (Cached.GetValue<string>('semantics.analyzer','')<>DPHSemanticVersion)
                   or (Cached.GetValue<string>('source_quality.version','')<>DPHQualityVersion)
+                  or (Cached.GetValue<string>('learning_discovery_version','')<>DPHLearningDiscoveryVersion)
                   or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
               RunScan:=Changed;
-              if Changed then Respond(nil,'The application files changed; reading the updated project...',True,True,False,False)
+              if Changed then Respond(nil,'Refreshing project analysis and eligible documents...',True,True,False,False)
               else if OpeningCached then begin
                 Respond(nil,'Saved project verified; Delphi source unchanged',False,False,False,False);
               end

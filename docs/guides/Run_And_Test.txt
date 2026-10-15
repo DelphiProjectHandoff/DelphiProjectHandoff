@@ -44,9 +44,12 @@ CHECK THE LEARNING VIEWS
    as such; source files cannot prove what happens at runtime.
 8. Open Learning library. Choose several topics on the left and check that
    paragraphs, headings, and lists are readable. The library draws from
-   documents inside the selected project directory, including PDF, DOCX,
-   Markdown, text, HTML, RTF, ODT, and useful log messages. It excludes JSON,
-   XML, CSV, configuration files, and unrelated parent folders.
+   root-level documents and the selected project's top-level docs, Help,
+   Guides, Manual, and Notes folders, including PDF, DOCX, Markdown, text,
+   HTML, RTF, ODT, and useful log messages. It excludes JSON, XML, CSV,
+   configuration files, unrelated parent folders, and nested release packages.
+   If a project has separate upgrade or executable-update folders beside its
+   own docs folder, verify their guides do not appear in the library.
    PDF, legacy Word, RTF and similar extraction requires LibreOffice at its
    standard Windows path. Check that an unreadable document gives a clear
    reason rather than an empty page. A readable non-Latin document should
@@ -63,8 +66,10 @@ CHECK THE LEARNING VIEWS
     Form navigation shows possible screen connections; Execution and Caller /
     callee show routine connections; Data flow and Data lineage show possible
     information paths; Change impact shows dependencies. Select a shape to
-    inspect the underlying project part. Diagrams reflect file evidence rather
-    than a recorded run.
+    inspect the underlying project part. Large diagrams should scroll at a
+    readable size instead of shrinking every label to fit the window. Use
+    grouping or a selected object to focus a dense diagram. Diagrams reflect
+    file evidence rather than a recorded run.
 
 CHECK REOPENING AND SOURCE BUILD
 

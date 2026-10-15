@@ -68,12 +68,23 @@ begin
         ODTZip.Add(ODTContent,'content.xml');
       finally ODTZip.Free;end;
       TFile.Delete(ODTContent);
+      TDirectory.CreateDirectory(TPath.Combine(Work,'docs'));
+      TFile.WriteAllText(TPath.Combine(Work,'docs\Project_Guide.md'),
+        'The selected project guide belongs to this application.',TEncoding.UTF8);
+      TDirectory.CreateDirectory(TPath.Combine(Work,'Help'));
+      TFile.WriteAllText(TPath.Combine(Work,'Help\Starting.md'),
+        'The selected project help explains its first screen.',TEncoding.UTF8);
+      TDirectory.CreateDirectory(TPath.Combine(Work,'CarillonBells_7_2_4_to_8_1_Upgrade\docs'));
+      TFile.WriteAllText(TPath.Combine(Work,'CarillonBells_7_2_4_to_8_1_Upgrade\docs\Older_Release_Guide.md'),
+        'This is a separate release package and must not enter the selected project.',TEncoding.UTF8);
       var DiscoveryFacts:=TJSONObject.Create.AddPair('root',Work);
       try
         DiscoveryFacts.AddPair('syntax',TJSONObject.Create.AddPair('files',TJSONArray.Create(
           TJSONObject.Create.AddPair('path','Legacy.dpr'),
           TJSONObject.Create.AddPair('path','MainForm.pas'))));
-        TDPHLearningDiscovery.AddEvidence(DiscoveryFacts,DiscoveryFacts);
+        TDPHLearningDiscovery.AddEvidence(DiscoveryFacts,DiscoveryFacts,False);
+        Check(DiscoveryFacts.GetValue<string>('learning_discovery_version','')=DPHLearningDiscoveryVersion,
+          'Document-scope revision is saved so existing analyses refresh once');
         Check((DiscoveryFacts.GetValue<TJSONArray>('project_startup_forms').Count=1) and
           SameText(DiscoveryFacts.GetValue<TJSONArray>('project_startup_forms').Items[0].GetValue<string>('unit',''),'MainForm.pas'),
           'Project startup identifies the first form and confirms its class in the Pascal unit');
@@ -85,8 +96,14 @@ begin
         var FoundTXT:=False;
         var FoundUnlabelledTXT:=False;
         var FoundArabicTXT:=False;
+        var FoundProjectGuide:=False;
+        var FoundHelpTopic:=False;
+        var FoundOtherRelease:=False;
         for var Discovered in DiscoveryFacts.GetValue<TJSONArray>('project_guides') do
           begin
+            if SameText(Discovered.GetValue<string>('source',''),'docs/Project_Guide.md') then FoundProjectGuide:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Help/Starting.md') then FoundHelpTopic:=True;
+            if ContainsText(Discovered.GetValue<string>('source',''),'CarillonBells_7_2_4_to_8_1_Upgrade') then FoundOtherRelease:=True;
             if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
               ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
             if SameText(Discovered.GetValue<string>('source',''),'User_Guide.pdf') and
@@ -110,6 +127,8 @@ begin
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
           'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
         Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
+        Check(FoundProjectGuide and FoundHelpTopic and not FoundOtherRelease,
+          'Project docs and Help are read; a separate release package is excluded');
       finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
@@ -585,8 +604,8 @@ begin
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
               WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
               Check(True,'Native grouped graph renders labeled source relationships in WebView2');
-              WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && graph.getBoundingClientRect().width <= graph.parentElement.clientWidth+1})())','true');
-              Check(True,'Diagram scales to the available reading width');
+              WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && Math.abs(graph.getBoundingClientRect().width-graph.viewBox.baseVal.width)<2 && graph.parentElement.scrollWidth>=graph.clientWidth})())','true');
+              Check(True,'Diagram preserves readable node size inside a scrollable viewport');
               WaitHTML(Form.FlowBrowser,'String((()=>{const hero=document.querySelector("header").getBoundingClientRect();const card=document.querySelector("main .card").getBoundingClientRect();const diagram=document.querySelector(".diagram").getBoundingClientRect();return Math.abs(hero.left-card.left)<2 && Math.abs(hero.right-card.right)<2 && diagram.left>=card.left && diagram.right<=card.right})())','true');
               Check((Form.GraphPurpose.Position.X=46) and (Form.GraphLegend.Position.X=46) and
                 (Form.GraphCombo.Items[1]='Procedure flow (control-flow graph)'),

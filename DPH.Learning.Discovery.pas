@@ -4,6 +4,8 @@ interface
 
 uses System.JSON;
 
+const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-2';
+
 type
   TDPHLearningDiscovery = class
   public
@@ -56,7 +58,7 @@ var
     Attr:=GetFileAttributes(PChar(AFolder));
     Result:=(Attr<>INVALID_FILE_ATTRIBUTES) and ((Attr and FILE_ATTRIBUTE_REPARSE_POINT)=0);
   end;
-  procedure Visit(const AFolder: string; ADepth: Integer);
+  procedure Visit(const AFolder: string; ADepth: Integer; AReadDocuments: Boolean);
   var Entry,Base,LowerName: string; FileEntries,FolderEntries: TArray<string>; Preferred: Boolean;
   begin
     if (ADepth>4) or (Assets.Count>=2000) or not SafeFolder(AFolder) then Exit;
@@ -79,7 +81,8 @@ var
           Entry.Substring(Length(IncludeTrailingPathDelimiter(Root))).Replace('\','/'))
           .AddPair('format',Ext));
       end;
-      if not MatchText(Ext,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
+      if not AReadDocuments or
+        not MatchText(Ext,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
         '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
         '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex']) or
         (Paths.Count+PreferredPaths.Count>=300) then Continue;
@@ -107,7 +110,12 @@ var
       if MatchText(Base,['.git','bin','dcu','database','databases','samples',
         'export','tests','tools','source distributions',
         'node_modules','vendor','dependencies']) then Continue;
-      Visit(Entry,ADepth+1);
+      if ADepth=0 then begin
+        if MatchText(Base,['docs','doc','documentation','help','guide','guides',
+          'manual','manuals','notes']) then Visit(Entry,ADepth+1,True)
+        else if MatchText(Base,['images','image','icons','assets','resources']) then
+          Visit(Entry,ADepth+1,False);
+      end else Visit(Entry,ADepth+1,AReadDocuments);
     end;
   end;
   function CleanText(const AText: string): string;
@@ -122,6 +130,7 @@ var
     Result:=TRegEx.Replace(Result,'(\r?\n){3,}',sLineBreak+sLineBreak);
   end;
 begin
+  AFacts.AddPair('learning_discovery_version',DPHLearningDiscoveryVersion);
   Guides:=TJSONArray.Create; Screens:=TJSONArray.Create; Assets:=TJSONArray.Create; Sites:=TJSONArray.Create;
   StartupForms:=TJSONArray.Create;
   AFacts.AddPair('project_guides',Guides); AFacts.AddPair('project_screens',Screens);
@@ -229,7 +238,7 @@ begin
   Paths:=TStringList.Create; PreferredPaths:=TStringList.Create;
   SeenDocumentHashes:=TStringList.Create; Lines:=TStringList.Create;
   try
-    Visit(Root,0); Paths.Sort; PreferredPaths.Sort;
+    Visit(Root,0,True); Paths.Sort; PreferredPaths.Sort;
     for I:=PreferredPaths.Count-1 downto 0 do Paths.Insert(0,PreferredPaths[I]);
     TotalBytes:=0; DocumentCount:=0; LogCount:=0;
     for Path in Paths do begin

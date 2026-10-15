@@ -16,13 +16,13 @@ DPH is experimental Delphi software, built on Delphi 13.1. **This repository is 
 
 The main form is editable in the RAD Studio designer. To edit its DelphiAppTranslation controls visually, install the supplied design package using [the DAT component-kit instructions](export/DAT-component-kit/DelphiProjectHandoff/README.txt). The [run and test directions](docs/guides/Run_And_Test.txt) give a fuller first-use check.
 
-The current named source snapshot is the latest 0.6.9 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
+The current named source snapshot is the latest 0.6.10 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
 
 ## Explore an application
 
 Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. Save the resulting `.dphdb` outside the application source tree, together with its adjacent `.dphdb.views` folder. Later, **Open saved project** restores that analysis and its generated screen images.
 
-While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It also looks for useful local guides, help, notes, and logs. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. Document discovery stays within the selected project's directory and screens material before showing it.
+While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It reads root-level documents and the selected project's top-level `docs`, `Help`, `Guides`, `Manual`, and `Notes` folders; nested release and upgrade packages are excluded. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. DPH screens material before showing it. Existing saved projects are reassessed once under this narrower document rule.
 
 The header's **Read public websites** checkbox controls DPH's optional Internet access. It starts off, and DPH remembers the choice for the current Windows user. When enabled, the next project analysis may read a small amount of text from up to three eligible public HTTPS pages referenced in project documents. When disabled, project discovery reads local material only. Changing the checkbox affects the next analysis; it does not change previously saved evidence. DPH does not offer a general web search engine. The **Close** button exits through the same unsaved-work and in-progress safeguards as the window close control.
 
@@ -37,7 +37,7 @@ The six learner views are:
 | **Learning library** | Read grouped, formatted topics drawn from the project's available documents and screen information. |
 | **Project map** | Select units, types, objects, controls, procedures, functions, variables, and their connections; follow links to the relevant detail or screen. |
 | **Screenshots** | Inspect blank screen views generated inside DPH from `.fmx` and `.dfm` definitions, using Fit or Native pixels. These are form-derived designs, not captures of the running application. |
-| **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. Arrows indicate possible relationships in the files, not measured runtime behavior. |
+| **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. Large diagrams retain readable node sizes inside a scrollable view; use grouping or select an object to narrow them. Arrows indicate possible relationships in the files, not measured runtime behavior. |
 
 DPH shows the source behind its explanations where available and marks conclusions that need checking. A form file cannot reveal every runtime change, and a call site alone cannot prove when an action completes. The application under study is never executed as part of passive discovery.
 
