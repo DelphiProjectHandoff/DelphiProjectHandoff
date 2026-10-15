@@ -142,7 +142,7 @@ begin
             Check((Model.Document.GetValue<TJSONArray>('project_guides').Count>0) and
               ContainsText(Explain.ApplicationRouteHTML(0),'This example application teaches'),
               'The selected project README supplies cited app-specific orientation');
-            Check(ContainsText(Explain.ProjectMapHTML,'Pascal units (.pas)') and
+            Check(ContainsText(Explain.ProjectMapHTML,'<summary>.pas</summary>') and
               ContainsText(Explain.ProjectMapHTML,'Procedures and functions') and
               ContainsText(Explain.ProjectMapHTML,'Main.pas') and
               ContainsText(Explain.ProjectMapHTML,'Example.contract.json') and
@@ -195,6 +195,9 @@ begin
               ContainsText(Explain.ApplicationRouteHTML(0),'Application screens') and
               (Model.Document.GetValue<TJSONArray>('project_screens').Count>0),
               'App introduction lists captured form roots and their evidence');
+            Check(not ContainsText(Explain.ApplicationRouteHTML(0),
+                'The first form registered for automatic creation is'),
+              'Startup forms are listed without untranslated sentence fragments');
             Check(ContainsText(Explain.ApplicationRouteHTML(1),'Start with the first labeled action') and
               ContainsText(Explain.ApplicationRouteHTML(1),'The connected code shows'),
               'The task route connects a visible control to its source relationships');
@@ -432,6 +435,10 @@ begin
               finally Bitmap.Free;end;
               Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Learn the project'); Form.WorkspacePageChange(Form.LessonPageCombo);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'Learner page selector returns from preparation to learning');
+              Check(((Form.FindComponent('LearnerTab1') as TRectangle).Fill.Color=$FFFFFFFF) and
+                ((Form.FindComponent('LearnerTab1') as TRectangle).Stroke.Color=$FFF28C28) and
+                ((Form.FindComponent('LearnerTab0') as TRectangle).Fill.Color<>$FFFFFFFF),
+                'The selected learner tab is white with an orange border');
               Form.LoadView(View.Document.Clone as TJSONObject);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Check((Form.CardList.Count>=4) and StartsText('Start here:',Form.CardList.Items[0]),

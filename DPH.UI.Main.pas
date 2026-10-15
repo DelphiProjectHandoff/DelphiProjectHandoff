@@ -1695,8 +1695,15 @@ begin
       if TabShape<>nil then begin
         if ((Index=11) and (WorkspaceTabs.ActiveTab=SetupTab)) or
            ((Index<11) and (LessonPageCombo.ItemIndex=Index)) then
-          TabShape.Fill.Color:=$FFCDE5F8
-        else TabShape.Fill.Color:=$FFE8F2FB;
+        begin
+          TabShape.Fill.Color:=$FFFFFFFF;
+          TabShape.Stroke.Color:=$FFF28C28;
+          TabShape.Stroke.Thickness:=2;
+        end else begin
+          TabShape.Fill.Color:=$FFE8F2FB;
+          TabShape.Stroke.Color:=$FFB5CFE5;
+          TabShape.Stroke.Thickness:=1;
+        end;
       end;
     end;
     ExplorerLayout.Visible:=(WorkspaceTabs.ActiveTab=ExplainTab) or (WorkspaceTabs.ActiveTab=SourceTab) or
