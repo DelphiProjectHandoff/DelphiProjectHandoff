@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.14',
+ [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.15',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'

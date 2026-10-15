@@ -16,7 +16,11 @@ implementation
 
 uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.StrUtils, System.Math,
   System.Hash, System.NetEncoding, System.RegularExpressions, System.Zip,
-  System.Net.HttpClient, System.Net.URLClient, IdStack, IdGlobal;
+  System.Net.URLClient, Winapi.WinHTTP, IdStack, IdGlobal;
+
+const
+  // WinHTTP's request-level DNS override (Windows 10 21H1+). Older systems fail closed.
+  WINHTTP_OPTION_RESOLUTION_HOSTNAME = 165;
 
 type
   TDPHWebsiteResponseStream = class(TMemoryStream)
@@ -57,10 +61,13 @@ var
   PageMatches,Paragraphs: TMatchCollection;
   PageMatch,Paragraph: TMatch;
   PageNumber: Integer;
-  HTTP: THTTPClient;
   HTTPStream: TDPHWebsiteResponseStream;
-  Response: IHTTPResponse;
   URI: TURI;
+  Session, Connection, RequestHandle: HINTERNET;
+  Address, RequestPath, ContentType: string;
+  RequestOptions, StatusCode, HeaderSize, BytesRead: DWORD;
+  HeaderText: array[0..255] of Char;
+  ResponseChunk: array[0..8191] of Byte;
   DetectedEncoding: TEncoding;
   ScanID: TGUID;
   StartupInfo: TStartupInfo;
@@ -132,16 +139,17 @@ var
       end else Visit(Entry,ADepth+1,AReadDocuments);
     end;
   end;
-  function PublicIPv4Host(const AHost: string): Boolean;
-  var Address: string; Parts: TArray<string>; Octets: array[0..3] of Integer; N: Integer;
+  function PublicIPv4Host(const AHost: string; out AAddress: string): Boolean;
+  var Parts: TArray<string>; Octets: array[0..3] of Integer; N: Integer;
   begin
     Result:=False;
+    AAddress:='';
     TIdStack.IncUsage;
     try
-      try Address:=GStack.ResolveHost(AHost,Id_IPv4);
+      try AAddress:=GStack.ResolveHost(AHost,Id_IPv4);
       except on E: Exception do Exit; end;
     finally TIdStack.DecUsage; end;
-    Parts:=Address.Split(['.']);
+    Parts:=AAddress.Split(['.']);
     if Length(Parts)<>4 then Exit;
     for N:=0 to 3 do
       if not TryStrToInt(Parts[N],Octets[N]) or (Octets[N]<0) or (Octets[N]>255) then Exit;
@@ -454,31 +462,70 @@ begin
       if Value<>'' then Sections.AddElement(TJSONObject.Create.AddPair('heading',Heading).AddPair('text',Copy(Value,1,8000)));
     end;
     if AAllowInternet then begin
-      HTTP:=THTTPClient.Create;
-      try
-        HTTP.ConnectionTimeout:=1000; HTTP.ResponseTimeout:=2000;
-        HTTP.HandleRedirects:=False;
+      Session:=WinHttpOpen('Delphi Project Handoff',WINHTTP_ACCESS_TYPE_NO_PROXY,
+        WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0);
+      if Session<>nil then try
         for V in Sites do begin
           Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
           try
-            if not PublicIPv4Host(TURI.Create(URL).Host) then Continue;
-            HTTPStream:=TDPHWebsiteResponseStream.Create;
+            URI:=TURI.Create(URL);
+            if not SameText(URI.Scheme,'https') or (URI.Port>0) and
+              (URI.Port<>INTERNET_DEFAULT_HTTPS_PORT) or
+              not PublicIPv4Host(URI.Host,Address) then Continue;
+            Connection:=WinHttpConnect(Session,PChar(URI.Host),INTERNET_DEFAULT_HTTPS_PORT,0);
+            if Connection=nil then Continue;
             try
-              Response:=HTTP.Get(URL,HTTPStream);
-            if (Response.StatusCode>=200) and (Response.StatusCode<300) and
-              (HTTPStream.Size>0) and
-              ContainsText(Response.MimeType,'text/html') then begin
-              SetLength(Data,Integer(HTTPStream.Size));
-              HTTPStream.Position:=0;
-              HTTPStream.ReadBuffer(Data[0],Length(Data));
-              Body:=CleanText(TEncoding.UTF8.GetString(Data));
-              if Length(Body)>6000 then Body:=Copy(Body,1,6000);
-              Site.RemovePair('text').Free; Site.AddPair('text',Body);
-            end;
-            finally HTTPStream.Free; end;
+              RequestPath:=URI.Path;
+              if RequestPath='' then RequestPath:='/';
+              if URI.Query<>'' then RequestPath:=RequestPath+'?'+URI.Query;
+              RequestHandle:=WinHttpOpenRequest(Connection,'GET',PChar(RequestPath),nil,
+                WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE);
+              if RequestHandle=nil then Continue;
+              try
+                RequestOptions:=WINHTTP_DISABLE_REDIRECTS or WINHTTP_DISABLE_COOKIES or
+                  WINHTTP_DISABLE_AUTHENTICATION or WINHTTP_DISABLE_KEEP_ALIVE;
+                if not WinHttpSetOption(RequestHandle,WINHTTP_OPTION_DISABLE_FEATURE,
+                  @RequestOptions,SizeOf(RequestOptions)) or
+                  not WinHttpSetOption(RequestHandle,WINHTTP_OPTION_RESOLUTION_HOSTNAME,
+                    PChar(Address),(Length(Address)+1)*SizeOf(Char)) or
+                  not WinHttpSetTimeouts(RequestHandle,1000,1000,2000,2000) or
+                  not WinHttpSendRequest(RequestHandle,WINHTTP_NO_ADDITIONAL_HEADERS,0,
+                    WINHTTP_NO_REQUEST_DATA,0,0,0) or
+                  not WinHttpReceiveResponse(RequestHandle,nil) then Continue;
+                StatusCode:=0; HeaderSize:=SizeOf(StatusCode);
+                if not WinHttpQueryHeaders(RequestHandle,WINHTTP_QUERY_STATUS_CODE or
+                  WINHTTP_QUERY_FLAG_NUMBER,nil,@StatusCode,HeaderSize,nil) or
+                  (StatusCode<200) or (StatusCode>=300) then Continue;
+                FillChar(HeaderText,SizeOf(HeaderText),0);
+                HeaderSize:=SizeOf(HeaderText);
+                if not WinHttpQueryHeaders(RequestHandle,WINHTTP_QUERY_CONTENT_TYPE,
+                  nil,@HeaderText[0],HeaderSize,nil) then Continue;
+                ContentType:=PChar(@HeaderText[0]);
+                if not ContainsText(ContentType,'text/html') then Continue;
+                HTTPStream:=TDPHWebsiteResponseStream.Create;
+                try
+                  repeat
+                    BytesRead:=0;
+                    if not WinHttpReadData(RequestHandle,ResponseChunk,SizeOf(ResponseChunk),
+                      @BytesRead) then
+                      raise EStreamError.Create('Public website response could not be read');
+                    if BytesRead>0 then HTTPStream.WriteBuffer(ResponseChunk,BytesRead);
+                  until BytesRead=0;
+                  if HTTPStream.Size>0 then begin
+                    SetLength(Data,Integer(HTTPStream.Size));
+                    HTTPStream.Position:=0;
+                    HTTPStream.ReadBuffer(Data[0],Length(Data));
+                    Body:=CleanText(TEncoding.UTF8.GetString(Data));
+                    if Length(Body)>6000 then Body:=Copy(Body,1,6000);
+                    Site.RemovePair('text').Free;
+                    Site.AddPair('text',Body);
+                  end;
+                finally HTTPStream.Free; end;
+              finally WinHttpCloseHandle(RequestHandle); end;
+            finally WinHttpCloseHandle(Connection); end;
           except on E: Exception do Continue; end;
         end;
-      finally HTTP.Free; end;
+      finally WinHttpCloseHandle(Session); end;
     end;
   finally Lines.Free; SeenDocumentHashes.Free; PreferredPaths.Free; Paths.Free; end;
 end;
