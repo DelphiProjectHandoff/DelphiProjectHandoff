@@ -2093,11 +2093,15 @@ begin
   if FWorker.Poll(R) then
   try
     TranslatedMessage:=DATTranslateDynamicText(R.MessageText);
-    if R.Busy and (R.MessageText<>'') and
-      (TranslatedMessage=R.MessageText) and not SameText(DATActiveLanguageCode,'en-US') then
+    if R.Busy and ContainsText(R.MessageText,'Saving project findings') and
+      not SameText(DATActiveLanguageCode,'en-US') then
+      TranslatedMessage:=DATTranslateDynamicText('Preparing the learning library and screen previews...')
+    else if R.Busy and (R.MessageText<>'') and
+      (TranslatedMessage=R.MessageText) and not SameText(DATActiveLanguageCode,'en-US') then begin
       TranslatedMessage:=DATTranslateText(
         'DPH.UI.Main.Runtime.ProjectPreparationMessage_Text.Text.694ee195977a631e',
         'Checking the selected application and its Delphi files...');
+    end;
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
     if R.Busy and FPreparingProject then begin
       if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,25)
@@ -2106,7 +2110,7 @@ begin
       else if ContainsText(R.MessageText,'Searching project-local') or
         ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,75)
       else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
-      if R.MessageText<>'' then ProjectPreparationMessage.Text:=DATTranslateDynamicText(R.MessageText);
+      if R.MessageText<>'' then ProjectPreparationMessage.Text:=TranslatedMessage;
     end;
     if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
@@ -2118,10 +2122,10 @@ begin
       if FPreparingProject then begin
         if R.Busy then begin
           ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
-          ProjectPreparationMessage.Text:='Loading saved project information and screen previews...';
+          ProjectPreparationMessage.Text:=DATTranslateDynamicText('Loading saved project information and screen previews...');
         end else begin
           ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80);
-          ProjectPreparationMessage.Text:='Preparing the learning library and screen previews...';
+          ProjectPreparationMessage.Text:=DATTranslateDynamicText('Preparing the learning library and screen previews...');
         end;
       end;
       LoadView(R.Document,R.Screenshots); R.Document:=nil;

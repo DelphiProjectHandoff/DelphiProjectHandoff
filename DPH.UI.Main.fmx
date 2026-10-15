@@ -975,28 +975,12 @@ TextSettings.FontColor = xFF146CB4
 TextSettings.HorzAlign = Center
 end
 end
-object LanguageCombo: TDATFMXLanguageComboBox
+object HeaderPreferencesLayout: TLayout
 Align = Right
-Width = 238
-Margins.Top = 4
-Margins.Bottom = 4
+Width = 634
 Margins.Right = 18
-LanguageManager = DATLanguageManager
-AutoPopulate = True
-ShowLanguageCode = True
-end
-object LanguageLabel: TLabel
-Align = Right
-Width = 104
-Margins.Top = 4
-Margins.Bottom = 4
-Margins.Left = 12
-Margins.Right = 12
-Text = 'Language:'
-TextSettings.HorzAlign = Trailing
-end
 object AllowInternetCheck: TCheckBox
-Align = Right
+Align = Left
 Width = 192
 Margins.Left = 8
 Margins.Right = 8
@@ -1004,6 +988,29 @@ Margins.Top = 4
 Margins.Bottom = 4
 Text = 'Read public websites'
 OnChange = AllowInternetChange
+end
+object LanguageSelectorLayout: TLayout
+Align = Right
+Width = 358
+object LanguageLabel: TLabel
+Align = Left
+Width = 104
+Margins.Left = 8
+Margins.Right = 8
+Margins.Top = 4
+Margins.Bottom = 4
+Text = 'Language:'
+TextSettings.HorzAlign = Trailing
+end
+object LanguageCombo: TDATFMXLanguageComboBox
+Align = Client
+Margins.Top = 4
+Margins.Bottom = 4
+LanguageManager = DATLanguageManager
+AutoPopulate = True
+ShowLanguageCode = True
+end
+end
 end
 object LessonPageCombo: TComboBox
 Align = Right
