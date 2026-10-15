@@ -22,7 +22,8 @@ foreach($file in Get-ChildItem -LiteralPath $projectRoot -File) {
  if($file.Name -match '^DPH\..*\.(pas|fmx)$') {[void]$files.Add($file.Name)}
 }
 foreach($folder in @('dependencies\DelphiAppTranslation','Localization','migrations','help',
-  'images and icons','tests','tools\WebView2','export\DAT-component-kit')) {
+  'images and icons','samples\OrderPractice','docs\guides\source',
+  'docs\guides\assets','tests','tools\WebView2','export\DAT-component-kit')) {
  $fullFolder=Join-Path $projectRoot $folder
  foreach($file in Get-ChildItem -LiteralPath $fullFolder -File -Recurse) {
   if($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw "Reparse point in source package: $($file.FullName)"}
@@ -40,7 +41,8 @@ DELPHI PROJECT HANDOFF - EDITABLE SOURCE DISTRIBUTION
 
 This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
-all 35 offline language packs, and the bundled build dependencies. It contains no personal .dphdb databases,
+guide source, guide illustrations, the OrderPractice example, all 35 offline
+language packs, and the bundled build dependencies. It contains no personal .dphdb databases,
 Git history, or compiled DPH executable.
 
 TO BUILD
@@ -57,6 +59,8 @@ TO BUILD
    for the application's first-use and validation steps.
 
 The Microsoft WebView2 Runtime is required for embedded HTML learning views.
+LibreOffice at its standard Windows path is needed to extract text from PDF,
+legacy Word, RTF and several other older word-processing formats.
 The selected Delphi application is read as input; DPH does not run or modify it.
 The included third-party dependency folders contain their own license files.
 

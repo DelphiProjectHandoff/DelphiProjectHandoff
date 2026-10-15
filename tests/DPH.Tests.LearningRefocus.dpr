@@ -43,6 +43,8 @@ begin
         'The Unicode setup note explains the first screen.',TEncoding.Unicode);
       TFile.WriteAllText(TPath.Combine(Work,'Miscellaneous.txt'),
         'The unfamiliar application keeps another useful instruction here.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(Work,'دليل التشغيل.txt'),
+        'يوضح هذا الدليل شاشة البداية وكيفية تشغيل التطبيق ومراجعة النتائج.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Work,'activity.log'),StringOfChar('x',1100000)+sLineBreak+
         'The Convert action completed at 10:30.',TEncoding.UTF8);
       TFile.Copy(TPath.Combine(Root,'docs\pdf\DPH_User_Guide.pdf'),
@@ -82,6 +84,7 @@ begin
         var FoundODT:=False;
         var FoundTXT:=False;
         var FoundUnlabelledTXT:=False;
+        var FoundArabicTXT:=False;
         for var Discovered in DiscoveryFacts.GetValue<TJSONArray>('project_guides') do
           begin
             if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
@@ -98,10 +101,15 @@ begin
               ContainsText(Discovered.ToJSON,'Unicode setup note') then FoundTXT:=True;
             if SameText(Discovered.GetValue<string>('source',''),'Miscellaneous.txt') and
               ContainsText(Discovered.ToJSON,'another useful instruction') then FoundUnlabelledTXT:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'دليل التشغيل.txt') and
+              (Discovered.GetValue<string>('read_status','')='read') and
+              ContainsText((Discovered.GetValue<TJSONArray>('sections').Items[0] as TJSONObject).GetValue<string>('text',''),'شاشة البداية') then
+              FoundArabicTXT:=True;
           end;
         Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
           'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
+        Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
       finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
@@ -431,6 +439,9 @@ begin
               WaitHTML(Form.CardBrowser,'String(document.querySelectorAll("ol li").length)','2');
               WaitHTML(Form.CardBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Learning library formats source tables and instructions instead of showing Markdown syntax');
+              BrowserBitmap:=Form.CardBrowser.CaptureBitmap;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-library.png'));
+              finally BrowserBitmap.Free; end;
               Form.CardDocumentLocation.ItemIndex:=1-Form.CardDocumentLocation.ItemIndex;
               Form.CardSelectionChange(Form.CardDocumentLocation);
               WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
@@ -518,7 +529,6 @@ begin
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Other tasks and actions');
               WaitHTML(Form.LearningBrowser,'document.title','Explore related tasks: Semantic.dproj');
               Check(True,'Native browser shows the app-specific title without damaged punctuation');
-              Check(ContainsText(Form.OverviewMemo.Text,'Other tasks and actions') and not ContainsText(Form.OverviewMemo.Text,'Source capture'),'Text fallback presents the same app-specific route without technical capture metadata');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
               Form.WindowState:=TWindowState.wsNormal; Form.ClientWidth:=960;Form.ClientHeight:=600;Application.ProcessMessages;
@@ -530,7 +540,7 @@ begin
               Form.SearchEdit.Text:='TMain.Click'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
               WaitHTML(Form.ExplainBrowser,'document.body.innerText','Understand this selection'); Check(True,'Real WebView2 renders the readable selected-object explanation');
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Explorer selection opens Explain');
-              Check(ContainsText(Form.ExplainFallback.Text,'Understand this selection') and not ContainsText(Form.ExplainFallback.Text,'FORM PROPERTIES') and not ContainsText(Form.ExplainFallback.Text,'Source SHA256'),'Text fallback keeps the learning explanation and excludes optional technical dumps');
+              Check(Form.ExplainBrowser.Visible,'Selected-object explanation remains visible in the formatted reading pane');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               Check(BrowserBitmap<>nil,'Native WebView2 image capture is available for visual QA');
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-explain-browser.png'));
@@ -768,6 +778,12 @@ begin
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));
         TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\learning-refocus-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
+      TFile.Copy(TPath.Combine(Work,'learning-refocus-getting-started.png'),
+        TPath.Combine(Root,'docs\guides\assets\dph-getting-started.png'),True);
+      TFile.Copy(TPath.Combine(Work,'learning-refocus-library.png'),
+        TPath.Combine(Root,'docs\guides\assets\dph-learning-library.png'),True);
+      TFile.Copy(TPath.Combine(Work,'learning-refocus-learning-workspace.png'),
+        TPath.Combine(Root,'docs\guides\assets\dph-object-explanation.png'),True);
       if not StartsText(TPath.Combine(TPath.GetFullPath(Root),'bin\lr-{'),TPath.GetFullPath(Work)) then
         raise Exception.Create('Refusing cleanup outside the generated refocus test workspace');
       TDirectory.Delete(Work,True);

@@ -342,8 +342,15 @@ begin
       Guide.AddPair('format',Ext);
       Sections:=TJSONArray.Create; Guide.AddPair('sections',Sections);
       if (Length(Trim(Body))<18) or
-        (Length(TRegEx.Replace(Body,'[A-Za-z]',''))>Length(Body)*0.85) or
-        TRegEx.IsMatch(Body,'[\x00-\x08\x0E-\x1F]') then Continue;
+        (Length(TRegEx.Replace(Body,'\p{L}',''))>Length(Body)*0.85) or
+        TRegEx.IsMatch(Body,'[\x00-\x08\x0E-\x1F]') then begin
+        Guide.AddPair('read_status','unavailable');
+        if (Body='') and MatchText(Ext,['.pdf','.doc','.dot','.rtf','.wpd','.wpt',
+          '.wps','.wri','.fodt']) and not TFile.Exists('C:\Program Files\LibreOffice\program\soffice.com') then
+          Guide.AddPair('read_note','Install LibreOffice to read this document format.')
+        else Guide.AddPair('read_note','No usable text could be extracted from this file.');
+        Continue;
+      end;
       if Ext='.log' then begin
         Lines.Text:=Body; Body:='';
         for I:=0 to Lines.Count-1 do begin
@@ -356,8 +363,13 @@ begin
           Body:=Body+'- '+Line;
           if Length(Body)>2200 then Break;
         end;
-        if Body='' then Continue;
+        if Body='' then begin
+          Guide.AddPair('read_status','unavailable');
+          Guide.AddPair('read_note','No error, warning, completion, or success message was found in the sampled log.');
+          Continue;
+        end;
       end;
+      Guide.AddPair('read_status','read');
       if (Ext<>'.log') and (Sites.Count<3) then begin
         Matches:=TRegEx.Matches(Body,'https://[A-Za-z0-9][A-Za-z0-9.-]+(?:/[A-Za-z0-9_./?=&%#-]*)?');
         for Match in Matches do begin

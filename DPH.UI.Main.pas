@@ -1208,6 +1208,8 @@ begin
  end else if R.GetValue<TJSONArray>('sections',nil)<>nil then begin
    Source:=R.GetValue<string>('source','');Title:=TPath.GetFileName(Source);
    Body:='';Sections:=R.GetValue<TJSONArray>('sections');
+   if Sections.Count=0 then
+     Body:=R.GetValue<string>('read_note','No readable content was found in this document.');
    for V in Sections do begin
      Section:=V as TJSONObject;Line:=Section.GetValue<string>('heading','').Trim;
      if (Line<>'') and not TRegEx.IsMatch(Line,'^Page\s+\d+$',[roIgnoreCase]) then

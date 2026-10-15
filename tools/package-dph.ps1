@@ -75,24 +75,6 @@ $hashes | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $package
 $binaryZip=Join-Path $projectRoot ('export\'+$packageName+'.zip')
 if (Test-Path -LiteralPath $binaryZip) {throw 'Binary ZIP already exists'}
 [IO.Compression.ZipFile]::CreateFromDirectory($packageRoot,$binaryZip)
-$sourceZip=Join-Path $projectRoot ('source distributions\DPH-'+$Version+'-experimental-source.zip')
-if (Test-Path -LiteralPath $sourceZip) {throw 'Source ZIP already exists'}
-$archive=[IO.Compression.ZipFile]::Open($sourceZip,[IO.Compression.ZipArchiveMode]::Create)
-try {
- foreach ($directory in @('bin/','dcu/','docs/guides/','docs/pdf/','docs/planning/','docs/requirements/','docs/validation/reports/','docs/validation/images/','logs/validation/','logs/development/','export/','help/','images and icons/','samples/','source distributions/','tools/','Databases/')) {$archive.CreateEntry($directory) | Out-Null}
- $paths=& 'C:\Program Files\Git\cmd\git.exe' -C $projectRoot ls-files
- if ($LASTEXITCODE -ne 0) {throw 'Cannot enumerate source files'}
- foreach ($relative in $paths) {
-  $include=($relative -match '^DPH\..*\.(pas|fmx)$') -or ($relative -match '^DelphiProjectHandoff\.(dpr|dproj|res)$') -or
-   ($relative -match '^(migrations|dependencies|Localization|tests|tools)/') -or ($relative -match '^(help|images and icons|samples/(translation|OrderPractice)|docs/guides/source|export/DAT-component-kit)/') -or
-   ($relative -match '^docs/(planning|requirements)/') -or
-   ($relative -in @('README.md','.gitattributes','.gitignore','docs/PROJECT_LAYOUT.txt','docs/PROJECT_MOVE_MANIFEST.csv','docs/validation/reports/guide-source-validation.json','docs/validation/reports/reference-inventory.json','docs/guides/DPH_User_Guide.docx','docs/guides/DPH_Engineering_Guide.docx','docs/guides/Run_And_Test.txt','docs/guides/Developer_Test_Directions.txt','docs/guides/Workspace_Operations.txt','docs/pdf/DPH_User_Guide.pdf','docs/pdf/DPH_Engineering_Guide.pdf','docs/validation/images/learning-completion-practice-task-compact.png','docs/validation/images/learning-completion-practice-library-compact.png','docs/validation/images/learning-completion-practice-output.png','docs/validation/images/learning-completion-phase1-project-profile.png','docs/validation/images/learning-completion-tasks-preparation.png','Databases/README.txt'))
-  $source=Join-Path $projectRoot $relative
-  if ($include -and (Test-Path -LiteralPath $source -PathType Leaf)) {
-   [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$source,$relative,[IO.Compression.CompressionLevel]::Optimal) | Out-Null
-  }
- }
-} finally {$archive.Dispose()}
 $verificationRoot=Join-Path $projectRoot ('bin\distribution-verify-'+[Guid]::NewGuid().ToString('N'))
 [IO.Compression.ZipFile]::ExtractToDirectory($binaryZip,$verificationRoot)
 foreach ($property in $hashes.GetEnumerator()) {
@@ -101,6 +83,6 @@ foreach ($property in $hashes.GetEnumerator()) {
 $verificationParent=[IO.Path]::GetFullPath((Join-Path $projectRoot 'bin'))+[IO.Path]::DirectorySeparatorChar
 if (-not ([IO.Path]::GetFullPath($verificationRoot)).StartsWith($verificationParent,[StringComparison]::OrdinalIgnoreCase)) {throw 'Unsafe temporary verification path'}
 [IO.Directory]::Delete($verificationRoot,$true)
-[ordered]@{version=$Version;binary=$binaryZip;source=$sourceZip;binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();source_sha256=(Get-FileHash -LiteralPath $sourceZip -Algorithm SHA256).Hash.ToLowerInvariant();files=$hashes.Count;extracted_file_check='PASS; temporary extraction removed';result='PASS package integrity; independent beginner acceptance not performed'} |
+[ordered]@{version=$Version;binary=$binaryZip;binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();files=$hashes.Count;extracted_file_check='PASS; temporary extraction removed';result='PASS package integrity; independent beginner acceptance not performed'} |
  ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $projectRoot 'docs\validation\reports\learning-distribution-validation.json') -Encoding UTF8
 Write-Output "PACKAGED AND VERIFIED $binaryZip"

@@ -16,6 +16,8 @@ DPH is experimental Delphi software, built on Delphi 13.1. **This repository is 
 
 The main form is editable in the RAD Studio designer. To edit its DelphiAppTranslation controls visually, install the supplied design package using [the DAT component-kit instructions](export/DAT-component-kit/DelphiProjectHandoff/README.txt). The [run and test directions](docs/guides/Run_And_Test.txt) give a fuller first-use check.
 
+The current named source snapshot is the latest 0.6.6 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
+
 ## Explore an application
 
 Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. Save the resulting `.dphdb` outside the application source tree, together with its adjacent `.dphdb.views` folder. Later, **Open saved project** restores that analysis and its generated screen images.
@@ -23,6 +25,8 @@ Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` fil
 While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It also looks for useful local guides, help, notes, and logs. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. Document discovery stays within the selected project's directory and screens material before showing it.
 
 When documents mention eligible HTTPS websites, DPH may read a small amount of public page text if Internet access is available. That is an optional source of context; opening and learning a local project do not require a connection. DPH does not offer a general web search engine.
+
+DOCX and supported text formats are read directly. Extracting text from PDF, legacy Word, RTF, and several older formats requires LibreOffice at `C:\Program Files\LibreOffice\program\soffice.com`. A scanned image-only PDF may need OCR before it has usable text. The Learning library reports when a discovered file yielded no readable content.
 
 The six learner views are:
 

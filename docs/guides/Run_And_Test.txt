@@ -47,6 +47,10 @@ CHECK THE LEARNING VIEWS
    documents inside the selected project directory, including PDF, DOCX,
    Markdown, text, HTML, RTF, ODT, and useful log messages. It excludes JSON,
    XML, CSV, configuration files, and unrelated parent folders.
+   PDF, legacy Word, RTF and similar extraction requires LibreOffice at its
+   standard Windows path. Check that an unreadable document gives a clear
+   reason rather than an empty page. A readable non-Latin document should
+   remain available in its original language.
 9. Open Project map. Select a form, control, unit, routine, or variable to see
    its saved declaration and connections. Follow an action link if present.
 10. Open Screenshots. DPH generates one empty-state PNG for each distinct form

@@ -7,8 +7,8 @@ from docx.shared import Inches,Pt,RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
-CHANGED='13 October 2026'
-VERSION=44
+CHANGED='14 October 2026'
+VERSION=45
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -27,6 +27,7 @@ LAYER_PURPOSE={
 'Analysis.Persistence':'Persists supported semantic facts and their references into generation-scoped storage. Keep fact transactions and publication separate.',
 'Analysis.Quality':'Projects metrics and investigation candidates from captured facts. Candidate findings do not prove unused code or safe removal.',
 'Analysis.Explanations':'Builds learner topics and object explanations from source facts and relevant attributed knowledge. Keep meaning first and deeper code optional.',
+'Learning.Discovery':'Finds project-local documents, logs, saved screens, startup forms and referenced public websites. Retain source paths, bounded scanning, original-language text and explicit extraction status.',
 'Storage.Types':'Defines persistent status and manifest types shared by analysis and storage. Changes require serialization and lifecycle compatibility checks.',
 'Storage.Database':'Owns the SQLite writer, migrations, generations, knowledge revisions, artifacts and indexes. Thread ownership and transactional boundaries are mandatory.',
 'Storage.Backup':'Creates and restores consistent database plus managed-artifact copies with hash checks. Fresh destinations and outside-source paths are required.',
@@ -158,9 +159,9 @@ def document(kind,blocks):
  for border in list(doc.styles.element.iter(qn('w:pBdr'))):border.getparent().remove(border)
  title='Delphi Project Handoff '+kind+' Guide'
  props=doc.core_properties;props.author='';props.last_modified_by='';props.title=title;props.subject='Detailed application operation' if kind=='User' else 'Architecture contracts implementation and maintenance';props.comments='';props.keywords=''
- doc.add_paragraph(title,'Title');doc.add_paragraph('Learning and teaching an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
- intro='From opening DPH to preparing, reviewing and sharing lessons about a selected application' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
- doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Lessons about a selected Delphi application are separate material displayed and published by the program.')
+ doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
+ intro='Open a project, follow its files into screens and actions, and assess what the evidence can show' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
+ doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Information about a selected Delphi application is presented separately by the program.')
  doc.add_page_break();doc.add_paragraph('Contents','Title');field(doc.add_paragraph(),'begin',' TOC \\o "1-2" \\h \\z \\u ');field(doc.add_paragraph(),'separate')
  for k,v in blocks:
   if k in ['part','chapter']:doc.add_paragraph(v,'TOC 1' if k=='part' else 'TOC 2')
@@ -168,7 +169,7 @@ def document(kind,blocks):
  part_pending=False
  for k,v in blocks:
   if k=='part':
-   p=doc.add_heading(v,1);p.paragraph_format.page_break_before=v.startswith('PART 1:');p.paragraph_format.space_before=Pt(24);part_pending=True
+   p=doc.add_heading(v,1);p.paragraph_format.page_break_before=v.startswith('PART 1');p.paragraph_format.space_before=Pt(24);part_pending=True
   elif k=='chapter':
    p=doc.add_heading(v,2);p.paragraph_format.page_break_before=False;p.paragraph_format.space_before=Pt(22) if not part_pending else Pt(13);part_pending=False
   elif k=='section':doc.add_heading(v,3)
@@ -197,7 +198,7 @@ def help_page(blocks):
  chapters=[v for k,v in blocks if k=='chapter']
  for i,title in enumerate(chapters):parts.append(f'<a href="#chapter_{i}">{html.escape(title)}</a>')
  parts.append('</nav>');index=-1
- pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Choose application|Open saved lessons|Prepare lessons|Learn the project|Learn a task|Learning library|Try practice example|Share lessons|Preview lessons'
+ pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Open application|Open saved project|Learn the project|Learning library|Project map|Screenshots|Application diagrams'
  def prose(s):return re.sub(pattern,lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(s))
  for k,v in blocks:
   if k=='part':parts.append('<h2>'+html.escape(v)+'</h2>')
@@ -218,5 +219,5 @@ if __name__=='__main__':
   if kind=='User':help_page(blocks)
   reports[kind]={'parts':sum(k=='part' for k,v in blocks),'chapters':sum(k=='chapter' for k,v in blocks),'subsections':sum(k=='section' for k,v in blocks),'words':len(' '.join(' '.join(v) if isinstance(v,list) else v for k,v in blocks).split()),'figures':sum(k=='image' for k,v in blocks)}
  sources={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in [*ROOT.glob('DPH.*.pas'),*ROOT.glob('DPH.UI.*.fmx'),* (ROOT/'migrations').glob('*.sql'),*(ROOT/'docs/guides/source').glob('*.txt'),ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-13','sources':sources,'content':reports,'basis':'Current source and serialized controls, authored detailed procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-14','sources':sources,'content':reports,'basis':'Current source and serialized controls, current learner procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
  print(json.dumps(reports,indent=2))
