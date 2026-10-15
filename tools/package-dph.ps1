@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.1',
+ [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.11',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -31,6 +31,11 @@ foreach ($arch in @('Win32','Win64')) {
 foreach ($directory in @('migrations','help','images and icons')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
 }
+$offlineTranslation=Join-Path $projectRoot 'Localization\OfflineTranslation'
+if (-not (Test-Path -LiteralPath (Join-Path $offlineTranslation 'package\worker\bergamot-translator-worker.wasm') -PathType Leaf)) {
+ throw 'Offline German translation engine is missing'
+}
+Copy-Item -LiteralPath $offlineTranslation -Destination (Join-Path $packageRoot 'Localization\OfflineTranslation') -Recurse
 foreach ($relative in @('docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
  $destination=Join-Path $packageRoot $relative
  [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
@@ -56,6 +61,8 @@ Experimental Windows desktop learning application
    project's .fmx and .dfm form files. Runtime appearance can differ.
 6. Choose your language from the selector in the main header. All 35 language
    packs work offline and remain beside each Windows edition.
+   The experimental English-to-German project-text model is also bundled in
+   Localization\OfflineTranslation and runs without Internet access.
 
 The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for

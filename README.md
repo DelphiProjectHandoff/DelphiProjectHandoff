@@ -6,7 +6,14 @@
 
 Imagine joining a company after its programmer has left. Nobody can explain the application, and there are no prepared lessons or screenshots. Delphi Project Handoff (DPH) helps you find a starting point: it reads the project's structure, forms, Pascal code, and any useful documents it finds, then presents an application-specific route through the screens and actions. It does not compile, run, or change the application being studied.
 
-DPH is experimental Delphi software, built on Delphi 13.1. **This repository is an editable Delphi source project.** To run a checkout, build it with RAD Studio as described below.
+DPH is experimental Delphi software, built on Delphi 13.1. You can download a ready-to-run Windows ZIP or build the editable Delphi source project.
+
+## Download the current experiment
+
+- **Run it on Windows:** Download [DPH 0.6.11 for Windows](export/DPH-0.6.11-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
+- **Edit it in Delphi:** Download the latest **0.6.11 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
+
+The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.11-experimental) provides both downloads together.
 
 ## Build and start from source
 
@@ -16,7 +23,7 @@ DPH is experimental Delphi software, built on Delphi 13.1. **This repository is 
 
 The main form is editable in the RAD Studio designer. To edit its DelphiAppTranslation controls visually, install the supplied design package using [the DAT component-kit instructions](export/DAT-component-kit/DelphiProjectHandoff/README.txt). The [run and test directions](docs/guides/Run_And_Test.txt) give a fuller first-use check.
 
-The current named source snapshot is the latest 0.6.10 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
+`tools/package-source-distribution.ps1` creates the editable source ZIP; `tools/package-dph.ps1` creates the matching Windows package and verifies its files after extraction.
 
 ## Explore an application
 
