@@ -3,7 +3,7 @@ interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
-  FMX.Objects, FMX.Graphics, FMX.WebBrowser, DAT.Components.FMX,
+  FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser, DAT.Components.FMX,
   DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
   DPH.Publish.Model, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
 type
@@ -927,6 +927,7 @@ type
     procedure RefreshGraphics;
     procedure UpdateScreenBounds;
     procedure UpdateScreenshotBounds;
+    procedure UpdateLearnerNavigation;
     procedure GraphGroupDetails(const AGroup: string);
     procedure ClearWorkspace;
     function GraphRect(AIndex: Integer): TRectF;
@@ -1034,6 +1035,62 @@ begin
     end;
   except end;
 end;
+procedure TDPHMainForm.UpdateLearnerNavigation;
+const VisibleTabNumbers: array[0..5] of Integer = (0,1,3,4,6,7);
+var
+  Tabs: array[0..5] of TRectangle;
+  Labels: array[0..5] of TLabel;
+  TextLayout: TTextLayout;
+  Index: Integer;
+  AvailableWidth, RowWidth, TabWidth: Single;
+  SecondRow: Boolean;
+begin
+  if (LearnerNavRow1=nil) or (LearnerNavRow2=nil) or FScreenFullscreen then Exit;
+  for Index:=0 to High(Tabs) do begin
+    Tabs[Index]:=FindComponent('LearnerTab'+IntToStr(VisibleTabNumbers[Index])) as TRectangle;
+    Labels[Index]:=FindComponent('LearnerTabLabel'+IntToStr(VisibleTabNumbers[Index])) as TLabel;
+    if (Tabs[Index]=nil) or (Labels[Index]=nil) then Exit;
+  end;
+  TextLayout:=TTextLayoutManager.DefaultTextLayout.Create;
+  try
+    TextLayout.Font:=Labels[0].TextSettings.Font;
+    TextLayout.WordWrap:=False;
+    TextLayout.Text:=OpenProjectButton.Text.Replace(#$00AD,'');
+    OpenProjectButton.Width:=Min(230,Max(132,Ceil(TextLayout.Width)+30));
+    TextLayout.Text:=OpenCacheButton.Text.Replace(#$00AD,'');
+    OpenCacheButton.Width:=Min(240,Max(142,Ceil(TextLayout.Width)+30));
+    OpenProjectButton.Height:=36;
+    OpenCacheButton.Height:=36;
+    AvailableWidth:=Max(1,ClientWidth-LearnerNavRow1.Margins.Left-LearnerNavRow1.Margins.Right);
+    RowWidth:=OpenProjectButton.Width+OpenProjectButton.Margins.Left+OpenProjectButton.Margins.Right+
+      OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right;
+    SecondRow:=False;
+    for Index:=0 to High(Tabs) do begin
+      if not Tabs[Index].Visible then Continue;
+      TextLayout.Font:=Labels[Index].TextSettings.Font;
+      TextLayout.Text:=Labels[Index].Text.Replace(#$00AD,'');
+      TabWidth:=Min(205,Max(100,Ceil(TextLayout.Width)+30));
+      Tabs[Index].Width:=TabWidth;
+      TabWidth:=TabWidth+Tabs[Index].Margins.Left+Tabs[Index].Margins.Right;
+      if not SecondRow and (RowWidth+TabWidth>AvailableWidth) then begin
+        SecondRow:=True;
+        RowWidth:=0;
+      end;
+      if SecondRow then begin
+        if Tabs[Index].Parent<>LearnerNavRow2 then Tabs[Index].Parent:=LearnerNavRow2;
+      end else if Tabs[Index].Parent<>LearnerNavRow1 then Tabs[Index].Parent:=LearnerNavRow1;
+      RowWidth:=RowWidth+TabWidth;
+    end;
+    LearnerNavRow2.Visible:=SecondRow;
+    if SecondRow then begin
+      LearnerNavRow2.Height:=42;
+      HeaderLayout.Height:=148;
+    end else begin
+      LearnerNavRow2.Height:=0;
+      HeaderLayout.Height:=106;
+    end;
+  finally TextLayout.Free; end;
+end;
 procedure TDPHMainForm.LanguageChanged(Sender: TObject;
   const AOldLanguage, ANewLanguage: string; const AGeneration: Cardinal);
 begin
@@ -1052,6 +1109,8 @@ begin
         'DPH.UI.Main.Runtime.StatusLabel_Text.Text.994988eeb78b8d77',
         '%s Some code could not be explained; check unanswered questions.', ['']);
   end;
+  UpdateLearnerNavigation;
+  ScreenshotClick(nil);
   FPendingLanguageRefresh := True;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1953,7 +2012,7 @@ begin
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
-var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
+var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject; TranslatedMessage: string;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
   if FPendingLanguageRefresh then begin
@@ -1970,6 +2029,12 @@ begin
   end;
   if FWorker.Poll(R) then
   try
+    TranslatedMessage:=DATTranslateDynamicText(R.MessageText);
+    if R.Busy and (R.MessageText<>'') and
+      (TranslatedMessage=R.MessageText) and not SameText(DATActiveLanguageCode,'en-US') then
+      TranslatedMessage:=DATTranslateText(
+        'DPH.UI.Main.Runtime.ProjectPreparationMessage_Text.Text.694ee195977a631e',
+        'Checking the selected application and its Delphi files...');
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
     if R.Busy and FPreparingProject then begin
       if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,25)
@@ -1978,7 +2043,7 @@ begin
       else if ContainsText(R.MessageText,'Searching project-local') or
         ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,75)
       else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
-      if R.MessageText<>'' then ProjectPreparationMessage.Text:=R.MessageText;
+      if R.MessageText<>'' then ProjectPreparationMessage.Text:=DATTranslateDynamicText(R.MessageText);
     end;
     if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
@@ -2089,7 +2154,7 @@ begin
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
       PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
     if not (R.Busy and ProjectPreparationLayout.Visible) then
-      StatusLabel.Text:=R.MessageText;
+      StatusLabel.Text:=TranslatedMessage;
     if (FView<>nil) and not R.Busy and not R.Failed then begin
       StatusLabel.Text:=DATFormatText('DPH.UI.Main.Runtime.StatusLabel_Text.Text.27b34e6d78564198',
         'Project information for %s is ready. Choose Learn the project to continue.',
@@ -2101,10 +2166,11 @@ begin
     end;
     if not R.Busy and FPreparingProject then begin
       FPreparingProject:=False;
-      if R.Failed then ProjectPreparationMessage.Text:='Project preparation stopped. Read the status message for details.'
+      if R.Failed then ProjectPreparationMessage.Text:=DATTranslateDynamicText(
+        'Project preparation stopped. Read the status message for details.')
       else begin
         ProjectPreparationProgress.Value:=100;
-        ProjectPreparationMessage.Text:='Project ready to explore.';
+        ProjectPreparationMessage.Text:=DATTranslateDynamicText('Project ready to explore.');
       end;
       FPreparationCompletionTicks:=5;
     end;
@@ -3519,7 +3585,10 @@ begin
                 ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10+Round(10*Done/Max(Count,1)))
               else
                 ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80+Round(18*Done/Max(Count,1)));
-              ProjectPreparationMessage.Text:=Format('Preparing screen previews: %d of %d complete; %d remaining.',[Done,Count,Count-Done]);
+              ProjectPreparationMessage.Text:=DATFormatText(
+                'DPH.UI.Main.Runtime.ProjectPreparationMessage_Text.Text.b907fb4fd5f67390',
+                'Preparing screen previews: %d of %d complete; %d remaining.',
+                [Done,Count,Count-Done]);
               ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
               Application.ProcessMessages;
             end;
@@ -3537,7 +3606,7 @@ begin
   end;
 end;
 procedure TDPHMainForm.ScreenshotClick(Sender: TObject);
-var R,Card,Picture:TJSONObject;V:TJSONValue;Path:string;Number:Integer;
+var R,Card,Picture:TJSONObject;V:TJSONValue;Path,Source:string;Sources:TJSONArray;Number:Integer;
 begin
   FPicturePointValid:=False;ScreenshotCallout.Enabled:=False;
   if (FImages=nil) or (ScreenshotList.ItemIndex<0) then Exit;
@@ -3545,8 +3614,16 @@ begin
   try
     if THashSHA2.GetHashStringFromFile(Path)<>R.GetValue<string>('image_sha256') then raise EReadError.Create('Screenshot changed after validation');
     ScreenshotImage.Bitmap.LoadFromFile(Path); UpdateScreenshotBounds;
-    ScreenshotEvidence.Text:=R.GetValue<string>('image_kind','Screenshot')+': '+
-      R.GetValue<string>('caption')+sLineBreak+R.GetValue<string>('description','');
+    if R.GetValue<Int64>('artifact_id',0)<0 then begin
+      Sources:=R.GetValue<TJSONArray>('form_sources',nil);
+      Source:='';
+      if (Sources<>nil) and (Sources.Count>0) then Source:=Sources.Items[0].Value;
+      ScreenshotEvidence.Text:=R.GetValue<string>('caption')+' ('+Source+')'+
+        sLineBreak+ScreenshotHelp.Text;
+    end
+    else
+      ScreenshotEvidence.Text:=R.GetValue<string>('caption')+sLineBreak+
+        R.GetValue<string>('description','');
     Number:=0;
     if FKnowledge<>nil then for V in FKnowledge do begin
       if MatchText(V.GetValue<string>('state',''),['retired','rejected']) then Continue;
@@ -3554,7 +3631,9 @@ begin
       try
         if Card=nil then Continue;Picture:=Card.GetValue<TJSONObject>('picture',nil);
         if (Picture=nil) or (Picture.GetValue<string>('image_sha256')<>R.GetValue<string>('image_sha256')) then Continue;
-        Inc(Number);ScreenshotEvidence.Lines.Add(IntToStr(Number)+'. '+V.GetValue<string>('title')+': '+Card.GetValue<string>('fields.meaning')+' (by '+V.GetValue<string>('owner')+'; '+V.GetValue<string>('state').Replace('_',' ')+'). Open Learning library for its example and practice.');
+        Inc(Number);ScreenshotEvidence.Lines.Add(IntToStr(Number)+'. '+
+          V.GetValue<string>('title')+': '+Card.GetValue<string>('fields.meaning')+
+          ' ('+V.GetValue<string>('owner')+')');
       finally Card.Free;end;
     end;
     ScreenshotMarkers.Repaint;
@@ -5217,7 +5296,11 @@ end;
 procedure TDPHMainForm.FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
 begin if (Key=vkEscape) and FScreenFullscreen then begin FullscreenClick(nil); Key:=0; end; end;
 procedure TDPHMainForm.FormResize(Sender: TObject);
-begin UpdateScreenBounds; if ScreenshotImage<>nil then UpdateScreenshotBounds; end;
+begin
+  UpdateLearnerNavigation;
+  UpdateScreenBounds;
+  if ScreenshotImage<>nil then UpdateScreenshotBounds;
+end;
 procedure TDPHMainForm.UpdateScreenBounds;
 var V: TJSONValue; R: TJSONObject; W,H: Single;
 begin

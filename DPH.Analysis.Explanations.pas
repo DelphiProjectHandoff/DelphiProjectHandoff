@@ -1466,12 +1466,12 @@ begin
           finally Metadata.Free; end;
         end;
         if (AIndex=1) and (Count=0) then
-          Body.Append('<p>Start with the first labeled action traced from a saved screen into source below. The application''s own documents may also describe how to use it.</p>');
+          Body.Append('<p>Start with the first labeled action traced from a saved screen into source below. The application'+#$2019+'s own documents may also describe how to use it.</p>');
         if (AIndex=2) and (Count=0) then
-          Body.Append('<p>Explore the other actions captured in this application''s saved screens and source below.</p>');
+          Body.Append('<p>Explore the other actions captured in this application'+#$2019+'s saved screens and source below.</p>');
         Body.Append('</section>');
         if (Guides<>nil) and (Guides.Count>0) then begin
-          Body.Append('<section class="card"><h2>Read this application''s own documents</h2><p>Open a relevant guide in the Learning library to read its formatted headings, tables and examples.</p><ul>');
+          Body.Append('<section class="card"><h2>Read this application'+#$2019+'s own documents</h2><p>Open a relevant guide in the Learning library to read its formatted headings, tables and examples.</p><ul>');
           Count:=0;
           for V in Guides do begin
             Guide:=V as TJSONObject;
@@ -1582,7 +1582,7 @@ begin
         end;
         if AIndex=2 then begin
           if (Guides<>nil) and (Guides.Count>0) then begin
-        Body.Append('<section class="card"><h2>More from the project''s documentation</h2><p>Open a document in the Learning library to read its formatted contents.</p>');
+        Body.Append('<section class="card"><h2>More from the project'+#$2019+'s documentation</h2><p>Open a document in the Learning library to read its formatted contents.</p>');
             for V in Guides do begin
               Guide:=V as TJSONObject;
               Body.Append('<h3><a href="#library_'+THashSHA2.GetHashString(Guide.GetValue<string>('source'))+'">'+

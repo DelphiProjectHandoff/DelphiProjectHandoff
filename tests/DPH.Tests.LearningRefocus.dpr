@@ -406,6 +406,20 @@ begin
 
               Check((Form.LessonPageCombo.Items.Count=11) and (Form.LessonPageCombo.Items.IndexOf('Learning library')>=0) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation includes the teaching library and excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
+              Form.WindowState:=TWindowState.wsNormal; Form.Width:=960; Application.ProcessMessages;
+              Check(Form.DATLanguageManager.SelectLanguage('de-DE'),'German interface pack applies to the native form');
+              Application.ProcessMessages;
+              Check((Form.FindComponent('LearnerTab1') as TRectangle).Width>100,
+                'German learner tab expands to fit its translated label');
+              Check(Form.LearnerNavRow2.Visible and (Form.HeaderLayout.Height>106),
+                'Narrow display moves overflow tabs to a second visible row');
+              Check(Form.OpenCacheButton.Height<=Form.LearnerNavRow1.Height,
+                'Translated open buttons stay within the navigation row');
+              Form.Width:=1400; Application.ProcessMessages;
+              Check(not Form.LearnerNavRow2.Visible,
+                'Wider display returns learner tabs to one row');
+              Check(Form.DATLanguageManager.SelectLanguage('en-US'),
+                'English interface restores after the responsive-layout check');
               Form.SetupClick(nil); Check(Form.WorkspaceTabs.ActiveTab=Form.SetupTab,'Prepare lessons opens its separate setup page');
               Check((Form.WorkspacePageCombo.Items.Count=13) and (Form.WorkspacePageCombo.Items.IndexOf('Project map')>=0) and (Form.WorkspacePageCombo.Items.IndexOf('Database tools')<0) and (Form.WorkspacePageCombo.Items.IndexOf('Target data retention')<0),'Preparation menu includes the project map without database administration');
               Check(not Form.AnalysisSettingsExpander.IsExpanded and (Form.AnalysisSettingsExpander.Height<50),'Source reading settings start collapsed');

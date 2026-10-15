@@ -14,7 +14,7 @@ var
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
   Runtime: TTranslationRuntime;
-  PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html: string;
+  PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText: string;
   Count, SafePaneRuleCount: Integer;
   PreferenceID: TGUID;
 begin
@@ -54,6 +54,25 @@ begin
             (TitleText = 'Delphi Project Handoff') then
             raise Exception.Create('Untranslated main heading in ' +
               Descriptor.LanguageCode);
+          if not SameText(Descriptor.LanguageCode, 'en-US') then
+          begin
+            HelpText := Runtime.Translate('DPHMainForm.ScreenshotHelp.Text',
+              'DPH generates these blank screen views from the application''s .fmx and .dfm files. Select a form, then use Fit or Native pixels. Custom painting and runtime data may differ.');
+            if HelpText.StartsWith('DPH generates these blank screen views') then
+              raise Exception.Create('Untranslated generated-screen note in ' +
+                Descriptor.LanguageCode);
+            HelpText := Runtime.TranslateDynamicText(
+              'Read this application' + #$2019 + 's own documents');
+            if HelpText.StartsWith('Read this application') then
+              raise Exception.Create('Untranslated built-in guide heading in ' +
+                Descriptor.LanguageCode);
+            HelpText := Runtime.Translate(
+              'DPH.UI.Main.Runtime.ProjectPreparationMessage_Text.Text.694ee195977a631e',
+              'Checking the selected application and its Delphi files...');
+            if HelpText.StartsWith('Checking the selected application') then
+              raise Exception.Create('Untranslated project status in ' +
+                Descriptor.LanguageCode);
+          end;
           if SameText(Descriptor.LanguageCode, 'fr-FR') then
           begin
             if Caption <> 'Ouvrir l''application' then
