@@ -7,7 +7,7 @@ uses System.JSON;
 type
   TDPHLearningDiscovery = class
   public
-    class procedure AddEvidence(AFacts, AWorkspace: TJSONObject);
+    class procedure AddEvidence(AFacts, AWorkspace: TJSONObject; AAllowInternet: Boolean);
   end;
 
 implementation
@@ -16,7 +16,7 @@ uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.Str
   System.Hash, System.NetEncoding, System.RegularExpressions, System.Zip,
   System.Net.HttpClient, System.Net.URLClient;
 
-class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject);
+class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject; AAllowInternet: Boolean);
 var
   Guides,Screens,Sections,Nodes,Files,Assets,Sites,StartupForms: TJSONArray;
   FileRow,Node,Child,Screen,Guide,Section,Site,StartupForm,UnitFile: TJSONObject;
@@ -405,24 +405,26 @@ begin
       end;
       if Value<>'' then Sections.AddElement(TJSONObject.Create.AddPair('heading',Heading).AddPair('text',Copy(Value,1,8000)));
     end;
-    HTTP:=THTTPClient.Create;
-    try
-      HTTP.ConnectionTimeout:=1000; HTTP.ResponseTimeout:=2000;
-      HTTP.HandleRedirects:=False;
-      for V in Sites do begin
-        Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
-        try
-          Response:=HTTP.Get(URL);
-          if (Response.StatusCode>=200) and (Response.StatusCode<300) and
-            (Response.ContentLength>0) and (Response.ContentLength<=131072) and
-            ContainsText(Response.MimeType,'text/html') then begin
-            Body:=CleanText(Response.ContentAsString(TEncoding.UTF8));
-            if Length(Body)>6000 then Body:=Copy(Body,1,6000);
-            Site.RemovePair('text').Free; Site.AddPair('text',Body);
-          end;
-        except on E: Exception do Continue; end;
-      end;
-    finally HTTP.Free; end;
+    if AAllowInternet then begin
+      HTTP:=THTTPClient.Create;
+      try
+        HTTP.ConnectionTimeout:=1000; HTTP.ResponseTimeout:=2000;
+        HTTP.HandleRedirects:=False;
+        for V in Sites do begin
+          Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
+          try
+            Response:=HTTP.Get(URL);
+            if (Response.StatusCode>=200) and (Response.StatusCode<300) and
+              (Response.ContentLength>0) and (Response.ContentLength<=131072) and
+              ContainsText(Response.MimeType,'text/html') then begin
+              Body:=CleanText(Response.ContentAsString(TEncoding.UTF8));
+              if Length(Body)>6000 then Body:=Copy(Body,1,6000);
+              Site.RemovePair('text').Free; Site.AddPair('text',Body);
+            end;
+          except on E: Exception do Continue; end;
+        end;
+      finally HTTP.Free; end;
+    end;
   finally Lines.Free; SeenDocumentHashes.Free; PreferredPaths.Free; Paths.Free; end;
 end;
 

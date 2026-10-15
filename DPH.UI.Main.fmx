@@ -995,6 +995,16 @@ Margins.Right = 12
 Text = 'Language:'
 TextSettings.HorzAlign = Trailing
 end
+object AllowInternetCheck: TCheckBox
+Align = Right
+Width = 192
+Margins.Left = 8
+Margins.Right = 8
+Margins.Top = 4
+Margins.Bottom = 4
+Text = 'Read public websites'
+OnChange = AllowInternetChange
+end
 object LessonPageCombo: TComboBox
 Align = Right
 Visible = False
@@ -1069,6 +1079,15 @@ Margins.Bottom = 3
 Margins.Right = 12
 Text = 'Open saved project'
 OnClick = OpenCacheClick
+end
+object CloseButton: TButton
+Align = Right
+Width = 88
+Margins.Left = 8
+Margins.Top = 3
+Margins.Bottom = 3
+Text = 'Close'
+OnClick = CloseButtonClick
 end
 object LearnerTab0: TRectangle
 Tag = 0

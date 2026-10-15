@@ -11,6 +11,7 @@ type
     DATLanguageManager: TDATFMXLanguageManager;
     LanguageCombo: TDATFMXLanguageComboBox;
     LanguageLabel: TLabel;
+    AllowInternetCheck: TCheckBox;
     BaselineLabel,StatusLabel,BreadcrumbLabel,ScreenWarning,GraphLegend,GraphPurpose,InspectorTitle,InspectorPurpose: TLabel;
     ProjectSearchProgress,ProjectPreparationLayout: TLayout;
     ProjectSearchSpinner: TAniIndicator;
@@ -22,7 +23,7 @@ type
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
-    OpenProjectButton,OpenCacheButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenProjectButton,OpenCacheButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -747,6 +748,8 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure OpenProjectClick(Sender: TObject);
     procedure OpenCacheClick(Sender: TObject);
+    procedure CloseButtonClick(Sender: TObject);
+    procedure AllowInternetChange(Sender: TObject);
     procedure PollTimerTimer(Sender: TObject);
     procedure ChangeTimerTimer(Sender: TObject);
     procedure SearchChange(Sender: TObject);
@@ -794,6 +797,8 @@ type
     FHierarchyVisible,FShowingBookmarks: Boolean;
     FDetails: TJSONArray;
     FEntry,FDatabase,FSelected,FScope,FBaseDirectory: string;
+    FNetworkSettingsPath: string;
+    FLoadingNetworkPreference: Boolean;
     FPendingEntry,FPendingDatabase: string;
     FPendingWorkspaceTab: TTabItem;
     FPage: Integer;
@@ -946,12 +951,12 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database,
+uses System.IOUtils, System.IniFiles, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
 procedure TDPHMainForm.FormCreate(Sender: TObject);
-var I: Integer; DatabaseDirectory: string;
+var I: Integer; DatabaseDirectory, SettingsDirectory: string; Settings: TIniFile;
 begin
   FExplorerKeys:=TList<string>.Create; FRelationKeys:=TList<string>.Create; FExpandedKeys:=TList<string>.Create;
   FPreviewPages:=TList<string>.Create;
@@ -982,6 +987,19 @@ begin
   RefreshProjectsClick(nil);
   FBaseDirectory:=ExtractFilePath(ParamStr(0));
   for I:=0 to 5 do begin if TDirectory.Exists(TPath.Combine(FBaseDirectory,'migrations')) then Break; FBaseDirectory:=ExtractFileDir(ExcludeTrailingPathDelimiter(FBaseDirectory)); end;
+  SettingsDirectory:=GetEnvironmentVariable('LOCALAPPDATA');
+  if SettingsDirectory='' then SettingsDirectory:=TPath.GetHomePath;
+  FNetworkSettingsPath:=TPath.Combine(TPath.Combine(SettingsDirectory,'DelphiProjectHandoff'),'settings.ini');
+  FLoadingNetworkPreference:=True;
+  try
+    if TFile.Exists(FNetworkSettingsPath) then begin
+      Settings:=TIniFile.Create(FNetworkSettingsPath);
+      try AllowInternetCheck.IsChecked:=Settings.ReadBool('Privacy','ReadPublicWebsites',False);
+      finally Settings.Free; end;
+    end;
+  except on E: Exception do StatusLabel.Text:='Internet preference could not be read; public websites remain disabled.';
+  end;
+  FLoadingNetworkPreference:=False;
   DatabaseDirectory:=TPath.Combine(FBaseDirectory,DatabaseDialog.InitialDir);
   try
     TDirectory.CreateDirectory(DatabaseDirectory);
@@ -1058,15 +1076,21 @@ begin
   try
     TextLayout.Font:=Labels[0].TextSettings.Font;
     TextLayout.WordWrap:=False;
+    TextLayout.Text:=AllowInternetCheck.Text.Replace(#$00AD,'');
+    AllowInternetCheck.Width:=Min(260,Max(192,Ceil(TextLayout.Width)+34));
     TextLayout.Text:=OpenProjectButton.Text.Replace(#$00AD,'');
     OpenProjectButton.Width:=Min(230,Max(132,Ceil(TextLayout.Width)+30));
     TextLayout.Text:=OpenCacheButton.Text.Replace(#$00AD,'');
     OpenCacheButton.Width:=Min(240,Max(142,Ceil(TextLayout.Width)+30));
+    TextLayout.Text:=CloseButton.Text.Replace(#$00AD,'');
+    CloseButton.Width:=Min(150,Max(88,Ceil(TextLayout.Width)+24));
     OpenProjectButton.Height:=36;
     OpenCacheButton.Height:=36;
+    CloseButton.Height:=36;
     AvailableWidth:=Max(1,ClientWidth-LearnerNavRow1.Margins.Left-LearnerNavRow1.Margins.Right);
     RowWidth:=OpenProjectButton.Width+OpenProjectButton.Margins.Left+OpenProjectButton.Margins.Right+
-      OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right;
+      OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right+
+      CloseButton.Width+CloseButton.Margins.Left+CloseButton.Margins.Right;
     SecondRow:=False;
     for Index:=0 to High(Tabs) do begin
       if not Tabs[Index].Visible then Continue;
@@ -1121,6 +1145,28 @@ begin
   if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
   if FRenderingScreens then begin CanClose:=False; Exit; end;
   CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; end;
+end;
+procedure TDPHMainForm.CloseButtonClick(Sender: TObject);
+begin
+  Close;
+end;
+procedure TDPHMainForm.AllowInternetChange(Sender: TObject);
+var Settings: TIniFile;
+begin
+  if FLoadingNetworkPreference or (FNetworkSettingsPath='') then Exit;
+  try
+    TDirectory.CreateDirectory(ExtractFileDir(FNetworkSettingsPath));
+    Settings:=TIniFile.Create(FNetworkSettingsPath);
+    try Settings.WriteBool('Privacy','ReadPublicWebsites',AllowInternetCheck.IsChecked);
+    finally Settings.Free; end;
+  except on E: Exception do begin
+    StatusLabel.Text:='Internet preference could not be saved: '+E.Message;
+    Exit;
+  end; end;
+  if AllowInternetCheck.IsChecked then
+    StatusLabel.Text:='Public website reading enabled for the next project analysis.'
+  else
+    StatusLabel.Text:='Public website reading disabled; project analysis stays offline.';
 end;
 procedure TDPHMainForm.RefreshProjectsClick(Sender: TObject);
 var Rows: TJSONArray; Value: TJSONValue; Path,LabelText: string;
@@ -1886,6 +1932,7 @@ begin
   R:=Default(TDPHWorkspaceRequest);
   if not TryStrToInt(CodePageEdit.Text,R.CodePage) or (R.CodePage<0) or (R.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   R.Command:=ACommand; R.Database:=FDatabase; R.Entry:=FEntry;
+  R.AllowInternet:=AllowInternetCheck.IsChecked;
   R.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex]; R.Platform:=PlatformCombo.Items[PlatformCombo.ItemIndex];
   R.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); R.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   if MatchText(ACommand,['knowledge','save_knowledge','review_knowledge']) then
@@ -1944,6 +1991,7 @@ begin
   if FBusy then Exit;
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   Request:=Default(TDPHWorkspaceRequest); Request.Entry:=AEntry; Request.Database:=ADatabase;
+  Request.AllowInternet:=AllowInternetCheck.IsChecked;
   if not TryStrToInt(CodePageEdit.Text,Request.CodePage) or (Request.CodePage<0) or (Request.CodePage>65535) then begin StatusLabel.Text:='Enter code page 0 for Unicode or a Windows code page number from 1 to 65535'; Exit; end;
   if AEntry='' then Request.Command:='open' else Request.Command:='incremental';
   Request.Configuration:=ConfigurationCombo.Items[ConfigurationCombo.ItemIndex];
@@ -1965,6 +2013,7 @@ begin
   if not OpenProjectDialog.Execute then Exit;
   Generation:=FView.Document.GetValue<Int64>('generation_id');
   Request:=Default(TDPHWorkspaceRequest); Request.CodePage:=FView.Document.GetValue<Integer>('code_page',0);
+  Request.AllowInternet:=AllowInternetCheck.IsChecked;
   Request.Command:='relocate'; Request.Database:=FDatabase; Request.Entry:=OpenProjectDialog.FileName; Request.GenerationID:=Generation;
   Request.Configuration:=FView.Document.GetValue<string>('configuration'); Request.Platform:=FView.Document.GetValue<string>('platform');
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty); Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);

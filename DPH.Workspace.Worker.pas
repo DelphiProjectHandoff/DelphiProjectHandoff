@@ -22,6 +22,7 @@ type
     IncludeSourceNavigation: Boolean;
     PublicationLocale: string;
     AllowStaleBundle: Boolean;
+    AllowInternet: Boolean;
     BeforeScreenshot,AfterScreenshot,ScreenToken:Int64;
     BeforeScreenSource,AfterScreenSource:string;
   end;
@@ -465,8 +466,11 @@ begin
               if Terminated then begin Store.FailGeneration(Generation,'Cancelled by user'); Continue; end;
               Document:=TDPHWorkspaceView.Capture(Scan,Graph,Generation,Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
               try
-                Respond(nil,'Searching project-local guides, help, notes, logs and referenced websites...',True,Changed,False,False);
-                TDPHLearningDiscovery.AddEvidence(Document,Document);
+                if Request.AllowInternet then
+                  Respond(nil,'Reading local guides, help, notes, logs and referenced public websites...',True,Changed,False,False)
+                else
+                  Respond(nil,'Reading local guides, help, notes and logs without Internet access...',True,Changed,False,False);
+                TDPHLearningDiscovery.AddEvidence(Document,Document,Request.AllowInternet);
                 Store.SaveWorkspaceView(Generation,Document.ToJSON);
                 if TDPHSemanticPersistence.Publish(Scan,Graph,Store,Generation) then MessageText:='Analysis current'
                 else if not Scan.Inventory.Revalidate then

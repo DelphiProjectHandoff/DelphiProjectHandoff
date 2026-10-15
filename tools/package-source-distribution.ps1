@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.8')
+param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.9')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -65,6 +65,8 @@ The Microsoft WebView2 Runtime is required for embedded HTML learning views.
 LibreOffice at its standard Windows path is needed to extract text from PDF,
 legacy Word, RTF and several other older word-processing formats.
 The selected Delphi application is read as input; DPH does not run or modify it.
+The Read public websites checkbox is off by default and controls optional
+HTTPS requests for public sites referenced in selected project documents.
 The included third-party dependency folders contain their own license files.
 
 SHA256.txt lists every packaged source file and its SHA-256 digest. The

@@ -336,7 +336,7 @@ begin
       if AView.Document.GetValue('project_sites')<>nil then
         FDocument.AddPair('project_sites',CaptureValue(AView.Document.GetValue('project_sites')))
       else FDocument.AddPair('project_sites',TJSONArray.Create);
-    end else TDPHLearningDiscovery.AddEvidence(FDocument,AView.Document);
+    end else TDPHLearningDiscovery.AddEvidence(FDocument,AView.Document,False);
     if not ALocalDisplay then
       for V in FDocument.GetValue<TJSONArray>('project_guides') do begin
         R:=V as TJSONObject;
