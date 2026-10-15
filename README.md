@@ -10,10 +10,10 @@ DPH is experimental Delphi software, built on Delphi 13.1. You can download a re
 
 ## Download the current experiment
 
-- **Run it on Windows:** Download [DPH 0.6.13 for Windows](export/DPH-0.6.13-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
-- **Edit it in Delphi:** Download the latest **0.6.13 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
+- **Run it on Windows:** Download [DPH 0.6.14 for Windows](export/DPH-0.6.14-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
+- **Edit it in Delphi:** Download the latest **0.6.14 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
 
-The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.13-experimental) provides both downloads together.
+The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.14-experimental) provides both downloads together.
 
 ## Build and start from source
 
