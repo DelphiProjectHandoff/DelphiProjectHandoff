@@ -16,7 +16,7 @@ DPH is experimental Delphi software, built on Delphi 13.1. **This repository is 
 
 The main form is editable in the RAD Studio designer. To edit its DelphiAppTranslation controls visually, install the supplied design package using [the DAT component-kit instructions](export/DAT-component-kit/DelphiProjectHandoff/README.txt). The [run and test directions](docs/guides/Run_And_Test.txt) give a fuller first-use check.
 
-The current named source snapshot is the latest 0.6.7 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
+The current named source snapshot is the latest 0.6.8 archive in [source distributions](source%20distributions/). Older ZIPs there are historical experiments. `tools/package-source-distribution.ps1` is the source packager; `tools/package-dph.ps1` creates a separate, optional Windows binary package.
 
 ## Explore an application
 
@@ -45,7 +45,7 @@ DPH shows the source behind its explanations where available and marks conclusio
 
 The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
 
-An experimental **English-to-German project-text translation** is included in the Learn the project view. When German is selected, DPH translates the project purpose and guide excerpts marked as project prose using a bundled WebAssembly engine and model. It runs on the user's computer through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails, DPH shows the original text. The translated output is machine-generated and should be checked before relying on it.
+An experimental **English-to-German project-text translation** is included in Learn the project and the Learning library. When German is selected, DPH translates the project purpose, guide excerpts, and formatted guide paragraphs using a bundled WebAssembly engine and model. It runs on the user's computer through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it.
 
 The other 34 interface choices still work offline using the existing language packs. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access.
 

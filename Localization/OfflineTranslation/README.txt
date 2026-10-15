@@ -2,7 +2,8 @@ DPH OFFLINE PROJECT-TEXT TRANSLATION TRIAL
 
 This folder contains the browser-based Bergamot 0.4.9 translation engine and
 one English-to-German model. DPH uses these files only for marked project
-prose in the Learn the project view when German (de-DE) is selected. All model
+prose in Learn the project and formatted Learning library guides when German
+(de-DE) is selected. All model
 and engine requests stay on DPH's loopback-only local preview server. No
 translation request is sent to an Internet service.
 

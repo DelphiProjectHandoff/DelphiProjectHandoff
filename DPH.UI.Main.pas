@@ -1229,7 +1229,7 @@ end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
 var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSONArray; Body,Title,HTML,Line,Path,ParagraphText,
   Source,CaptionText,NextLine,CellText:string; Lines:TStringList; Sections,Symbols:TJSONArray;
-  Cells:TArray<string>; I,J,Count,GuideIndex:Integer; InTable,InList,InCode,IsTableHeader,
+  Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
     IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding:Boolean;
 begin
  if FBinding and (Sender=CardDocumentLocation) then Exit;
@@ -1309,6 +1309,8 @@ begin
    'code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}'+
    'table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #d7e2ec}th{background:#e8f2fa;color:#145c99}tr:nth-child(even) td{background:#f8fbfd}</style></head><body><article><h1>'+
    TNetEncoding.HTML.Encode(Title)+'</h1>';
+ if R.GetValue<TJSONArray>('sections',nil)<>nil then
+   HTML:=HTML.Replace('<article>','<article class="project-prose">');
  Lines:=TStringList.Create;
  try
    Lines.Text:=Body;
@@ -1386,12 +1388,14 @@ begin
  end;
  if FLearningDirectory='' then Exit;
  HTML:=DATTranslateHtmlText(HTML);
+ Offline:=PrepareOfflineProjectTranslation(HTML);
  Path:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
  try
    TFile.WriteAllBytes(Path,TEncoding.UTF8.GetBytes(HTML));
    TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
    CardBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;CardReader.Visible:=False;CardBrowser.Visible:=True;
-   CardBrowser.Navigate('file://'+Path);
+   if Offline then CardBrowser.Navigate(FOfflinePreview.URLForPage(Path))
+   else CardBrowser.Navigate('file://'+Path);
  except on E:Exception do begin CardBrowser.Visible:=False;CardReader.Visible:=True;end;end;
 end;
 procedure TDPHMainForm.CardRelatedClick(Sender:TObject);
@@ -3038,17 +3042,28 @@ begin
       Exit;
     end;
   end;
-  AHTML := AHTML.Replace('script-src ''none''; connect-src ''none'';',
-    'script-src ''self'' ''wasm-unsafe-eval''; worker-src ''self''; connect-src ''self'';');
+  if AHTML.Contains('Content-Security-Policy') then
+    AHTML := AHTML.Replace('script-src ''none''; connect-src ''none'';',
+      'script-src ''self'' ''wasm-unsafe-eval''; worker-src ''self''; connect-src ''self'';')
+  else
+    AHTML := AHTML.Replace('<head>', '<head><meta http-equiv="Content-Security-Policy" ' +
+      'content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; ' +
+      'script-src ''self'' ''wasm-unsafe-eval''; worker-src ''self''; connect-src ''self''; ' +
+      'base-uri ''none''">');
   AHTML := TRegEx.Replace(AHTML, '<html\b',
     '<html class="offline-translation-pending"', [roIgnoreCase]);
   AHTML := AHTML.Replace('</head>',
-    '<style>.offline-translation-pending .project-prose{opacity:0;animation:dph-show-original 0s 8s forwards}' +
+    '<style>.offline-translation-pending pre.project-prose{opacity:0;animation:dph-show-original 0s 8s forwards}' +
     '@keyframes dph-show-original{to{opacity:1}}' +
     '#offline-translation-status{margin:0 0 16px}</style></head>');
-  AHTML := AHTML.Replace('<main>',
-    '<main><p id="offline-translation-status" class="warning" lang="de">' +
-    'Der Projekttext wird lokal ins Deutsche übersetzt…</p>');
+  if AHTML.Contains('<main>') then
+    AHTML := AHTML.Replace('<main>',
+      '<main><p id="offline-translation-status" class="warning" lang="de">' +
+      'Der Projekttext wird lokal ins Deutsche übersetzt…</p>')
+  else
+    AHTML := AHTML.Replace('<body>',
+      '<body><p id="offline-translation-status" lang="de">' +
+      'Der Projekttext wird lokal ins Deutsche übersetzt…</p>');
   AHTML := AHTML.Replace('</body>', '<script type="module" src="' +
     FOfflinePreview.ScriptURL + '"></script></body>');
   Result := True;
