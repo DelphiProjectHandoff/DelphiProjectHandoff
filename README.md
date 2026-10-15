@@ -10,10 +10,10 @@ DPH is experimental Delphi software, built on Delphi 13.1. You can download a re
 
 ## Download the current experiment
 
-- **Run it on Windows:** Download [DPH 0.6.11 for Windows](export/DPH-0.6.11-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
-- **Edit it in Delphi:** Download the latest **0.6.11 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
+- **Run it on Windows:** Download [DPH 0.6.12 for Windows](export/DPH-0.6.12-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
+- **Edit it in Delphi:** Download the latest **0.6.12 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
 
-The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.11-experimental) provides both downloads together.
+The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.12-experimental) provides both downloads together.
 
 ## Build and start from source
 
@@ -31,7 +31,7 @@ Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` fil
 
 While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It reads root-level documents and the selected project's top-level `docs`, `Help`, `Guides`, `Manual`, and `Notes` folders; nested release and upgrade packages are excluded. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. DPH screens material before showing it. Existing saved projects are reassessed once under this narrower document rule.
 
-The header's **Read public websites** checkbox controls DPH's optional Internet access. It starts off, and DPH remembers the choice for the current Windows user. When enabled, the next project analysis may read a small amount of text from up to three eligible public HTTPS pages referenced in project documents. When disabled, project discovery reads local material only. Changing the checkbox affects the next analysis; it does not change previously saved evidence. DPH does not offer a general web search engine. The **Close** button exits through the same unsaved-work and in-progress safeguards as the window close control.
+The header's **Read public websites** checkbox controls DPH's optional Internet access. It starts off, and DPH remembers the choice for the current Windows user. When enabled, the next project analysis may read text from up to three eligible public HTTPS pages referenced in project documents, with each response capped at 128 KiB. DPH rejects private IPv4 DNS results and does not follow redirects. DNS can change between validation and connection, so leave the option off for untrusted project material. When disabled, project discovery reads local material only. Changing the checkbox affects the next analysis; it does not change previously saved evidence. DPH does not offer a general web search engine. The **Close** button exits through the same unsaved-work and in-progress safeguards as the window close control.
 
 DOCX and supported text formats are read directly. Extracting text from PDF, legacy Word, RTF, and several older formats requires LibreOffice at `C:\Program Files\LibreOffice\program\soffice.com`. A scanned image-only PDF may need OCR before it has usable text. The Learning library reports when a discovered file yielded no readable content.
 
@@ -64,3 +64,7 @@ The other 34 interface choices still work offline using the existing language pa
 - [Learning requirements reconciliation](docs/requirements/Learning_Requirements_Reconciliation.txt) records the scope decisions and remaining work. A scope decision does not imply an old requirement was implemented.
 
 Independent testing with a first-time learner is separate from compilation and automated checks. DPH is designed to make an unknown project more understandable, while leaving uncertain behavior explicit.
+
+## License and third-party material
+
+DPH's original source code and documentation are licensed under [Apache License 2.0](LICENSE). Bundled components retain their own terms; see [third-party notices](THIRD_PARTY_NOTICES.md). The unmodified Bergamot German model is attributed there under CC BY-SA 4.0; its license text ships with both ZIPs.

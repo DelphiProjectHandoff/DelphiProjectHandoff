@@ -21,6 +21,8 @@ lex.50.50.ende.s2t.bin         f03eb8245042feb7a5800815b8d0dc215d7a60691632405b6
 vocab.deen.spm                 417668f2ed297970febafb5b079a9d5ebc4ed0b3550ac8386d67a90473a09bd7
 
 The engine is licensed under MPL 2.0; see BERGAMOT-LICENSE.txt. The model
-files are distributed by the Bergamot project. The original English project
+files are distributed by the Bergamot project under CC BY-SA 4.0; see
+MODEL-LICENSE.txt and https://github.com/browsermt/students/blob/master/LICENSE.md.
+The model files are unmodified from the indexed versions above. The original English project
 content remains in the selected project's files and DPH's saved analysis.
 Machine translation can be inaccurate and does not replace source evidence.

@@ -7,8 +7,8 @@ from docx.shared import Inches,Pt,RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
-CHANGED='14 October 2026'
-VERSION=45
+CHANGED='15 October 2026'
+VERSION=46
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -53,6 +53,7 @@ LAYER_PURPOSE={
 'Knowledge.ComponentDependency':'Validates attributed dependency descriptions and canonical presentation. Names do not prove deployment or licensing status.',
 'Publish.Model':'Builds the scoped canonical document, audiences, provenance and redacted knowledge. This is the privacy boundary shared by output formats.',
 'Publish.Export':'Writes fresh offline editions and validates checksums, provenance, ranges and indexes. Learner and technical artifacts share the scoped model.',
+'Publish.OfflinePreview':'Serves the local preview and bundled German translation assets over loopback. It must not expose the selected project to an external network interface.',
 'Publish.BrowserPolicy':'Constrains local embedded navigation and internal routes. Rendering success does not replace URL containment tests.',
 'Publish.Translation':'Adapts pinned translation capabilities and revision/locale cache state. Provider configuration and named review remain separate.',
 'UI.Main':'Binds serialized FireMonkey controls to worker requests and owned models. Preserve pending drafts, busy state, selection identity and close guards.',
@@ -219,5 +220,5 @@ if __name__=='__main__':
   if kind=='User':help_page(blocks)
   reports[kind]={'parts':sum(k=='part' for k,v in blocks),'chapters':sum(k=='chapter' for k,v in blocks),'subsections':sum(k=='section' for k,v in blocks),'words':len(' '.join(' '.join(v) if isinstance(v,list) else v for k,v in blocks).split()),'figures':sum(k=='image' for k,v in blocks)}
  sources={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in [*ROOT.glob('DPH.*.pas'),*ROOT.glob('DPH.UI.*.fmx'),* (ROOT/'migrations').glob('*.sql'),*(ROOT/'docs/guides/source').glob('*.txt'),ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-14','sources':sources,'content':reports,'basis':'Current source and serialized controls, current learner procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-15','sources':sources,'content':reports,'basis':'Current source and serialized controls, current learner procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
  print(json.dumps(reports,indent=2))

@@ -1,5 +1,5 @@
 RUN AND TEST DELPHI PROJECT HANDOFF
-Last changed: 14 October 2026
+Last changed: 15 October 2026
 
 BUILD AND START FROM SOURCE
 
@@ -23,7 +23,10 @@ CHOOSE A LANGUAGE
 Select a language in the header. DPH should change its labels and built-in
 learning pages immediately and remember the choice when reopened. English is
 the source language; the other 34 choices match VCL2FMXConverter v7. The
-selected application's own source and documents retain their original language.
+German also offers an experimental local translation of selected English
+project prose in Learn the project and Learning library. Original files,
+identifiers, citations, and form captions are unchanged. Other language
+choices retain project content in its original language.
 
 OPEN AN APPLICATION
 

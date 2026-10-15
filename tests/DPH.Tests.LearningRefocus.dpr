@@ -68,6 +68,15 @@ begin
         ODTZip.Add(ODTContent,'content.xml');
       finally ODTZip.Free;end;
       TFile.Delete(ODTContent);
+      TFile.WriteAllText(ODTContent,
+        '<office:document-content><office:body><office:text><text:p>'+StringOfChar('Z',4200000)+
+        '</text:p></office:text></office:body></office:document-content>',TEncoding.UTF8);
+      ODTZip:=TZipFile.Create;
+      try
+        ODTZip.Open(TPath.Combine(Work,'Oversized_Guide.odt'),zmWrite);
+        ODTZip.Add(ODTContent,'content.xml');
+      finally ODTZip.Free;end;
+      TFile.Delete(ODTContent);
       TDirectory.CreateDirectory(TPath.Combine(Work,'docs'));
       TFile.WriteAllText(TPath.Combine(Work,'docs\Project_Guide.md'),
         'The selected project guide belongs to this application.',TEncoding.UTF8);
@@ -99,11 +108,14 @@ begin
         var FoundProjectGuide:=False;
         var FoundHelpTopic:=False;
         var FoundOtherRelease:=False;
+        var FoundOversizedODT:=False;
         for var Discovered in DiscoveryFacts.GetValue<TJSONArray>('project_guides') do
           begin
             if SameText(Discovered.GetValue<string>('source',''),'docs/Project_Guide.md') then FoundProjectGuide:=True;
             if SameText(Discovered.GetValue<string>('source',''),'Help/Starting.md') then FoundHelpTopic:=True;
             if ContainsText(Discovered.GetValue<string>('source',''),'CarillonBells_7_2_4_to_8_1_Upgrade') then FoundOtherRelease:=True;
+            if SameText(Discovered.GetValue<string>('source',''),'Oversized_Guide.odt') and
+              ContainsText(Discovered.ToJSON,'ZZZZZZZZ') then FoundOversizedODT:=True;
             if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
               ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
             if SameText(Discovered.GetValue<string>('source',''),'User_Guide.pdf') and
@@ -126,6 +138,8 @@ begin
         Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
           'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
+        Check(not FoundOversizedODT,
+          'Oversized compressed document text is rejected before decompression into memory');
         Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
         Check(FoundProjectGuide and FoundHelpTopic and not FoundOtherRelease,
           'Project docs and Help are read; a separate release package is excluded');
@@ -624,8 +638,6 @@ begin
               WaitHTML(Form.PublishBrowser,'document.body.innerText','Meet this app');
               WaitHTML(Form.PublishBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Actual native browser renders the saved learning edition without horizontal overflow');
-              BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
-              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-shared-lessons.png'));finally BrowserBitmap.Free;end;
               Form.PublishBrowser.OnShouldLoadURL:=Form.BrowserShouldLoad;
               Form.Hide;
             finally Form.Free; end;
@@ -818,12 +830,14 @@ begin
         Report.AddPair('reference_learning_projection_ms',TJSONNumber.Create(ReferenceViewMS));
         TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\learning-refocus-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
-      TFile.Copy(TPath.Combine(Work,'learning-refocus-getting-started.png'),
-        TPath.Combine(Root,'docs\guides\assets\dph-getting-started.png'),True);
-      TFile.Copy(TPath.Combine(Work,'learning-refocus-library.png'),
-        TPath.Combine(Root,'docs\guides\assets\dph-learning-library.png'),True);
-      TFile.Copy(TPath.Combine(Work,'learning-refocus-learning-workspace.png'),
-        TPath.Combine(Root,'docs\guides\assets\dph-object-explanation.png'),True);
+      if ParamStr(2)<>'--no-ui' then begin
+        TFile.Copy(TPath.Combine(Work,'learning-refocus-getting-started.png'),
+          TPath.Combine(Root,'docs\guides\assets\dph-getting-started.png'),True);
+        TFile.Copy(TPath.Combine(Work,'learning-refocus-library.png'),
+          TPath.Combine(Root,'docs\guides\assets\dph-learning-library.png'),True);
+        TFile.Copy(TPath.Combine(Work,'learning-refocus-learning-workspace.png'),
+          TPath.Combine(Root,'docs\guides\assets\dph-object-explanation.png'),True);
+      end;
       if not StartsText(TPath.Combine(TPath.GetFullPath(Root),'bin\lr-{'),TPath.GetFullPath(Work)) then
         raise Exception.Create('Refusing cleanup outside the generated refocus test workspace');
       TDirectory.Delete(Work,True);

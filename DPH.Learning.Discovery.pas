@@ -16,7 +16,20 @@ implementation
 
 uses Winapi.Windows, System.SysUtils, System.Classes, System.IOUtils, System.StrUtils, System.Math,
   System.Hash, System.NetEncoding, System.RegularExpressions, System.Zip,
-  System.Net.HttpClient, System.Net.URLClient;
+  System.Net.HttpClient, System.Net.URLClient, IdStack, IdGlobal;
+
+type
+  TDPHWebsiteResponseStream = class(TMemoryStream)
+  public
+    function Write(const Buffer; Count: Longint): Longint; override;
+  end;
+
+function TDPHWebsiteResponseStream.Write(const Buffer; Count: Longint): Longint;
+begin
+  if (Count < 0) or (Position > 131072 - Count) then
+    raise EStreamError.Create('Public website response exceeds 128 KiB');
+  Result := inherited Write(Buffer, Count);
+end;
 
 class procedure TDPHLearningDiscovery.AddEvidence(AFacts, AWorkspace: TJSONObject; AAllowInternet: Boolean);
 var
@@ -45,6 +58,7 @@ var
   PageMatch,Paragraph: TMatch;
   PageNumber: Integer;
   HTTP: THTTPClient;
+  HTTPStream: TDPHWebsiteResponseStream;
   Response: IHTTPResponse;
   URI: TURI;
   DetectedEncoding: TEncoding;
@@ -117,6 +131,31 @@ var
           Visit(Entry,ADepth+1,False);
       end else Visit(Entry,ADepth+1,AReadDocuments);
     end;
+  end;
+  function PublicIPv4Host(const AHost: string): Boolean;
+  var Address: string; Parts: TArray<string>; Octets: array[0..3] of Integer; N: Integer;
+  begin
+    Result:=False;
+    TIdStack.IncUsage;
+    try
+      try Address:=GStack.ResolveHost(AHost,Id_IPv4);
+      except on E: Exception do Exit; end;
+    finally TIdStack.DecUsage; end;
+    Parts:=Address.Split(['.']);
+    if Length(Parts)<>4 then Exit;
+    for N:=0 to 3 do
+      if not TryStrToInt(Parts[N],Octets[N]) or (Octets[N]<0) or (Octets[N]>255) then Exit;
+    Result:=not ((Octets[0]=0) or (Octets[0]=10) or (Octets[0]=127) or
+      (Octets[0]>=224) or
+      ((Octets[0]=100) and (Octets[1]>=64) and (Octets[1]<=127)) or
+      ((Octets[0]=169) and (Octets[1]=254)) or
+      ((Octets[0]=172) and (Octets[1]>=16) and (Octets[1]<=31)) or
+      ((Octets[0]=192) and (Octets[1]=168)) or
+      ((Octets[0]=192) and (Octets[1]=0) and (Octets[2]=0)) or
+      ((Octets[0]=192) and (Octets[1]=0) and (Octets[2]=2)) or
+      ((Octets[0]=198) and (Octets[1]>=18) and (Octets[1]<=19)) or
+      ((Octets[0]=198) and (Octets[1]=51) and (Octets[2]=100)) or
+      ((Octets[0]=203) and (Octets[1]=0) and (Octets[2]=113)));
   end;
   function CleanText(const AText: string): string;
   begin
@@ -422,14 +461,21 @@ begin
         for V in Sites do begin
           Site:=V as TJSONObject; URL:=Site.GetValue<string>('url');
           try
-            Response:=HTTP.Get(URL);
+            if not PublicIPv4Host(TURI.Create(URL).Host) then Continue;
+            HTTPStream:=TDPHWebsiteResponseStream.Create;
+            try
+              Response:=HTTP.Get(URL,HTTPStream);
             if (Response.StatusCode>=200) and (Response.StatusCode<300) and
-              (Response.ContentLength>0) and (Response.ContentLength<=131072) and
+              (HTTPStream.Size>0) and
               ContainsText(Response.MimeType,'text/html') then begin
-              Body:=CleanText(Response.ContentAsString(TEncoding.UTF8));
+              SetLength(Data,Integer(HTTPStream.Size));
+              HTTPStream.Position:=0;
+              HTTPStream.ReadBuffer(Data[0],Length(Data));
+              Body:=CleanText(TEncoding.UTF8.GetString(Data));
               if Length(Body)>6000 then Body:=Copy(Body,1,6000);
               Site.RemovePair('text').Free; Site.AddPair('text',Body);
             end;
+            finally HTTPStream.Free; end;
           except on E: Exception do Continue; end;
         end;
       finally HTTP.Free; end;
