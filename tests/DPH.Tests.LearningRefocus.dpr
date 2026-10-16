@@ -17,7 +17,7 @@ var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArt
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Store: TDPHKnowledgeStore; View: TDPHWorkspaceView; Model,ImageModel: TDPHDocumentModel; Explain: TDPHExplanationModel;
     Config,Generation: Int64; Rows: TJSONArray; V: TJSONValue; Row,Report,Diagram: TJSONObject;
-    Checks,I: Integer; Failed,Done: Boolean; Form: TDPHMainForm; Watch,Attempt: TStopwatch; Bitmap,BrowserBitmap: TBitmap; ReferenceViewMS: Int64;
+    Checks,I: Integer; Failed,Done: Boolean; Form: TDPHMainForm; Watch,Attempt,OpenWatch: TStopwatch; Bitmap,BrowserBitmap: TBitmap; ReferenceViewMS: Int64;
     PortableStore: TDPHKnowledgeStore; ImageBytes: TBytes; LargeSource,FlowText: string;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
 procedure Check(OK: Boolean; const Text: string);
@@ -480,6 +480,12 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
+              Form.WorkspacePageChange(nil);
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Choose an application to begin');
+              Check(Form.LearningBrowser.Visible and not Form.OverviewMemo.Visible,
+                'Empty handoff dossier is a styled HTML page, not a plain memo');
+              Form.HelpClick(nil);
 
               Check((Form.LessonPageCombo.Items.Count=11) and (Form.LessonPageCombo.Items.IndexOf('Learning library')>=0) and (Form.LessonPageCombo.Items.IndexOf('Database tools')<0) and (Form.LessonPageCombo.Items.IndexOf('Translations')<0),'Default learning navigation includes the teaching library and excludes database administration and translation tools');
               Check((Form.CodePageEdit.Parent=Form.AnalysisSettingsLayout) and (Form.ConfigurationCombo.Parent=Form.AnalysisSettingsLayout),'Encoding and compiler settings are serialized outside the learner toolbar');
@@ -864,6 +870,23 @@ begin
                 BrowserBitmap:=Form.PublishBrowser.CaptureBitmap;
                 try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-source-lines-browser.png')); finally BrowserBitmap.Free; end;
               end;
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
+              OpenWatch:=TStopwatch.StartNew;
+              Form.OpenSelection('',ReferenceDB);
+              Check(Form.ProjectPreparationLayout.Visible,
+                'Large saved-project command starts preparation');
+              repeat
+                Application.ProcessMessages;
+                Form.PollTimerTimer(nil);
+                if not Form.ProjectPreparationLayout.Visible and
+                  Form.LearningBrowser.Visible and (Form.WorkspaceView<>nil) then Break;
+                TThread.Sleep(20);
+              until OpenWatch.ElapsedMilliseconds>60000;
+              WaitHTML(Form.LearningBrowser,'document.querySelector("h1")?.innerText','Handoff overview');
+              Check(not Form.ProjectPreparationLayout.Visible and
+                Form.LearningBrowser.Visible and (Form.WorkspaceView<>nil),
+                'Full saved-project command opens the large reference dossier as HTML');
+              Writeln('Reference end-to-end saved open: ',OpenWatch.ElapsedMilliseconds,' ms'); Flush(Output);
               Form.Hide;
             finally Form.Free; end;
             Check(not Model.Document.GetValue<Boolean>('analysis_complete'),'Learning does not clear partial reference coverage');

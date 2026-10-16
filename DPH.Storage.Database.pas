@@ -1400,7 +1400,9 @@ begin
   Connection:=TFDConnection.Create(nil); Query:=TFDQuery.Create(nil);
   try
     Connection.LoginPrompt:=False; Connection.Params.Values['DriverID']:='SQLite';
-    Connection.Params.Values['Database']:=ADatabasePath; Connection.Params.Values['OpenMode']:='ReadOnly';
+    // A saved SQLite database may have a hot rollback journal after an interrupted
+    // writer. SQLite must recover it before even this first SELECT can run.
+    Connection.Params.Values['Database']:=ADatabasePath; Connection.Params.Values['OpenMode']:='ReadWrite';
     Connection.Connected:=True; Query.Connection:=Connection; Query.SQL.Text:='SELECT root_uri FROM projects WHERE project_id=1'; Query.Open;
     if Query.Eof then raise EDPHStorage.Create('Knowledge project is not initialized'); Result:=Query.Fields[0].AsString;
   finally Query.Free; Connection.Free; end;

@@ -1,5 +1,5 @@
 {
-  "guide_version": 53,
+  "guide_version": 54,
   "last_changed": "2026-10-16",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -31,13 +31,13 @@
     "DPH.Publish.OfflinePreview.pas": "e6405ca03a162c8abb32b1d8f84d9fc77515298caae8a8fc39d903130597b96b",
     "DPH.Publish.Translation.pas": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20",
     "DPH.Storage.Backup.pas": "78e8c8de8af5120f8ce453793f947c5e2918e51dafc66f9e129c964fe28697bc",
-    "DPH.Storage.Database.pas": "42f85caf0e4d93a8923fa8521709a247f46076e330490e44cdfef7f5313b2c62",
+    "DPH.Storage.Database.pas": "dbd57cef591a3da612a0a710f20113129b66106558fd5e39004b048274803bc3",
     "DPH.Storage.Types.pas": "1e83ccbe6868979ff9d763a4f2bf4d64691c2b2343de6717391f03e204d5d219",
     "DPH.UI.ActionPurpose.pas": "6016874bdc24964ce2371431d77babc68f03a50f045e8d20e222e4989bcbf79d",
     "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
     "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
     "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
-    "DPH.UI.Main.pas": "4da26404f917ce5f77556f737528367eb7cdf1e9a137289b18f0af60ddba0f8c",
+    "DPH.UI.Main.pas": "bcaac6f47376d3fd0c29847ed95fa7d0642208b4fcf6f95c3434fd74617bf42d",
     "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
     "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
     "DPH.Workspace.Catalog.pas": "3da578ef1145e1f380e449245a310028d00c1a01bc915dc003c6d101e2d20643",
@@ -59,7 +59,7 @@
     "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
     "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
-    "DPH.UI.Main.fmx": "de779cc586227e8684aa15d52d5a78e25537b95612219c08a23374af986413e4",
+    "DPH.UI.Main.fmx": "8de74da193ae0542a07a8c14637766d10ef33b1e426726e7aed39926c11166d0",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
     "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
     "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
@@ -70,23 +70,23 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "19dfb4666ca99580bb27df121b368d0fbb2978db2121266c954d8aeeb9666585",
-    "docs/guides/source/DPH_User_Guide.txt": "47b09c83c7b83de194e9745565589eba52e9f78b11669daaee16741de49ab9da",
-    "DelphiProjectHandoff.dproj": "09f3a9145a52678e3eebf8be864c73a32e5fd3fc01977a42e8b2250099b5d634"
+    "docs/guides/source/DPH_Engineering_Guide.txt": "1457746181f604d27ea4a29f089e73fed1f5fded99f5432a7e3a310b76d32ab6",
+    "docs/guides/source/DPH_User_Guide.txt": "08d8a888a5bd9e6372a428dbc542c5147887ce256d27deac1307c06aa301a53f",
+    "DelphiProjectHandoff.dproj": "a4bc7f9827a6224d84951b326820dacc40907a7b068e09d85e40e58efeefb128"
   },
   "content": {
     "User": {
       "parts": 3,
       "chapters": 7,
       "subsections": 16,
-      "words": 2035,
+      "words": 2092,
       "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
       "subsections": 175,
-      "words": 17199,
+      "words": 17355,
       "figures": 0
     }
   },

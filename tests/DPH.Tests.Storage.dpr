@@ -208,6 +208,9 @@ begin
         raise Exception.Create('Crash test child did not exit');
       GetExitCodeProcess(ProcessInfo.hProcess,ChildExitCode);
     finally CloseHandle(ProcessInfo.hThread); CloseHandle(ProcessInfo.hProcess); end;
+    Check(SameFileName(ExcludeTrailingPathDelimiter(
+      TDPHKnowledgeStore.ProjectRoot(DatabasePath)),SourceRoot),
+      'WP1-29A','saved-project root lookup recovers an interrupted SQLite journal');
     Store := TDPHKnowledgeStore.Create(DatabasePath,SourceRoot,Migrations);
     Check((ChildExitCode=77) and Store.Status.AnalysisFailed and
       (Store.Status.PublishedGeneration=SavedHead),

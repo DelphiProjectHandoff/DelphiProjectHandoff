@@ -1019,12 +1019,12 @@ begin
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   LearningTopics.ItemIndex:=0;
-  OverviewMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.d240d9aae81a675a', 'Choose a Delphi project or open a saved capture. The handoff dossier will connect startup, forms, commands and open questions to source evidence.');
+  OverviewMemo.Visible:=False;
   LanguageCombo.RefreshLanguages;
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
-  if (not FBusy) and (FView=nil) then HelpClick(nil);
+  if (not FBusy) and (FView=nil) then begin HelpClick(nil); LearningClick(nil); end;
 end;
 procedure TDPHMainForm.FormDestroy(Sender: TObject);
 var Directory: string;
@@ -1823,6 +1823,9 @@ begin
     (FHelpLanguageGeneration <> DATLanguageManager.Generation) then begin
     HelpClick(nil);
     FHelpLanguageGeneration := DATLanguageManager.Generation;
+  end else if (WorkspaceTabs.ActiveTab = OverviewTab) and
+    (FView = nil) then begin
+    LearningClick(nil);
   end else if (WorkspaceTabs.ActiveTab = OverviewTab) and
     (FLearningFacts <> nil) and
     (FOverviewLanguageGeneration <> DATLanguageManager.Generation) then begin
@@ -3309,18 +3312,28 @@ begin
   Result := True;
 end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
-var HTML,PreviewPath,Fallback: string; Offline: Boolean;
+var HTML,PreviewPath: string; Offline: Boolean;
 begin
   if FBinding then Exit;
   if FLearningFacts=nil then begin
-    if (FView<>nil) and (LearningTopics.ItemIndex>=0) then RefreshLearning;
-    Exit;
+    if FView<>nil then begin
+      if LearningTopics.ItemIndex>=0 then RefreshLearning;
+      Exit;
+    end;
+    if FLearningDirectory='' then Exit;
+    try HTML:=TFile.ReadAllText(TPath.Combine(FBaseDirectory,
+      'help\dossier-start.html'),TEncoding.UTF8);
+    except on E: Exception do begin
+      StatusLabel.Text:='Handoff page unavailable: '+E.Message;
+      Exit;
+    end; end;
+  end else begin
+    HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
+      Max(0,LearningTopics.ItemIndex));
   end;
-  HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
-    Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
-  Offline:=PrepareOfflineProjectTranslation(HTML);
+  Offline:=(FLearningFacts<>nil) and PrepareOfflineProjectTranslation(HTML);
   OverviewMemo.Text:='';
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
@@ -3331,11 +3344,8 @@ begin
     else LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin
     FExpectedDossierPage:='';
-    Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
-    Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
-    OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
-    LearningBrowser.Visible:=False; OverviewMemo.Visible:=True;
-    StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message;
+    LearningBrowser.Visible:=False; OverviewMemo.Visible:=False;
+    StatusLabel.Text:='Handoff HTML page could not load: '+E.Message;
     if FPreparingProject and (FPendingCommand='open') then begin
       FPreparingProject:=False;
       WorkspaceTabs.Enabled:=True;

@@ -2992,6 +2992,7 @@ OnChange = LearningClick
 end
 object OverviewMemo: TMemo
 Align = Client
+  Visible = False
 ReadOnly = True
 WordWrap = True
 TextSettings.Font.Size = 15

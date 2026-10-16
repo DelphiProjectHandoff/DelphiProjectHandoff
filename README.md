@@ -8,14 +8,14 @@ Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the o
 
 DPH is experimental Windows software built with Delphi 13.1. It is not a production 1.0 release.
 
-**Release status (16 October 2026):** **0.8.0.4** is the current experimental release. Opening a saved project restores the real Handoff dossier before dismissing preparation. Unchanged partial captures are reused instead of repeatedly analyzed. DPH still checks attached source and refreshes analysis when inputs, analyzer versions, or selected settings change. A partial capture remains clearly marked for review.
+**Release status (16 October 2026):** **0.8.0.5** is the current experimental release. The Handoff dossier opens as a formatted HTML page even before a project is selected. Opening a saved project replaces that page with the captured dossier before dismissing preparation. DPH can recover an interrupted SQLite journal when reopening a saved database. Unchanged partial captures are reused instead of repeatedly analyzed; a partial capture remains clearly marked for review.
 
 ## Choose a download
 
-- **Run the packaged 0.8.0.4 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.4-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
-- **Build the matching editable source:** Download the source distribution from the [0.8.0.4 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.4-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
+- **Run the packaged 0.8.0.5 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.5-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
+- **Build the matching editable source:** Download the source distribution from the [0.8.0.5 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.5-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
 
-The [0.8.0.4 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.4-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
+The [0.8.0.5 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.5-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
 
 ## Build and start from source
 
@@ -29,7 +29,7 @@ The main form is editable in the RAD Studio designer. To edit its DelphiAppTrans
 
 ## Explore an application
 
-Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. DPH keeps a new capture temporary while you explore. When you close DPH or open another project, choose **Yes** to save it as a `.dphdb`, **No** to discard it, or **Cancel** to keep exploring. Save the `.dphdb` outside the application's source tree and keep its adjacent `.dphdb.views` folder. Later, **Open saved project** restores the saved analysis and generated screen images.
+Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. DPH keeps a new capture temporary while you explore. When you close DPH or open another project, choose **Yes** to save it as a `.dphdb`, **No** to discard it, or **Cancel** to keep exploring. Save the `.dphdb` outside the application's source tree and keep its adjacent `.dphdb.views` folder. Later, **Open saved project** restores the saved analysis and generated screen images. An interrupted SQLite journal may be recovered during opening; keep the database and any adjacent journal together until recovery completes.
 
 While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It reads root-level documents and the selected project's top-level `docs`, `Help`, `Guides`, `Manual`, and `Notes` folders; nested release and upgrade packages are excluded. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. DPH screens material before showing it. Existing saved projects are reassessed once under this narrower document rule.
 
