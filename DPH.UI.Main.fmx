@@ -1463,7 +1463,7 @@ end
 end
 object ExplorerList: TListBox
 Align = Client
-ItemHeight = 42
+ItemHeight = 0
 OnClick = ExplorerClick
 OnDblClick = ExplorerExpandClick
 end
