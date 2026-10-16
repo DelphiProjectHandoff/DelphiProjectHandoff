@@ -8,9 +8,9 @@ service when Internet access is available. It is separate from the 35 offline
 language packs in the DPH desktop application. The mockup remains readable
 without the widget.
 
-The two download links point to the 0.8.0.2 experimental GitHub release,
-which predates the unpublished local refocus. Verify both targets and replace
-the screenshots before using this mockup for a later public version.
+The two download links point to the 0.8.0.3 experimental GitHub release.
+Verify both targets and replace the screenshots before using this mockup
+for a later public website.
 No new website has been deployed. The sample interface images are copies of
 the current guide illustrations and should be reviewed before any public site
 is approved.

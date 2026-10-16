@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.2 - WORKSPACE OPERATIONS
+DELPHI PROJECT HANDOFF 0.8.0.3 - WORKSPACE OPERATIONS
 Last changed: 16 October 2026
 
 Start with Getting started. Choose Open application and select the target
@@ -18,7 +18,9 @@ the capture as a .dphdb, No discards it, and Cancel keeps it open. Save outside
 the target source directory. Keep the adjacent .dphdb.views folder with the
 database. Open saved project restores a saved capture. When its original
 source is available, DPH verifies it in the background and scans again if
-the source fingerprint or analyzer/discovery version changed.
+the source fingerprint, analyzer/discovery version, or reading settings
+changed. An unchanged partial capture is reused, with its limits visible;
+reopening alone cannot supply files that were unavailable to the analyzer.
 
 If Handoff dossier says STALE capture, wait for verification to finish or
 choose Open application and select the same project entry. Then review the

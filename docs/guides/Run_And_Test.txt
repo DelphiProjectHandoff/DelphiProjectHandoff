@@ -1,4 +1,4 @@
-RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.2
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.3
 Last changed: 16 October 2026
 
 BUILD AND START FROM SOURCE
@@ -44,6 +44,9 @@ OPEN AN APPLICATION
    previews are prepared when Screenshots is opened.
 6. If the application was studied previously, click Open saved project and
    choose its .dphdb. Keep the adjacent .dphdb.views folder with the database.
+   DPH verifies attached source in the background. An unchanged partial
+   capture opens from the saved findings without repeating the long scan;
+   review its missing inputs and diagnostics before relying on it.
 
 CHECK THE LEARNING VIEWS
 

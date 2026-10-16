@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.2 - DEVELOPER TEST DIRECTIONS
+DELPHI PROJECT HANDOFF 0.8.0.3 - DEVELOPER TEST DIRECTIONS
 Last changed: 16 October 2026
 
 Build DelphiProjectHandoff.dproj with RAD Studio 37 for Win32 and Win64 in
@@ -27,9 +27,10 @@ external Delphi project, a project with incomplete or unsupported source,
 and a saved .dphdb. Verify that the dossier distinguishes source evidence,
 partial capture, and static-inspection limits. Reopen the saved project with
 its original source available and confirm that DPH verifies it; a changed
-manifest or analyzer version should start an incremental scan. A persistent
-STALE capture warning can mean analysis_complete is false, so inspect
-diagnostics before calling it an outdated timestamp. The phrase Static
+manifest or analyzer version should start an incremental scan. Reopening an
+unchanged partial capture should reuse its saved findings without another
+generation; inspect diagnostics and missing inputs before calling it current
+or complete. The phrase Static
 inspection only should remain on every capture.
 
 Generated form views should be checked against the source .fmx or .dfm and
