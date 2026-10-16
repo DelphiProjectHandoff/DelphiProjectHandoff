@@ -1,15 +1,16 @@
 {
-  "guide_version": 46,
-  "last_changed": "2026-10-15",
+  "guide_version": 47,
+  "last_changed": "2026-10-16",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
-    "DPH.Analysis.Explanations.pas": "493cee10529fa968a92756cbc1f499eddb134128e3c03e3a1d04fdd9e7e844cf",
+    "DPH.Analysis.Explanations.pas": "72ff72e666edc6fcb143cf723c5866a62cc54302972ba03908dd197cb7110e93",
     "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
     "DPH.Analysis.Model.pas": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035",
     "DPH.Analysis.Persistence.pas": "08609c3df54250a8f6712e22e991f7ad8d444352e7103ba0959d2feba4a2b3c7",
     "DPH.Analysis.Quality.pas": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82",
     "DPH.Analysis.SQL.pas": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e",
     "DPH.Analysis.Symbols.pas": "47c187a32ad1a040760bd9459e843d9c6fa7ced7b4ea5843280d2680127cc047",
+    "DPH.Handoff.Dossier.pas": "973f8b443d885945e6931b685c0da1b0ebd1234f4b632562cdb6254cc962a08c",
     "DPH.Knowledge.ActionPurpose.pas": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f",
     "DPH.Knowledge.ComponentDependency.pas": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe",
     "DPH.Knowledge.Glossary.pas": "9c50a06ccf405f786526e206e5e84ea956604eeb42e1a84b9f91c31cced70dcb",
@@ -24,8 +25,8 @@
     "DPH.Project.Analysis.pas": "5af3808df19a7c403b456342e45b9e2c8c63195368847b151f3c57ed461b5c2a",
     "DPH.Project.Inventory.pas": "ddfbc8275fc3dc70da3d52ea6dd908bd34834b669b8c5bd91226c7a9eb1f06b4",
     "DPH.Project.Source.pas": "8efa444743f0e90831631df963f26a2542561efab63b26f1c5b41fff6b96994e",
-    "DPH.Publish.BrowserPolicy.pas": "92dfcec01b4933e8ed79182c7578eaf5e22e386acfa7972c5d497c263cbf17f4",
-    "DPH.Publish.Export.pas": "7e8ff96a2cd96a49023bb64dd27365333cda3559a202b8809185178284339866",
+    "DPH.Publish.BrowserPolicy.pas": "c8eec68052e893df3df80b12ed766a6b317f8601adaddc7a30afe20f8455a710",
+    "DPH.Publish.Export.pas": "2f6613582784e29a86c277e17cb642d78a2521846909f4454e7b31ff74fb3db8",
     "DPH.Publish.Model.pas": "e3c0a4a12f7c823d8c8b60778f28045560601e7cbe642fc3c017fb70a8d9835d",
     "DPH.Publish.OfflinePreview.pas": "e6405ca03a162c8abb32b1d8f84d9fc77515298caae8a8fc39d903130597b96b",
     "DPH.Publish.Translation.pas": "978be4250a2332736f73cd4e56e85d5c2f0b0d3a6224a4db2f8f3b7b5f4cde20",
@@ -36,7 +37,7 @@
     "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
     "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
     "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
-    "DPH.UI.Main.pas": "cccd5d7cf5eccd51c3e1130e6a1c436d4c7e3439f2f1231d452be61787884714",
+    "DPH.UI.Main.pas": "52ca21110d548425d3a214f2a1a7e97a05c8bcd3f0acd77cf4f40eca32295b4a",
     "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
     "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
     "DPH.Workspace.Catalog.pas": "3da578ef1145e1f380e449245a310028d00c1a01bc915dc003c6d101e2d20643",
@@ -51,14 +52,14 @@
     "DPH.Workspace.Keyboard.pas": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923",
     "DPH.Workspace.LayoutRules.pas": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49",
     "DPH.Workspace.Model.pas": "c8fc0d7ccae558c48715053ed42c4cd6e9124618a22c622a5d45bbd3d0779740",
-    "DPH.Workspace.Screen.pas": "a80b6d073a75eb637f9f764275e215721682bceccbe4503019c6e06d958d11fc",
+    "DPH.Workspace.Screen.pas": "798bae197bf60d46f1ec62b93f0712b32cfff62f5d67c248186562a0a640153b",
     "DPH.Workspace.ScreenHistory.pas": "bd05a76dcae7b4c872345021a56eab0b8b0108d954c1a5c35686321852082161",
     "DPH.Workspace.Worker.pas": "39ddc5fd62cac00d9346e6d1002168abc54563456879d4c5993ad6898c108f60",
     "DPH.UI.ActionPurpose.fmx": "d3ee151a051a08bd8c7e75b07ca657cdf5ae5ab7c3ba7112e021253329bdf093",
     "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
     "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
-    "DPH.UI.Main.fmx": "dc795df5740f7d3411d1d95f271d81d4f664a21a8116202f187d3d5ffb2dc64c",
+    "DPH.UI.Main.fmx": "2b38537c9a798f3f5c6b51eeb169a8778bf26cbbb913f13a895f43d988479945",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
     "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
     "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
@@ -69,25 +70,25 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "c6c4d1ddd960965f0f5fdd546a7ca29e4b63a85fd8cf0899e4260429d4086c37",
-    "docs/guides/source/DPH_User_Guide.txt": "9f6c4fbd2c430818441fd33ce2d944d3dcc76d441b8299c251c65908ca5a29ec",
+    "docs/guides/source/DPH_Engineering_Guide.txt": "2577687ba526e93ee28395931215165bd5d1ecc1e4c87976b329325593ef8725",
+    "docs/guides/source/DPH_User_Guide.txt": "13c8bc169a8ae5c69fad63dc356e99cf649b625f9d264976663444011f1a2e2b",
     "DelphiProjectHandoff.dproj": "2cd9fc4a180c6bc848a2d74bfd46c2cda031f5721ae52f45d4d3cfa07e04b3e9"
   },
   "content": {
     "User": {
       "parts": 3,
       "chapters": 7,
-      "subsections": 15,
-      "words": 1537,
-      "figures": 3
+      "subsections": 16,
+      "words": 1690,
+      "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
-      "subsections": 173,
-      "words": 16649,
+      "subsections": 174,
+      "words": 16795,
       "figures": 0
     }
   },
-  "basis": "Current source and serialized controls, current learner procedures, exact unit declarations and SQL migration reference"
+  "basis": "Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference"
 }

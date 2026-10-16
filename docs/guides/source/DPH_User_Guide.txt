@@ -1,46 +1,47 @@
 @part PART 1 Getting started
 @chapter 1 What Delphi Project Handoff does
 @section 1.1 Purpose and limits
-Delphi Project Handoff, or DPH, helps you understand an unfamiliar Delphi application from files you already have. It reads a selected .dproj, .dpr, or .groupproj and the related Pascal units, saved forms, project-local guides, notes, and logs. DPH does not compile, run, or modify the selected application.
-Start with the application's purpose and first form, then follow screens, controls, and operations to their source. DPH identifies what the files support; it cannot establish every business rule, permission, runtime state, or outcome. Treat a proposed relationship in an application diagram as a route to investigate, not proof that an action occurred.
+Delphi Project Handoff, or DPH, prepares an evidence-based handoff for an unfamiliar Delphi application. It reads a selected .dproj, .dpr, or .groupproj and related Pascal units, saved forms, project-local guides, notes, and logs. DPH does not compile, run, or modify the selected application.
+Begin with the Handoff dossier. It distinguishes source and document evidence from suggestions about where to read next, then links startup forms, visible commands, data candidates, and unresolved questions to the underlying capture. DPH cannot establish every business rule, permission, runtime state, or outcome. Treat a proposed relationship in an application diagram as a route to investigate, not proof that an action occurred.
 @section 1.2 What you need
 The public experiment offers two ZIP files: a ready-to-run Windows package and a separate editable Delphi source distribution. Neither is an installer. For the Windows package, extract the whole ZIP and run the Win64 executable, or Win32 if needed. To build from source, open DelphiProjectHandoff.dproj in RAD Studio 37, build Win32 or Win64, and keep the project resources in place. The WebView2 Runtime is needed for formatted pages; WebView2Loader.dll must be beside the executable.
 The User Guide explains the visible app. The Engineering Guide explains its implementation and validation. DPH's original code and documentation are licensed under Apache 2.0; bundled dependencies have separate terms listed in THIRD_PARTY_NOTICES.md.
 @chapter 2 Open your first project
 @section 2.1 The main window
-The header contains Open application, Open saved project, Close, the Read public websites checkbox, the language selector, and six tabs: Getting started, Learn the project, Learning library, Project map, Screenshots, and Application diagrams. The status line reports when project preparation is under way or complete. The selected language changes DPH's interface and built-in explanations offline. The German choice also offers an experimental local translation of some English project prose; original files, code identifiers, citations, and form captions remain unchanged.
+The header contains Open application, Open saved project, Close, the Read public websites checkbox, the language selector, and six tabs: Getting started, Handoff dossier, Learning library, Project map, Screenshots, and Application diagrams. The status line reports when project preparation is under way or complete. The selected language changes DPH's interface offline. The German choice also offers an experimental local translation of selected English project prose; original files, code identifiers, citations, and form captions remain unchanged. The new dossier narrative is currently English.
 @image docs/guides/assets/dph-getting-started.png|Figure 1. The current Getting started page in DPH, captured from its embedded browser.
 @section 2.2 Open the source
 @steps
 Click Open application and choose the target application's .dproj, .dpr, or .groupproj file. Do not select DPH's own project.
 Save the proposed .dphdb outside the target source folder. Keep its adjacent .dphdb.views folder with it.
-Wait for preparation to finish. Read the progress message, then confirm the project name in Learn the project.
+Wait for preparation to finish. Read the progress message, then confirm the project name and capture status in Handoff dossier.
 Open Screenshots to see whether saved form definitions produced blank screen views.
 @end
 If you already have a .dphdb, click Open saved project. Opening the saved file restores its captured findings and managed images; it does not automatically re-run the target application.
 @section 2.3 If information is missing
 A project may have no helpful guide, no saved form, or code that the analyzer cannot resolve. DPH should show the available evidence and mark uncertain conclusions. A missing document or diagram connection is not evidence that the target application lacks that behavior. Ask someone familiar with the application when its purpose or operating rules cannot be established from files.
 @part PART 2 Explore the application
-@chapter 3 Learn the project
-@section 3.1 Read the application route
-Learn the project opens with a route through the selected application. Begin with its apparent purpose and where the program starts. The first form is identified from the program's automatic form creation when that declaration is available; a Pascal unit and form definition provide supporting context. Follow screen links to the corresponding form view.
-Next inspect a real task and related actions. DPH can connect a visible control to a handler and relevant routines, but it cannot supply an exact operating procedure when prerequisites or expected results are absent from the available material. Use the source links to verify what was captured.
+@chapter 3 Read the Handoff dossier
+@section 3.1 Follow the evidence
+Handoff dossier has four parts. Handoff overview reports capture status, a documented or reviewed purpose when available, startup form registrations, saved form designs, and a suggested reading tour. Commands and workflows lists clickable control events with their connected handlers. Data and operations shows static data and output candidates. Risks and open questions collects author questions and analyzer diagnostics. Each item must be checked against its cited source before being used as an operating instruction.
+@image docs/guides/assets/dph-handoff-dossier.png|Figure 2. The Handoff dossier groups captured evidence and identifies the limits of static inspection.
+The example in Figure 2 is marked stale; refresh its capture before relying on its details. Startup registration order is a source fact, not proof of which window was first visible. A saved event binding identifies a possible handler, not proof that a user can reach the control or that the handler runs. The dossier does not invent a business purpose when none was found. Use its links to inspect form designs, source objects, documents, and specialist reports.
 @section 3.2 Follow a source link
 A linked form or control opens the relevant view or selection. Use Back to return to the preceding selection, Up one level to move to a containing object, Save place to remember a location, and Saved places to revisit it. Next results advances when another page of object results is available. These commands navigate findings; they are not steps in the selected application's task.
 @chapter 4 Read the Learning library
 @section 4.1 Topics and documents
 The left pane groups starting topics, discovered documents, and screens. Choose an item to read its formatted content in the right pane. A document found in more than one location has a location selector; each location retains its own content and source path. Search the list by title or relevant text when many entries are present.
-@image docs/guides/assets/dph-learning-library.png|Figure 2. A project README displayed as formatted content in the current Learning library.
+@image docs/guides/assets/dph-learning-library.png|Figure 3. A project README displayed as formatted content in the current Learning library.
 Document discovery stays within the selected project's directory. DPH samples a bounded set of eligible guides, help files, notes, and logs. PDF, older Word, RTF, and similar formats require LibreOffice at its standard Windows installation path for text extraction. DOCX and supported text formats are read directly. If a file has no usable text, the library says so rather than presenting an empty page. Scanned image-only PDFs may require OCR elsewhere before DPH can read them.
 @section 4.2 Language and online references
-All 35 interface languages work offline. German additionally has a bundled experimental English-to-German model for selected project-purpose and guide passages in Learn the project and Learning library. It runs locally, may make translation mistakes, and does not alter the original files or saved evidence. Other language choices and unmarked project content remain in the source language. Technical names, code and citations stay as written.
+All 35 interface language packs work offline. German additionally has a bundled experimental English-to-German model for selected project prose in Handoff dossier and Learning library. It runs locally, may make translation mistakes, and does not alter the original files or saved evidence. Other language choices and unmarked project content remain in the source language. The dossier's new built-in narrative remains English pending translation review. Technical names, code and citations stay as written.
 Read public websites starts unchecked. When you enable it, the next analysis may fetch limited text from up to three eligible public HTTPS pages cited in selected project documents. DPH does not offer a general web search. Leave the checkbox off for a local-only project read; changing it does not retroactively remove evidence from a saved analysis. Each fetched response is capped at 128 KiB. DPH rejects local-looking hosts and privately resolved IPv4 addresses, pins each request to its checked public address, uses no proxy, and does not follow redirects. If Windows cannot apply address pinning, the request is skipped. This optional feature requires Windows 10 21H1 or later.
 @chapter 5 Inspect source and forms
 @section 5.1 Project map
 Project map lists captured units, types, objects, controls, procedures, functions, variables, and related items. Filter the left list, expand a unit, and select an item to see its type, declaration, source, and connections. Some relationships are inferred or unresolved; read the explanation and source reference before relying on them.
-@image docs/guides/assets/dph-object-explanation.png|Figure 3. The current DPH window showing a selected Pascal operation and its source-linked explanation.
+@image docs/guides/assets/dph-object-explanation.png|Figure 4. The current DPH window showing a selected Pascal operation and its source-linked explanation.
 @section 5.2 Screenshots
-Screenshots contains one blank screen image for each distinct supported .fmx or .dfm form definition. DPH generates these views itself and saves them beside the .dphdb. Use Fit to see a complete view or Native pixels to inspect detail. These are design-time reconstructions, not photographs of the target application running. Custom painting, styles, data, and runtime layout may differ.
+Screenshots creates a blank screen image for each distinct supported .fmx or .dfm form definition when you open the page. DPH saves these views beside the .dphdb. Use Fit to see a complete view or Native pixels to inspect detail. These are design-time reconstructions, not photographs of the target application running. Custom painting, styles, data, and runtime layout may differ.
 @section 5.3 Application diagrams
 Application diagrams show possible form navigation, routine calls, information paths, or dependencies found in project files. Choose a diagram type and read its explanation above the drawing. Select a box to inspect the represented object. Blue solid arrows are direct file connections; orange dashed arrows need interpretation. A limited drawing may omit nodes or arrows, so use a focused selection or another grouping when the larger diagram is crowded.
 @part PART 3 Continue safely
@@ -50,10 +51,12 @@ Keep the .dphdb and adjacent .dphdb.views folder together. Click Open saved proj
 @section 6.2 Common problems
 If formatted pages are blank, check that Microsoft WebView2 Runtime is installed and WebView2Loader.dll is beside the DPH executable. If a PDF or older word-processing file has no text, install LibreOffice in its standard Windows location and reopen the application project. If a form view is approximate, inspect the actual .fmx or .dfm and remember that runtime painting is outside this generator's evidence.
 If a project takes longer than expected, watch the preparation message for the current stage. Large source trees, office-document conversion, and referenced HTTPS sites can add time. DPH limits the document scan and does not require Internet access to open the project.
+@section 6.3 Share a read-only handoff
+Open Sharing and choose Export handoff. Select a new destination folder; DPH will not overwrite an existing edition. Click Preview handoff to inspect its opening page. The portable edition starts with handoff-0.html and has four linked dossier pages, a technical index, source-linked object explanations, and the earlier learning edition at learning.html. Share the whole folder, not an individual HTML page, after reviewing its scope, source citations, author claims, images, and any sensitive material. Validation hashes detect changes relative to the captured manifest; they do not authenticate the author.
 @chapter 7 First use acceptance checklist
 @section 7.1 A practical review
 @steps
-Open a small Delphi project that is not DPH and verify that the project name and first form are correct.
+Open a small Delphi project that is not DPH and verify that the dossier names the project and cites its startup form.
 Follow one control from its screen to its source declaration or handler, then use Back to return.
 Read a project guide in Learning library. Confirm that its text is readable and its file location is identifiable.
 Open a generated blank screen and compare its saved controls with the form definition.
@@ -61,4 +64,3 @@ Open an application diagram and verify that a selected box opens the expected ob
 Close and reopen the .dphdb with its .views folder; confirm that the same project and screens appear.
 Switch DPH to another interface language and back. Confirm that the project's original text does not change.
 @end
-Passing this checklist on one project is a local first-use check. It does not prove that all Delphi dialects, document formats, layouts, or runtime behaviors are supported.

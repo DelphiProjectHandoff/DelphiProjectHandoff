@@ -9,8 +9,10 @@ type
     class procedure WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean); static;
   end;
 implementation
-uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.RegularExpressions, System.NetEncoding, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
+uses System.IOUtils, System.Classes, System.StrUtils, System.Hash, System.Zip, System.RegularExpressions, System.NetEncoding, System.Generics.Collections, System.Generics.Defaults, Winapi.Windows, DPH.Analysis.Explanations, DPH.Handoff.Dossier, DPH.Project.Source, DPH.Parse.Model, DPH.Workspace.Graphs;
 class procedure TDPHPublisher.WriteGuide(AModel: TDPHDocumentModel; const APath,ATitle: string; AUser: Boolean);
+const DossierTitles: array[0..3] of string = ('Handoff overview','Commands and workflows',
+  'Data and operations','Risks and open questions');
 var Archive: TZipFile; Document,Body,Headings,Lesson: string; V,W,L: TJSONValue; R: TJSONObject; I,StartAt,EndAt: Integer; Linked: Boolean; Explanations: TDPHExplanationModel; Paragraph: string;
   procedure Part(const Name,Text: string);
   var Stream: TBytesStream;
@@ -25,17 +27,16 @@ begin
     '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-1" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
   Headings:='';
   if AUser then begin
-    Body:=P(ATitle,'Title')+P('Learn '+AModel.Document.GetValue<string>('project'),'Normal')+
+    Body:=P(ATitle,'Title')+P('Handoff for '+AModel.Document.GetValue<string>('project'),'Normal')+
       P('Last changed '+AModel.Document.GetValue<string>('captured_utc','not recorded'),'Normal')+
-      P('This application-specific route combines saved purpose and task instructions with captured screens and action connections. Missing business meaning and expected results remain questions for a knowledgeable contributor. DPH does not run the application. Open learning.html for linked explanations and supplied pictures.','Normal')+
+      P('This guide separates captured source facts, project-document statements, reading suggestions and unresolved questions. It cannot establish runtime behavior by itself. DPH does not run the application. Open handoff-0.html for linked evidence and learning.html for saved teaching material.','Normal')+
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+P('Contents','Title')+
       '<w:p><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \o "1-1" \h \z \u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r></w:p>';
-    Explanations:=TDPHExplanationModel.Create(AModel.Document);
-    try
       for I:=0 to 3 do begin
-        Body:=Body+P(TDPHExplanationModel.ApplicationRouteTitle(I),'Normal');
-        Headings:=Headings+P(TDPHExplanationModel.ApplicationRouteTitle(I),'Heading1');
-        Lesson:=Explanations.ApplicationRouteHTML(I);StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
+        Body:=Body+P(DossierTitles[I],'Normal');
+        Headings:=Headings+P(DossierTitles[I],'Heading1');
+        Lesson:=TDPHHandoffDossier.Render(AModel.Document,I,True);
+        StartAt:=Pos('<main>',Lesson);EndAt:=Pos('</main>',Lesson);
         Lesson:=Copy(Lesson,StartAt+6,EndAt-StartAt-6);
         Lesson:=Lesson.Replace('<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','');
         Lesson:=TRegEx.Replace(Lesson,'(?is)<h[23]>(.*?)</h[23]>',sLineBreak+'[[HEADING]]$1'+sLineBreak);
@@ -48,9 +49,8 @@ begin
           else Headings:=Headings+P(Trim(Paragraph),'Normal');
         end;
       end;
-    finally Explanations.Free;end;
-    Body:=Body+P('Continue learning','Normal')+'<w:p><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p><w:p><w:r><w:br w:type="page"/></w:r></w:p>'+Headings;
-    Body:=Body+P('Continue learning','Heading1')+P('Open learning.html in this edition for linked explanations, supplied screenshots and business terms. To add or change instructions, open the project in DPH and choose Prepare lessons.','Normal');
+    Body:=Body+P('Continue investigating','Normal')+'<w:p><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p><w:p><w:r><w:br w:type="page"/></w:r></w:p>'+Headings;
+    Body:=Body+P('Continue investigating','Heading1')+P('Open handoff-0.html for clickable evidence and learning.html for supplied tasks, screenshots and business terms. To add or change attributed knowledge, open the project in DPH and use its authoring controls.','Normal');
   end else begin
   for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject;
     if AUser and not MatchText(R.GetValue<string>('id'),['overview','user','troubleshooting','orientation','help']) then Continue;
@@ -294,10 +294,13 @@ begin
     if LessonIndex=0 then Lines.Append('<p>No business terms have been supplied for this edition.</p>');
     Lines.Append('</section><p><a href="#lesson_0">Return to Meet this app</a> &middot; <a href="index.html">Optional technical reference</a></p></body></html>');
     Write('learning.html',Lines.ToString);
+    for LessonIndex:=0 to 3 do
+      Write('handoff-'+IntToStr(LessonIndex)+'.html',
+        TDPHHandoffDossier.Render(AModel.Document,LessonIndex,True));
     Page.Append('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; script-src ''self''; style-src ''self''; img-src ''self'' data:; connect-src ''none''; object-src ''none''; base-uri ''none''; form-action ''none''"><title>Delphi Project Handoff reference</title><link rel="stylesheet" href="assets/style.css"></head><body><header><h1 class="notranslate" translate="no">'+TDPHDocumentModel.HTML(AModel.Document.GetValue<string>('project'))+'</h1><p class="status">Generation '+AModel.Document.GetValue('generation_id').Value+' | '+
       IfThen(AModel.Document.GetValue<Boolean>('analysis_complete'),'Captured analysis complete','PARTIAL analysis')+' | '+IfThen(AModel.Document.GetValue<Boolean>('detached'),'Detached source','Connected capture')+' | '+IfThen(AModel.Document.GetValue<Boolean>('stale'),'STALE evidence','Captured fingerprint')+'</p><p>Static evidence; runtime behavior unobserved. Human verification is recorded separately.</p></header><nav>');
     for V in AModel.Document.GetValue<TJSONArray>('sections') do begin R:=V as TJSONObject; Page.Append('<a href="#'+R.GetValue<string>('id')+'">'+TDPHDocumentModel.HTML(R.GetValue<string>('title'))+'</a>'); end;
-    Page.Append('</nav><p><a href="learning.html">Start learning this application</a></p><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
+    Page.Append('</nav><p><a href="handoff-0.html">Start with the evidence-based Handoff dossier</a> | <a href="learning.html">Read the earlier learning edition</a></p><p><label>Search objects <input id="search" type="search" placeholder="Name, kind or signature"></label></p>');
     if LocalePage<>'' then Page.Append('<p><a href="'+LocalePage+'">Localized authored sections ('+ALocale+')</a>: '+TranslatedCount.ToString+' reviewed; '+FallbackCount.ToString+' source-language fallbacks. Generated guidance remains source language.</p>');
     Page.Append('<section><h2>Source navigation</h2><p>'+IfThen(AIncludeSourceNavigation,'Explicitly included redacted browsing views: ','Excluded by default. ')+
       RenderedSources.ToString+' rendered files; '+OmittedSources.ToString+' omitted files. Original source bytes are not included.</p>');
@@ -391,7 +394,7 @@ begin
     Write('indexes/glossary.jsonl',Lines.ToString);
     Write('validation/coverage.json',AModel.Document.GetValue<TJSONObject>('coverage').Format(2));
     Write('README.md','# '+AModel.Document.GetValue<string>('project')+' handoff'+#10+#10+
-      '1. Open learning.html offline. Start with the purpose, follow a screen action and read supplied task instructions.'+#10+
+      '1. Open handoff-0.html offline. Read capture status, purpose evidence, command bindings, data candidates and open questions. The earlier learning edition remains at learning.html.'+#10+
       '2. Compare manifest.json input_fingerprint with a separately trusted capture identity. Run DPH.ValidateHandoff with the bundle directory and that fingerprint; use --allow-stale only for explicit historical inspection.'+#10+
       '3. Read project-summary.md, architecture.md, build-and-test.md, known-risks.md and decisions-and-unknowns.md. Follow exact source ranges in evidence/references.jsonl.'+#10+
       '4. Inspect coverage and authored section review states. Hashes establish integrity relative to this manifest, not author authentication.'+#10+#10+

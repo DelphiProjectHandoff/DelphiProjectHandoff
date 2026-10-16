@@ -7,8 +7,8 @@ from docx.shared import Inches,Pt,RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
-CHANGED='15 October 2026'
-VERSION=46
+CHANGED='16 October 2026'
+VERSION=47
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -27,6 +27,7 @@ LAYER_PURPOSE={
 'Analysis.Persistence':'Persists supported semantic facts and their references into generation-scoped storage. Keep fact transactions and publication separate.',
 'Analysis.Quality':'Projects metrics and investigation candidates from captured facts. Candidate findings do not prove unused code or safe removal.',
 'Analysis.Explanations':'Builds learner topics and object explanations from source facts and relevant attributed knowledge. Keep meaning first and deeper code optional.',
+'Handoff.Dossier':'Renders the selected capture as a four-part, source-linked maintenance handoff. Distinguish extracted facts, author statements, reading guidance and unresolved questions.',
 'Learning.Discovery':'Finds project-local documents, logs, saved screens, startup forms and referenced public websites. Retain source paths, bounded scanning, original-language text and explicit extraction status.',
 'Storage.Types':'Defines persistent status and manifest types shared by analysis and storage. Changes require serialization and lifecycle compatibility checks.',
 'Storage.Database':'Owns the SQLite writer, migrations, generations, knowledge revisions, artifacts and indexes. Thread ownership and transactional boundaries are mandatory.',
@@ -199,7 +200,7 @@ def help_page(blocks):
  chapters=[v for k,v in blocks if k=='chapter']
  for i,title in enumerate(chapters):parts.append(f'<a href="#chapter_{i}">{html.escape(title)}</a>')
  parts.append('</nav>');index=-1
- pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Open application|Open saved project|Learn the project|Learning library|Project map|Screenshots|Application diagrams'
+ pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Open application|Open saved project|Handoff dossier|Learning library|Project map|Screenshots|Application diagrams'
  def prose(s):return re.sub(pattern,lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(s))
  for k,v in blocks:
   if k=='part':parts.append('<h2>'+html.escape(v)+'</h2>')
@@ -220,5 +221,5 @@ if __name__=='__main__':
   if kind=='User':help_page(blocks)
   reports[kind]={'parts':sum(k=='part' for k,v in blocks),'chapters':sum(k=='chapter' for k,v in blocks),'subsections':sum(k=='section' for k,v in blocks),'words':len(' '.join(' '.join(v) if isinstance(v,list) else v for k,v in blocks).split()),'figures':sum(k=='image' for k,v in blocks)}
  sources={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in [*ROOT.glob('DPH.*.pas'),*ROOT.glob('DPH.UI.*.fmx'),* (ROOT/'migrations').glob('*.sql'),*(ROOT/'docs/guides/source').glob('*.txt'),ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-15','sources':sources,'content':reports,'basis':'Current source and serialized controls, current learner procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-16','sources':sources,'content':reports,'basis':'Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
  print(json.dumps(reports,indent=2))

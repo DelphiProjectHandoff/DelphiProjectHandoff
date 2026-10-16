@@ -5,7 +5,8 @@ uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITyp
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
   FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser, DAT.Components.FMX,
   DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
-  DPH.Publish.Model, DPH.Publish.OfflinePreview, DPH.Analysis.Explanations, DPH.Workspace.Catalog;
+  DPH.Publish.Model, DPH.Publish.OfflinePreview, DPH.Analysis.Explanations,
+  DPH.Handoff.Dossier, DPH.Workspace.Catalog;
 type
   TDPHMainForm = class(TForm)
     DATLanguageManager: TDATFMXLanguageManager;
@@ -823,6 +824,7 @@ type
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
     FOfflinePreview: TDPHOfflinePreview;
     FImages: TJSONArray;
+    FPendingScreenshots: TJSONArray;
     FCatalog: TDPHWorkspaceCatalog;
     FCatalogPaths: TList<string>;
     FCardRows:TList<TJSONObject>;
@@ -1012,8 +1014,7 @@ begin
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   LearningTopics.ItemIndex:=0;
-  OverviewMemo.Text:='Choose an application or open saved lessons. Its own purpose, screens, actions and supplied tasks will shape the learning route.';
-  HelpClick(nil);
+  OverviewMemo.Text:='Choose a Delphi project or open a saved capture. The handoff dossier will connect startup, forms, commands and open questions to source evidence.';
   LanguageCombo.RefreshLanguages;
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
@@ -1022,6 +1023,7 @@ begin
   begin
     if (FCatalog<>nil) and TFile.Exists(FCatalog.LastDatabase) then OpenSelection('',FCatalog.LastDatabase);
   end;
+  if (not FBusy) and (FView=nil) then HelpClick(nil);
 end;
 procedure TDPHMainForm.FormDestroy(Sender: TObject);
 var Directory: string;
@@ -1031,7 +1033,7 @@ begin
   FCardRows.Free;FLibraryEntries.Free;FCardDraft.Free;
   FContinuity.Free;
   FSearchResults.Free; FCoverage.Free; FLinkTargets.Free; FEditableLinks.Free; FReviewTasks.Free; FQuestions.Free; FObservations.Free; FTranslations.Free;
-  FImages.Free; FExplanations.Free; FLearningFacts.Free;
+  FPendingScreenshots.Free; FImages.Free; FExplanations.Free; FLearningFacts.Free;
   FOfflinePreview.Free;
   FView.Free; FGraph.Free; FScreen.Free; FExplorerKeys.Free; FRelationKeys.Free; FHistory.Free; FBookmarks.Free; FExpandedKeys.Free; FDetails.Free;
   FKnowledge.Free; FKnowledgeRows.Free; FGlossaryRows.Free;
@@ -1134,7 +1136,7 @@ begin
   FGraphLanguageGeneration := 0;
   if (FView <> nil) and not FBusy then begin
     StatusLabel.Text:=DATFormatText('DPH.UI.Main.Runtime.StatusLabel_Text.Text.27b34e6d78564198',
-      'Project information for %s is ready. Choose Learn the project to continue.',
+      'Project information for %s is ready.',
       [#$2066+FView.Document.GetValue<string>('entry')+#$2069]);
     if not FView.Document.GetValue<Boolean>('analysis_complete') then
       StatusLabel.Text:=StatusLabel.Text+' '+DATFormatText(
@@ -1143,17 +1145,24 @@ begin
   end;
   UpdateLearnerNavigation;
   if (FView<>nil) and not FBusy then begin
-    PreviousScreen:=ScreenshotList.ItemIndex;
-    SavedScreens:=TJSONArray.Create;
-    if FImages<>nil then for ScreenRow in FImages do
-      if ScreenRow.GetValue<Int64>('artifact_id',0)>0 then
-        SavedScreens.AddElement(ScreenRow.Clone as TJSONValue);
-    LoadScreenshots(SavedScreens);
-    if (PreviousScreen>=0) and (PreviousScreen<ScreenshotList.Count) then begin
-      ScreenshotList.ItemIndex:=PreviousScreen;
-      ScreenshotClick(nil);
+    if FPendingScreenshots=nil then begin
+      SavedScreens:=TJSONArray.Create;
+      if FImages<>nil then for ScreenRow in FImages do
+        if ScreenRow.GetValue<Int64>('artifact_id',0)>0 then
+          SavedScreens.AddElement(ScreenRow.Clone as TJSONValue);
+      FPendingScreenshots:=SavedScreens;
     end;
-  end else ScreenshotClick(nil);
+    if WorkspaceTabs.ActiveTab=ScreenshotTab then begin
+      PreviousScreen:=ScreenshotList.ItemIndex;
+      SavedScreens:=FPendingScreenshots;
+      FPendingScreenshots:=nil;
+      LoadScreenshots(SavedScreens);
+      if (PreviousScreen>=0) and (PreviousScreen<ScreenshotList.Count) then begin
+        ScreenshotList.ItemIndex:=PreviousScreen;
+        ScreenshotClick(nil);
+      end;
+    end;
+  end;
   FPendingLanguageRefresh := True;
 end;
 procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1319,7 +1328,8 @@ begin
  end;
  if R.GetValue<string>('library_kind','')='route' then begin
    Title:=R.GetValue<string>('heading','Learning route');
-   HTML:=FExplanations.ApplicationRouteHTML(R.GetValue<Integer>('route_index',0));
+   HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
+     R.GetValue<Integer>('route_index',0));
    Body:=TRegEx.Replace(HTML,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
    CardReader.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Body,'<[^>]+>','')).Trim;
  end else if R.GetValue<TJSONArray>('sections',nil)<>nil then begin
@@ -1579,7 +1589,7 @@ var R,Lesson,Fields,Step,Learning:TJSONObject;Steps:TJSONArray;Checked:Integer;
 begin
  TaskCheckStep.Enabled:=False;TaskResetProgress.Enabled:=False;TaskProgressLabel.Text:='Enter your name to save your place on this computer.';
  TaskPrevious.Enabled:=False;TaskNext.Enabled:=False;TaskRestart.Enabled:=False;TaskEdit.Enabled:=False;TaskNotes.Enabled:=False;
- TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:='Select saved instructions on the left. If none are supplied, use Learn the project or ask the author to prepare one common task.';
+  TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:='Select saved instructions on the left. If none are supplied, read the Handoff dossier or ask the author to prepare one common task.';
  TaskStepLabel.Text:='Step instructions';TaskActionMemo.Text:='';TaskResultMemo.Text:='';
  if (FTaskRows=nil) or (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
  R:=FTaskRows[TaskList.ItemIndex];TaskReaderTitle.Text:=R.GetValue<string>('title');TaskEdit.Enabled:=True;TaskNotes.Enabled:=True;
@@ -1779,6 +1789,11 @@ begin
     InspectorLayout.Visible:=(WorkspaceTabs.ActiveTab=SourceTab) or
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
     InspectorSplitter.Visible:=InspectorLayout.Visible;
+  end;
+  if (WorkspaceTabs.ActiveTab=ScreenshotTab) and (FPendingScreenshots<>nil) then begin
+    var PendingScreenshots:=FPendingScreenshots;
+    FPendingScreenshots:=nil;
+    LoadScreenshots(PendingScreenshots);
   end;
   if FView<>nil then FPendingWorkspaceTab:=WorkspaceTabs.ActiveTab;
   if (FLearningDirectory = '') or (DATLanguageManager.Generation = 0) then Exit;
@@ -2063,7 +2078,7 @@ begin
   ComparisonStatus.Text:='No comparison loaded.'; ComparisonNextButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
-  FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Open an application to generate its blank screen views.';
+  FreeAndNil(FPendingScreenshots); FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Open an application to generate its blank screen views.';
   FScreenshotOriginTab:=nil; ScreenshotReturnButton.Enabled:=False;
   FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
@@ -2191,7 +2206,11 @@ begin
     if (R.Comparison<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadComparison(R.Comparison); R.Comparison:=nil; end;
     if (R.ReviewTasks<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin LoadReviewTasks(R.ReviewTasks); R.ReviewTasks:=nil; end;
     if not R.Busy and not R.Failed and (FPendingCommand='review_knowledge') and (FReviewTasks<>nil) then ReviewTasksClick(RefreshReviewTasksButton);
-    if R.Screenshots<>nil then begin LoadScreenshots(R.Screenshots); R.Screenshots:=nil; end;
+    if R.Screenshots<>nil then begin
+      if WorkspaceTabs.ActiveTab=ScreenshotTab then LoadScreenshots(R.Screenshots)
+      else begin FreeAndNil(FPendingScreenshots); FPendingScreenshots:=R.Screenshots; end;
+      R.Screenshots:=nil;
+    end;
     if (R.ScreenHistory<>nil) and (R.ScreenToken=FScreenToken) and SameText(R.ScreenDatabase,FDatabase) then begin LoadScreenHistory(R.ScreenHistory,R.BeforePNG,R.AfterPNG,R.DifferencePNG);R.ScreenHistory:=nil;end;
     if (R.Translations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) and (R.TranslationRevision=FKnowledgeRevision) then begin
       LoadTranslations(R.Translations); R.Translations:=nil;
@@ -2234,12 +2253,14 @@ begin
     end;
     if R.RestoredDatabase<>'' then OpenSelection('',R.RestoredDatabase);
     if R.ExportDirectory<>'' then begin FExportDirectory:=R.ExportDirectory; PreviewButton.Enabled:=True;
-      PublishMemo.Text:='Learning edition saved in '+FExportDirectory+sLineBreak+'Click Preview lessons, or open learning.html in that folder. Share the whole folder so its object links and supplied images remain available. This edition is read-only; add explanations in DPH before exporting again.'; end;
+      PublishMemo.Text:=DATFormatText('DPH.UI.Main.Runtime.PublishMemo_Text.Text.43df029f02f7e64f',
+        'Handoff saved in %s'+sLineBreak+'Click Preview handoff, or open handoff-0.html in that folder. Share the whole folder so its evidence links and supplied images remain available. Review the edition before sharing it.',
+        [FExportDirectory]); end;
     if not (R.Busy and ProjectPreparationLayout.Visible) then
       StatusLabel.Text:=TranslatedMessage;
     if (FView<>nil) and not R.Busy and not R.Failed then begin
       StatusLabel.Text:=DATFormatText('DPH.UI.Main.Runtime.StatusLabel_Text.Text.27b34e6d78564198',
-        'Project information for %s is ready. Choose Learn the project to continue.',
+        'Project information for %s is ready.',
         [#$2066+FView.Document.GetValue<string>('entry')+#$2069]);
       if not FView.Document.GetValue<Boolean>('analysis_complete') then
         StatusLabel.Text:=StatusLabel.Text+' '+DATFormatText(
@@ -2361,7 +2382,15 @@ begin
     if FImages<>nil then for V in FImages do
       if V.GetValue<Int64>('artifact_id',0)>0 then Images.AddElement(V.Clone as TJSONValue);
   end;
-  LoadScreenshots(Images);
+  FreeAndNil(FPendingScreenshots);
+  if (SavedTab=ScreenshotTab) and SameProject then LoadScreenshots(Images)
+  else begin
+    FPendingScreenshots:=Images;
+    FreeAndNil(FImages);
+    ScreenshotList.Items.Clear;
+    ScreenshotImage.Bitmap.SetSize(0,0);
+    ScreenshotEvidence.Text:='Open Screenshots to generate form previews from saved designs.';
+  end;
   if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
 end;
@@ -3090,7 +3119,10 @@ begin
     FFlowDirectory:=TPath.Combine(FLearningDirectory,'flow');
     TDirectory.CreateDirectory(FLearningDirectory); TDirectory.CreateDirectory(FExplainDirectory); TDirectory.CreateDirectory(FFlowDirectory);
   end;
-  CardFilterChange(nil); LearningClick(nil); ShowExplanation; RefreshGraphics;
+  FOverviewLanguageGeneration:=0;
+  FMapLanguageGeneration:=0;
+  FGraphLanguageGeneration:=0;
+  CardFilterChange(nil); LearningClick(nil);
 end;
 function TDPHMainForm.PrepareOfflineProjectTranslation(var AHTML: string): Boolean;
 var
@@ -3140,7 +3172,8 @@ procedure TDPHMainForm.LearningClick(Sender: TObject);
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
   if FExplanations=nil then Exit;
-  HTML:=FExplanations.ApplicationRouteHTML(Max(0,LearningTopics.ItemIndex));
+  HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
+    Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
   Offline:=PrepareOfflineProjectTranslation(HTML);
@@ -3230,6 +3263,21 @@ begin
     if WorkspaceTabs.ActiveTab<>ScreenshotTab then FScreenshotOriginTab:=WorkspaceTabs.ActiveTab;
     ScreenshotReturnButton.Enabled:=FScreenshotOriginTab<>nil;
     WorkspaceTabs.ActiveTab:=ScreenshotTab; Exit;
+  end;
+  if EndsText('#open_commands',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=CommandsTab; Exit;
+  end;
+  if EndsText('#open_data',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=DatabaseInventoryTab; Exit;
+  end;
+  if EndsText('#open_files',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=FileFormatsTab; Exit;
+  end;
+  if EndsText('#open_quality',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=QualityTab; Exit;
+  end;
+  if EndsText('#open_coverage',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=CoverageTab; Exit;
   end;
   P:=Pos('#library_',AURL);
   if P>0 then begin
@@ -3325,9 +3373,9 @@ begin
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:22px}header img{width:88px;height:88px;object-fit:contain}h1{margin:0;font-size:34px}main{padding:26px;max-width:1000px;margin:auto}'+
     'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>Explore an application with DPH</title></head><body><header>'+Logo+'<div><h1>Welcome to Delphi Project Handoff</h1>'+
-    '<p>Discover an unfamiliar Delphi application through its own files, help and screen images.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> at the top left and choose a .dproj, .dpr or .groupproj file. DPH reads the project and gathers its forms, connected actions, guides and help topics. The preparation message remains visible while this work is under way.</p><p>If DPH has already saved the project, choose <strong>Open saved project</strong>.</p></section>'+
-    '<section><h2>Find your way around</h2><ol><li><strong>Learn the project</strong> introduces its purpose, starting point and screens.</li><li><strong>Learning library</strong> presents useful topics found in that project''s guides and help.</li><li><strong>Project map</strong> lets you inspect forms, controls and connected actions.</li><li><strong>Screenshots</strong> displays blank screen views generated by DPH from form files, at fitted or native size.</li><li><strong>Application diagrams</strong> shows possible screen routes and other connections supported by the project files.</li></ol></section>'+
-    '<section><h2>What the files can show</h2><p>DPH connects descriptions and visible controls to the source that defines their actions. DPH generates blank screen views from the application''s .fmx and .dfm form files; runtime appearance may differ. The selected application is not run or changed during this inspection.</p></section></main></body></html>';
+    '<p>Build a source-backed maintenance handoff for an unfamiliar Delphi application.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>'+
+    '<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>'+
+    '<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section></main></body></html>';
   HTML:=DATTranslateHtmlText(HTML);
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
@@ -5168,7 +5216,7 @@ begin
     IfThen(S.GetValue<string>('type','')<>'','Declared type: '+S.GetValue<string>('type')+sLineBreak+sLineBreak,'')+
     'Read Project map to understand its connections and the steps behind it. A routine is a named operation; an event connects an action to that operation.'+sLineBreak+sLineBreak+
     'Source location: '+S.GetValue<string>('range.source')+':'+S.GetValue<Integer>('range.line').ToString+sLineBreak+sLineBreak+
-    'Use Learn the project for the guided route. Source details remain available through Prepare lessons.';
+    'Use Handoff dossier for context. Source details remain available through Prepare lessons.';
   RelationsList.Items.Clear; FRelationKeys.Clear;
   FreeAndNil(FDetails); FDetails:=FView.Details(AKey); DetailsList.Items.Clear;
   for V in FDetails do begin Row:=V as TJSONObject;
@@ -5790,8 +5838,8 @@ end;
 procedure TDPHMainForm.PreviewClick(Sender: TObject);
 begin
   if FExportDirectory='' then Exit;
-  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file://'+TPath.Combine(FExportDirectory,'learning.html'));
-  except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'Open learning.html in '+FExportDirectory; end; end;
+  try PublishBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; PublishBrowser.Visible:=True; PublishBrowser.Navigate('file://'+TPath.Combine(FExportDirectory,'handoff-0.html'));
+  except on E: Exception do begin PublishBrowser.Visible:=False; PublishMemo.Text:='Embedded preview unavailable: '+E.Message+sLineBreak+'Open handoff-0.html in '+FExportDirectory; end; end;
 end;
 procedure TDPHMainForm.BrowserShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
 begin ACancel:=not TDPHBrowserPolicy.Allowed(AURL,FExportDirectory,True); end;

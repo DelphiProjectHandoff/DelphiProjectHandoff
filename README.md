@@ -2,11 +2,13 @@
 
 # Delphi Project Handoff
 
-**Learn an unfamiliar Delphi application from the files it already has.**
+**Prepare an evidence-based handoff for an unfamiliar Delphi application.**
 
-Imagine joining a company after its programmer has left. Nobody can explain the application, and there are no prepared lessons or screenshots. Delphi Project Handoff (DPH) helps you find a starting point: it reads the project's structure, forms, Pascal code, and any useful documents it finds, then presents an application-specific route through the screens and actions. It does not compile, run, or change the application being studied.
+Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the original developer or documentation is unavailable. It captures project structure, forms, Pascal code, and eligible local documents, then assembles a handoff dossier with source links, uncertainties, and questions for a person who knows the application. It does not compile, run, or change the application being studied. A static trace is evidence to investigate, not proof of runtime behavior or business intent.
 
 DPH is experimental Delphi software, built on Delphi 13.1. You can download a ready-to-run Windows ZIP or build the editable Delphi source project.
+
+The local development branch now has a refocused handoff dossier and loads generated form previews only when the Screenshots page is opened. The public 0.6.15 download below is the earlier experiment; this work has not been published to GitHub or packaged as a release.
 
 ## Download the current experiment
 
@@ -35,24 +37,26 @@ The header's **Read public websites** checkbox controls DPH's optional Internet 
 
 DOCX and supported text formats are read directly. Extracting text from PDF, legacy Word, RTF, and several older formats requires LibreOffice at `C:\Program Files\LibreOffice\program\soffice.com`. A scanned image-only PDF may need OCR before it has usable text. The Learning library reports when a discovered file yielded no readable content.
 
-The six learner views are:
+The six primary views in the current local development build are:
 
 | View | What you can do |
 | --- | --- |
 | **Getting started** | See how to open a project and move through DPH. |
-| **Learn the project** | Read the inferred purpose, starting form, screens, and a route into the application's real tasks. |
+| **Handoff dossier** | Read a four-part account of purpose evidence, startup and forms, visible command bindings, data and output candidates, and unresolved risks and questions. Each claim is tied to the selected capture or explicitly marked as a reading suggestion. |
 | **Learning library** | Read grouped, formatted topics drawn from the project's available documents and screen information. |
 | **Project map** | Select units, types, objects, controls, procedures, functions, variables, and their connections; follow links to the relevant detail or screen. |
-| **Screenshots** | Inspect blank screen views generated inside DPH from `.fmx` and `.dfm` definitions, using Fit or Native pixels. These are form-derived designs, not captures of the running application. |
+| **Screenshots** | Generate blank screen views on demand from `.fmx` and `.dfm` definitions, using Fit or Native pixels. These are form-derived designs, not captures of the running application. Imported images retain their separate attribution. |
 | **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. Large diagrams retain readable node sizes inside a scrollable view; use grouping or select an object to narrow them. Arrows indicate possible relationships in the files, not measured runtime behavior. |
 
 DPH shows the source behind its explanations where available and marks conclusions that need checking. A form file cannot reveal every runtime change, and a call site alone cannot prove when an action completes. The application under study is never executed as part of passive discovery.
+
+**Export handoff** writes a new, read-only folder. Open `handoff-0.html` to start the four-part dossier, then follow included object pages and the technical index. The earlier teaching edition remains at `learning.html`. Review the full export before sharing; its checksum manifest detects changes relative to the capture but does not authenticate its author.
 
 ## Languages and offline use
 
 The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
 
-An experimental **English-to-German project-text translation** is included in Learn the project and the Learning library. When German is selected, DPH translates the project purpose, guide excerpts, and formatted guide paragraphs using a bundled WebAssembly engine and model. It runs on the user's computer through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it.
+An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it. The new dossier's built-in narrative remains English while its interface language coverage is completed.
 
 The other 34 interface choices still work offline using the existing language packs. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access; local preview and the German translation engine also work with the checkbox off.
 

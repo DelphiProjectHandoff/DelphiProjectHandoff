@@ -5,6 +5,7 @@ uses FMX.Objects, FMX.Types, System.SysUtils, System.Classes, System.IOUtils, Sy
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
+  DPH.Handoff.Dossier in '..\DPH.Handoff.Dossier.pas',
   DPH.Publish.Model in '..\DPH.Publish.Model.pas', DPH.Publish.Export in '..\DPH.Publish.Export.pas',
   DPH.Publish.BrowserPolicy in '..\DPH.Publish.BrowserPolicy.pas',
   DPH.Project.Analysis in '..\DPH.Project.Analysis.pas', DPH.Analysis.Symbols in '..\DPH.Analysis.Symbols.pas',
@@ -137,7 +138,9 @@ begin
           end;
         Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
-          'PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes');
+          Format('PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes (pdf=%s docx=%s rtf=%s odt=%s txt=%s unnamed=%s)',
+            [BoolToStr(FoundPDF,True),BoolToStr(FoundDOCX,True),BoolToStr(FoundRTF,True),
+             BoolToStr(FoundODT,True),BoolToStr(FoundTXT,True),BoolToStr(FoundUnlabelledTXT,True)]));
         Check(not FoundOversizedODT,
           'Oversized compressed document text is rejected before decompression into memory');
         Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
@@ -172,6 +175,30 @@ begin
           try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,True); finally Rows.Free; end;
           Explain:=TDPHExplanationModel.Create(Model.Document);
           try
+            FlowText:=TDPHHandoffDossier.Render(Model.Document,0);
+            Check(ContainsText(FlowText,'Handoff overview') and
+              ContainsText(FlowText,'Startup reading order') and
+              ContainsText(FlowText,'STALE capture') and
+              ContainsText(FlowText,'Semantic.dproj'),
+              'Handoff overview identifies the selected capture and its evidence limits');
+            FlowText:=TDPHHandoffDossier.Render(Model.Document,1);
+            Check(ContainsText(FlowText,'Commands and workflows') and
+              ContainsText(FlowText,'#open_commands') and
+              ContainsText(FlowText,'confirmed_static'),
+              'Command dossier links static bindings to deeper inspection');
+            FlowText:=TDPHHandoffDossier.Render(Model.Document,3);
+            Check(ContainsText(FlowText,'Questions to resolve') and
+              ContainsText(FlowText,'Unknown without people'),
+              'Handoff questions distinguish a quiet analyzer from complete knowledge');
+            var HostileFacts:=Model.Document.Clone as TJSONObject;
+            try
+              HostileFacts.RemovePair('project').Free;
+              HostileFacts.AddPair('project','<script>alert(1)</script>');
+              FlowText:=TDPHHandoffDossier.Render(HostileFacts,0);
+              Check(not ContainsText(FlowText,'<script>alert(1)</script>') and
+                ContainsText(FlowText,'&lt;script&gt;alert(1)&lt;/script&gt;'),
+                'Handoff escapes project-supplied text before WebView rendering');
+            finally HostileFacts.Free; end;
             Check((Model.Document.GetValue<TJSONArray>('project_guides').Count>0) and
               ContainsText(Explain.ApplicationRouteHTML(0),'This example application teaches'),
               'The selected project README supplies cited app-specific orientation');
@@ -378,6 +405,13 @@ begin
 
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'handoff'));
             Check(TFile.Exists(TPath.Combine(Work,'handoff\objects\'+THashSHA2.GetHashString(Key)+'.html')),'Export includes the selected object explanation');
+            Check(TFile.Exists(TPath.Combine(Work,'handoff\handoff-0.html')) and
+              TFile.Exists(TPath.Combine(Work,'handoff\handoff-1.html')) and
+              TFile.Exists(TPath.Combine(Work,'handoff\handoff-2.html')) and
+              TFile.Exists(TPath.Combine(Work,'handoff\handoff-3.html')) and
+              ContainsText(TFile.ReadAllText(TPath.Combine(Work,'handoff\index.html')),'handoff-0.html') and
+              ContainsText(TFile.ReadAllText(TPath.Combine(Work,'handoff\handoff-1.html')),'objects/'),
+              'Portable export begins with four source-linked handoff pages');
             TDPHPublisher.Validate(TPath.Combine(Work,'handoff'),Model.Document.GetValue<string>('input_fingerprint'),False);
             Check(True,'Narrative export preserves generation, canonical and artifact integrity');
             ImageModel:=TDPHDocumentModel.Create(View,nil,[],[],False,True,nil,True);
@@ -385,6 +419,13 @@ begin
               Check(Failed,'Unredacted local display projection cannot be published');
             finally ImageModel.Free; end;
             Check(TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\objects\'+THashSHA2.GetHashString(Key)+'.html'),TPath.Combine(Work,'handoff'),True),'Preview permits only the generated object route shape');
+            Check(TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\handoff-0.html'),TPath.Combine(Work,'handoff'),True) and
+              TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\handoff-3.html'),TPath.Combine(Work,'handoff'),True) and
+              not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\handoff-4.html'),TPath.Combine(Work,'handoff'),True),
+              'Publication preview accepts only the four generated handoff pages');
+            Check(TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\validation\coverage.json'),TPath.Combine(Work,'handoff'),True) and
+              not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\validation\other.json'),TPath.Combine(Work,'handoff'),True),
+              'Handoff coverage link cannot open unrelated local JSON');
             Check(not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(Work,'handoff\objects\arbitrary.html'),TPath.Combine(Work,'handoff'),True),'Preview rejects an arbitrary local object filename');
             Bitmap:=TBitmap.Create(80,60); try Bitmap.Clear(TAlphaColors.Blue); Bitmap.SaveToFile(TPath.Combine(Work,'synthetic-image.png')); finally Bitmap.Free; end;
             Store.ImportScreenshot(Generation,TPath.Combine(Work,'synthetic-image.png'),'Synthetic test contributor','Synthetic PNG fixture, not a captured application',Key);
@@ -466,7 +507,7 @@ begin
                 if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas);finally Bitmap.Canvas.EndScene;end;
                 Bitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-preparation.png'));
               finally Bitmap.Free;end;
-              Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Learn the project'); Form.WorkspacePageChange(Form.LessonPageCombo);
+              Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Handoff dossier'); Form.WorkspacePageChange(Form.LessonPageCombo);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'Learner page selector returns from preparation to learning');
               Check(((Form.FindComponent('LearnerTab1') as TRectangle).Fill.Color=$FFFFFFFF) and
                 ((Form.FindComponent('LearnerTab1') as TRectangle).Stroke.Color=$FFF28C28) and
@@ -474,6 +515,7 @@ begin
                 'The selected learner tab is white with an orange border');
               Form.LoadView(View.Document.Clone as TJSONObject);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
+              Check(Form.ScreenshotList.Count=0,'Generated previews wait until the Screenshots page is opened');
               Form.LoadScreenshots(Store.ScreenshotsJSON);
               Check(Form.ScreenshotList.Count>0,'Imported runtime images appear beside generated design previews');
               Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Count-1; Form.ScreenshotClick(nil);
@@ -552,7 +594,6 @@ begin
               Check(Form.WorkspaceTabs.ActiveTab=Form.ExplainTab,'Up one level remains visible in Project map');
               Failed:=False;Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+'#screens',Failed);
               Check(not Failed,'Project map allows its screen-definition link to scroll to the screen list');
-              Check(Form.ScreenshotList.Count>0,'The fixture has a generated screen to navigate to');
               Form.ScreenshotList.ItemIndex:=-1; Form.ScreenshotImage.Bitmap.SetSize(0,0);
               Form.LearningShouldLoad(Form.ExplainBrowser,Form.ExplainBrowser.URL+
                 '#form_'+THashSHA2.GetHashString(Form.FormCombo.Items[0]),Failed);
@@ -571,22 +612,24 @@ begin
               Check(Form.ActionPurposeList.Count>0,'The next UI tick builds the requested preparation report');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
 
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Meet this app: Semantic.dproj'); Check(True,'Real WebView2 renders the selected application route');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Handoff overview'); Check(True,'Real WebView2 renders the evidence-based handoff');
+              BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
+              try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-handoff.png')); finally BrowserBitmap.Free; end;
 
               Failed:=False; Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#lesson_3',Failed);
-              Check(Failed and (Form.LearningTopics.ItemIndex=3) and (Form.LearningTopics.Count=4),'Route link opens Resolve unknowns without external navigation');
-              Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#task_reader',Failed);
+              Check(Failed and (Form.LearningTopics.ItemIndex=3) and (Form.LearningTopics.Count=4),'Route link opens risks and questions without external navigation');
+              Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#lesson_1',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.OverviewTab) and
-                (Form.LearningTopics.ItemIndex=1),'Task link opens this application''s first-task route');
+                (Form.LearningTopics.ItemIndex=1),'Dossier link opens commands and workflows');
               Form.LearningShouldLoad(Form.LearningBrowser,Form.LearningBrowser.URL+'#ask_author',Failed);
               Check(Failed and (Form.WorkspaceTabs.ActiveTab=Form.QuestionsTab),'Question lesson link opens the existing named-answer workflow');
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Start with a task');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Visible commands and connected handlers');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Other tasks and actions');
-              WaitHTML(Form.LearningBrowser,'document.title','Explore related tasks: Semantic.dproj');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Data and output evidence');
+              WaitHTML(Form.LearningBrowser,'document.title','Data and operations: Semantic.dproj');
               Check(True,'Native browser shows the app-specific title without damaged punctuation');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
@@ -643,6 +686,9 @@ begin
               WaitHTML(Form.PublishBrowser,'document.body.innerText','Meet this app');
               WaitHTML(Form.PublishBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Actual native browser renders the saved learning edition without horizontal overflow');
+              Form.PublishBrowser.Navigate('file://'+TPath.Combine(Work,'image-handoff\handoff-0.html'));
+              WaitHTML(Form.PublishBrowser,'document.body.innerText','Handoff overview');
+              Check(True,'Portable handoff renders in the native preview browser');
               Form.PublishBrowser.OnShouldLoadURL:=Form.BrowserShouldLoad;
               Form.Hide;
             finally Form.Free; end;
@@ -672,8 +718,8 @@ begin
           TThread.Sleep(20);
         until Watch.ElapsedMilliseconds>30000;
         Check(SawIntermediateProgress and (PreviousProgress=100) and (Form.WorkspaceView<>nil) and
-          (Form.ScreenshotList.Count>0),
-          'Project preparation advances without regression and completes after screen previews');
+          (Form.ScreenshotList.Count=0),
+          'Project preparation completes without generating unopened screen previews');
       finally Form.Free; end;
       // Analyze a real generated Pascal body rather than manufacturing diagram edges.
       TDirectory.CreateDirectory(TPath.Combine(Work,'large-input'));
@@ -747,8 +793,8 @@ begin
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-flow.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil); Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Start with a task');
-              Check(True,'Reference application renders its own task starting point');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Commands and workflows');
+              Check(True,'Reference application renders its evidence-based command map');
               WaitHTML(Form.LearningBrowser,'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'Narrow learning view wraps long source citations without horizontal overflow');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
@@ -836,17 +882,24 @@ begin
         TFile.WriteAllText(TPath.Combine(Root,'docs\validation\reports\learning-refocus-learning-validation.json'),Report.Format(2),TEncoding.UTF8);
       finally Report.Free; end;
       if ParamStr(2)<>'--no-ui' then begin
-        TFile.Copy(TPath.Combine(Work,'learning-refocus-getting-started.png'),
+        try TFile.Copy(TPath.Combine(Work,'learning-refocus-getting-started.png'),
           TPath.Combine(Root,'docs\guides\assets\dph-getting-started.png'),True);
-        TFile.Copy(TPath.Combine(Work,'learning-refocus-library.png'),
+        except on E:EInOutError do Writeln('WARN Getting started guide capture remains mapped: ',E.Message); end;
+        try TFile.Copy(TPath.Combine(Work,'learning-refocus-library.png'),
           TPath.Combine(Root,'docs\guides\assets\dph-learning-library.png'),True);
-        TFile.Copy(TPath.Combine(Work,'learning-refocus-learning-workspace.png'),
+        except on E:EInOutError do Writeln('WARN Learning library guide capture remains mapped: ',E.Message); end;
+        try TFile.Copy(TPath.Combine(Work,'learning-refocus-learning-workspace.png'),
           TPath.Combine(Root,'docs\guides\assets\dph-object-explanation.png'),True);
+        except on E:EInOutError do Writeln('WARN Object explanation guide capture remains mapped: ',E.Message); end;
+        try TFile.Copy(TPath.Combine(Work,'learning-refocus-handoff.png'),
+          TPath.Combine(Root,'docs\guides\assets\dph-handoff-dossier.png'),True);
+        except on E:EInOutError do Writeln('WARN Handoff guide capture remains mapped: ',E.Message); end;
       end;
       if not StartsText(TPath.Combine(TPath.GetFullPath(Root),'bin\lr-{'),TPath.GetFullPath(Work)) then
         raise Exception.Create('Refusing cleanup outside the generated refocus test workspace');
-      TDirectory.Delete(Work,True);
-      Writeln('PASS Learning: ',Checks,' checks; disposable test workspace removed');
+      try TDirectory.Delete(Work,True);
+      except on E:EInOutError do Writeln('WARN disposable test workspace remains in use: ',E.Message); end;
+      Writeln('PASS Learning: ',Checks,' checks');
     except on E: Exception do begin Writeln(E.ClassName,': ',E.Message); ExitCode:=1; end; end;
   finally CoUninitialize; end;
 end.

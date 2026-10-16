@@ -1,5 +1,5 @@
 RUN AND TEST DELPHI PROJECT HANDOFF
-Last changed: 15 October 2026
+Last changed: 16 October 2026
 
 BUILD AND START FROM SOURCE
 
@@ -14,7 +14,7 @@ BUILD AND START FROM SOURCE
    images and icons, and Localization in the source root.
 3. DPH opens maximized. The logo and blue Delphi Project Handoff heading
    should appear above the six learner tabs, which share one row: Getting
-   started, Learn the project,
+   started, Handoff dossier,
    Learning library, Project map, Screenshots, and Application diagrams. The
    language selector should be visible beside the heading.
 
@@ -24,7 +24,8 @@ Select a language in the header. DPH should change its labels and built-in
 learning pages immediately and remember the choice when reopened. English is
 the source language; the other 34 choices match VCL2FMXConverter v7. The
 German also offers an experimental local translation of selected English
-project prose in Learn the project and Learning library. Original files,
+project prose in Handoff dossier and Learning library. The new dossier's
+built-in narrative remains English pending translation review. Original files,
 identifiers, citations, and form captions are unchanged. Other language
 choices retain project content in its original language.
 
@@ -35,16 +36,17 @@ OPEN AN APPLICATION
    in DPH's Databases folder or another writable folder outside that
    application's source tree.
 5. While DPH reads the project and its documents, inspect the progress bar.
-   During screen generation, its message shows the number of forms completed
-   and remaining. DPH reads the selected application without running it.
+   DPH reads the selected application without running it. Generated form
+   previews are prepared when Screenshots is opened.
 6. If the application was studied previously, click Open saved project and
    choose its .dphdb. Keep the adjacent .dphdb.views folder with the database.
 
 CHECK THE LEARNING VIEWS
 
-7. Open Learn the project. Read the purpose and starting route, then follow
-   links to a screen or control. Statements inferred from source are identified
-   as such; source files cannot prove what happens at runtime.
+7. Open Handoff dossier. Check its capture status and purpose evidence, then
+   inspect startup forms, command bindings, data candidates, and open
+   questions. Follow a cited link to a screen or source object. Registration
+   and static connections cannot prove what happens at runtime.
 8. Open Learning library. Choose several topics on the left and check that
    paragraphs, headings, and lists are readable. The library draws from
    root-level documents and the selected project's top-level docs, Help,

@@ -1021,7 +1021,7 @@ Margins.Bottom = 12
 Margins.Right = 12
 Items.Strings = (
 'Getting started'
-'Learn the project'
+'Handoff dossier'
 'Learn a task'
 'Learning library'
 'Project map'
@@ -1137,7 +1137,7 @@ StyledSettings = []
 TextSettings.Font.Size = 13
 TextSettings.FontColor = xFF125A92
 TextSettings.HorzAlign = Center
-Text = 'Learn the project'
+Text = 'Handoff dossier'
 end
 end
 object LearnerTab2: TRectangle
@@ -1375,7 +1375,7 @@ end
 end
 end
 object StatusLabel: TLabel
-Text = 'Choose an application to begin learning. DPH reads its files without changing them.'
+Text = 'Choose a Delphi project to build its evidence-based handoff. DPH reads the selected files without changing them.'
 Align = Bottom
 Height = 48
 WordWrap = True
@@ -1492,7 +1492,7 @@ Height = 80
 Margins.Left = 8
 Margins.Right = 8
 WordWrap = True
-Text = 'Select something on the left to learn what it is, its declared type, and its connections. Begin with Learn the project if you are new to this application.'
+Text = 'Select an object to inspect its declaration, source evidence and connections. Begin with the Handoff dossier for project context.'
 end
 object InspectorMemo: TMemo
 Align = Client
@@ -1504,7 +1504,7 @@ Margins.Right = 8
 Lines.Strings = (
 'No object selected.'
 ''
-'Double-click an object in the left list, or follow an object link in Learn the project.'
+'Double-click an object in the left list, or follow an evidence link in the Handoff dossier.'
 )
 end
 end
@@ -1800,7 +1800,7 @@ Height = 86
 Margins.Left = 12
 Margins.Right = 12
 WordWrap = True
-Text = 'Prepare lessons for the selected application. Describe what it does and whom it helps, then prepare a common task with clear steps and expected results. Add explanations, screenshots, and business terms where useful. The two rows of tabs above return learners to Learn the project or Learn a task.'
+Text = 'Add attributed maintainer knowledge for the selected application. Document its purpose, procedures, expected results and unresolved questions. Link each claim to captured evidence and record named review separately.'
 StyledSettings = []
 TextSettings.Font.Size = 16
 TextSettings.FontColor = xFF146CB4
@@ -1839,7 +1839,7 @@ Margins.Bottom = 8
 Margins.Left = 12
 Margins.Right = 12
 Items.Strings = (
-'Learn the project'
+'Handoff dossier'
 'Learn a task'
 'Learning library'
 'Project map'
@@ -2974,7 +2974,7 @@ end
     end
   end
   object OverviewTab: TTabItem
-  Text = 'Learn the project'
+  Text = 'Handoff dossier'
 object LearningTopics: TListBox
 Align = Left
 Width = 220
@@ -2982,10 +2982,10 @@ Margins.Left = 16
 Margins.Right = 12
 ItemHeight = 40
 Items.Strings = (
-'Meet this app'
-'Learn a real task'
-'Explore related tasks'
-'Resolve unknowns')
+'Handoff overview'
+'Commands and workflows'
+'Data and operations'
+'Risks and open questions')
 OnChange = LearningClick
 end
 object OverviewMemo: TMemo
@@ -3010,11 +3010,11 @@ ReadOnly = True
 WordWrap = True
 TextSettings.Font.Size = 16
 Lines.Strings = (
-'Learn what a Delphi application does, how to use it, and how its parts work together.'
+'Build a source-backed maintenance handoff for an unfamiliar Delphi application.'
 ''
 '1. Click Open application at the top left and select its .dproj, .dpr or .groupproj file.'
 '2. Accept the proposed project file in Databases. For an existing file, click Open saved project.'
-'3. Learn the project introduces this application and its starting screen.'
+'3. Handoff dossier summarizes purpose, startup, commands, data and open questions.'
 '4. Learning library lists topics from this application''s guides and help.'
 '5. Screenshots shows available application images in fitted or native size.'
 ''
@@ -7520,7 +7520,7 @@ Margins.Right = 12
 WordWrap = True
 StyledSettings = []
 TextSettings.Font.Size = 16
-Text = 'Share a saved learning edition of this application. Choose Share lessons, give the new folder a name, then Preview lessons. The edition includes learning topics, supplied task instructions, explanations and images. Review the material before sharing it.'
+Text = 'Share a read-only handoff of this application. Choose Export handoff, give the new folder a name, then Preview handoff. The edition includes the dossier, source-linked reference, supplied instructions and images. Review the material before sharing it.'
 end
 object PublishToolbar: THorzScrollBox
 Align = Top
@@ -7529,7 +7529,7 @@ object PublishButton: TButton
 Position.X = 4
 Position.Y = 4
 Width = 180
-Text = 'Share lessons'
+Text = 'Export handoff'
 OnClick = PublishClick
 end
 object PreviewButton: TButton
@@ -7537,7 +7537,7 @@ Position.X = 200
 Position.Y = 4
 Width = 150
 Enabled = False
-Text = 'Preview lessons'
+Text = 'Preview handoff'
 OnClick = PreviewClick
 end
 end
