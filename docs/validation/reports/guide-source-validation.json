@@ -1,5 +1,5 @@
 {
-  "guide_version": 50,
+  "guide_version": 51,
   "last_changed": "2026-10-16",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -37,7 +37,7 @@
     "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
     "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
     "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
-    "DPH.UI.Main.pas": "ff20c5b4713fff351cb143b46efa7345cf93bf1da8efb3e08916231d5e9cbfc4",
+    "DPH.UI.Main.pas": "eb6c1d4af84358026cea08fb948967fe36353d233bcb9e36b2edb07cc3388bcc",
     "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
     "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
     "DPH.Workspace.Catalog.pas": "3da578ef1145e1f380e449245a310028d00c1a01bc915dc003c6d101e2d20643",
@@ -52,14 +52,14 @@
     "DPH.Workspace.Keyboard.pas": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923",
     "DPH.Workspace.LayoutRules.pas": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49",
     "DPH.Workspace.Model.pas": "e4814865756c3f71071b289159c7e7902b786e27d8bdba8e1d68fd61c8ecae56",
-    "DPH.Workspace.Screen.pas": "798bae197bf60d46f1ec62b93f0712b32cfff62f5d67c248186562a0a640153b",
+    "DPH.Workspace.Screen.pas": "5e988c152c28eb974f5240cf8494016d2a84ac1abd8bb08425bd9e2f65e23396",
     "DPH.Workspace.ScreenHistory.pas": "bd05a76dcae7b4c872345021a56eab0b8b0108d954c1a5c35686321852082161",
-    "DPH.Workspace.Worker.pas": "1ca85940fc578a3b52d26e07bfe323df87b51a836019e916010bff23120fbb06",
+    "DPH.Workspace.Worker.pas": "db5c4b006a2659d7458fda15607db32421388334c18d3daf1e95a69baf4e86b9",
     "DPH.UI.ActionPurpose.fmx": "d3ee151a051a08bd8c7e75b07ca657cdf5ae5ab7c3ba7112e021253329bdf093",
     "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
     "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
-    "DPH.UI.Main.fmx": "56158fdf7df6b2f6f46acdf8caf812c61fbaa7813a2513f16c8d1ae9d92d4c88",
+    "DPH.UI.Main.fmx": "c6bc3ff3296da3f08f51f610b852d94772b6bb1859e84ca05e5a2b3d947a56bd",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
     "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
     "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
@@ -70,23 +70,23 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "d2bb09837a862c0feae3293ed7d88b40de29b9edc5678bf8fae1b338b2e3eefa",
-    "docs/guides/source/DPH_User_Guide.txt": "923414df8755a760ee78366b17b5e52c9ce202b3d39f263d3438bdce3aead84a",
-    "DelphiProjectHandoff.dproj": "a17f93acd6055de841d9dbeb27c53a101f447d2c68f50b900608d62517276155"
+    "docs/guides/source/DPH_Engineering_Guide.txt": "a31a117c7f56f1e4eb1328c34ac8c9801209196efc27d4e47c87fb934d528912",
+    "docs/guides/source/DPH_User_Guide.txt": "7e5853b9b64163ee058c19cfe7bc6d5b73e7dbcf3e5a0082d288726b58b2ef2c",
+    "DelphiProjectHandoff.dproj": "d2d11a77ded4c016fd50796ea6a0bbf8350e61b0a02aff72d631ffd2c98c7306"
   },
   "content": {
     "User": {
       "parts": 3,
       "chapters": 7,
       "subsections": 16,
-      "words": 1916,
+      "words": 1984,
       "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
       "subsections": 175,
-      "words": 17032,
+      "words": 17086,
       "figures": 0
     }
   },

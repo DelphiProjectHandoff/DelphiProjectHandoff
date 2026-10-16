@@ -1419,12 +1419,13 @@ Height = 110
 object SearchEdit: TEdit
 Align = Top
 Height = 32
+Margins.Top = 5
 TextPrompt = 'Search all objects'
 OnChange = SearchChange
 end
 object KindCombo: TComboBox
 Position.X = 0
-Position.Y = 38
+Position.Y = 43
 Width = 284
 Height = 28
 Items.Strings = (
@@ -1514,6 +1515,7 @@ Width = 6
 end
 object WorkspaceTabs: TTabControl
 Align = Client
+ClipChildren = True
 TabPosition = None
 ActiveTab = OverviewTab
 OnChange = WorkspacePageChange

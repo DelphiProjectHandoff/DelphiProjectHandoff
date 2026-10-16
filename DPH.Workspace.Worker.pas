@@ -439,7 +439,8 @@ begin
               Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try
                 if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
-                Changed:=(CachedFingerprint='') or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>CachedFingerprint)
+                Status:=Store.Status;
+                Changed:=Status.AnalysisStale or (CachedFingerprint='') or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>CachedFingerprint)
                   or (CachedSyntaxVersion<>DPHAnalyzerVersion)
                   or (CachedSemanticVersion<>DPHSemanticVersion)
                   or (CachedQualityVersion<>DPHQualityVersion)

@@ -1,4 +1,4 @@
-RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.1
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.2
 Last changed: 16 October 2026
 
 BUILD AND START FROM SOURCE
@@ -51,11 +51,11 @@ CHECK THE LEARNING VIEWS
    inspect startup forms, command bindings, data candidates, and open
    questions. Follow a cited link to a screen or source object. Registration
    and static connections cannot prove what happens at runtime.
-   If it says STALE capture, finish background verification or reselect the
-   same source entry with Open application. Review again after preparation.
-   If the warning persists, inspect diagnostics and missing inputs: the
-   current dossier also uses this label for incomplete syntax or semantic
-   analysis. The capture time alone does not make a project stale. Static
+   If it says STALE capture, wait for automatic background verification when
+   the original source is available, or reselect the source entry with Open
+   application. Review again after preparation. PARTIAL capture means some
+   syntax or semantic analysis is incomplete; inspect diagnostics and missing
+   inputs. The capture time alone does not make a project stale. Static
    inspection only always remains because DPH does not run the target.
 8. Open Learning library. Choose several topics on the left and check that
    paragraphs, headings, and lists are readable. The library draws from

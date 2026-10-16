@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.1 - DEVELOPER TEST DIRECTIONS
+DELPHI PROJECT HANDOFF 0.8.0.2 - DEVELOPER TEST DIRECTIONS
 Last changed: 16 October 2026
 
 Build DelphiProjectHandoff.dproj with RAD Studio 37 for Win32 and Win64 in

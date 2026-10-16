@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.1 - WORKSPACE OPERATIONS
+DELPHI PROJECT HANDOFF 0.8.0.2 - WORKSPACE OPERATIONS
 Last changed: 16 October 2026
 
 Start with Getting started. Choose Open application and select the target

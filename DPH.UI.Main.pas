@@ -1022,10 +1022,6 @@ begin
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
   if SameText(ExtractFileExt(ParamStr(1)),'.dphdb') then OpenSelection('',ParamStr(1));
-  if ParamCount=0 then
-  begin
-    if (FCatalog<>nil) and TFile.Exists(FCatalog.LastDatabase) then OpenSelection('',FCatalog.LastDatabase);
-  end;
   if (not FBusy) and (FView=nil) then HelpClick(nil);
 end;
 procedure TDPHMainForm.FormDestroy(Sender: TObject);
@@ -3235,7 +3231,7 @@ var ID: TGUID;
 begin
   FCardRows.Clear; CardList.Items.Clear;
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); if FView=nil then Exit;
-  FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,not FView.Document.GetValue<Boolean>('analysis_complete'),nil,True);
+  FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,FDetached,nil,True);
   if FLearningDirectory='' then begin CreateGUID(ID);
     FLearningDirectory:=TPath.Combine(TPath.GetTempPath,'DPH-Learning-'+GUIDToString(ID));
     FExplainDirectory:=TPath.Combine(FLearningDirectory,'object');
@@ -3635,12 +3631,12 @@ begin
   FWorker.Submit(Request); FBusy:=True; StatusLabel.Text:='Importing the explicitly selected screenshot; no application will be executed...';
 end;
 procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
-var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H: Integer;
+var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H,TabIndex: Integer;
   Thumbnail,Picture,EmbeddedPicture: TBitmap; LayoutRows,Files,FormSources: TJSONArray;
   Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText,
-    CatalogPath,CatalogHash,RootName,CaptionKey: string;
+    CatalogPath,CatalogHash,RootName,CaptionKey,TabName,TabCaption,SourceHash: string;
   GermanCatalog,GermanStrings: TJSONObject;
-  Bounds,NavigatorBounds: TRectF; Scale: Single; Seen: TStringList; ImageStream: TMemoryStream;
+  Bounds,NavigatorBounds: TRectF; Scale: Single; Seen,TabNames,TabCaptions: TStringList; ImageStream: TMemoryStream;
   ImageStart,ImageEnd,NextObject,CharacterIndex,ByteCount,HighNibble,Nibble: Integer;
   MenuX: Single; TextColor: TAlphaColor; NavigatorButtons: TArray<string>;
   NavigatorIndex: Integer; NavigatorLabel: string;
@@ -3696,22 +3692,35 @@ begin
         for V in Files do begin
           R:=V as TJSONObject; Source:=R.GetValue<string>('path','');
           if not MatchText(LowerCase(TPath.GetExtension(Source)),['.fmx','.dfm']) or (R.GetValue('ir')=nil) or (Seen.IndexOf(Source)>=0) then Continue;
-          Seen.Add(Source); Inc(Done);
-          Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-            Source+'|'+R.GetValue<string>('sha256','')+'|screen-v6|'+CatalogHash)+'.png');
-          Picture:=TBitmap.Create;
+          Seen.Add(Source); Inc(Done); SourceHash:=R.GetValue<string>('sha256','');
+          Screen:=TDPHScreenLayout.Reconstruct(FView,Source,False);
           try
-            if not TFile.Exists(Path) then begin
-            Screen:=TDPHScreenLayout.Reconstruct(FView,Source,False);
-            try
             LayoutRows:=Screen.GetValue<TJSONArray>('components',nil);
             if (LayoutRows=nil) or (LayoutRows.Count=0) then Continue;
+            TabNames:=TStringList.Create; TabCaptions:=TStringList.Create;
+            try
+              for Part in LayoutRows do begin
+                Node:=Part as TJSONObject;
+                if SameText(Node.GetValue<string>('class',''),'TTabItem') and
+                  Node.GetValue<Boolean>('visible',True) then begin
+                  TabNames.Add(Node.GetValue<string>('name',''));
+                  TabCaptions.Add(Node.GetValue<string>('caption',''));
+                end;
+              end;
+              if TabNames.Count=0 then begin TabNames.Add(''); TabCaptions.Add(''); end;
             FormText:='';
             FormPath:=TPath.GetFullPath(TPath.Combine(FView.Document.GetValue<string>('root',''),Source.Replace('/',PathDelim)));
             if StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(FView.Document.GetValue<string>('root',''))),FormPath) and
               TFile.Exists(FormPath) and (TFile.GetSize(FormPath)<=16777216) and
               SameText(THashSHA2.GetHashStringFromFile(FormPath),Screen.GetValue<string>('source_hash','')) then
               FormText:=TFile.ReadAllText(FormPath,TEncoding.Default);
+            for TabIndex:=0 to TabNames.Count-1 do begin
+            TabName:=TabNames[TabIndex]; TabCaption:=TabCaptions[TabIndex];
+            Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
+              Source+'|'+SourceHash+'|screen-v7|'+CatalogHash+'|'+TabName)+'.png');
+            Picture:=TBitmap.Create;
+            try
+            if not TFile.Exists(Path) then begin
             Node:=LayoutRows.Items[0] as TJSONObject;
             RootName:=Node.GetValue<string>('name','');
             W:=Round(EnsureRange(Node.GetValue<Double>('width',800),320.0,1600.0));
@@ -3726,6 +3735,8 @@ begin
                 for Part in LayoutRows do begin
                   Node:=Part as TJSONObject; ClassName:=LowerCase(Node.GetValue<string>('class',''));
                   if not Node.GetValue<Boolean>('visible',True) or
+                    ((TabName<>'') and (Node.GetValue<string>('tab_owner','')<>'') and
+                     not SameText(Node.GetValue<string>('tab_owner',''),TabName)) or
                     (ClassName='') or
                     (ClassName='ttabitem') or (ClassName='ttabcontrol') or
                     (ClassName='ttimer') or (ClassName='tdatasource') or
@@ -3733,9 +3744,10 @@ begin
                     StartsText('tfd',ClassName) or StartsText('tid',ClassName) or
                     EndsText('field',ClassName) or
                     ContainsText(ClassName,'binding') then Continue;
-                  Bounds:=TRectF.Create(Node.GetValue<Double>('x')*Scale,Node.GetValue<Double>('y')*Scale,
-                    (Node.GetValue<Double>('x')+Node.GetValue<Double>('width'))*Scale,
-                    (Node.GetValue<Double>('y')+Node.GetValue<Double>('height'))*Scale);
+                  Bounds:=TRectF.Create((Node.GetValue<Double>('x')-Node.GetValue<Double>('tab_shift_x',0))*Scale,
+                    (Node.GetValue<Double>('y')-Node.GetValue<Double>('tab_shift_y',0))*Scale,
+                    (Node.GetValue<Double>('x')-Node.GetValue<Double>('tab_shift_x',0)+Node.GetValue<Double>('width'))*Scale,
+                    (Node.GetValue<Double>('y')-Node.GetValue<Double>('tab_shift_y',0)+Node.GetValue<Double>('height'))*Scale);
                   if (Bounds.Width<3) or (Bounds.Height<3) then Continue;
                   if Part=LayoutRows.Items[0] then Continue;
                   if ClassName='tmenuitem' then begin
@@ -3894,10 +3906,9 @@ begin
                 end;
               finally Picture.Canvas.EndScene; end;
               Picture.SaveToFile(Path);
-            finally Screen.Free; end;
             end else Picture.LoadFromFile(Path);
               ImageHash:=THashSHA2.GetHashStringFromFile(Path);
-              if Seen.IndexOf('image:'+ImageHash)>=0 then begin
+              if (TabName='') and (Seen.IndexOf('image:'+ImageHash)>=0) then begin
                 for Index:=0 to FImages.Count-1 do begin
                   R:=FImages.Items[Index] as TJSONObject;
                   if SameText(R.GetValue<string>('image_sha256',''),ImageHash) then begin
@@ -3908,11 +3919,12 @@ begin
               end;
               Seen.Add('image:'+ImageHash);
               FormSources:=TJSONArray.Create; FormSources.Add(Source);
-              R:=TJSONObject.Create.AddPair('artifact_id',TJSONNumber.Create(-Done))
+              if (TabName<>'') and (TabCaption='') then TabCaption:=TabName;
+              R:=TJSONObject.Create.AddPair('artifact_id',TJSONNumber.Create(-(Done*1000+TabIndex+1)))
                 .AddPair('generation_id',TJSONNumber.Create(FView.Document.GetValue<Int64>('generation_id')))
-                .AddPair('caption',TPath.GetFileNameWithoutExtension(Source))
-                .AddPair('description','Generated by DPH from '+Source+'. This empty design view shows saved controls and captions; runtime styling and data may differ.')
-                .AddPair('image_kind','Generated blank screen').AddPair('managed_path',Path)
+                .AddPair('caption',TPath.GetFileNameWithoutExtension(Source)+IfThen(TabName<>'',' - '+TabCaption,''))
+                .AddPair('description','Reconstructed design preview from '+Source+IfThen(TabName<>'',', tab '+TabCaption,'')+'. Saved controls and captions are shown; runtime styling and data may differ.')
+                .AddPair('image_kind','Generated design preview').AddPair('managed_path',Path)
                 .AddPair('form_sources',FormSources)
                 .AddPair('image_sha256',ImageHash);
               FImages.AddElement(R);
@@ -3935,6 +3947,9 @@ begin
               Application.ProcessMessages;
             end;
           end;
+            end;
+            finally TabCaptions.Free; TabNames.Free; end;
+          finally Screen.Free; end;
         end;
       finally Seen.Free; end;
     end;

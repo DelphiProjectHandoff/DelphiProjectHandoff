@@ -34,7 +34,8 @@ end;
 class function TDPHScreenLayout.Reconstruct(AView: TDPHWorkspaceView; const AFile: string; AIncludeKeys: Boolean): TJSONObject;
 var FileRow,N,P,R,Parent,S,Range: TJSONObject; Nodes,Rows: TJSONArray; V: TJSONValue;
     Positions: TDictionary<Integer,TJSONObject>; I,J: Integer; X,Y,W,H,FontSize: Double;
-    Name,Value,Caption,FontColor,FillColor,HorzAlign,NavigatorButtons: string; Visible: Boolean;
+    Name,Value,Caption,FontColor,FillColor,HorzAlign,NavigatorButtons,TabOwner: string; Visible: Boolean;
+    TabShiftX,TabShiftY: Double;
     TextPart: TMatch; CharacterCode: Integer;
 begin
   Result:=TJSONObject.Create; Rows:=TJSONArray.Create; Result.AddPair('components',Rows);
@@ -66,8 +67,6 @@ begin
         if Name='TextSettings.HorzAlign' then HorzAlign:=Value;
         if Name='VisibleButtons' then NavigatorButtons:=Value;
         if Name='Visible' then Visible:=Visible and not SameText(Value,'False');
-        if (Name='IsSelected') and SameText(N.GetValue<string>('value',''),'TTabItem') then
-          Visible:=Visible and not SameText(Value,'False');
         if MatchText(Name,['Caption','Text']) and not MatchText(LowerCase(N.GetValue<string>('value','')),['tedit','tmemo','tlistbox','tcombobox','timage']) then begin
           Caption:='';
           for TextPart in TRegEx.Matches(Value,'''((?:''''|[^''])*)''|#(\d+)') do begin
@@ -83,8 +82,24 @@ begin
         end;
       end;
       if Parent<>nil then begin X:=X+Parent.GetValue<Double>('x'); Y:=Y+Parent.GetValue<Double>('y'); end;
+      TabOwner:=''; TabShiftX:=0; TabShiftY:=0;
+      if Parent<>nil then begin
+        TabOwner:=Parent.GetValue<string>('tab_owner','');
+        TabShiftX:=Parent.GetValue<Double>('tab_shift_x',0);
+        TabShiftY:=Parent.GetValue<Double>('tab_shift_y',0);
+      end;
+      if SameText(N.GetValue<string>('value',''),'TTabItem') then begin
+        TabOwner:=N.GetValue<string>('name','');
+        if Parent<>nil then begin
+          TabShiftX:=X-Parent.GetValue<Double>('x',0);
+          TabShiftY:=Y-Parent.GetValue<Double>('y',0);
+        end;
+      end;
       R:=TJSONObject.Create; Rows.AddElement(R); Positions.Add(I,R);
       R.AddPair('name',N.GetValue<string>('name')); R.AddPair('class',N.GetValue<string>('value')); R.AddPair('caption',Caption);
+      R.AddPair('tab_owner',TabOwner);
+      R.AddPair('tab_shift_x',TJSONNumber.Create(TabShiftX));
+      R.AddPair('tab_shift_y',TJSONNumber.Create(TabShiftY));
       if Parent<>nil then R.AddPair('parent_class',Parent.GetValue<string>('class',''))
       else R.AddPair('parent_class','');
       R.AddPair('font_size',TJSONNumber.Create(EnsureRange(FontSize,7.0,72.0)));

@@ -172,13 +172,13 @@ begin
           Store.SaveKnowledge(0,0,Generation,'Unrelated project note','UNRELATED_NOTE_MUST_NOT_APPEAR','Other Author','note','');
           Store.SaveKnowledge(0,0,Generation,'Practice choosing a mode','Prerequisite: use the learning fixture.'+sLineBreak+'1. Select the example option.'+sLineBreak+'2. Read the responding operation.'+sLineBreak+'Expected result: identify both branch alternatives.','Named task author','user_help',Key);
           Rows:=Store.KnowledgeJSON;
-          try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,True); finally Rows.Free; end;
+          try Model:=TDPHDocumentModel.Create(View,Rows,[],[],False,False); finally Rows.Free; end;
           Explain:=TDPHExplanationModel.Create(Model.Document);
           try
             FlowText:=TDPHHandoffDossier.Render(Model.Document,0);
             Check(ContainsText(FlowText,'Handoff overview') and
               ContainsText(FlowText,'Startup reading order') and
-              ContainsText(FlowText,'STALE capture') and
+              ContainsText(FlowText,'PARTIAL capture') and
               ContainsText(FlowText,'Semantic.dproj'),
               'Handoff overview identifies the selected capture and its evidence limits');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,1);
@@ -518,6 +518,18 @@ begin
               Check(Form.ScreenshotList.Count=0,'Generated previews wait until the Screenshots page is opened');
               Form.LoadScreenshots(Store.ScreenshotsJSON);
               Check(Form.ScreenshotList.Count>0,'Imported runtime images appear beside generated design previews');
+              Check((Form.ScreenshotList.Items.IndexOf('Main - First page')>=0) and
+                (Form.ScreenshotList.Items.IndexOf('Main - Second page')>=0),
+                'Each saved form tab has its own generated design preview');
+              Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Items.IndexOf('Main - First page');
+              Form.ScreenshotClick(nil);
+              Form.ScreenshotImage.Bitmap.SaveToFile(TPath.Combine(Work,'first-tab.png'));
+              Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Items.IndexOf('Main - Second page');
+              Form.ScreenshotClick(nil);
+              Form.ScreenshotImage.Bitmap.SaveToFile(TPath.Combine(Work,'second-tab.png'));
+              Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Work,'first-tab.png'))<>
+                THashSHA2.GetHashStringFromFile(TPath.Combine(Work,'second-tab.png')),
+                'The two tab previews render different saved controls');
               Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Count-1; Form.ScreenshotClick(nil);
               Check((Form.ScreenshotImage.Bitmap.Width=80) and (Form.ScreenshotImage.Bitmap.Height=60),
                 'Selecting imported evidence displays the original PNG, not a generated form image');

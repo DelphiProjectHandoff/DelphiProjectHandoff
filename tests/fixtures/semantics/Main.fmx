@@ -3,4 +3,31 @@ object MainForm: TMain
     Text = 'Convert example'
     OnClick = Click
   end
+  object PreviewPages: TTabControl
+    Position.Y = 40
+    Size.Width = 400
+    Size.Height = 240
+    object PreviewFirst: TTabItem
+      IsSelected = True
+      Text = 'First page'
+      object FirstPageLabel: TLabel
+        Position.X = 24
+        Position.Y = 60
+        Size.Width = 240
+        Size.Height = 32
+        Text = 'First page content'
+      end
+    end
+    object PreviewSecond: TTabItem
+      IsSelected = False
+      Text = 'Second page'
+      object SecondPageLabel: TLabel
+        Position.X = 24
+        Position.Y = 60
+        Size.Width = 240
+        Size.Height = 32
+        Text = 'Second page content'
+      end
+    end
+  end
 end
