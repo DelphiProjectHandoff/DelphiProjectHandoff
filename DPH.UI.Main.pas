@@ -824,7 +824,7 @@ type
     FLearningFacts: TDPHDocumentModel;
     FExplanations: TDPHExplanationModel;
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
-    FExpectedDossierPage: string;
+    FExpectedDossierPage,FExpectedGraphPage: string;
     FOfflinePreview: TDPHOfflinePreview;
     FImages: TJSONArray;
     FPendingScreenshots: TJSONArray;
@@ -1763,6 +1763,10 @@ procedure TDPHMainForm.WorkspacePageChange(Sender: TObject);
 var Index: Integer; Choice: TComboBox; TabShape: TRectangle;
 begin
   if FBinding then Exit;
+  if WorkspaceTabs.ActiveTab<>GraphTab then begin
+    FExpectedGraphPage:='';
+    FlowBrowser.Visible:=False;
+  end;
   if WorkspaceTabs.ActiveTab<>ScreenshotTab then begin
     FScreenshotOriginTab:=nil;
     ScreenshotReturnButton.Enabled:=False;
@@ -3355,6 +3359,12 @@ begin
 end;
 procedure TDPHMainForm.LearningBrowserDidFinishLoad(Sender: TObject);
 begin
+  if Sender=FlowBrowser then begin
+    if (FExpectedGraphPage<>'') and
+      ContainsText(FlowBrowser.URL,FExpectedGraphPage) and
+      (WorkspaceTabs.ActiveTab=GraphTab) then FlowBrowser.Visible:=True;
+    Exit;
+  end;
   if FPreparingProject and (FPendingCommand='open') and
     (FExpectedDossierPage<>'') and
     ContainsText(LearningBrowser.URL,FExpectedDossierPage) then begin
@@ -3690,7 +3700,7 @@ procedure TDPHMainForm.LoadScreenshots(ARows: TJSONArray);
 var V,Part: TJSONValue; R,Screen,Node: TJSONObject; Index,Count,Done,W,H,TabIndex: Integer;
   Thumbnail,Picture,EmbeddedPicture: TBitmap; LayoutRows,Files,FormSources: TJSONArray;
   Path,Source,CaptionText,ClassName,ImageDirectory,ImageHash,ColorText,FormPath,FormText,
-    CatalogPath,CatalogHash,RootName,CaptionKey,TabName,TabCaption,SourceHash: string;
+    CatalogPath,CatalogHash,RootName,CaptionKey,TabName,TabCaption,SourceHash,ActiveTabName: string;
   GermanCatalog,GermanStrings: TJSONObject;
   Bounds,NavigatorBounds: TRectF; Scale: Single; Seen,TabNames,TabCaptions: TStringList; ImageStream: TMemoryStream;
   ImageStart,ImageEnd,NextObject,CharacterIndex,ByteCount,HighNibble,Nibble: Integer;
@@ -3763,7 +3773,10 @@ begin
                   TabCaptions.Add(Node.GetValue<string>('caption',''));
                 end;
               end;
-              if TabNames.Count=0 then begin TabNames.Add(''); TabCaptions.Add(''); end;
+              if TabNames.Count>0 then begin
+                TabNames.Insert(0,'');
+                TabCaptions.Insert(0,'Main screen');
+              end else begin TabNames.Add(''); TabCaptions.Add('Main screen'); end;
             FormText:='';
             FormPath:=TPath.GetFullPath(TPath.Combine(FView.Document.GetValue<string>('root',''),Source.Replace('/',PathDelim)));
             if StartsText(IncludeTrailingPathDelimiter(TPath.GetFullPath(FView.Document.GetValue<string>('root',''))),FormPath) and
@@ -3772,8 +3785,10 @@ begin
               FormText:=TFile.ReadAllText(FormPath,TEncoding.Default);
             for TabIndex:=0 to TabNames.Count-1 do begin
             TabName:=TabNames[TabIndex]; TabCaption:=TabCaptions[TabIndex];
+            ActiveTabName:=TabName;
+            if (ActiveTabName='') and (TabNames.Count>1) then ActiveTabName:=TabNames[1];
             Path:=TPath.Combine(ImageDirectory,THashSHA2.GetHashString(
-              Source+'|'+SourceHash+'|screen-v7|'+CatalogHash+'|'+TabName)+'.png');
+              Source+'|'+SourceHash+'|screen-v8|'+CatalogHash+'|'+TabName)+'.png');
             Picture:=TBitmap.Create;
             try
             if not TFile.Exists(Path) then begin
@@ -3791,8 +3806,8 @@ begin
                 for Part in LayoutRows do begin
                   Node:=Part as TJSONObject; ClassName:=LowerCase(Node.GetValue<string>('class',''));
                   if not Node.GetValue<Boolean>('visible',True) or
-                    ((TabName<>'') and (Node.GetValue<string>('tab_owner','')<>'') and
-                     not SameText(Node.GetValue<string>('tab_owner',''),TabName)) or
+                    ((ActiveTabName<>'') and (Node.GetValue<string>('tab_owner','')<>'') and
+                     not SameText(Node.GetValue<string>('tab_owner',''),ActiveTabName)) or
                     (ClassName='') or
                     (ClassName='ttabitem') or (ClassName='ttabcontrol') or
                     (ClassName='ttimer') or (ClassName='tdatasource') or
@@ -3978,8 +3993,8 @@ begin
               if (TabName<>'') and (TabCaption='') then TabCaption:=TabName;
               R:=TJSONObject.Create.AddPair('artifact_id',TJSONNumber.Create(-(Done*1000+TabIndex+1)))
                 .AddPair('generation_id',TJSONNumber.Create(FView.Document.GetValue<Int64>('generation_id')))
-                .AddPair('caption',TPath.GetFileNameWithoutExtension(Source)+IfThen(TabName<>'',' - '+TabCaption,''))
-                .AddPair('description','Reconstructed design preview from '+Source+IfThen(TabName<>'',', tab '+TabCaption,'')+'. Saved controls and captions are shown; runtime styling and data may differ.')
+                .AddPair('caption',TPath.GetFileNameWithoutExtension(Source)+' - '+TabCaption)
+                .AddPair('description','Reconstructed design preview from '+Source+', '+TabCaption+'. Saved controls and captions are shown; runtime styling and data may differ.')
                 .AddPair('image_kind','Generated design preview').AddPair('managed_path',Path)
                 .AddPair('form_sources',FormSources)
                 .AddPair('image_sha256',ImageHash);
@@ -4622,7 +4637,7 @@ begin
  DepartmentalWorkflowMemo.Text:=TDPHWorkspaceView.DescribeDepartmentalWorkflow(Row);
 end;
 procedure TDPHMainForm.DepartmentalWorkflowDiagramClick(Sender:TObject);
-var Row:TJSONObject;HTML,GraphPath:string;
+var Row:TJSONObject;HTML,GraphPath:string;GraphExplanation:TDPHExplanationModel;
 begin
  if FBusy or (FView=nil) then Exit;
  if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the current Knowledge draft before opening a saved workflow diagram.';Exit;end;
@@ -4633,13 +4648,16 @@ begin
   FreeAndNil(FGraph);FGraph:=TDPHGraphProjection.Workflow(Row,FKnowledge,FView.Document.GetValue<Int64>('generation_id'));
   GraphGroupingCombo.Enabled:=False;
   GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
-  GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);GraphPaint.Repaint;
-  if (FExplanations=nil) and (FLearningFacts<>nil) then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
-  HTML:=DATTranslateHtmlText(FExplanations.GraphHTML(FGraph));GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
+  GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);
+  GraphExplanation:=TDPHExplanationModel.Create(FLearningFacts.Document,False);
+  try HTML:=DATTranslateHtmlText(GraphExplanation.GraphHTML(FGraph));finally GraphExplanation.Free;end;
+  GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(GraphPath) then begin TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(GraphPath);end;
-  WorkspaceTabs.ActiveTab:=GraphTab;FlowBrowser.Visible:=False;
-  try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;FlowBrowser.Navigate('file://'+GraphPath);FlowBrowser.Visible:=True;
-  except on E:Exception do StatusLabel.Text:='Browser diagram unavailable; the native diagram remains available: '+E.Message;end;
+  WorkspaceTabs.ActiveTab:=GraphTab;FlowBrowser.Visible:=False;GraphScroll.Visible:=False;
+  try FExpectedGraphPage:=TPath.GetFileName(GraphPath);
+    FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;FlowBrowser.Navigate('file://'+GraphPath);
+  except on E:Exception do begin GraphScroll.Visible:=True;GraphPaint.Repaint;
+    StatusLabel.Text:='Browser diagram unavailable; the native diagram remains available: '+E.Message;end;end;
  except on E:Exception do begin FreeAndNil(FGraph);StatusLabel.Text:=E.Message;end;end;
 end;
 procedure TDPHMainForm.DepartmentalWorkflowNewClick(Sender:TObject);
@@ -5542,10 +5560,19 @@ end;
 procedure TDPHMainForm.RefreshGraphics;
 const GraphKinds: array[0..7] of string = ('Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact','Data lineage','Business process');
 var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
+    GraphModel: TDPHExplanationModel;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
-  FlowBrowser.Visible:=False;
+  FExpectedGraphPage:=''; FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
+  if WorkspaceTabs.ActiveTab=ScreenTab then begin
+    if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
+    else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);
+    UpdateScreenBounds;
+    ScreenPaint.Repaint;
+    Exit;
+  end;
+  GraphScroll.Visible:=False;
   if (WorkspaceTabs.ActiveTab=GraphTab) and (FLearningFacts=nil) then RefreshLearning;
   if (FSelected='') and (GraphCombo.ItemIndex in [0,3,4]) then FWholeGraph:=True;
   GraphPaint.Width:=Max(1050,GraphScroll.Width-24);
@@ -5592,10 +5619,17 @@ begin
   if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
   end;
-  if (FGraph<>nil) and (FExplanations=nil) and (FLearningFacts<>nil) then
-    FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
-  if (FGraph<>nil) and (FExplanations<>nil) then begin
-    if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
+  if (FGraph<>nil) and (FLearningFacts<>nil) then begin
+    GraphModel:=FExplanations;
+    if GraphModel=nil then begin
+      if GraphCombo.ItemIndex=1 then begin
+        FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
+        GraphModel:=FExplanations;
+      end else GraphModel:=TDPHExplanationModel.Create(FLearningFacts.Document,False);
+    end;
+    try
+      if GraphCombo.ItemIndex=1 then HTML:=GraphModel.FlowHTML(FSelected) else HTML:=GraphModel.GraphHTML(FGraph);
+    finally if GraphModel<>FExplanations then GraphModel.Free; end;
     HTML:=HTML.Replace('href="#','href="index.html#');
     HTML:=DATTranslateHtmlText(HTML);
     GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
@@ -5603,13 +5637,13 @@ begin
       TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(GraphPath);
     end;
     TFile.WriteAllBytes(TPath.Combine(FFlowDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
-    try FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; FlowBrowser.Visible:=True;
+    try FExpectedGraphPage:=TPath.GetFileName(GraphPath);
+      FlowBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;
       FlowBrowser.Navigate('file://'+GraphPath);
-    except on E: Exception do begin FlowBrowser.Visible:=False; StatusLabel.Text:='HTML graph view unavailable; native graph retained: '+E.Message; end; end;
+    except on E: Exception do begin FlowBrowser.Visible:=False; GraphScroll.Visible:=True;
+      GraphPaint.Repaint; StatusLabel.Text:='HTML graph view unavailable; native graph retained: '+E.Message; end; end;
   end;
-  if ScreenModeCombo.ItemIndex=0 then FScreen:=TDPHScreenLayout.Gallery(FView)
-  else if FormCombo.ItemIndex>=0 then FScreen:=TDPHScreenLayout.Reconstruct(FView,FormCombo.Items[FormCombo.ItemIndex]);
-  UpdateScreenBounds; GraphPaint.Repaint; ScreenPaint.Repaint;
+  if FGraph=nil then GraphScroll.Visible:=True;
 end;
 procedure TDPHMainForm.GraphGroupDetails(const AGroup: string);
 var V,W,E: TJSONValue; GroupRow,Symbol,Row,Edge: TJSONObject; Key: string; EvidenceRows: TList<TJSONObject>;

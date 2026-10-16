@@ -48,8 +48,6 @@ var
     if Source='' then Exit;
     Result:='<small class="cite"><code>'+Esc(Source)+':'+
       IntToStr(Range.GetValue<Integer>('line',0))+'</code>';
-    if ARow.GetValue<string>('source_hash','')<>'' then
-      Result:=Result+' | SHA-256 '+Esc(Copy(ARow.GetValue<string>('source_hash'),1,12))+'...';
     Result:=Result+'</small>';
   end;
   function ObjectLink(ARow: TJSONObject): string;
@@ -122,8 +120,7 @@ begin
             Purpose:=Trim(Section.GetValue<string>('text',''));
             if Purpose='' then Continue;
             PurposeEvidence:='Project document '+Esc(Guide.GetValue<string>('source',''))+
-              ' | SHA-256 '+Esc(Copy(Guide.GetValue<string>('sha256',''),1,12))+
-              '... | author statement, not runtime verification';
+              ' | author statement, not runtime verification';
             Break;
           end;
           if Purpose<>'' then Break;

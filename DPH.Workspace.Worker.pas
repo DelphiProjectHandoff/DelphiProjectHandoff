@@ -390,6 +390,12 @@ begin
             CachedQualityVersion:=Document.GetValue<string>('source_quality.version','');
             CachedDiscoveryVersion:=Document.GetValue<string>('learning_discovery_version','');
             CachedSelectionHash:=Document.GetValue<string>('selection_hash','');
+            if CachedDiscoveryVersion<>DPHLearningDiscoveryVersion then begin
+              Document.RemovePair('project_guides').Free;
+              Document.AddPair('project_guides',TJSONArray.Create);
+              Document.RemovePair('project_sites').Free;
+              Document.AddPair('project_sites',TJSONArray.Create);
+            end;
             MessageText:='Cached project - detached: source has not been attached';
             if Status.AnalysisStale then MessageText:=MessageText+' | analysis stale';
             if Status.ModificationDetected then MessageText:=MessageText+' | source modification detected';

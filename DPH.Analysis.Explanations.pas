@@ -15,7 +15,7 @@ type
     function Page(const ATitle,ABody: string): string;
     function Prose(const AText: string): string;
   public
-    constructor Create(AFacts: TJSONObject);
+    constructor Create(AFacts: TJSONObject; AIndexFacts: Boolean = True);
     destructor Destroy; override;
     class function Encode(const AText: string): string; static;
     function ObjectText(const AKey: string): string;
@@ -41,10 +41,11 @@ uses System.StrUtils, System.Hash, System.Math, System.Classes, System.Generics.
 
 class function TDPHExplanationModel.Encode(const AText: string): string;
 begin Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;').Replace('''','&#39;'); end;
-constructor TDPHExplanationModel.Create(AFacts: TJSONObject);
+constructor TDPHExplanationModel.Create(AFacts: TJSONObject; AIndexFacts: Boolean);
 var V: TJSONValue; R: TJSONObject; Key: string; Rows: TList<TJSONObject>;
 begin
   inherited Create; FFacts:=AFacts;
+  if not AIndexFacts then Exit;
   FSymbols:=TDictionary<string,TJSONObject>.Create;
   FOutgoing:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
   FIncoming:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
@@ -80,7 +81,9 @@ begin
       if R.GetValue<string>('kind')='binds' then RP:=0;
       Result:=CompareValue(LP,RP);
       if Result=0 then Result:=CompareValue(L.GetValue<Int64>('range.start'),R.GetValue<Int64>('range.start'));
-      if Result=0 then Result:=CompareStr(L.ToJSON,R.ToJSON);
+      if Result=0 then Result:=CompareStr(L.GetValue<string>('kind')+'|'+
+        L.GetValue<string>('to',''),R.GetValue<string>('kind')+'|'+
+        R.GetValue<string>('to',''));
     end));
 end;
 destructor TDPHExplanationModel.Destroy;

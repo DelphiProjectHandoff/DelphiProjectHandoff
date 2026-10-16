@@ -12,12 +12,13 @@ uses FMX.Objects, FMX.Types, System.SysUtils, System.Classes, System.IOUtils, Sy
   DPH.Workspace.Worker in '..\DPH.Workspace.Worker.pas',
   DPH.Learning.Discovery in '..\DPH.Learning.Discovery.pas',
   DPH.UI.ActionPurpose in '..\DPH.UI.ActionPurpose.pas', DPH.Knowledge.ActionPurpose in '..\DPH.Knowledge.ActionPurpose.pas',
-  DPH.Analysis.Model in '..\DPH.Analysis.Model.pas', DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas';
+  DPH.Analysis.Model in '..\DPH.Analysis.Model.pas', DPH.Analysis.Persistence in '..\DPH.Analysis.Persistence.pas',
+  DAT.Components.Core in '..\dependencies\DelphiAppTranslation\source\DAT.Components.Core.pas';
 var Root,Work,Fixture,Key,Path,BeforeHash,JS,ReferenceDB,ReferenceRoot,SourceArtifact,ReferenceBundle: string; ID: TGUID;
     Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer; Scan: TDPHScan; Graph: TDPHSemanticGraph;
     Store: TDPHKnowledgeStore; View: TDPHWorkspaceView; Model,ImageModel: TDPHDocumentModel; Explain: TDPHExplanationModel;
     Config,Generation: Int64; Rows: TJSONArray; V: TJSONValue; Row,Report,Diagram: TJSONObject;
-    Checks,I: Integer; Failed,Done: Boolean; Form: TDPHMainForm; Watch,Attempt,OpenWatch: TStopwatch; Bitmap,BrowserBitmap: TBitmap; ReferenceViewMS: Int64;
+    Checks,I: Integer; Failed,Done: Boolean; Form: TDPHMainForm; Watch,Attempt,OpenWatch,ScreenWatch,GraphWatch: TStopwatch; Bitmap,BrowserBitmap: TBitmap; ReferenceViewMS: Int64;
     PortableStore: TDPHKnowledgeStore; ImageBytes: TBytes; LargeSource,FlowText: string;
     Worker: TDPHWorkspaceWorker; Request: TDPHWorkspaceRequest; Response: TDPHWorkspaceResponse;
 procedure Check(OK: Boolean; const Text: string);
@@ -136,16 +137,17 @@ begin
               ContainsText((Discovered.GetValue<TJSONArray>('sections').Items[0] as TJSONObject).GetValue<string>('text',''),'شاشة البداية') then
               FoundArabicTXT:=True;
           end;
-        Check(FoundLog,'Initial discovery reads existing application logs as cited evidence');
+        Check(not FoundLog and FoundUnlabelledTXT,
+          'Source-directory text is retained while log output stays out of documentation');
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
-          Format('PDF, DOCX, RTF, ODT and text files contribute extracted text, including unnamed notes (pdf=%s docx=%s rtf=%s odt=%s txt=%s unnamed=%s)',
+          Format('Root PDF, DOCX, RTF, ODT and named notes contribute extracted text (pdf=%s docx=%s rtf=%s odt=%s txt=%s unnamed=%s)',
             [BoolToStr(FoundPDF,True),BoolToStr(FoundDOCX,True),BoolToStr(FoundRTF,True),
              BoolToStr(FoundODT,True),BoolToStr(FoundTXT,True),BoolToStr(FoundUnlabelledTXT,True)]));
         Check(not FoundOversizedODT,
           'Oversized compressed document text is rejected before decompression into memory');
         Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
-        Check(FoundProjectGuide and FoundHelpTopic and not FoundOtherRelease,
-          'Project docs and Help are read; a separate release package is excluded');
+        Check(not FoundProjectGuide and not FoundHelpTopic and not FoundOtherRelease,
+          'Only the selected source directory is read; nested docs, Help and release packages are excluded');
       finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
@@ -153,7 +155,7 @@ begin
       TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs'));
       TFile.WriteAllText(TPath.Combine(Fixture,'docs\README.md'),
         'The second README explains the same application from a different project folder. It retains its own document location.',TEncoding.UTF8);
-      TFile.WriteAllText(TPath.Combine(Fixture,'docs\Westminster_Chimes_and_Carillon_Bells_8_1_Engineering_Guide.txt'),
+      TFile.WriteAllText(TPath.Combine(Fixture,'Westminster_Chimes_and_Carillon_Bells_8_1_Engineering_Guide.txt'),
         'The test application has a long-titled guide.',TEncoding.UTF8);
       BeforeHash:=THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'));
       Analyzer:=TDPHAnalyzer.Create; Semantic:=TDPHSemanticAnalyzer.Create;
@@ -179,7 +181,8 @@ begin
             Check(ContainsText(FlowText,'Handoff overview') and
               ContainsText(FlowText,'Startup reading order') and
               ContainsText(FlowText,'PARTIAL capture') and
-              ContainsText(FlowText,'Semantic.dproj'),
+              ContainsText(FlowText,'Semantic.dproj') and
+              not ContainsText(FlowText,'SHA-256'),
               'Handoff overview identifies the selected capture and its evidence limits');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,1);
             Check(ContainsText(FlowText,'Commands and workflows') and
@@ -533,6 +536,8 @@ begin
               Check((Form.ScreenshotList.Items.IndexOf('Main - First page')>=0) and
                 (Form.ScreenshotList.Items.IndexOf('Main - Second page')>=0),
                 'Each saved form tab has its own generated design preview');
+              Check(Form.ScreenshotList.Items.IndexOf('Main - Main screen')>=0,
+                'The full main form has its own design preview before the individual tabs');
               Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Items.IndexOf('Main - First page');
               Form.ScreenshotClick(nil);
               Form.ScreenshotImage.Bitmap.SaveToFile(TPath.Combine(Work,'first-tab.png'));
@@ -552,10 +557,9 @@ begin
               Form.CardList.ItemIndex:=0; Form.CardSelectionChange(nil);
               Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
               Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]) and
-                Form.CardDocumentLocation.Visible and (Form.CardDocumentLocation.Items.Count=2),
-                'Learning library groups same-named documents while retaining both locations');
-              Form.CardDocumentLocation.ItemIndex:=Form.CardDocumentLocation.Items.IndexOf('README.md');
-              Form.CardSelectionChange(Form.CardDocumentLocation);
+                (Form.CardDocumentLocation.Items.Count=1),
+                'Learning library excludes a nested README outside the source directory');
+              Form.CardSelectionChange(nil);
               WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
               Check(True,'A discovered project document opens as readable content');
               WaitHTML(Form.CardBrowser,'document.querySelector("table thead th").innerText','Unit');
@@ -567,10 +571,6 @@ begin
               BrowserBitmap:=Form.CardBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-library.png'));
               finally BrowserBitmap.Free; end;
-              Form.CardDocumentLocation.ItemIndex:=1-Form.CardDocumentLocation.ItemIndex;
-              Form.CardSelectionChange(Form.CardDocumentLocation);
-              WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
-              Check(True,'Selecting another document location opens its distinct content');
               Form.CardFilter.Text:='Westminster_Chimes';Form.CardFilterChange(nil);
               Check((Form.CardList.Count=1) and
                 ContainsText(Form.CardList.Items[0],'Westminster Chimes and Carillon Bells 8 1 Engineering Guide') and
@@ -807,8 +807,19 @@ begin
           View:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Store.LoadWorkspaceView) as TJSONObject);
           Writeln('Reference capture read and parse: ',Watch.ElapsedMilliseconds,' ms'); Flush(Output);
         finally Store.Free; end;
-        try Model:=TDPHDocumentModel.Create(View,nil,[],[],True,True); Explain:=TDPHExplanationModel.Create(Model.Document);
+        try Model:=TDPHDocumentModel.Create(View,nil,[],[],True,True);
+          GraphWatch:=TStopwatch.StartNew;
+          Explain:=TDPHExplanationModel.Create(Model.Document);
+          Writeln('Reference explanation indexes: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
           try
+            GraphWatch:=TStopwatch.StartNew;
+            Diagram:=View.Graph('Form navigation','',120);
+            Writeln('Reference graph projection: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+            try
+              GraphWatch:=TStopwatch.StartNew;
+              FlowText:=Explain.GraphHTML(Diagram);
+              Writeln('Reference graph HTML: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+            finally Diagram.Free; end;
             Check(Model.Document.GetValue<TJSONArray>('startup').Count>0,'Pinned program startup is captured from its DPR body');
             Check(Model.Document.GetValue<TJSONArray>('startup').Count=3,'Pinned startup lesson includes the three startup operations without treating form-call arguments as separate actions');
             Check(ContainsText(Explain.LessonHTML(1),'Prepares the application framework') and ContainsText(Explain.LessonHTML(1),'Requests creation of a form'),'Token spacing does not prevent plain-language startup explanations');
@@ -886,7 +897,33 @@ begin
               Check(not Form.ProjectPreparationLayout.Visible and
                 Form.LearningBrowser.Visible and (Form.WorkspaceView<>nil),
                 'Full saved-project command opens the large reference dossier as HTML');
+              Check(Form.WorkspaceView.Document.GetValue<TJSONArray>('project_guides').Count=0,
+                'An older saved capture does not display nested legacy guides while source scope refreshes');
               Writeln('Reference end-to-end saved open: ',OpenWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              ScreenWatch:=TStopwatch.StartNew;
+              Form.WorkspaceTabs.ActiveTab:=Form.ScreenshotTab;
+              Form.WorkspacePageChange(nil);
+              Check((Form.ScreenshotList.Items.IndexOf('MainForm - Main screen')>=0) and
+                (Form.ScreenshotList.Items.IndexOf('MainForm - Dashboard')>=0) and
+                (Form.ScreenshotList.Items.IndexOf('MainForm - Rules')>=0),
+                'VCL2FMXConverter main form and saved tabs have separate generated previews');
+              Form.ScreenshotList.ItemIndex:=Form.ScreenshotList.Items.IndexOf('MainForm - Main screen');
+              Form.ScreenshotClick(nil);
+              Form.ScreenshotImage.Bitmap.SaveToFile(TPath.Combine(Work,'reference-main-screen.png'));
+              Writeln('Reference generated screen previews: ',ScreenWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              Form.GraphCombo.ItemIndex:=3;
+              Diagram:=View.Graph('Form navigation','',120);
+              try FlowText:=Explain.GraphHTML(Diagram); finally Diagram.Free; end;
+              GraphWatch:=TStopwatch.StartNew;
+              FlowText:=DATTranslateHtmlText(FlowText);
+              Writeln('Reference graph translation: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              GraphWatch:=TStopwatch.StartNew;
+              Form.WorkspaceTabs.ActiveTab:=Form.GraphTab;
+              Form.ViewChange(nil);
+              Writeln('Reference screen-map preparation: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              WaitHTML(Form.FlowBrowser,'document.querySelector("h1")?.innerText','Screen map');
+              Check(Form.FlowBrowser.Visible and (GraphWatch.ElapsedMilliseconds<15000),
+                'Large screen map finishes within 15 seconds without showing the previous browser page');
               Form.Hide;
             finally Form.Free; end;
             Check(not Model.Document.GetValue<Boolean>('analysis_complete'),'Learning does not clear partial reference coverage');

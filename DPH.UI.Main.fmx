@@ -3208,6 +3208,7 @@ Visible = False
 WindowsEngine = None
 EnableCaching = False
 OnShouldLoadURL = LearningShouldLoad
+OnDidFinishLoad = LearningBrowserDidFinishLoad
 end
 end
 object ScreenTab: TTabItem

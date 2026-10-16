@@ -33,8 +33,9 @@ begin
 end;
 class function TDPHScreenLayout.Reconstruct(AView: TDPHWorkspaceView; const AFile: string; AIncludeKeys: Boolean): TJSONObject;
 var FileRow,N,P,R,Parent,S,Range: TJSONObject; Nodes,Rows: TJSONArray; V: TJSONValue;
-    Positions: TDictionary<Integer,TJSONObject>; I,J: Integer; X,Y,W,H,FontSize: Double;
+    Positions: TDictionary<Integer,TJSONObject>; I,J,K: Integer; X,Y,W,H,FontSize,MarginTop,Bottom: Double;
     Name,Value,Caption,FontColor,FillColor,HorzAlign,NavigatorButtons,TabOwner: string; Visible: Boolean;
+    Alignment: string; HasPositionX,HasPositionY: Boolean;
     TabShiftX,TabShiftY: Double;
     TextPart: TMatch; CharacterCode: Integer;
 begin
@@ -51,14 +52,17 @@ begin
       Parent:=nil; Positions.TryGetValue(N.GetValue<Integer>('parent'),Parent);
       X:=0; Y:=0; W:=120; H:=32; if Parent=nil then begin W:=800; H:=600; end;
       Caption:=''; FontSize:=14; FontColor:=''; FillColor:=''; HorzAlign:='Leading';
+      Alignment:=''; MarginTop:=0; HasPositionX:=False; HasPositionY:=False;
       NavigatorButtons:=''; Visible:=(Parent=nil) or Parent.GetValue<Boolean>('visible',True);
       for J:=I+1 to Nodes.Count-1 do
       begin
         P:=Nodes.Items[J] as TJSONObject;
         if (P.GetValue<Integer>('parent')<>I) or (P.GetValue<string>('kind')<>'property') then Continue;
         Name:=P.GetValue<string>('name'); Value:=P.GetValue<string>('value');
-        if (Parent<>nil) and MatchText(Name,['Left','Position.X']) then X:=StrToFloatDef(Value,X,TFormatSettings.Invariant);
-        if (Parent<>nil) and MatchText(Name,['Top','Position.Y']) then Y:=StrToFloatDef(Value,Y,TFormatSettings.Invariant);
+        if (Parent<>nil) and MatchText(Name,['Left','Position.X']) then begin X:=StrToFloatDef(Value,X,TFormatSettings.Invariant); HasPositionX:=True; end;
+        if (Parent<>nil) and MatchText(Name,['Top','Position.Y']) then begin Y:=StrToFloatDef(Value,Y,TFormatSettings.Invariant); HasPositionY:=True; end;
+        if Name='Align' then Alignment:=Value;
+        if Name='Margins.Top' then MarginTop:=StrToFloatDef(Value,0,TFormatSettings.Invariant);
         if MatchText(Name,['Width','ClientWidth','Size.Width']) then W:=StrToFloatDef(Value,W,TFormatSettings.Invariant);
         if MatchText(Name,['Height','ClientHeight','Size.Height']) then H:=StrToFloatDef(Value,H,TFormatSettings.Invariant);
         if Name='TextSettings.Font.Size' then FontSize:=StrToFloatDef(Value,FontSize,TFormatSettings.Invariant);
@@ -81,6 +85,19 @@ begin
           if Caption='' then Caption:=Value;
         end;
       end;
+      if (Parent<>nil) and SameText(Alignment,'Client') and not HasPositionY then begin
+        Bottom:=0;
+        for K:=0 to I-1 do
+          if (Nodes.Items[K] as TJSONObject).GetValue<Integer>('parent',-2)=
+             N.GetValue<Integer>('parent',-1) then begin
+            S:=nil;
+            if Positions.TryGetValue(K,S) and SameText(S.GetValue<string>('align',''),'Top') then
+              Bottom:=Max(Bottom,S.GetValue<Double>('y')+S.GetValue<Double>('height'));
+          end;
+        if Bottom>0 then Y:=Bottom-Parent.GetValue<Double>('y')+MarginTop;
+      end;
+      if (Parent<>nil) and SameText(Alignment,'Client') and not HasPositionX then
+        X:=Parent.GetValue<Double>('padding_left',0);
       if Parent<>nil then begin X:=X+Parent.GetValue<Double>('x'); Y:=Y+Parent.GetValue<Double>('y'); end;
       TabOwner:=''; TabShiftX:=0; TabShiftY:=0;
       if Parent<>nil then begin
@@ -105,6 +122,14 @@ begin
       R.AddPair('font_size',TJSONNumber.Create(EnsureRange(FontSize,7.0,72.0)));
       R.AddPair('font_color',FontColor); R.AddPair('fill_color',FillColor);
       R.AddPair('navigator_buttons',NavigatorButtons);
+      R.AddPair('align',Alignment);
+      for J:=I+1 to Nodes.Count-1 do begin
+        P:=Nodes.Items[J] as TJSONObject;
+        if (P.GetValue<Integer>('parent')=I) and (P.GetValue<string>('name')='Padding.Left') then begin
+          R.AddPair('padding_left',TJSONNumber.Create(StrToFloatDef(P.GetValue<string>('value'),0,TFormatSettings.Invariant)));
+          Break;
+        end;
+      end;
       R.AddPair('horizontal_alignment',HorzAlign); R.AddPair('visible',TJSONBool.Create(Visible));
       R.AddPair('x',TJSONNumber.Create(EnsureRange(X,-100000.0,100000.0))); R.AddPair('y',TJSONNumber.Create(EnsureRange(Y,-100000.0,100000.0)));
       R.AddPair('width',TJSONNumber.Create(EnsureRange(W,1.0,100000.0))); R.AddPair('height',TJSONNumber.Create(EnsureRange(H,1.0,100000.0)));

@@ -4,7 +4,7 @@ interface
 
 uses System.JSON;
 
-const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-2';
+const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-3';
 
 type
   TDPHLearningDiscovery = class
@@ -115,9 +115,8 @@ var
         ContainsText(LowerName,'faq') or ContainsText(LowerName,'release') or
         ContainsText(LowerName,'requirement') or ContainsText(LowerName,'workflow') or
         ContainsText(LowerName,'architecture') or ContainsText(LowerName,'design') or
-        ContainsText(LowerName,'contract') or ContainsText(LowerName,'training') or
-        ContainsText(AFolder,'docs') or ContainsText(AFolder,'help') or
-        (Ext='.log'));
+        ContainsText(LowerName,'contract') or ContainsText(LowerName,'training'));
+      if (Ext='.log') or (MatchText(Ext,['.html','.htm']) and not Preferred) then Continue;
       if ((Ext='.log') and (TFile.GetSize(Entry)<=16777216)) or
         (MatchText(Ext,['.pdf','.docx','.docm','.doc','.dot','.dotx','.odt',
           '.ott','.sxw','.fodt','.rtf','.wpd','.wpt','.wps','.wri']) and
@@ -132,11 +131,9 @@ var
         'export','tests','tools','source distributions',
         'node_modules','vendor','dependencies']) then Continue;
       if ADepth=0 then begin
-        if MatchText(Base,['docs','doc','documentation','help','guide','guides',
-          'manual','manuals','notes']) then Visit(Entry,ADepth+1,True)
-        else if MatchText(Base,['images','image','icons','assets','resources']) then
+        if MatchText(Base,['images','image','icons','assets','resources']) then
           Visit(Entry,ADepth+1,False);
-      end else Visit(Entry,ADepth+1,AReadDocuments);
+      end;
     end;
   end;
   function PublicIPv4Host(const AHost: string; out AAddress: string): Boolean;

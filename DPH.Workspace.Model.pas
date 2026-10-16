@@ -972,7 +972,8 @@ end;
 function TDPHWorkspaceView.Graph(const AKind,AKey: string; ALimit: Integer): TJSONObject;
 var Nodes,Edges,AllNodes,AllEdges: TJSONArray; V: TJSONValue; R,S,N: TJSONObject;
     Seen,EdgeKeys: TDictionary<string,Boolean>; Queue: TQueue<string>; Key,FromKey,ToKey,Kind,EdgeKey: string;
-    I: Integer; Truncated: Boolean;
+    ForwardLinks,ReverseLinks: TObjectDictionary<string,TList<TJSONObject>>;
+    Candidates: TList<TJSONObject>; I,Direction: Integer; Truncated: Boolean;
   procedure AddSymbolNode(const K: string);
   var Row,Sym: TJSONObject;
   begin
@@ -989,6 +990,8 @@ begin
   Result.AddPair('generation_id',TJSONNumber.Create(FDocument.GetValue<Int64>('generation_id')));
   Result.AddPair('runtime_trace',TJSONBool.Create(False)); Truncated:=False;
   Seen:=TDictionary<string,Boolean>.Create; EdgeKeys:=TDictionary<string,Boolean>.Create; Queue:=TQueue<string>.Create;
+  ForwardLinks:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
+  ReverseLinks:=TObjectDictionary<string,TList<TJSONObject>>.Create([doOwnsValues]);
   try
     S:=FDocument.GetValue<TJSONObject>('semantics');
     if AKind='Procedure CFG' then
@@ -1006,6 +1009,22 @@ begin
     end
     else
     begin
+      for V in S.GetValue<TJSONArray>('relationships') do begin
+        R:=V as TJSONObject;
+        FromKey:=R.GetValue<string>('from',''); ToKey:=R.GetValue<string>('to','');
+        if FromKey<>'' then begin
+          if not ForwardLinks.TryGetValue(FromKey,Candidates) then begin
+            Candidates:=TList<TJSONObject>.Create; ForwardLinks.Add(FromKey,Candidates);
+          end;
+          Candidates.Add(R);
+        end;
+        if (ToKey<>'') and (ToKey<>FromKey) then begin
+          if not ReverseLinks.TryGetValue(ToKey,Candidates) then begin
+            Candidates:=TList<TJSONObject>.Create; ReverseLinks.Add(ToKey,Candidates);
+          end;
+          Candidates.Add(R);
+        end;
+      end;
       AddSymbolNode(AKey);
       if (AKey='') and (AKind='Execution') then
         for V in S.GetValue<TJSONArray>('symbols') do begin N:=V as TJSONObject;
@@ -1028,14 +1047,18 @@ begin
       while Queue.Count>0 do
       begin
         Key:=Queue.Dequeue;
-        for V in S.GetValue<TJSONArray>('relationships') do
-        begin
-          R:=V as TJSONObject; Kind:=R.GetValue<string>('kind'); FromKey:=R.GetValue<string>('from'); ToKey:=R.GetValue<string>('to','');
-          if (AKind='Change impact') then begin if ToKey<>Key then Continue; end
-          else if (AKind='Caller / callee') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
-          else if (AKind='Data flow') then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
-          else if (AKind='Form navigation') and MatchText(Kind,['represents','form_instance','component_field','binds']) then begin if (FromKey<>Key) and (ToKey<>Key) then Continue; end
-          else if FromKey<>Key then Continue;
+        for Direction:=0 to 1 do begin
+          Candidates:=nil;
+          if Direction=0 then ForwardLinks.TryGetValue(Key,Candidates)
+          else ReverseLinks.TryGetValue(Key,Candidates);
+          if Candidates=nil then Continue;
+          for R in Candidates do begin
+          Kind:=R.GetValue<string>('kind'); FromKey:=R.GetValue<string>('from'); ToKey:=R.GetValue<string>('to','');
+          if (AKind='Change impact') and (ToKey<>Key) then Continue;
+          if (Direction=1) and not MatchText(AKind,['Caller / callee','Data flow']) and
+            not ((AKind='Form navigation') and
+              MatchText(Kind,['represents','form_instance','component_field','binds'])) and
+            (AKind<>'Change impact') then Continue;
           if (AKind='Execution') and not MatchText(Kind,['calls','schedules','passes_callback','prepares_callback','starts','dispatches','waits_for','requests_cancellation','signals','waits_for_signal','binds','enters','initializes','finalizes','creates']) then Continue;
           if (AKind='Form navigation') and not MatchText(Kind,['owns','binds','calls','schedules','creates','assigned_to','mutates_property','assigns_callback','uses_type','represents','form_instance','component_field','shows_form','shows_modal_form','hides_form','closes_form']) then Continue;
           if (AKind='Data flow') and not MatchText(Kind,['reads','writes','renders','captures','assigned_to','derives_from','configures','static_sql','dynamic_sql','mutates_property']) then Continue;
@@ -1045,11 +1068,13 @@ begin
             if not EdgeKeys.ContainsKey(EdgeKey) then begin EdgeKeys.Add(EdgeKey,True); Edges.AddElement(R.Clone as TJSONObject); end;
           end;
           if Edges.Count>=ALimit*8 then begin Truncated:=True; Queue.Clear; Break; end;
+          end;
+          if Truncated then Break;
         end;
       end;
     end;
     Result.AddPair('truncated',TJSONBool.Create(Truncated));
-  finally Queue.Free; EdgeKeys.Free; Seen.Free; end;
+  finally ReverseLinks.Free; ForwardLinks.Free; Queue.Free; EdgeKeys.Free; Seen.Free; end;
 end;
 function TDPHWorkspaceView.Questions(AKnowledge: TJSONArray): TJSONArray;
 var V: TJSONValue; Row,Range,Answer: TJSONObject; Diagnostics: TJSONArray;
