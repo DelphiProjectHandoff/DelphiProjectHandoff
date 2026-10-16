@@ -1017,7 +1017,7 @@ begin
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   LearningTopics.ItemIndex:=0;
-  OverviewMemo.Text:='Choose a Delphi project or open a saved capture. The handoff dossier will connect startup, forms, commands and open questions to source evidence.';
+  OverviewMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.d240d9aae81a675a', 'Choose a Delphi project or open a saved capture. The handoff dossier will connect startup, forms, commands and open questions to source evidence.');
   LanguageCombo.RefreshLanguages;
   TaskFilterChange(nil);
   DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);CalculationEvidenceFilterChange(nil);
@@ -1612,13 +1612,13 @@ var R,Lesson,Fields,Step,Learning:TJSONObject;Steps:TJSONArray;Checked:Integer;
 begin
  TaskCheckStep.Enabled:=False;TaskResetProgress.Enabled:=False;TaskProgressLabel.Text:='Enter your name to save your place on this computer.';
  TaskPrevious.Enabled:=False;TaskNext.Enabled:=False;TaskRestart.Enabled:=False;TaskEdit.Enabled:=False;TaskNotes.Enabled:=False;
-  TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:='Select saved instructions on the left. If none are supplied, read the Handoff dossier or ask the author to prepare one common task.';
+  TaskReaderTitle.Text:='Choose a task to learn';TaskContextMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.83a61c524bf7cbdb', 'Select saved instructions on the left. If none are supplied, read the Handoff dossier or ask the author to prepare one common task.');
  TaskStepLabel.Text:='Step instructions';TaskActionMemo.Text:='';TaskResultMemo.Text:='';
  if (FTaskRows=nil) or (TaskList.ItemIndex<0) or (TaskList.ItemIndex>=FTaskRows.Count) then Exit;
  R:=FTaskRows[TaskList.ItemIndex];TaskReaderTitle.Text:=R.GetValue<string>('title');TaskEdit.Enabled:=True;TaskNotes.Enabled:=True;
  TaskContextMemo.Text:='Instructions by '+R.GetValue<string>('owner')+'.';
- if R.GetValue<string>('state')='verified' then TaskContextMemo.Lines.Add('These instructions have been reviewed.')
- else TaskContextMemo.Lines.Add('These instructions still need review by someone who knows the application.');
+ if R.GetValue<string>('state')='verified' then TaskContextMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.9de42bdd9e7f9c3e', 'These instructions have been reviewed.'))
+ else TaskContextMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.41677e27d9c1df58', 'These instructions still need review by someone who knows the application.'));
  if not TDPHWorkspaceView.IsLearningLesson(R) then begin TaskActionMemo.Text:=R.GetValue<string>('body');TaskStepLabel.Text:='Read the supplied instructions';Exit;end;
  Lesson:=TJSONObject.ParseJSONValue(R.GetValue<string>('structured_json')) as TJSONObject;
  try
@@ -1875,7 +1875,7 @@ begin
   Request.Body:=ProjectSearchEdit.Text; Request.SearchOffset:=FSearchOffset;
   Request.SearchKind:=FSearchKind;
   ProjectSearchProgress.Visible:=True;
-  ProjectSearchMemo.Text:='Searching project files, discovered guides and logs, captured evidence, and saved explanations. Please wait...';
+  ProjectSearchMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.cd246329dfad9f68', 'Searching project files, discovered guides and logs, captured evidence, and saved explanations. Please wait...');
   FWorker.Submit(Request); FBusy:=True; FPendingCommand:='search';
   StatusLabel.Text:='Searching this application. Please wait...';
 end;
@@ -2146,37 +2146,37 @@ begin
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FDatabaseERFocusID:='';FDatabaseEREvidenceID:='';DatabaseERFilterChange(nil);
   FDatabaseInventoryRows.Clear;FreeAndNil(FDatabaseInventory);DatabaseInventoryFilterChange(nil);
  HistorySelectionChange(nil);HistoryBeforeCombo.Items.Clear;HistoryAfterCombo.Items.Clear;
- FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:='Open a project to map user actions and business purposes.';ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
- FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:='Open a project to inspect inherited forms and frames.';InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
- FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:='Open a project to inspect component dependencies.';DependencyStatus.Text:='No capture loaded.';
+ FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeList.Items.Clear;ActionPurposeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.40149f1d3eea74ed', 'Open a project to map user actions and business purposes.');ActionPurposeStatus.Text:='No capture loaded.';ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeNewButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;
+ FInheritanceRows.Clear;FInheritanceOrigins.Clear;FreeAndNil(FInheritance);InheritanceList.Items.Clear;InheritanceOriginCombo.Items.Clear;InheritanceMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.0ac051f8fea1b4a0', 'Open a project to inspect inherited forms and frames.');InheritanceStatus.Text:='No capture loaded.';InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
+ FDependencyRows.Clear;FreeAndNil(FDependencies);DependencyList.Items.Clear;DependencyMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.c20d6d5f1d91513a', 'Open a project to inspect component dependencies.');DependencyStatus.Text:='No capture loaded.';
  DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
- FLayoutRows.Clear;FreeAndNil(FLayout);LayoutList.Items.Clear;LayoutMemo.Text:='Open a project to inspect layout declarations.';LayoutStatus.Text:='No capture loaded.';
+ FLayoutRows.Clear;FreeAndNil(FLayout);LayoutList.Items.Clear;LayoutMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.26e013081e830571', 'Open a project to inspect layout declarations.');LayoutStatus.Text:='No capture loaded.';
  LayoutNextButton.Enabled:=False;LayoutSourceButton.Enabled:=False;
   FDynamicRows.Clear; FreeAndNil(FDynamic); DynamicList.Items.Clear; DynamicReferenceCombo.Items.Clear;
-  DynamicMemo.Text:='Open a project to inspect creation sites.'; DynamicStatus.Text:='No capture loaded.';
+  DynamicMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a158b168ff26530a', 'Open a project to inspect creation sites.'); DynamicStatus.Text:='No capture loaded.';
   DynamicNextButton.Enabled:=False; DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False;
   FCommandRows.Clear; FreeAndNil(FCommands); CommandsList.Items.Clear; CommandsHandlerCombo.Items.Clear;
-  CommandsMemo.Text:='Open a captured project to inspect its commands.'; CommandsStatus.Text:='No capture loaded.';
+  CommandsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.748063fad6a616a8', 'Open a captured project to inspect its commands.'); CommandsStatus.Text:='No capture loaded.';
   CommandsNextButton.Enabled:=False; CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False;
   FKeyboardRows.Clear; FreeAndNil(FKeyboard); KeyboardList.Items.Clear;
-  KeyboardMemo.Text:='Open a project capture to inspect keyboard declarations.'; KeyboardNextButton.Enabled:=False;
+  KeyboardMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.3a1fefaf9ffa48f6', 'Open a project capture to inspect keyboard declarations.'); KeyboardNextButton.Enabled:=False;
   KeyboardStatus.Text:='No capture loaded.';
-  FGlossaryRows.Clear; GlossaryList.Items.Clear; GlossaryMemo.Text:='Open a selected project, then add its business terms.';
-  FreeAndNil(FProjectMembers); ProjectMembersList.Items.Clear; ProjectMemberMemo.Text:='Open a captured project to inspect its project and output declarations.';
+  FGlossaryRows.Clear; GlossaryList.Items.Clear; GlossaryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a9c771feebc98e7b', 'Open a selected project, then add its business terms.');
+  FreeAndNil(FProjectMembers); ProjectMembersList.Items.Clear; ProjectMemberMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.fd94bd023c10d5b5', 'Open a captured project to inspect its project and output declarations.');
   FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
   ComparisonStatus.Text:='No comparison loaded.'; ComparisonNextButton.Enabled:=False;
-  FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
+  FQualityRows.Clear; QualityList.Items.Clear; QualityMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.4e1b071080be460b', 'Open a captured project to inspect source quality candidates.');
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); LearningBrowser.Visible:=False; ExplainBrowser.Visible:=False; FlowBrowser.Visible:=False;
   FreeAndNil(FPendingScreenshots); FreeAndNil(FImages); ScreenshotList.Items.Clear; ScreenshotImage.Bitmap.Clear(TAlphaColors.Null); ScreenshotEvidence.Text:='Open an application to generate its blank screen views.';
   FScreenshotOriginTab:=nil; ScreenshotReturnButton.Enabled:=False;
   FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FreeAndNil(FView); FreeAndNil(FGraph); FreeAndNil(FScreen); FreeAndNil(FKnowledge);
-  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
+  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.30c4381dcdbbb81e', 'Open a captured project to see coverage and gaps.');
   FreeAndNil(FContinuity); ContinuityList.Items.Clear; ContinuityMemo.Text:='';
   FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=''; ReviewAfterMemo.Text:='';
   FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=''; FKnowledgeQuestionJSON:='';
-  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Open Runtime observations and click Refresh saved records.';
+  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.aa3847122e64f4b4', 'Open Runtime observations and click Refresh saved records.');
   FreeAndNil(FTaskDraft);FTutorStepDirty:=False;
   FreeAndNil(FWorkflowDraft);FWorkflowStepDirty:=False;
   FreeAndNil(FTranslations); TranslationList.Items.Clear; TranslationMemo.Text:=''; FTerminologyJSON:='';
@@ -2185,7 +2185,7 @@ begin
   FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='';
   FSelected:=''; FScope:=''; FPage:=0; FHistory.Clear; FBookmarks.Clear; FShowingBookmarks:=False;
   FExpandedKeys.Clear; FHierarchyVisible:=False;
-  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object in Explorer to inspect its statements, serialized properties and evidence.';
+  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.5e010ae55e6432c9', 'Select an object in Explorer to inspect its statements, serialized properties and evidence.');
   FExplorerKeys.Clear; FRelationKeys.Clear; FKnowledgeRows.Clear;
   ExplorerList.Items.Clear; RelationsList.Items.Clear; KnowledgeList.Items.Clear; FormCombo.Items.Clear;
   SourceMemo.Text:=''; InspectorMemo.Text:=''; OverviewMemo.Text:=''; BreadcrumbLabel.Text:='';
@@ -2200,6 +2200,19 @@ begin
     FPendingLanguageRefresh:=False;
     LanguageCombo.RefreshLanguages;
     WorkspacePageChange(WorkspaceTabs);
+    if (FView<>nil) and not FBusy then begin
+      if WorkspaceTabs.ActiveTab=TaskTab then TaskNavigate(nil)
+      else if WorkspaceTabs.ActiveTab=KeyboardTab then KeyboardFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=ActionPurposeTab then ActionPurposeFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=InheritanceTab then InheritanceFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=DependencyTab then DependencyFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=LayoutTab then LayoutFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=DynamicTab then DynamicFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=CommandsTab then CommandsFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=FileFormatsTab then FileFormatsFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=DatabaseSchemaTab then DatabaseSchemaFilterChange(nil)
+      else if WorkspaceTabs.ActiveTab=DatabaseInventoryTab then DatabaseInventoryFilterChange(nil);
+    end;
     if (FView<>nil) and ExplorerLayout.Visible then begin
       RefreshExplorer;
       ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(FSelected);
@@ -2327,7 +2340,7 @@ begin
     if (R.Observations<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
       FObservations.Free; FObservations:=R.Observations; R.Observations:=nil; ObservationsList.Items.Clear;
       for Value in FObservations do ObservationsList.Items.Add(Value.GetValue<string>('context')+' | generation '+Value.GetValue<Int64>('generation_id').ToString);
-      ObservationMemo.Text:='Newest 50 records loaded. Select a record to read its attribution and saved text.';
+      ObservationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.404ee6ec0cce029d', 'Newest 50 records loaded. Select a record to read its attribution and saved text.');
       if FObservations.Count>0 then begin ObservationsList.ItemIndex:=0; ObservationSelectionClick(nil); end;
     end;
     if (R.LinkCandidates<>nil) and (FView<>nil) and (R.SearchGeneration=FView.Document.GetValue<Int64>('generation_id')) then begin
@@ -2341,19 +2354,19 @@ begin
       end;
       NextProjectSearchButton.Enabled:=FSearchResults.Count=50;
       ProjectSearchMemo.Text:='Results '+IntToStr(FSearchOffset+1)+' through '+IntToStr(FSearchOffset+FSearchResults.Count)+'. Select a row for its excerpt and status; Open result navigates to its object or authored record.';
-      if FSearchResults.Count=0 then ProjectSearchMemo.Text:='No matching results on this page. Enter another search or click Search to start again from the first page.';
+      if FSearchResults.Count=0 then ProjectSearchMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.08b5c1d50406168c', 'No matching results on this page. Enter another search or click Search to start again from the first page.');
     end;
     if R.Continuity<>nil then begin
       FContinuity.Free; FContinuity:=R.Continuity; R.Continuity:=nil; ContinuityList.Items.Clear;
       for Value in FContinuity do begin Row:=Value as TJSONObject;
         ContinuityList.Items.Add(Row.GetValue<string>('title')+' | '+Row.GetValue<string>('old_name')+' -> '+Row.GetValue<string>('new_name'));
       end;
-      ContinuityMemo.Text:='Select a proposal to inspect old and new declarations. Up to 500 proposals are shown; narrow the replacement name/file filter when needed.';
+      ContinuityMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.1c3888d8baa9f573', 'Select a proposal to inspect old and new declarations. Up to 500 proposals are shown; narrow the replacement name/file filter when needed.');
     end;
     if R.Lifecycle<>nil then begin
       LifecycleMemo.Lines.Clear;
       LifecycleMemo.Lines.Add('Saved policy: keep '+IntToStr(R.RetentionCount)+' recent generations. Preview below uses '+RetentionCountEdit.Text+'.');
-      LifecycleMemo.Lines.Add('Generation | state | saved | cached views | retention reason | release label');
+      LifecycleMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.1fa06333bdd4a2eb', 'Generation | state | saved | cached views | retention reason | release label'));
       for Value in R.Lifecycle do begin Row:=Value as TJSONObject;
         LifecycleMemo.Lines.Add(Row.GetValue<string>('generation_id')+' | '+Row.GetValue<string>('status')+' | '+
           Row.GetValue<string>('started_at')+' | '+Row.GetValue<string>('cached_views')+' | '+
@@ -2426,11 +2439,11 @@ begin
   SavedKey:=''; SavedForm:=''; SavedTab:=WorkspaceTabs.ActiveTab;
   FreeAndNil(FComparison); ComparisonList.Items.Clear; ComparisonBeforeMemo.Text:=''; ComparisonAfterMemo.Text:='';
   ComparisonNextButton.Enabled:=False; ComparisonStatus.Text:='Compare two retained captures; the displayed project supplies the After generation.';
-  FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:='Refresh tasks for this captured generation.'; ReviewAfterMemo.Text:='';
+  FreeAndNil(FReviewTasks); ReviewTasksList.Items.Clear; ReviewBeforeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.577e1ef464106cc1', 'Refresh tasks for this captured generation.'); ReviewAfterMemo.Text:='';
   FreeAndNil(FLinkTargets); LinkTargetsList.Items.Clear;
   if SameProject then begin SavedKey:=FSelected; if FormCombo.ItemIndex>=0 then SavedForm:=FormCombo.Items[FormCombo.ItemIndex]; end;
-  FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:='Search the current analysis generation and authored knowledge.';
-  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:='Click Refresh saved records to read attributed observations for this database.';
+  FreeAndNil(FSearchResults); ProjectSearchList.Items.Clear; ProjectSearchMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.d63c085f91a0da45', 'Search the current analysis generation and authored knowledge.');
+  FreeAndNil(FObservations); ObservationsList.Items.Clear; ObservationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.5239924b22587a2e', 'Click Refresh saved records to read attributed observations for this database.');
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
@@ -2456,7 +2469,7 @@ begin
       StatusLabel.Text:='The previous selection is absent from the new generation. Explorer is reset; only surviving bookmarks and history were retained.';
     end;
   end;
-  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object to inspect evidence from this generation.';
+  FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.7fa0622dccd4f994', 'Select an object to inspect evidence from this generation.');
   if (FCatalog<>nil) and (FDatabase<>'') and (FUnsavedDatabase='') then
   try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);
   except on E: Exception do StatusLabel.Text:='Project opened, but catalog could not be saved: '+E.Message; end;
@@ -2511,7 +2524,7 @@ begin
   if Sender=KeyboardNextButton then Inc(FKeyboardOffset,250) else FKeyboardOffset:=0;
   KeyboardList.Items.Clear; FKeyboardRows.Clear; KeyboardNextButton.Enabled:=False;
   KeyboardActionButton.Enabled:=False; KeyboardSourceButton.Enabled:=False;
-  KeyboardMemo.Text:='Select a component to see its keyboard declarations, source evidence and diagnostics.';
+  KeyboardMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.d5eb2e873a6535f4', 'Select a component to see its keyboard declarations, source evidence and diagnostics.');
   if FKeyboard=nil then Exit;
   Count:=0; Query:=KeyboardFilterEdit.Text.Trim;
   for Value in FKeyboard.GetValue<TJSONArray>('rows') do begin
@@ -2527,7 +2540,7 @@ begin
   KeyboardNextButton.Enabled:=Count>FKeyboardOffset+FKeyboardRows.Count;
   KeyboardStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FKeyboardRows.Count)+' from offset '+IntToStr(FKeyboardOffset)+'. Grouped by file, form and parent; known TabOrder first.';
   if KeyboardList.Count>0 then begin KeyboardSourceButton.Enabled:=True; KeyboardList.ItemIndex:=0; KeyboardSelectionClick(nil); end
-  else KeyboardMemo.Text:='No matching captured component. Clear the filter or inspect Coverage for missing form inputs.';
+  else KeyboardMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.ed9041da72c5e144', 'No matching captured component. Clear the filter or inspect Coverage for missing form inputs.');
 end;
 
 procedure TDPHMainForm.KeyboardSelectionClick(Sender: TObject);
@@ -2547,7 +2560,7 @@ begin
   Row:=FKeyboardRows[KeyboardList.ItemIndex];
   if Sender=KeyboardActionButton then begin if not Row.TryGetValue<TJSONObject>('action_range',Range) then Exit; end
   else Range:=Row.GetValue<TJSONObject>('range');
-  if FDetached then begin KeyboardMemo.Lines.Add('Source is detached. Captured locations and properties remain readable above. Attach the unchanged project to navigate.'); Exit; end;
+  if FDetached then begin KeyboardMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.3b5b409f9c089ca6', 'Source is detached. Captured locations and properties remain readable above. Attach the unchanged project to navigate.')); Exit; end;
   try
     SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);
     SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
@@ -2560,7 +2573,7 @@ begin
  if FActionPurposeRows=nil then Exit;
  if Sender=ActionPurposeNextButton then Inc(FActionPurposeOffset,250) else FActionPurposeOffset:=0;
  ActionPurposeList.Items.Clear;FActionPurposeRows.Clear;ActionPurposeNextButton.Enabled:=False;ActionPurposeSourceButton.Enabled:=False;ActionPurposeEditButton.Enabled:=False;ActionPurposeKnowledgeButton.Enabled:=False;ActionPurposeExplainButton.Enabled:=False;ActionPurposeNewButton.Enabled:=FView<>nil;
- ActionPurposeMemo.Text:='Select a captured UI candidate or saved project task. Missing business purpose stays unknown.';if FActionPurposes=nil then Exit;
+ ActionPurposeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.6170d236e36d06ed', 'Select a captured UI candidate or saved project task. Missing business purpose stays unknown.');if FActionPurposes=nil then Exit;
  Query:=ActionPurposeFilterEdit.Text.Trim;StateFilter:='';if ActionPurposeStateCombo.ItemIndex>0 then StateFilter:=ActionPurposeStateCombo.Selected.Text;Count:=0;
  for V in FActionPurposes.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (StateFilter<>'') and (StateFilter<>TDPHActionPurposes.State(Row,FKnowledge)) then Continue;
@@ -2569,7 +2582,7 @@ begin
  end;
  ActionPurposeNextButton.Enabled:=Count>FActionPurposeOffset+FActionPurposeRows.Count;
  ActionPurposeStatus.Text:=IntToStr(Count)+' matches; '+IntToStr(FActionPurposeRows.Count)+' shown from '+IntToStr(FActionPurposeOffset)+'. Select a row for evidence and review state.';
- if ActionPurposeList.Count>0 then begin ActionPurposeList.ItemIndex:=0;ActionPurposeSelectionClick(nil);end else ActionPurposeMemo.Text:='No matching actions or tasks. Clear filters or click New task for a project procedure.';
+ if ActionPurposeList.Count>0 then begin ActionPurposeList.ItemIndex:=0;ActionPurposeSelectionClick(nil);end else ActionPurposeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a14d020f41ef0d1c', 'No matching actions or tasks. Clear filters or click New task for a project procedure.');
 end;
 procedure TDPHMainForm.ActionPurposeSelectionClick(Sender:TObject);
 var Row:TJSONObject;
@@ -2586,7 +2599,7 @@ var Row,Range:TJSONObject;
 begin
  if (FView=nil) or (ActionPurposeList.ItemIndex<0) or (ActionPurposeList.ItemIndex>=FActionPurposeRows.Count) then Exit;
  Row:=FActionPurposeRows[ActionPurposeList.ItemIndex];if Row.GetValue<Boolean>('record_only') then Exit;
- if FDetached then begin ActionPurposeMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin ActionPurposeMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  Range:=Row.GetValue<TJSONObject>('range');
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do ActionPurposeMemo.Lines.Add('Source unavailable: '+E.Message);end;
@@ -2633,7 +2646,7 @@ begin
     KnowledgeBodyMemo.Text:=TDPHActionPurpose.Body(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
     FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:=Fields.GetValue<string>('target_key','');FreeAndNil(FEditableLinks);
     if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
-    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Action purpose draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit structured fields on Action purposes. Add exact evidence on Knowledge links. Saving does not verify business claims or actual outcomes.';
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Action purpose draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.9c745121dac9d482', 'Edit structured fields on Action purposes. Add exact evidence on Knowledge links. Saving does not verify business claims or actual outcomes.');
    finally FBinding:=False;end;
    WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Action purpose draft prepared. Click Save to persist; review requires a named reviewer.';
   finally RecordValue.Free;end;
@@ -2646,7 +2659,7 @@ begin
  if Sender=InheritanceNextButton then Inc(FInheritanceOffset,250) else FInheritanceOffset:=0;
  InheritanceList.Items.Clear;FInheritanceRows.Clear;FInheritanceOrigins.Clear;InheritanceOriginCombo.Items.Clear;
  InheritanceNextButton.Enabled:=False;InheritanceSourceButton.Enabled:=False;
- InheritanceMemo.Text:='Select a component to inspect base-to-derived property and event declarations.';
+ InheritanceMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.d5555980302dafaa', 'Select a component to inspect base-to-derived property and event declarations.');
  if FInheritance=nil then Exit;Query:=InheritanceFilterEdit.Text.Trim;Count:=0;
  for V in FInheritance.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (Query<>'') and not ContainsText(TDPHFormInheritance.Describe(Row),Query) then Continue;
@@ -2654,7 +2667,7 @@ begin
  end;
  InheritanceNextButton.Enabled:=Count>FInheritanceOffset+FInheritanceRows.Count;
  InheritanceStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FInheritanceRows.Count)+' from offset '+IntToStr(FInheritanceOffset)+'. Select an origin to inspect its exact source.';
- if InheritanceList.Count>0 then begin InheritanceList.ItemIndex:=0;InheritanceSelectionClick(nil);end else InheritanceMemo.Text:='No matching components. Clear the filter or inspect Coverage for missing form source.';
+ if InheritanceList.Count>0 then begin InheritanceList.ItemIndex:=0;InheritanceSelectionClick(nil);end else InheritanceMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.490ce37175fe7bdd', 'No matching components. Clear the filter or inspect Coverage for missing form source.');
 end;
 procedure TDPHMainForm.InheritanceSelectionClick(Sender:TObject);
 var Row,P:TJSONObject;V,W:TJSONValue;
@@ -2674,7 +2687,7 @@ procedure TDPHMainForm.InheritanceSourceClick(Sender:TObject);
 var Origin,Range:TJSONObject;
 begin
  if (FView=nil) or (InheritanceOriginCombo.ItemIndex<0) or (InheritanceOriginCombo.ItemIndex>=FInheritanceOrigins.Count) then Exit;
- if FDetached then begin InheritanceMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin InheritanceMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  Origin:=FInheritanceOrigins[InheritanceOriginCombo.ItemIndex];Range:=Origin.GetValue<TJSONObject>('range');
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Origin,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do InheritanceMemo.Lines.Add('Source unavailable: '+E.Message);end;
@@ -2685,7 +2698,7 @@ begin
  if FDependencyRows=nil then Exit;
  if Sender=DependencyNextButton then Inc(FDependencyOffset,250) else FDependencyOffset:=0;
  DependencyList.Items.Clear;FDependencyRows.Clear;DependencyNextButton.Enabled:=False;DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
- DependencyMemo.Text:='Select a component to inspect captured class evidence and authored dependency information.';if FDependencies=nil then Exit;
+ DependencyMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.57f18394d8bb348a', 'Select a component to inspect captured class evidence and authored dependency information.');if FDependencies=nil then Exit;
  Query:=DependencyFilterEdit.Text.Trim;Count:=0;
  for V in FDependencies.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (Query<>'') and not ContainsText(TDPHComponentDependencies.Describe(Row,FKnowledge),Query) then Continue;
@@ -2693,7 +2706,7 @@ begin
  end;
  DependencyNextButton.Enabled:=Count>FDependencyOffset+FDependencyRows.Count;
  DependencyStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FDependencyRows.Count)+' from offset '+IntToStr(FDependencyOffset)+'. Vendor and runtime support require attributed evidence.';
- if DependencyList.Count>0 then begin DependencyList.ItemIndex:=0;DependencySelectionClick(nil);end else DependencyMemo.Text:='No matching components. Clear the filter or inspect Coverage for uncaptured forms.';
+ if DependencyList.Count>0 then begin DependencyList.ItemIndex:=0;DependencySelectionClick(nil);end else DependencyMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.8d2d331b307fffea', 'No matching components. Clear the filter or inspect Coverage for uncaptured forms.');
 end;
 procedure TDPHMainForm.DependencySelectionClick(Sender:TObject);
 var V:TJSONValue;Row:TJSONObject;
@@ -2701,9 +2714,9 @@ begin
  DependencySourceButton.Enabled:=False;DependencyEditButton.Enabled:=False;DependencyKnowledgeButton.Enabled:=False;DependencyClassButton.Enabled:=False;
  if (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
  Row:=FDependencyRows[DependencyList.ItemIndex];DependencyMemo.Text:=TDPHComponentDependencies.Describe(Row,FKnowledge)+sLineBreak+sLineBreak+FDependencies.GetValue<string>('qualification');
- DependencyMemo.Lines.Add('CAPTURED PACKAGE DECLARATIONS (not component membership)');
+ DependencyMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.d4d288d87088c834', 'CAPTURED PACKAGE DECLARATIONS (not component membership)'));
  for V in FDependencies.GetValue<TJSONArray>('packages') do DependencyMemo.Lines.Add(V.GetValue<string>('name')+' | '+V.GetValue<string>('source')+' | SHA-256 '+V.GetValue<string>('source_hash'));
- DependencyMemo.Lines.Add('UNAVAILABLE INPUTS (project-wide; not automatically attributed to this class)');
+ DependencyMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.c9ada9524c8eda15', 'UNAVAILABLE INPUTS (project-wide; not automatically attributed to this class)'));
  for V in FDependencies.GetValue<TJSONArray>('unavailable_inputs') do DependencyMemo.Lines.Add(V.GetValue<string>('source')+' | '+V.GetValue<string>('availability'));
  DependencySourceButton.Enabled:=True;DependencyEditButton.Enabled:=True;DependencyKnowledgeButton.Enabled:=TDPHComponentDependencies.FindRecord(FKnowledge,Row.GetValue<string>('class'))<>nil;
  DependencyClassButton.Enabled:=Row.GetValue<TJSONArray>('class_candidates').Count=1;
@@ -2720,7 +2733,7 @@ var Row,Range:TJSONObject;
 begin
  if (FView=nil) or (DependencyList.ItemIndex<0) or (DependencyList.ItemIndex>=FDependencyRows.Count) then Exit;
  Row:=FDependencyRows[DependencyList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
- if FDetached then begin DependencyMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin DependencyMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do DependencyMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
@@ -2755,7 +2768,7 @@ begin
     KnowledgeBodyMemo.Text:=TDPHComponentDependency.Body(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
     FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:='';FreeAndNil(FEditableLinks);
     if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
-    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Component dependency draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit structured fields on Component dependencies. Use Knowledge links for exact evidence. Saving does not resolve class source or verify vendor claims.';
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Component dependency draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a50484bc885fb662', 'Edit structured fields on Component dependencies. Use Knowledge links for exact evidence. Saving does not resolve class source or verify vendor claims.');
    finally FBinding:=False;end;
    WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Dependency draft prepared. Click Save to persist; review requires a named reviewer.';
   finally RecordValue.Free;end;
@@ -2784,7 +2797,7 @@ begin
     KnowledgeBodyMemo.Text:=TDPHDatabaseSchema.DictionaryBody(RecordValue);KnowledgeBodyMemo.ReadOnly:=True;KnowledgeTitleEdit.ReadOnly:=True;KnowledgeKindCombo.Enabled:=False;KnowledgeDocumentCombo.Enabled:=False;KnowledgeAudienceCombo.Enabled:=False;
     FKnowledgeStructuredJSON:=RecordValue.ToJSON;FKnowledgeQuestionJSON:='';FKnowledgeLink:='';FreeAndNil(FEditableLinks);
     if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
-    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Data dictionary draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:='Edit fields using Database schema > Edit dictionary. Captured source, SHA256, statement line and schema identity stay read only. Use Knowledge links for additional evidence. Saving does not verify business meanings.';
+    RefreshKnowledgeLinks;FKnowledgeEdited:=True;KnowledgeSectionLabel.Text:='Data dictionary draft: click Save, then review explicitly';KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a4dcc52c6279d25d', 'Edit fields using Database schema > Edit dictionary. Captured source, SHA256, statement line and schema identity stay read only. Use Knowledge links for additional evidence. Saving does not verify business meanings.');
    finally FBinding:=False;end;
    WorkspaceTabs.ActiveTab:=KnowledgeTab;StatusLabel.Text:='Dictionary draft prepared. Click Save to persist; review requires a named reviewer.';
   finally RecordValue.Free;end;
@@ -2805,7 +2818,7 @@ var V:TJSONValue;Row:TJSONObject;Count:Integer;Query:string;
 begin
  if Sender=LayoutNextButton then Inc(FLayoutOffset,250) else FLayoutOffset:=0;
  LayoutList.Items.Clear;FLayoutRows.Clear;LayoutNextButton.Enabled:=False;LayoutSourceButton.Enabled:=False;
- LayoutMemo.Text:='Select a component to read its layout declarations.';if FLayout=nil then Exit;
+ LayoutMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.57d2201611e9dae2', 'Select a component to read its layout declarations.');if FLayout=nil then Exit;
  Query:=LayoutFilterEdit.Text.Trim;Count:=0;
  for V in FLayout.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
   if (Query<>'') and not ContainsText(TDPHLayoutRules.Describe(Row,FLayoutWidthDelta,FLayoutHeightDelta),Query) then Continue;
@@ -2813,7 +2826,7 @@ begin
  end;
  LayoutNextButton.Enabled:=Count>FLayoutOffset+FLayoutRows.Count;
  LayoutStatus.Text:=IntToStr(Count)+' matching components; showing '+IntToStr(FLayoutRows.Count)+' from offset '+IntToStr(FLayoutOffset)+'. Examples do not evaluate the target layout engine.';
- if LayoutList.Count>0 then begin LayoutList.ItemIndex:=0;LayoutSelectionClick(nil);end else LayoutMemo.Text:='No matching component. Clear the filter or inspect Coverage for uncaptured forms.';
+ if LayoutList.Count>0 then begin LayoutList.ItemIndex:=0;LayoutSelectionClick(nil);end else LayoutMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.b32b8ca2b87a4e75', 'No matching component. Clear the filter or inspect Coverage for uncaptured forms.');
 end;
 procedure TDPHMainForm.LayoutSelectionClick(Sender:TObject);
 begin
@@ -2833,7 +2846,7 @@ var Row,Range:TJSONObject;
 begin
  if (FView=nil) or (LayoutList.ItemIndex<0) or (LayoutList.ItemIndex>=FLayoutRows.Count) then Exit;
  Row:=FLayoutRows[LayoutList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
- if FDetached then begin LayoutMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin LayoutMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do LayoutMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
@@ -2844,7 +2857,7 @@ begin
  if Sender=DynamicNextButton then Inc(FDynamicOffset,250) else FDynamicOffset:=0;
  DynamicList.Items.Clear; FDynamicRows.Clear; DynamicReferenceCombo.Items.Clear;
  DynamicNextButton.Enabled:=False; DynamicExplainButton.Enabled:=False; DynamicReferenceButton.Enabled:=False;
- DynamicMemo.Text:='Select a creation site to read its evidence and limits.';
+ DynamicMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.bb0dc83ead2a9983', 'Select a creation site to read its evidence and limits.');
  if FDynamic=nil then Exit;
  Query:=DynamicFilterEdit.Text.Trim; Count:=0;
  for V in FDynamic.GetValue<TJSONArray>('rows') do begin Row:=V as TJSONObject;
@@ -2855,7 +2868,7 @@ begin
  DynamicNextButton.Enabled:=Count>FDynamicOffset+FDynamicRows.Count;
  DynamicStatus.Text:=IntToStr(Count)+' matching creation sites; showing '+IntToStr(FDynamicRows.Count)+' from offset '+IntToStr(FDynamicOffset)+'. Reassess older captures for new links.';
  if DynamicList.Count>0 then begin DynamicList.ItemIndex:=0; DynamicSelectionClick(nil); end
- else DynamicMemo.Text:='No matching captured creation sites. Clear the filter or reassess. Unsupported factories and indirect creation remain gaps; this is not proof of no runtime controls.';
+ else DynamicMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.f6e34b76c138e602', 'No matching captured creation sites. Clear the filter or reassess. Unsupported factories and indirect creation remain gaps; this is not proof of no runtime controls.');
 end;
 procedure TDPHMainForm.DynamicSelectionClick(Sender:TObject);
 var Row:TJSONObject; V:TJSONValue;
@@ -2896,7 +2909,7 @@ begin
   if Sender=CommandsNextButton then Inc(FCommandOffset,250) else FCommandOffset:=0;
   CommandsList.Items.Clear; FCommandRows.Clear; CommandsHandlerCombo.Items.Clear;
   CommandsNextButton.Enabled:=False; CommandsSourceButton.Enabled:=False; CommandsActionButton.Enabled:=False; CommandsHandlerButton.Enabled:=False;
-  CommandsMemo.Text:='Select a captured menu, toolbar command or action for explanations and source evidence.';
+  CommandsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.464869b647cb362c', 'Select a captured menu, toolbar command or action for explanations and source evidence.');
   if FCommands=nil then Exit;
   Query:=CommandsFilterEdit.Text.Trim; Kind:=''; if CommandsKindCombo.ItemIndex>0 then Kind:=CommandsKindCombo.Selected.Text; Count:=0;
   for Value in FCommands.GetValue<TJSONArray>('rows') do begin
@@ -2911,7 +2924,7 @@ begin
   CommandsNextButton.Enabled:=Count>FCommandOffset+FCommandRows.Count;
   CommandsStatus.Text:=IntToStr(Count)+' matching commands; showing '+IntToStr(FCommandRows.Count)+' from offset '+IntToStr(FCommandOffset)+'. Paths follow serialized parents.';
   if CommandsList.Count>0 then begin CommandsList.ItemIndex:=0; CommandsSelectionClick(nil); end
-  else CommandsMemo.Text:='No matching captured command. Clear filters or inspect Coverage for missing form inputs.';
+  else CommandsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.b483e7609df4e61c', 'No matching captured command. Clear filters or inspect Coverage for missing form inputs.');
 end;
 
 procedure TDPHMainForm.CommandsSelectionClick(Sender: TObject);
@@ -2953,7 +2966,7 @@ begin
   Row:=FCommandRows[CommandsList.ItemIndex];
   if Sender=CommandsActionButton then begin if not Row.TryGetValue<TJSONObject>('action_range',Range) then Exit; end
   else Range:=Row.GetValue<TJSONObject>('range');
-  if FDetached then begin CommandsMemo.Lines.Add('Source is detached. Captured command evidence remains readable. Attach unchanged source to navigate.'); Exit; end;
+  if FDetached then begin CommandsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.9df3e10026af697a', 'Source is detached. Captured command evidence remains readable. Attach unchanged source to navigate.')); Exit; end;
   try
     SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);
     SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
@@ -2988,7 +3001,7 @@ begin
     IntToStr(FComparison.GetValue<Integer>('offset')+1)+sLineBreak+FComparison.GetValue<string>('definition');
   ComparisonNextButton.Enabled:=FComparison.GetValue<Boolean>('more');
   if ComparisonList.Count>0 then begin ComparisonList.ItemIndex:=0; ComparisonSelectionClick(nil); end
-  else ComparisonBeforeMemo.Text:='No matching changes in the captured evidence. This does not prove complete semantic equivalence.';
+  else ComparisonBeforeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.6f09e914f216e8c0', 'No matching changes in the captured evidence. This does not prove complete semantic equivalence.');
 end;
 procedure TDPHMainForm.ComparisonSelectionClick(Sender: TObject);
 var Row: TJSONObject; Value: TJSONValue;
@@ -2997,9 +3010,9 @@ begin
   if ComparisonList.ItemIndex>=FComparison.GetValue<TJSONArray>('changes').Count then Exit;
   Row:=FComparison.GetValue<TJSONArray>('changes').Items[ComparisonList.ItemIndex] as TJSONObject;
   Value:=Row.GetValue('before'); if Value is TJSONObject then ComparisonBeforeMemo.Text:=TDPHRevisionComparison.EvidenceText(Value as TJSONObject)
-  else ComparisonBeforeMemo.Text:='Absent from the Before capture.';
+  else ComparisonBeforeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.a421865a12dec472', 'Absent from the Before capture.');
   Value:=Row.GetValue('after'); if Value is TJSONObject then ComparisonAfterMemo.Text:=TDPHRevisionComparison.EvidenceText(Value as TJSONObject)
-  else ComparisonAfterMemo.Text:='Absent from the After capture.';
+  else ComparisonAfterMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.9c618a8eb1742cac', 'Absent from the After capture.');
 end;
 procedure TDPHMainForm.QualityClick(Sender: TObject);
 const Names: array[0..4] of string = ('routines','duplicate_bodies','unreferenced_candidates','unreachable_candidates','call_cycles');
@@ -3015,10 +3028,10 @@ begin
   end;
   if Sender=QualityNextButton then Inc(FQualityOffset,250) else FQualityOffset:=0;
   FQualityRows.Clear; QualityList.Items.Clear; QualityNextButton.Enabled:=False;
-  QualityMemo.Text:='Open a captured project to inspect source quality candidates.';
+  QualityMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.4e1b071080be460b', 'Open a captured project to inspect source quality candidates.');
   if FView=nil then Exit;
   if not FView.Document.TryGetValue<TJSONObject>('source_quality',Quality) then begin
-    QualityMemo.Text:='This older capture has no source quality report. Attach source and reassess; detached caches retain their original evidence.'; Exit;
+    QualityMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.0015cbdd796f77f6', 'This older capture has no source quality report. Attach source and reassess; detached caches retain their original evidence.'); Exit;
   end;
   if (QualityKindCombo.ItemIndex<0) or (QualityKindCombo.ItemIndex>4) then Exit;
   Rows:=Quality.GetValue<TJSONArray>(Names[QualityKindCombo.ItemIndex]); Count:=0;
@@ -3068,7 +3081,7 @@ end;
 procedure TDPHMainForm.RefreshCoverage;
 var V: TJSONValue; Row: TJSONObject; Text: TStringBuilder; Verified,Current,Total: Integer;
 begin
-  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:='Open a captured project to see coverage and gaps.';
+  FreeAndNil(FCoverage); CoverageList.Items.Clear; CoverageMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.30c4381dcdbbb81e', 'Open a captured project to see coverage and gaps.');
   if FView=nil then Exit; FCoverage:=FView.Coverage; Text:=TStringBuilder.Create;
   try
     Text.AppendLine(FView.FlagsText); Text.AppendLine('Each measure has its own denominator. N/A means no eligible records.');
@@ -3095,11 +3108,11 @@ end;
 procedure TDPHMainForm.RefreshQuestions;
 var V: TJSONValue;
 begin
-  FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:='Open a captured project to derive focused author questions.';
+  FreeAndNil(FQuestions); QuestionsList.Items.Clear; QuestionMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.2c1dfa814bf45e07', 'Open a captured project to derive focused author questions.');
   if FView=nil then Exit; FQuestions:=FView.Questions(FKnowledge);
   for V in FQuestions do QuestionsList.Items.Add(V.GetValue<string>('title')+' | '+V.GetValue<string>('range.source'));
   if FQuestions.Count>0 then begin QuestionsList.ItemIndex:=0; QuestionSelectionClick(nil); end
-  else QuestionMemo.Text:='No unanswered question was generated by the supported rules in this scope. This does not prove complete requirements or documentation.';
+  else QuestionMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.e253ada72aef6856', 'No unanswered question was generated by the supported rules in this scope. This does not prove complete requirements or documentation.');
 end;
 procedure TDPHMainForm.QuestionSelectionClick(Sender: TObject);
 var Row,Range: TJSONObject;
@@ -3109,7 +3122,7 @@ begin
   QuestionMemo.Text:=Row.GetValue<string>('prompt')+sLineBreak+sLineBreak+
     'Choose Record author answer to preserve the explanation supplied by someone who knows this application.';
   if Range.GetValue<string>('source')<>'' then QuestionMemo.Lines.Add('Related source: '+Range.GetValue<string>('source')+':'+Range.GetValue<Int64>('line').ToString);
-  QuestionMemo.Lines.Add('This is an unanswered question. It does not establish a problem in the running application. Inspect evidence opens the supporting detail.');
+  QuestionMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.5b43045b545b3633', 'This is an unanswered question. It does not establish a problem in the running application. Inspect evidence opens the supporting detail.'));
 end;
 procedure TDPHMainForm.QuestionsClick(Sender: TObject);
 var Row,Detail: TJSONObject; Kind: string;
@@ -3141,7 +3154,7 @@ var V: TJSONValue;
 begin
   FReviewTasks.Free; FReviewTasks:=ARows; ReviewTasksList.Items.Clear;
   for V in ARows do ReviewTasksList.Items.Add(V.GetValue<string>('title')+' | '+V.GetValue<string>('reason'));
-  ReviewBeforeMemo.Text:='No pending review tasks in this captured scope.'; ReviewAfterMemo.Text:='This is not proof that documentation is complete or approved.';
+  ReviewBeforeMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.dd98c8692fd502b9', 'No pending review tasks in this captured scope.'); ReviewAfterMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.74ca1e7fe27a873a', 'This is not proof that documentation is complete or approved.');
   if ARows.Count>0 then begin ReviewTasksList.ItemIndex:=0; ReviewTaskSelectionClick(nil); end;
 end;
 procedure TDPHMainForm.ReviewTaskSelectionClick(Sender: TObject);
@@ -3573,19 +3586,19 @@ var Request: TDPHWorkspaceRequest; Fingerprint: string; Character: Char;
 begin
   if FBusy then Exit;
   if Sender=ValidationUseCaptureButton then begin
-    if FView=nil then begin ValidationMemo.Text:='Open a trusted project capture first, or enter its separately retained expected fingerprint.'; Exit; end;
+    if FView=nil then begin ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.6773836d227c3e4b', 'Open a trusted project capture first, or enter its separately retained expected fingerprint.'); Exit; end;
     ValidationFingerprintEdit.Text:=FView.Document.GetValue<string>('semantics.input_fingerprint');
-    ValidationMemo.Text:='Expected fingerprint copied from the opened capture. Select the bundle manifest to validate it against this identity.'; Exit;
+    ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.8f8514ca017a36e4', 'Expected fingerprint copied from the opened capture. Select the bundle manifest to validate it against this identity.'); Exit;
   end;
   Fingerprint:=LowerCase(Trim(ValidationFingerprintEdit.Text));
-  if Length(Fingerprint)<>64 then begin ValidationMemo.Text:='Enter the separately trusted 64-character capture fingerprint, or click Use opened capture fingerprint.'; Exit; end;
-  for Character in Fingerprint do if not CharInSet(Character,['0'..'9','a'..'f']) then begin ValidationMemo.Text:='The expected fingerprint must contain exactly 64 hexadecimal characters.'; Exit; end;
+  if Length(Fingerprint)<>64 then begin ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.b38c4c648e2d5d34', 'Enter the separately trusted 64-character capture fingerprint, or click Use opened capture fingerprint.'); Exit; end;
+  for Character in Fingerprint do if not CharInSet(Character,['0'..'9','a'..'f']) then begin ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.9ab20045e883d4f5', 'The expected fingerprint must contain exactly 64 hexadecimal characters.'); Exit; end;
   if not ValidationDialog.Execute then Exit;
-  if not SameText(ExtractFileName(ValidationDialog.FileName),'manifest.json') then begin ValidationMemo.Text:='Select manifest.json in the root of the intended handoff bundle.'; Exit; end;
+  if not SameText(ExtractFileName(ValidationDialog.FileName),'manifest.json') then begin ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.3bacdefdbb6f0754', 'Select manifest.json in the root of the intended handoff bundle.'); Exit; end;
   Request:=Default(TDPHWorkspaceRequest); Request.Command:='validate_bundle'; Request.ExportDirectory:=ExtractFileDir(ValidationDialog.FileName);
   Request.Title:=Fingerprint; Request.AllowStaleBundle:=ValidationAllowStale.IsChecked;
   FWorker.Submit(Request); FBusy:=True; FPendingCommand:=Request.Command;
-  ValidationMemo.Text:='Checking bundle integrity and source identity in the background...';
+  ValidationMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.c160f5ad636119a0', 'Checking bundle integrity and source identity in the background...');
 end;
 procedure TDPHMainForm.ObservationsClick(Sender: TObject);
 var Request: TDPHWorkspaceRequest; Row: TJSONObject;
@@ -4042,8 +4055,8 @@ begin
  DatabaseERNext.Enabled:=FDatabaseER.GetValue<Boolean>('has_next');
  DatabaseERStatus.Text:=Format('PARTIAL schema | %d of %d matching tables from %d | %d related FKs (%d omitted) | %d source gaps; %d unresolved FKs. Blue = captured links; orange = gaps. Cardinality/deployment unverified.',[FDatabaseER.GetValue<Integer>('shown_tables'),FDatabaseER.GetValue<Integer>('matching_tables'),FDatabaseEROffset,FDatabaseER.GetValue<Integer>('related_foreign_keys'),FDatabaseER.GetValue<Integer>('omitted_foreign_keys'),FDatabaseER.GetValue<Integer>('source_gaps'),FDatabaseER.GetValue<Integer>('unresolved_foreign_keys')]);
  DatabaseERMemo.Text:=FDatabaseER.GetValue<string>('qualification')+sLineBreak+sLineBreak+'PK = declared primary key; FK = declared foreign key; UQ = declared unique key. A badge describes captured membership, not deployed enforcement. Click a table for its full column/key evidence, or choose FK evidence in the command strip.';
- if FDatabaseER.GetValue<Integer>('shown_tables')=0 then DatabaseERMemo.Lines.Add('No matching captured tables. Clear the text filter, click All tables, or attach approved SQL resources and reassess.');
- if FDatabaseERFocusID<>'' then DatabaseERMemo.Lines.Add('Focus includes the selected captured table and its directly linked neighbors; the text filter still applies.');
+ if FDatabaseER.GetValue<Integer>('shown_tables')=0 then DatabaseERMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.e5e257999e0ea550', 'No matching captured tables. Clear the text filter, click All tables, or attach approved SQL resources and reassess.'));
+ if FDatabaseERFocusID<>'' then DatabaseERMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.bb4d7a293124e950', 'Focus includes the selected captured table and its directly linked neighbors; the text filter still applies.'));
  DatabaseERResize(nil);
 end;
 procedure TDPHMainForm.DatabaseERFocusClick(Sender:TObject);
@@ -4056,7 +4069,7 @@ begin
   else Row.TryGetValue<string>('declaration_id',FDatabaseERFocusID);
  end;
  DatabaseERFilter.Text:='';DatabaseERFilterChange(nil);WorkspaceTabs.ActiveTab:=DatabaseERTab;
- if FDatabaseERFocusID='' then DatabaseERMemo.Lines.Add('No captured table/column/key selected in Database schema; showing all captured tables.');
+ if FDatabaseERFocusID='' then DatabaseERMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.a54da8ef01305315', 'No captured table/column/key selected in Database schema; showing all captured tables.'));
 end;
 function TDPHMainForm.DatabaseERRect(AIndex:Integer):TRectF;
 var W,H,Left,Top:Single;Columns:Integer;
@@ -4142,7 +4155,7 @@ begin
    DatabaseSchemaList.ItemIndex:=I mod 250;DatabaseSchemaSelectionChange(nil);WorkspaceTabs.ActiveTab:=DatabaseSchemaTab;Exit;
   end;Inc(I);
  end;
- DatabaseERMemo.Lines.Add('Evidence target is no longer in this captured schema. Rebuild the diagram.');
+ DatabaseERMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.ee6950f42e02622c', 'Evidence target is no longer in this captured schema. Rebuild the diagram.'));
 end;
 
 procedure TDPHMainForm.FileFormatsFilterChange(Sender:TObject);
@@ -4166,7 +4179,7 @@ procedure TDPHMainForm.FileFormatsSelectionChange(Sender:TObject);
 var Row:TJSONObject;V:TJSONValue;Title:string;
 begin
  FileFormatsSource.Enabled:=False;FileFormatsExplain.Enabled:=False;FileFormatsContract.Enabled:=False;
- FileFormatsMemo.Text:='Select a captured file or API candidate. Empty results do not prove there are no import/export formats; unsupported, dynamic and uncaptured transfers remain unknown.';
+ FileFormatsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.ba076c5be07a6cfc', 'Select a captured file or API candidate. Empty results do not prove there are no import/export formats; unsupported, dynamic and uncaptured transfers remain unknown.');
  if (FFileFormatRows=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
  Row:=FFileFormatRows[FileFormatsList.ItemIndex];FileFormatsMemo.Text:=TDPHWorkspaceView.DescribeFileFormat(Row)+sLineBreak+FFileFormats.GetValue<string>('qualification');
  FileFormatsSource.Enabled:=True;FileFormatsExplain.Enabled:=Row.GetValue<string>('target_key')<>'';FileFormatsContract.Enabled:=True;
@@ -4178,7 +4191,7 @@ var Row,Range:TJSONObject;
 begin
  if (FView=nil) or (FileFormatsList.ItemIndex<0) or (FileFormatsList.ItemIndex>=FFileFormatRows.Count) then Exit;
  Row:=FFileFormatRows[FileFormatsList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
- if FDetached then begin FileFormatsMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin FileFormatsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do FileFormatsMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
@@ -4393,7 +4406,7 @@ var Row,Range:TJSONObject;
 begin
  if (FView=nil) or (CalculationEvidenceList.ItemIndex<0) or (CalculationEvidenceList.ItemIndex>=FCalculationEvidenceRows.Count) then Exit;
  Row:=FCalculationEvidenceRows[CalculationEvidenceList.ItemIndex];Range:=Row.GetValue<TJSONObject>('range');
- if FDetached then begin CalculationEvidenceMemo.Lines.Add('Source is detached. Attach unchanged source to navigate.');Exit;end;
+ if FDetached then begin CalculationEvidenceMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.08ca6e511f32b2d0', 'Source is detached. Attach unchanged source to navigate.'));Exit;end;
  try SourceMemo.Text:=TDPHKeyboardInspector.ReadSource(FView,FEntry,Row,Range);SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),0);WorkspaceTabs.ActiveTab:=SourceTab;
  except on E:Exception do CalculationEvidenceMemo.Lines.Add('Source unavailable: '+E.Message);end;
 end;
@@ -4967,7 +4980,7 @@ var Link:TJSONValue;ID,SchemaText:string;SavedDictionary:TJSONObject;
 begin
  if FDatabaseSchemaTargets=nil then Exit;FDatabaseSchemaTargets.Clear;DatabaseSchemaLinks.Items.Clear;DatabaseSchemaFollow.Enabled:=False;
  DatabaseDictionaryEdit.Enabled:=False;DatabaseDictionaryKnowledge.Enabled:=False;
- DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:='Select a schema object or unsupported statement to read its captured evidence and next investigation.';
+ DatabaseSchemaSource.Enabled:=False;DatabaseSchemaMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.ee958ac608167d14', 'Select a schema object or unsupported statement to read its captured evidence and next investigation.');
  if (FDatabaseSchemaRows=nil) or (DatabaseSchemaList.ItemIndex<0) or (DatabaseSchemaList.ItemIndex>=FDatabaseSchemaRows.Count) then Exit;
  DatabaseSchemaMemo.Text:=TDPHDatabaseSchema.Describe(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex])+sLineBreak+sLineBreak+FDatabaseSchema.GetValue<string>('qualification');
  DatabaseDictionaryEdit.Enabled:=MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('kind'),['table','column']) and MatchText(FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex].GetValue<string>('status'),['declared header','declared column']);
@@ -4976,7 +4989,7 @@ begin
   if SavedDictionary<>nil then DatabaseSchemaMemo.Text:=SavedDictionary.GetValue<string>('body')+sLineBreak+'Review state: '+SavedDictionary.GetValue<string>('state')+' | Open dictionary history for contributor, revisions and review.'
   else DatabaseSchemaMemo.Text:='BUSINESS DICTIONARY'+sLineBreak+'Business meaning not recorded for these captured bytes. Click Edit dictionary. Do not infer purpose or sensitivity from SQL names.';
   DatabaseDictionaryKnowledge.Enabled:=TDPHDatabaseSchema.FindDictionary(FKnowledge,FDatabaseSchemaRows[DatabaseSchemaList.ItemIndex],True)<>nil;
-  if DatabaseDictionaryKnowledge.Enabled and (SavedDictionary=nil) then DatabaseSchemaMemo.Lines.Add('Historical dictionary exists for this source/record/name with different captured bytes. Open dictionary history; it is not transferred or verified against this capture.');
+  if DatabaseDictionaryKnowledge.Enabled and (SavedDictionary=nil) then DatabaseSchemaMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.caa444f662e3bb3c', 'Historical dictionary exists for this source/record/name with different captured bytes. Open dictionary history; it is not transferred or verified against this capture.'));
   DatabaseSchemaMemo.Lines.Add(sLineBreak+'CAPTURED SCHEMA EVIDENCE'+sLineBreak+SchemaText);
  end;
  DatabaseSchemaSource.Enabled:=True;
@@ -4997,7 +5010,7 @@ begin
    DatabaseSchemaList.ItemIndex:=Index mod 250;DatabaseSchemaSelectionChange(nil);Exit;
   end;Inc(Index);
  end;
- DatabaseSchemaMemo.Lines.Add('Relationship target is no longer present in this captured projection.');
+ DatabaseSchemaMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.037f4894e4662327', 'Relationship target is no longer present in this captured projection.'));
 end;
 procedure TDPHMainForm.DatabaseSchemaSourceClick(Sender:TObject);
 var Row,Range:TJSONObject;
@@ -5040,7 +5053,7 @@ procedure TDPHMainForm.DatabaseInventorySelectionChange(Sender:TObject);
 var Row:TJSONObject;Value:TJSONValue;ID:string;
 begin
  if FDatabaseInventoryTargets=nil then Exit;FDatabaseInventoryTargets.Clear;DatabaseInventoryLinks.Items.Clear;DatabaseInventoryFollow.Enabled:=False;DatabaseInventorySource.Enabled:=False;DatabaseInventoryTrace.Enabled:=False;DatabaseInventoryDiagram.Enabled:=False;
- DatabaseInventoryMemo.Text:='Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.';
+ DatabaseInventoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.ba96f0fbf8dd7d4a', 'Select a connection, dataset, data source, transaction, session or definition. Missing configuration and runtime bindings remain unknown.');
  if (DatabaseInventoryList.ItemIndex<0) or (DatabaseInventoryList.ItemIndex>=FDatabaseInventoryRows.Count) then Exit;
  Row:=FDatabaseInventoryRows[DatabaseInventoryList.ItemIndex];DatabaseInventorySource.Enabled:=True;DatabaseInventoryTrace.Enabled:=True;DatabaseInventoryDiagram.Enabled:=True;DatabaseInventoryMemo.Text:=TDPHDatabaseConnections.Describe(Row)+sLineBreak+sLineBreak+FDatabaseInventory.GetValue<string>('qualification');
  for Value in Row.GetValue<TJSONArray>('links') do if Value.TryGetValue<string>('target_id',ID) then begin FDatabaseInventoryTargets.Add(ID);DatabaseInventoryLinks.Items.Add('Target via '+Value.GetValue<string>('property')+': '+Value.GetValue<string>('reference'));end;
@@ -5085,7 +5098,7 @@ begin
  HistoryBeforeTitle.Text:='BEFORE';HistoryAfterTitle.Text:='AFTER';
  HistoryBeforeImage.Bitmap.SetSize(0,0);HistoryAfterImage.Bitmap.SetSize(0,0);HistoryDifferenceImage.Bitmap.SetSize(0,0);
  HistoryStatus.Text:='Choose Before and After, then Compare. Newest 200 imported records are listed.';
- HistoryMemo.Text:='Import attributed PNG evidence on Screenshots first. Optional relative form paths enable layout comparison using each image generation. Retain those captures in Database tools. Scroll this page for images, layout changes and evidence.';
+ HistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.afd3a5ae31abc14c', 'Import attributed PNG evidence on Screenshots first. Optional relative form paths enable layout comparison using each image generation. Retain those captures in Database tools. Scroll this page for images, layout changes and evidence.');
  HistoryBeforePaint.Repaint;HistoryAfterPaint.Repaint;HistoryDifferencePaint.Repaint;
 end;
 procedure TDPHMainForm.HistoryCompareClick(Sender:TObject);
@@ -5093,8 +5106,8 @@ var Request:TDPHWorkspaceRequest;Index:Integer;Path:string;
 begin
  if Sender=HistorySwapButton then begin Index:=HistoryBeforeCombo.ItemIndex;HistoryBeforeCombo.ItemIndex:=HistoryAfterCombo.ItemIndex;HistoryAfterCombo.ItemIndex:=Index;Path:=HistoryBeforePath.Text;HistoryBeforePath.Text:=HistoryAfterPath.Text;HistoryAfterPath.Text:=Path;HistorySelectionChange(nil);Exit;end;
  if FBusy then begin StatusLabel.Text:='Wait for the current operation to finish';Exit;end;
- if (FView=nil) or (FDatabase='') then begin HistoryMemo.Text:='Open a saved project database first';Exit;end;
- if (FImages=nil) or (HistoryBeforeCombo.ItemIndex<0) or (HistoryAfterCombo.ItemIndex<0) or (HistoryBeforeCombo.ItemIndex>=FImages.Count) or (HistoryAfterCombo.ItemIndex>=FImages.Count) then begin HistoryMemo.Text:='Import screenshots and select both Before and After records';Exit;end;
+ if (FView=nil) or (FDatabase='') then begin HistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.c29c15d3edfab3d9', 'Open a saved project database first');Exit;end;
+ if (FImages=nil) or (HistoryBeforeCombo.ItemIndex<0) or (HistoryAfterCombo.ItemIndex<0) or (HistoryBeforeCombo.ItemIndex>=FImages.Count) or (HistoryAfterCombo.ItemIndex>=FImages.Count) then begin HistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.3f779109d08873f2', 'Import screenshots and select both Before and After records');Exit;end;
  HistorySelectionChange(nil);Request:=Default(TDPHWorkspaceRequest);Request.Command:='screen_history';Request.Database:=FDatabase;Request.Entry:=FEntry;Request.GenerationID:=FView.Document.GetValue<Int64>('generation_id');Request.ScreenToken:=FScreenToken;
  Request.BeforeScreenshot:=FImages.Items[HistoryBeforeCombo.ItemIndex].GetValue<Int64>('artifact_id');Request.AfterScreenshot:=FImages.Items[HistoryAfterCombo.ItemIndex].GetValue<Int64>('artifact_id');Request.BeforeScreenSource:=HistoryBeforePath.Text.Trim;Request.AfterScreenSource:=HistoryAfterPath.Text.Trim;
  FWorker.Submit(Request);FBusy:=True;FPendingCommand:='screen_history';HistoryStatus.Text:='Comparing saved images in the background...';StatusLabel.Text:='Comparing screen history without executing the selected project...';
@@ -5297,17 +5310,17 @@ var Row,Range,FileRow: TJSONObject; Path: string; Source: TDPHSource; Diagnostic
 begin
   if (FDetails=nil) or (DetailsList.ItemIndex<0) or (DetailsList.ItemIndex>=FDetails.Count) then Exit;
   DetailsClick(nil);
-  if FDetached or (FEntry='') then begin DetailsMemo.Lines.Add('Original source is detached. The cached statement/value and source evidence remain available here.'); Exit; end;
+  if FDetached or (FEntry='') then begin DetailsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.23e7d84788728732', 'Original source is detached. The cached statement/value and source evidence remain available here.')); Exit; end;
   Row:=FDetails.Items[DetailsList.ItemIndex] as TJSONObject; Range:=Row.GetValue<TJSONObject>('range');
-  if Row.GetValue<Int64>('generation_id',FView.Document.GetValue<Int64>('generation_id'))<>FView.Document.GetValue<Int64>('generation_id') then begin DetailsMemo.Lines.Add('Historical evidence: source navigation is disabled until this target is reviewed against the current generation.'); Exit; end;
+  if Row.GetValue<Int64>('generation_id',FView.Document.GetValue<Int64>('generation_id'))<>FView.Document.GetValue<Int64>('generation_id') then begin DetailsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.92ee8e7ea7d6e4e0', 'Historical evidence: source navigation is disabled until this target is reviewed against the current generation.')); Exit; end;
   FileRow:=FView.SourceFile(Range.GetValue<string>('source')); if FileRow=nil then Exit;
   Path:=TPath.GetFullPath(TPath.Combine(ExtractFilePath(FEntry),Range.GetValue<string>('source')));
-  if not StartsText(IncludeTrailingPathDelimiter(ExtractFilePath(FEntry)),Path) then begin DetailsMemo.Lines.Add('Source location is outside the attached project.'); Exit; end;
+  if not StartsText(IncludeTrailingPathDelimiter(ExtractFilePath(FEntry)),Path) then begin DetailsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.14a44b9f901d2d8b', 'Source location is outside the attached project.')); Exit; end;
   Diagnostics:=TDPHDiagnostics.Create;
   try
     try Source:=TDPHSource.Create(Path,Range.GetValue<string>('source'),Diagnostics,FView.Document.GetValue<Integer>('code_page',0));
       try
-        if not Source.Decoded or not SameText(Source.SHA256,Row.GetValue<string>('source_hash','')) then begin DetailsMemo.Lines.Add('Source is changed or undecodable; the cached range was not applied.'); Exit; end;
+        if not Source.Decoded or not SameText(Source.SHA256,Row.GetValue<string>('source_hash','')) then begin DetailsMemo.Lines.Add(DATTranslateText('DPH.UI.Main.Memo.befd94a74f49f0a5', 'Source is changed or undecodable; the cached range was not applied.')); Exit; end;
         SourceMemo.Text:=Source.Text; SourceMemo.CaretPosition:=TCaretPosition.Create(Max(0,Range.GetValue<Integer>('line')-1),Max(0,Range.GetValue<Integer>('column')-1));
         WorkspaceTabs.ActiveTab:=SourceTab;
       finally Source.Free; end;
@@ -5334,7 +5347,7 @@ begin
   for V in FDetails do begin Row:=V as TJSONObject;
     DetailsList.Items.Add(Row.GetValue<string>('detail_kind')+' | '+Row.GetValue<string>('title')+' | line '+Row.GetValue<Integer>('range.line').ToString);
   end;
-  DetailsMemo.Text:='Select a row to read its statement, serialized value or relationship and source evidence. Maximum 1,000 rows. Serialized properties are overrides; absent framework defaults are not inferred.';
+  DetailsMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.e64fa9bbda52fee7', 'Select a row to read its statement, serialized value or relationship and source evidence. Maximum 1,000 rows. Serialized properties are overrides; absent framework defaults are not inferred.');
   for Direction in ['forward','reverse'] do begin Rows:=FView.Neighbors(AKey,Direction); try for V in Rows do begin Row:=V as TJSONObject;
     Target:=Row.GetValue<string>('to',''); if Direction='reverse' then Target:=Row.GetValue<string>('from');
     RelationsList.Items.Add(Direction+' '+Row.GetValue<string>('kind')+' ['+Row.GetValue<string>('resolution')+'] '+Row.GetValue<string>('label')+' '+Target); FRelationKeys.Add(Target);
@@ -5747,7 +5760,7 @@ begin
     if (KnowledgeKindCombo.ItemIndex>=0) and (KnowledgeKindCombo.Items[KnowledgeKindCombo.ItemIndex]='glossary') then KnowledgeKindCombo.ItemIndex:=0;
     KnowledgeDocumentCombo.ItemIndex:=0; KnowledgeAudienceCombo.ItemIndex:=0; KnowledgeSectionLabel.Text:='New section: stable ID assigned on Save';
     FreeAndNil(FEditableLinks); FEditableLinks:=TJSONArray.Create; RefreshKnowledgeLinks;
-    KnowledgeHistoryMemo.Text:='New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.';
+    KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.6ce13d44db1711fc', 'New content links to the selected canonical object, or the project when no object is selected. Titles and kinds remain stable after creation.');
     FKnowledgeEdited:=False; FKnowledgeLink:=FSelected; finally FBinding:=False; end;
 end;
 procedure TDPHMainForm.SaveKnowledgeClick(Sender: TObject);
@@ -5760,7 +5773,7 @@ var Value: TJSONValue; Row: TJSONObject; Filter: string;
 begin
   if FGlossaryRows=nil then Exit;
   GlossaryList.Items.Clear; FGlossaryRows.Clear;
-  GlossaryMemo.Text:='No matching saved terms. Click New term to define business language for this selected application.';
+  GlossaryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.f94f97b767477e38', 'No matching saved terms. Click New term to define business language for this selected application.');
   if FKnowledge=nil then Exit;
   Filter:=GlossaryFilterEdit.Text.Trim;
   for Value in FKnowledge do begin
@@ -5826,7 +5839,7 @@ begin
         if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
         RefreshKnowledgeLinks; FKnowledgeEdited:=True;
         KnowledgeSectionLabel.Text:='Business glossary draft: click Save, then explicitly review';
-        KnowledgeHistoryMemo.Text:='Edit term fields in Business glossary. Knowledge links stores exact source evidence. Saving preserves prior revisions and requires a fresh named review.';
+        KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.4ffaed4ba75333cf', 'Edit term fields in Business glossary. Knowledge links stores exact source evidence. Saving preserves prior revisions and requires a fresh named review.');
       finally FBinding:=False; end;
       WorkspaceTabs.ActiveTab:=KnowledgeTab; StatusLabel.Text:='Glossary draft prepared. Click Save to persist; use Knowledge links for source evidence.';
     finally RecordValue.Free; end;
@@ -5865,7 +5878,7 @@ begin
         if (Row<>nil) and Row.TryGetValue<TJSONArray>('rich_links',Links) then FEditableLinks:=Links.Clone as TJSONArray else FEditableLinks:=TJSONArray.Create;
         RefreshKnowledgeLinks; FKnowledgeEdited:=True;
         KnowledgeSectionLabel.Text:='Project profile draft; use Save, then review with a named reviewer';
-        KnowledgeHistoryMemo.Text:='Structured profile fields are edited with Projects > Project profile. Saved revisions and review history remain available in Knowledge.';
+        KnowledgeHistoryMemo.Text:=DATTranslateText('DPH.UI.Main.Memo.09818941cd05999b', 'Structured profile fields are edited with Projects > Project profile. Saved revisions and review history remain available in Knowledge.');
       finally FBinding:=False; end;
       WorkspaceTabs.ActiveTab:=KnowledgeTab; StatusLabel.Text:='Project profile draft prepared. Click Save to persist it; review remains explicit.';
     finally Profile.Free; end;
