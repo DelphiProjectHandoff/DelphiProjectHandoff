@@ -374,9 +374,14 @@ begin
           end;
           if Request.Command='open' then
           begin
-            Text:=Store.LoadWorkspaceView;
+            Text:=Store.LoadWorkspaceView(0,True);
             if Text='' then raise EReadError.Create('No cached workspace is available; attach the source project to analyze it');
             Document:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
+            Status:=Store.Status;
+            if (Document=nil) or (Document.GetValue<Int64>('generation_id',0)<1) or
+              ((Status.PublishedGeneration>0) and
+               (Document.GetValue<Int64>('generation_id')<>Status.PublishedGeneration)) then
+              raise EReadError.Create('Workspace artifact generation mismatch');
             if TDPHWorkspaceView.IsHandoffProject(Document) then
             begin Document.Free; raise EReadError.Create(DPHSelfSelectionMessage); end;
             CachedFingerprint:=Document.GetValue<string>('semantics.input_fingerprint','');
@@ -385,7 +390,6 @@ begin
             CachedQualityVersion:=Document.GetValue<string>('source_quality.version','');
             CachedDiscoveryVersion:=Document.GetValue<string>('learning_discovery_version','');
             CachedSelectionHash:=Document.GetValue<string>('selection_hash','');
-            Status:=Store.Status;
             MessageText:='Cached project - detached: source has not been attached';
             if Status.AnalysisStale then MessageText:=MessageText+' | analysis stale';
             if Status.ModificationDetected then MessageText:=MessageText+' | source modification detected';

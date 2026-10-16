@@ -949,7 +949,7 @@ type
   public
     procedure OpenSelection(const AEntry,ADatabase: string; AUnsaved: Boolean = False);
     procedure LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray = nil; ADeferLearning: Boolean = False);
-    procedure LoadKnowledge(ARows: TJSONArray);
+    procedure LoadKnowledge(ARows: TJSONArray; ADeferInitialViews: Boolean = False);
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
     procedure LoadComparison(AReport: TJSONObject);
@@ -1805,6 +1805,7 @@ begin
       (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) or
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
     ExplorerSplitter.Visible:=ExplorerLayout.Visible;
+    if ExplorerLayout.Visible and (FView<>nil) and (FExplorerKeys.Count=0) then RefreshExplorer;
     InspectorLayout.Visible:=(WorkspaceTabs.ActiveTab=SourceTab) or
       (WorkspaceTabs.ActiveTab=RelationsTab) or (WorkspaceTabs.ActiveTab=DetailsTab);
     InspectorSplitter.Visible:=InspectorLayout.Visible;
@@ -1831,7 +1832,7 @@ begin
     CardSelectionChange(nil);
     FLibraryLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = ExplainTab) and
-    (FLearningFacts <> nil) and
+    (FView <> nil) and
     (FMapLanguageGeneration <> DATLanguageManager.Generation) then begin
     ShowExplanation;
     FMapLanguageGeneration := DATLanguageManager.Generation;
@@ -2297,7 +2298,7 @@ begin
     end;
     if R.Knowledge<>nil then begin
       if (FPendingCommand='save_knowledge') and (FSavedKnowledgeText=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON) then FKnowledgeEdited:=False;
-      LoadKnowledge(R.Knowledge); R.Knowledge:=nil;
+      LoadKnowledge(R.Knowledge,FPendingCommand='open'); R.Knowledge:=nil;
       if FCardSavingID<>'' then begin
         CardFilter.Text:='';CardRole.Text:='';CardFilterChange(nil);
         for var CardIndex:=0 to FCardRows.Count-1 do begin
@@ -2492,9 +2493,16 @@ begin
     end;
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
+    if ADeferLearning then begin
+      OverviewMemo.Text:=DATTranslateText('DPHMainForm.CardPurpose.Text',
+        'Explore this application through its learning route, project documents and screens. Select a topic to read what DPH found.');
+      LearningTopics.ItemIndex:=-1;
+      LearningBrowser.Visible:=False;
+      OverviewMemo.Visible:=True;
+    end;
   finally FBinding:=False; end;
   if ADeferLearning then begin FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); end;
-  RefreshExplorer;
+  if not ADeferLearning then RefreshExplorer;
   if not ADeferLearning then begin RefreshLearning; RefreshCoverage; RefreshQuestions; end;
   if AScreenshots<>nil then Images:=AScreenshots.Clone as TJSONArray
   else begin
@@ -2511,8 +2519,10 @@ begin
     ScreenshotImage.Bitmap.SetSize(0,0);
     ScreenshotEvidence.Text:='Open Screenshots to generate form previews from saved designs.';
   end;
-  if SavedKey<>'' then begin SelectSymbol(SavedKey,False); ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey); end;
+  if SavedKey<>'' then SelectSymbol(SavedKey,False);
   if SameProject then WorkspaceTabs.ActiveTab:=SavedTab else WorkspaceTabs.ActiveTab:=OverviewTab;
+  if ExplorerLayout.Visible and (FExplorerKeys.Count=0) then RefreshExplorer;
+  if SavedKey<>'' then ExplorerList.ItemIndex:=FExplorerKeys.IndexOf(SavedKey);
 end;
 procedure TDPHMainForm.KeyboardFilterChange(Sender: TObject);
 var Value: TJSONValue; Row: TJSONObject; Count,Order: Integer; Text,Query: string;
@@ -3241,7 +3251,8 @@ begin
   FOverviewLanguageGeneration:=0;
   FMapLanguageGeneration:=0;
   FGraphLanguageGeneration:=0;
-  CardFilterChange(nil); LearningClick(nil);
+  CardFilterChange(nil);
+  if LearningTopics.ItemIndex>=0 then LearningClick(nil);
 end;
 function TDPHMainForm.PrepareOfflineProjectTranslation(var AHTML: string): Boolean;
 var
@@ -3290,7 +3301,11 @@ end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
-  if FLearningFacts=nil then Exit;
+  if FBinding then Exit;
+  if FLearningFacts=nil then begin
+    if (FView<>nil) and (LearningTopics.ItemIndex>=0) then RefreshLearning;
+    Exit;
+  end;
   HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
     Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
@@ -3314,6 +3329,7 @@ end;
 procedure TDPHMainForm.ShowExplanation;
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
+  if (FLearningFacts=nil) and (FView<>nil) then RefreshLearning;
   if FLearningFacts=nil then Exit;
   if FExplanations=nil then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   if FSelected='' then HTML:=FExplanations.ProjectMapHTML
@@ -5490,6 +5506,7 @@ begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
+  if (WorkspaceTabs.ActiveTab=GraphTab) and (FLearningFacts=nil) then RefreshLearning;
   if (FSelected='') and (GraphCombo.ItemIndex in [0,3,4]) then FWholeGraph:=True;
   GraphPaint.Width:=Max(1050,GraphScroll.Width-24);
   GraphPaint.Height:=4500;
@@ -5725,12 +5742,14 @@ begin
   ScreenPaint.Width:=Max(1,W*FScreenScale); ScreenPaint.Height:=Max(1,H*FScreenScale);
   ScreenPaint.Repaint;
 end;
-procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
+procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray; ADeferInitialViews: Boolean);
 begin
   FCardRows.Clear;CardList.Items.Clear;FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil);
-  RefreshLearning;
-  RefreshCoverage;
-  RefreshQuestions;
+  if not ADeferInitialViews then begin
+    RefreshLearning;
+    RefreshCoverage;
+    RefreshQuestions;
+  end;
   DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil);CardFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);
 end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);

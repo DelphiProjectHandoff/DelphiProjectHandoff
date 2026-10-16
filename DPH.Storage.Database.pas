@@ -62,7 +62,7 @@ type
     function SupportsFTS5: Boolean;
     class function ProjectRoot(const ADatabasePath: string): string; static;
     procedure SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
-    function LoadWorkspaceView(AGenerationID: Int64 = 0): string;
+    function LoadWorkspaceView(AGenerationID: Int64 = 0; ASkipGenerationParse: Boolean = False): string;
     procedure RelocateSource(const ANewRoot: string; AGenerationID: Int64; const AVerifiedManifest: TDPHManifest);
     procedure BeginFacts(AGenerationID: Int64);
     procedure CommitFacts;
@@ -1421,7 +1421,7 @@ begin
     'VALUES(1,:generation,''workspace_view'',:path,:hash,''en'',''DPH-WP4-1'',''captured'')',[AGenerationID,Path,Hash]);
 end;
 
-function TDPHKnowledgeStore.LoadWorkspaceView(AGenerationID: Int64): string;
+function TDPHKnowledgeStore.LoadWorkspaceView(AGenerationID: Int64; ASkipGenerationParse: Boolean): string;
 var Query: TFDQuery; Path,Hash: string; Parsed: TJSONValue;
 begin
   RequireWriter; Result:='';
@@ -1438,10 +1438,13 @@ begin
     Path:=TPath.Combine(FDatabasePath+'.views',Hash+'.json'); CheckOutsideSource(Path);
     if not TFile.Exists(Path) then raise EDPHStorage.Create('Workspace artifact is missing');
     if (TFile.GetSize(Path)>128*1024*1024) or (THashSHA2.GetHashStringFromFile(Path)<>Hash) then raise EDPHStorage.Create('Workspace artifact is damaged');
-    Result:=TEncoding.UTF8.GetString(TFile.ReadAllBytes(Path)); Parsed:=TJSONObject.ParseJSONValue(Result);
-    try
-      if not (Parsed is TJSONObject) or ((Parsed as TJSONObject).GetValue<Int64>('generation_id')<>AGenerationID) then raise EDPHStorage.Create('Workspace artifact generation mismatch');
-    finally Parsed.Free; end;
+    Result:=TEncoding.UTF8.GetString(TFile.ReadAllBytes(Path));
+    if not ASkipGenerationParse then begin
+      Parsed:=TJSONObject.ParseJSONValue(Result);
+      try
+        if not (Parsed is TJSONObject) or ((Parsed as TJSONObject).GetValue<Int64>('generation_id')<>AGenerationID) then raise EDPHStorage.Create('Workspace artifact generation mismatch');
+      finally Parsed.Free; end;
+    end;
   finally Query.Free; end;
 end;
 

@@ -513,7 +513,11 @@ begin
                 ((Form.FindComponent('LearnerTab1') as TRectangle).Stroke.Color=$FFF28C28) and
                 ((Form.FindComponent('LearnerTab0') as TRectangle).Fill.Color<>$FFFFFFFF),
                 'The selected learner tab is white with an orange border');
-              Form.LoadView(View.Document.Clone as TJSONObject);
+              Form.LoadView(View.Document.Clone as TJSONObject,nil,True);
+              Check((Form.LearningTopics.ItemIndex<0) and not Form.LearningBrowser.Visible and
+                (Form.ExplorerList.Count=0),'Saved capture waits to build unrequested learning and explorer views');
+              Form.LearningTopics.ItemIndex:=0; Form.LearningClick(nil);
+              Check(Form.LearningBrowser.Visible,'Selecting a dossier topic builds the deferred learning view');
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Check(Form.ScreenshotList.Count=0,'Generated previews wait until the Screenshots page is opened');
               Form.LoadScreenshots(Store.ScreenshotsJSON);
