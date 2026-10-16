@@ -15,7 +15,7 @@ DPH is experimental Windows software built with Delphi 13.1. It is not a product
 - **Run the packaged 0.8.0.1 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.1-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
 - **Build the matching editable source:** Download the source distribution from the [0.8.0.1 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.1-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
 
-The [0.8.0.1 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.1-experimental) lists both matching ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier releases remain available as historical experiments.
+The [0.8.0.1 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.1-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
 
 ## Build and start from source
 
@@ -60,11 +60,11 @@ In the current source, the dossier also displays **STALE capture** when syntax o
 
 ## Languages and offline use
 
-The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
+The header offers **35 languages** for DPH's menus, buttons, instructions, and other built-in text: English and 34 additional languages. These choices work without an Internet connection. Languages written from right to left are supported in the interface.
 
-An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, and languages other than German remain in their original form. For generated form previews, the German setting can use captions from the **selected project's own** `Localization/Languages/de-DE.json` if that file exists; otherwise it shows the saved form captions. If local prose translation fails, DPH shows the original text. Machine-translated output should be checked before relying on it. DPH-authored memo directions use the installed interface packs; some project-derived prose and technical labels can still appear in their source language.
+The language choice changes DPH's own text; it does not alter the files of an application you open. Text taken from that application's guides or source may still appear in its original language. The German choice can additionally translate some selected passages locally as an experimental feature. If a passage cannot be translated, DPH shows the original. Names in code and links back to the source stay as written. Check any translated explanation against the original before relying on it.
 
-The other 34 interface choices still work offline using the existing language packs. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access; local preview and the German translation engine also work with the checkbox off.
+DPH can be used offline. Reading public websites mentioned in a project's documents is optional and requires Internet access; the **Read public websites** checkbox is off by default.
 
 ## Guides, checks, and project layout
 
