@@ -70,8 +70,9 @@ CHECK THE LEARNING VIEWS
 9. Open Project map. Select a form, control, unit, routine, or variable to see
    its saved declaration and connections. Follow an action link if present.
 10. Open Screenshots. DPH generates one empty-state PNG for each distinct form
-    definition found in .fmx or .dfm. Select an image; choose Fit to see the
-    complete screen or Native pixels for its full-size view. Form-derived
+    definition found in .fmx or .dfm. Select an image; it opens at Native
+    pixels for readable detail. Scroll to inspect the rest, or choose Fit to
+    see the complete screen. Form-derived
     images show saved controls and captions. They are not captures of the
     running target application, and custom painting or runtime data can differ.
 11. Open Application diagrams. Choose a diagram type and read its purpose above

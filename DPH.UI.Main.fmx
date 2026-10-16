@@ -3332,7 +3332,7 @@ Position.Y = 8
 Width = 150
 Height = 30
 Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
-ItemIndex = 0
+ItemIndex = 1
 OnChange = ScreenshotViewChange
 end
 object ScreenshotZoom: TTrackBar
@@ -3369,7 +3369,7 @@ end
 end
 object ScreenshotEvidence: TMemo
 Align = Bottom
-  Height = 115
+  Height = 70
   Margins.Left = 12
   Margins.Right = 12
   Margins.Bottom = 12

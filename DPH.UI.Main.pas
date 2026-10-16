@@ -3975,8 +3975,7 @@ begin
       Sources:=R.GetValue<TJSONArray>('form_sources',nil);
       Source:='';
       if (Sources<>nil) and (Sources.Count>0) then Source:=Sources.Items[0].Value;
-      ScreenshotEvidence.Text:=R.GetValue<string>('caption')+' ('+Source+')'+
-        sLineBreak+ScreenshotHelp.Text;
+      ScreenshotEvidence.Text:=R.GetValue<string>('caption')+' ('+Source+')';
     end
     else
       ScreenshotEvidence.Text:=R.GetValue<string>('caption')+sLineBreak+
