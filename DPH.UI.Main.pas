@@ -5203,8 +5203,8 @@ const KindKeys: array[1..19] of string =
   ('unit','type','routine','anonymous','component','event','field','property',
    'local','variable','parameter','resource','definition','async_operation',
    'dynamic_control','output_artifact','sql_statement','sql_table','sql_column');
-var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,KindText,LabelText,Prefix,DisplayText: string;
-  Depth,Index: Integer; IsRightToLeft: Boolean;
+var Rows: TJSONArray; V: TJSONValue; S: TJSONObject; Kind,KindText,LabelText,Prefix,DisplayText,FullLabel: string;
+  Depth,Index,LastDot,PreviousDot: Integer; IsRightToLeft: Boolean;
 begin
   IsRightToLeft:=SameText(DATActiveTextDirection,'rtl');
   if FView=nil then Exit; Kind:='';
@@ -5216,16 +5216,24 @@ begin
     for LabelText in FBookmarks do begin
       S:=FView.Symbol(LabelText);
       if S<>nil then begin
-        DisplayText:=DATTranslateDynamicText(S.GetValue<string>('kind'))+'  '+S.GetValue<string>('name');
+        FullLabel:=S.GetValue<string>('name');
+        LastDot:=LastDelimiter('.',FullLabel);
+        PreviousDot:=LastDelimiter('.',Copy(FullLabel,1,LastDot-1));
+        if PreviousDot>0 then DisplayText:='...'+Copy(FullLabel,PreviousDot+1,MaxInt)
+        else DisplayText:=FullLabel;
+        DisplayText:=DATTranslateDynamicText(S.GetValue<string>('kind'))+'  '+DisplayText;
         if IsRightToLeft then DisplayText:=#$2066+DisplayText+#$2069;
         ExplorerList.Items.Add(DisplayText);
         FExplorerKeys.Add(LabelText); end;
     end;
     for Index:=0 to ExplorerList.Count-1 do begin
       ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
-      ExplorerList.ListItems[Index].WordWrap:=True;
-      ExplorerList.ListItems[Index].Height:=Max(42,
-        16+24*Ceil(Length(ExplorerList.Items[Index])/Max(18,(ExplorerList.Width-32)/7)));
+      ExplorerList.ListItems[Index].WordWrap:=False;
+      ExplorerList.ListItems[Index].Trimming:=TTextTrimming.Character;
+      ExplorerList.ListItems[Index].Height:=32;
+      S:=FView.Symbol(FExplorerKeys[Index]);
+      if S<>nil then ExplorerList.ListItems[Index].Hint:=S.GetValue<string>('name');
+      ExplorerList.ListItems[Index].ShowHint:=True;
       if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
       else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
     end;
@@ -5252,6 +5260,11 @@ begin
           else Prefix:=Prefix+'    ';
           if Depth>0 then LabelText:=Copy(LabelText,LastDelimiter('.',LabelText)+1,MaxInt);
         end;
+        if not FHierarchyVisible then begin
+          LastDot:=LastDelimiter('.',LabelText);
+          PreviousDot:=LastDelimiter('.',Copy(LabelText,1,LastDot-1));
+          if PreviousDot>0 then LabelText:='...'+Copy(LabelText,PreviousDot+1,MaxInt);
+        end;
         if S.GetValue<string>('type','')<>'' then LabelText:=LabelText+' : '+S.GetValue<string>('type');
         KindText:=DATTranslateDynamicText(S.GetValue<string>('kind'));
         DisplayText:=Prefix+KindText+'  '+LabelText;
@@ -5260,9 +5273,11 @@ begin
       end;
       for Index:=0 to ExplorerList.Count-1 do begin
         ExplorerList.ListItems[Index].StyledSettings:=ExplorerList.ListItems[Index].StyledSettings-[TStyledSetting.Other];
-        ExplorerList.ListItems[Index].WordWrap:=True;
-        ExplorerList.ListItems[Index].Height:=Max(42,
-          16+24*Ceil(Length(ExplorerList.Items[Index])/Max(18,(ExplorerList.Width-32)/7)));
+        ExplorerList.ListItems[Index].WordWrap:=False;
+        ExplorerList.ListItems[Index].Trimming:=TTextTrimming.Character;
+        ExplorerList.ListItems[Index].Height:=32;
+        ExplorerList.ListItems[Index].Hint:=(Rows.Items[Index] as TJSONObject).GetValue<string>('name');
+        ExplorerList.ListItems[Index].ShowHint:=True;
         if IsRightToLeft then ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Trailing
         else ExplorerList.ListItems[Index].TextSettings.HorzAlign:=TTextAlign.Leading;
       end;

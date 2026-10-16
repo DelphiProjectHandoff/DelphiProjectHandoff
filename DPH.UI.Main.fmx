@@ -3115,7 +3115,7 @@ object GraphTab: TTabItem
 Text = 'Application diagrams'
 object GraphToolbar: THorzScrollBox
 Align = Top
-Height = 130
+Height = 40
 object GraphCombo: TComboBox
 Position.X = 26
 Position.Y = 4
@@ -3168,6 +3168,7 @@ ItemIndex = 0
 OnChange = ViewChange
 end
 object GraphLegend: TLabel
+Visible = False
 Text = 'Blue: direct connection in the project files. Orange dashed: possible connection that needs interpretation. Select a box to see its details.'
 Position.X = 46
 Position.Y = 83
@@ -3176,6 +3177,7 @@ Height = 38
 WordWrap = True
 end
 object GraphPurpose: TLabel
+Visible = False
 Text = 'Start with the screen map to see possible routes through this application. Select a screen or connection to learn more.'
 Position.X = 46
 Position.Y = 36
