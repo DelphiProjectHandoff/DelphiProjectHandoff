@@ -6,16 +6,17 @@
 
 Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the original developer or documentation is unavailable. It captures project structure, forms, Pascal code, and eligible local documents, then assembles a handoff dossier with source links, uncertainties, and questions for a person who knows the application. It does not compile, run, or change the application being studied. A static trace is evidence to investigate, not proof of runtime behavior or business intent.
 
-DPH is experimental Delphi software, built on Delphi 13.1. You can download a ready-to-run Windows ZIP or build the editable Delphi source project.
+DPH is experimental Windows software built with Delphi 13.1. It is not a production 1.0 release.
 
-The local development branch now has a refocused handoff dossier and loads generated form previews only when the Screenshots page is opened. The public 0.6.15 download below is the earlier experiment; this work has not been published to GitHub or packaged as a release.
+**Release status (16 October 2026):** The downloadable **0.6.15** Windows and source ZIPs are a matched snapshot from 15 October. The source tree described below has since gained the refocused Handoff dossier, faster saved-project opening, an explicit Save/Discard/Cancel decision for new captures, on-demand form previews, additional localization, and layout repairs. Those changes are **not in either 0.6.15 ZIP**. Building the current repository source is the way to try them until a new experimental package is prepared and published. A source commit or README update does not replace a release download.
 
-## Download the current experiment
+## Choose a download
 
-- **Run it on Windows:** Download [DPH 0.6.15 for Windows](export/DPH-0.6.15-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded learning pages.
-- **Edit it in Delphi:** Download the latest **0.6.15 Source Distribution** ZIP from [source distributions](source%20distributions/) or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. The source ZIP contains no compiled executable.
+- **Run the packaged 0.6.15 experiment:** Download [DPH 0.6.15 for Windows](export/DPH-0.6.15-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded pages.
+- **Build the current source:** Clone this repository or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's source archive contains no compiled executable.
+- **Inspect the matching 0.6.15 source snapshot:** Download the **0.6.15 Source Distribution** ZIP from [source distributions](source%20distributions/). This is the source for the packaged experiment, not the later repository changes.
 
-The two packages are built from the same revision. Both include the 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are retained as historical experiments; use the version above for current testing. The [experimental release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.15-experimental) provides both downloads together.
+The two 0.6.15 packages are built from the same revision. Both include 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are historical experiments. The [0.6.15 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.15-experimental) lists the matched downloads.
 
 ## Build and start from source
 
@@ -27,7 +28,9 @@ The main form is editable in the RAD Studio designer. To edit its DelphiAppTrans
 
 `tools/package-source-distribution.ps1` creates the editable source ZIP; `tools/package-dph.ps1` creates the matching Windows package and verifies its files after extraction.
 
-## Explore an application
+## Explore an application with the current source
+
+The workflow in this section describes the repository source, which is newer than the 0.6.15 packages.
 
 Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. DPH keeps a new capture temporary while you explore. When you close DPH or open another project, choose **Yes** to save it as a `.dphdb`, **No** to discard it, or **Cancel** to keep exploring. Save the `.dphdb` outside the application's source tree and keep its adjacent `.dphdb.views` folder. Later, **Open saved project** restores the saved analysis and generated screen images.
 
@@ -37,16 +40,16 @@ The header's **Read public websites** checkbox controls DPH's optional Internet 
 
 DOCX and supported text formats are read directly. Extracting text from PDF, legacy Word, RTF, and several older formats requires LibreOffice at `C:\Program Files\LibreOffice\program\soffice.com`. A scanned image-only PDF may need OCR before it has usable text. The Learning library reports when a discovered file yielded no readable content.
 
-The six primary views in the current local development build are:
+The six primary views in the current source are:
 
 | View | What you can do |
 | --- | --- |
 | **Getting started** | See how to open a project and move through DPH. |
 | **Handoff dossier** | Read a four-part account of purpose evidence, startup and forms, visible command bindings, data and output candidates, and unresolved risks and questions. Each claim is tied to the selected capture or explicitly marked as a reading suggestion. |
 | **Learning library** | Read grouped, formatted topics drawn from the project's available documents and screen information. |
-| **Project map** | Select units, types, objects, controls, procedures, functions, variables, and their connections; follow links to the relevant detail or screen. |
+| **Project map** | Select units, types, objects, controls, procedures, functions, variables, and their connections; follow links to the relevant detail or screen. Long object names are shortened in the list and available in full on hover and in the detail view. |
 | **Screenshots** | Generate blank screen views on demand from `.fmx` and `.dfm` definitions. Previews open at Native pixels for readable detail; scroll to inspect the rest or choose Fit for a whole-form overview. These are form-derived designs, not captures of the running application. Imported images retain their separate attribution. |
-| **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. Large diagrams retain readable node sizes inside a scrollable view; use grouping or select an object to narrow them. Arrows indicate possible relationships in the files, not measured runtime behavior. |
+| **Application diagrams** | Explore source-derived screen routes, routine connections, data paths, and dependencies. The diagram page explains its symbols below the compact controls. Large diagrams retain readable node sizes inside a scrollable view; use grouping or select an object to narrow them. Arrows indicate possible relationships in the files, not measured runtime behavior. |
 
 DPH shows the source behind its explanations where available and marks conclusions that need checking. A form file cannot reveal every runtime change, and a call site alone cannot prove when an action completes. The application under study is never executed as part of passive discovery.
 
@@ -54,7 +57,7 @@ DPH shows the source behind its explanations where available and marks conclusio
 
 The capture timestamp reports when the project was read; it is not an expiration date. To verify a saved capture, choose **Open saved project** while the original source is available. DPH checks the attached source in the background and rescans when its fingerprint or analyzer version changed. You can also choose **Open application** and select the same project entry again. Wait for preparation to finish, then revisit **Handoff dossier**.
 
-In the current local build, the dossier also displays **STALE capture** when syntax or semantic analysis is incomplete. If it persists after verification, inspect its diagnostics and missing inputs. A missing file can be restored and rescanned; unsupported constructs or unresolved connections may remain qualified even after a fresh scan. **Static inspection only** is always accurate: DPH reads the files but never runs the selected application. A warning shown inside a guide screenshot describes that example capture; refreshing your project cannot change the printed screenshot.
+In the current source, the dossier also displays **STALE capture** when syntax or semantic analysis is incomplete. If it persists after verification, inspect its diagnostics and missing inputs. A missing file can be restored and rescanned; unsupported constructs or unresolved connections may remain qualified even after a fresh scan. **Static inspection only** is always accurate: DPH reads the files but never runs the selected application. A warning shown inside a guide screenshot describes that example capture; refreshing your project cannot change the printed screenshot.
 
 **Export handoff** writes a new, read-only folder. Open `handoff-0.html` to start the four-part dossier, then follow included object pages and the technical index. The earlier teaching edition remains at `learning.html`. Review the full export before sharing; its checksum manifest detects changes relative to the capture but does not authenticate its author.
 
@@ -62,7 +65,7 @@ In the current local build, the dossier also displays **STALE capture** when syn
 
 The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
 
-An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it. DPH-authored memo directions use the installed interface packs; some project-derived prose and technical labels can still appear in their source language.
+An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, and languages other than German remain in their original form. For generated form previews, the German setting can use captions from the **selected project's own** `Localization/Languages/de-DE.json` if that file exists; otherwise it shows the saved form captions. If local prose translation fails, DPH shows the original text. Machine-translated output should be checked before relying on it. DPH-authored memo directions use the installed interface packs; some project-derived prose and technical labels can still appear in their source language.
 
 The other 34 interface choices still work offline using the existing language packs. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access; local preview and the German translation engine also work with the checkbox off.
 
