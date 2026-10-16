@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF - WORKSPACE OPERATIONS
+DELPHI PROJECT HANDOFF 0.8.0.1 - WORKSPACE OPERATIONS
 Last changed: 16 October 2026
 
 Start with Getting started. Choose Open application and select the target
@@ -29,6 +29,7 @@ because DPH never runs the selected application.
 
 The header language selector changes DPH's interface offline. German has an
 experimental local translation for selected project prose; source names,
-citations, form captions, and unsupported passages remain in their original
-language. See the User Guide for limitations and the Engineering Guide for
+citations, and unsupported passages remain in their original language.
+Generated preview captions can use the selected project's de-DE.json pack
+when available. See the User Guide for limitations and the Engineering Guide for
 the underlying capture and verification rules.

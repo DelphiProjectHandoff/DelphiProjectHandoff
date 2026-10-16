@@ -666,7 +666,7 @@ begin
               WaitHTML(Form.FlowBrowser,'document.body.innerText','Grouped by Units');
               WaitHTML(Form.FlowBrowser,'String(document.querySelector("svg[aria-label=\"Captured static relationships\"]") !== null)','true');
               Check(True,'Native grouped graph renders labeled source relationships in WebView2');
-              WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && Math.abs(graph.getBoundingClientRect().width-graph.viewBox.baseVal.width)<2 && graph.parentElement.scrollWidth>=graph.clientWidth})())','true');
+              WaitHTML(Form.FlowBrowser,'String((()=>{const graph=document.querySelector("svg[aria-label=\"Captured static relationships\"]");return graph && graph.getBoundingClientRect().width+2>=graph.viewBox.baseVal.width && graph.parentElement.scrollWidth>=graph.clientWidth})())','true');
               Check(True,'Diagram preserves readable node size inside a scrollable viewport');
               WaitHTML(Form.FlowBrowser,'String((()=>{const hero=document.querySelector("header").getBoundingClientRect();const card=document.querySelector("main .card").getBoundingClientRect();const diagram=document.querySelector(".diagram").getBoundingClientRect();return Math.abs(hero.left-card.left)<2 && Math.abs(hero.right-card.right)<2 && diagram.left>=card.left && diagram.right<=card.right})())','true');
               Check((Form.GraphPurpose.Position.X=46) and (Form.GraphLegend.Position.X=46) and

@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.15')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.1')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -36,8 +36,8 @@ foreach($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tools') -Fi
  }
 }
 
-$readme=@'
-DELPHI PROJECT HANDOFF - EDITABLE SOURCE DISTRIBUTION
+$readme=@"
+DELPHI PROJECT HANDOFF $Version - EDITABLE SOURCE DISTRIBUTION
 
 This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
@@ -65,6 +65,10 @@ The Microsoft WebView2 Runtime is required for embedded HTML learning views.
 LibreOffice at its standard Windows path is needed to extract text from PDF,
 legacy Word, RTF and several other older word-processing formats.
 The selected Delphi application is read as input; DPH does not run or modify it.
+Start with Handoff dossier. A new capture remains temporary until the user
+chooses Yes to save it at close or on a project change; No discards it and
+Cancel keeps it open. Generated form views are reconstructions, not runtime
+screenshots.
 The Read public websites checkbox is off by default and controls optional
 HTTPS requests for public sites referenced in selected project documents.
 The included third-party dependency folders contain their own license files.
@@ -72,7 +76,7 @@ The included third-party dependency folders contain their own license files.
 SHA256.txt lists every packaged source file and its SHA-256 digest. The
 DelphiProjectHandoff.res file is part of the source release because the
 DelphiProjectHandoff.dpr file references it.
-'@
+"@
 
 $hashLines=[Collections.Generic.List[string]]::new()
 $archive=[IO.Compression.ZipFile]::Open($archivePath,[IO.Compression.ZipArchiveMode]::Create)

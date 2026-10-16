@@ -8,15 +8,14 @@ Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the o
 
 DPH is experimental Windows software built with Delphi 13.1. It is not a production 1.0 release.
 
-**Release status (16 October 2026):** The downloadable **0.6.15** Windows and source ZIPs are a matched snapshot from 15 October. The source tree described below has since gained the refocused Handoff dossier, faster saved-project opening, an explicit Save/Discard/Cancel decision for new captures, on-demand form previews, additional localization, and layout repairs. Those changes are **not in either 0.6.15 ZIP**. Building the current repository source is the way to try them until a new experimental package is prepared and published. A source commit or README update does not replace a release download.
+**Release status (16 October 2026):** **0.8.0.1** is the current experimental release. Its Windows and editable-source ZIPs contain the refocused Handoff dossier, faster saved-project opening, an explicit Save/Discard/Cancel decision for new captures, on-demand form previews, localization updates, and layout repairs. It is intended for evaluation and is not a production 1.0 release.
 
 ## Choose a download
 
-- **Run the packaged 0.6.15 experiment:** Download [DPH 0.6.15 for Windows](export/DPH-0.6.15-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for the embedded pages.
-- **Build the current source:** Clone this repository or use GitHub's **Code → Download ZIP**. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's source archive contains no compiled executable.
-- **Inspect the matching 0.6.15 source snapshot:** Download the **0.6.15 Source Distribution** ZIP from [source distributions](source%20distributions/). This is the source for the packaged experiment, not the later repository changes.
+- **Run the packaged 0.8.0.1 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.1-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
+- **Build the matching editable source:** Download the source distribution from the [0.8.0.1 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.1-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
 
-The two 0.6.15 packages are built from the same revision. Both include 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier ZIPs are historical experiments. The [0.6.15 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.6.15-experimental) lists the matched downloads.
+The [0.8.0.1 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.1-experimental) lists both matching ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include 35 offline interface language packs and the experimental offline English-to-German project-text model. Earlier releases remain available as historical experiments.
 
 ## Build and start from source
 
@@ -28,9 +27,7 @@ The main form is editable in the RAD Studio designer. To edit its DelphiAppTrans
 
 `tools/package-source-distribution.ps1` creates the editable source ZIP; `tools/package-dph.ps1` creates the matching Windows package and verifies its files after extraction.
 
-## Explore an application with the current source
-
-The workflow in this section describes the repository source, which is newer than the 0.6.15 packages.
+## Explore an application
 
 Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. DPH keeps a new capture temporary while you explore. When you close DPH or open another project, choose **Yes** to save it as a `.dphdb`, **No** to discard it, or **Cancel** to keep exploring. Save the `.dphdb` outside the application's source tree and keep its adjacent `.dphdb.views` folder. Later, **Open saved project** restores the saved analysis and generated screen images.
 

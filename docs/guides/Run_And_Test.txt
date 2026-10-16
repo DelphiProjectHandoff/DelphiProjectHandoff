@@ -1,4 +1,4 @@
-RUN AND TEST DELPHI PROJECT HANDOFF
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.1
 Last changed: 16 October 2026
 
 BUILD AND START FROM SOURCE
@@ -27,7 +27,9 @@ German also offers an experimental local translation of selected English
 project prose in Handoff dossier and Learning library. DPH-authored memo
 directions use the interface packs; some project-derived prose and technical
 labels remain in their source language. Original files,
-identifiers, citations, and form captions are unchanged. Other language
+identifiers, and citations are unchanged. German preview captions can use
+the selected project's Localization/Languages/de-DE.json when present;
+otherwise the saved form captions remain. Other language
 choices retain project content in its original language.
 
 OPEN AN APPLICATION

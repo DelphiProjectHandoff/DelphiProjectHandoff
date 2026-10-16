@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version='0.6.15',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.1',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -47,22 +47,33 @@ foreach ($name in @('LICENSE','SNAPSHOT.json')) {
  [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
  Copy-Item -LiteralPath (Join-Path $projectRoot ('dependencies\DelphiAppTranslation\'+$name)) -Destination $destination
 }
-@'
+@"
 Delphi Project Handoff
-Experimental Windows desktop learning application
+Experimental Windows desktop handoff application - version $Version
 
 1. Extract this whole folder to a writable local location.
 2. On 64-bit Windows, open Win64 and double-click DelphiProjectHandoff.exe.
    Use the Win32 copy only when you need the 32-bit edition.
-3. Click Open application and select the Delphi project you want to learn.
-4. Use Learn the project, Learning library, Project map, Screenshots and
-   Application diagrams.
-5. Screenshots contains blank screen images generated inside DPH from that
-   project's .fmx and .dfm form files. Runtime appearance can differ.
+3. Click Open application and select a Delphi .dproj, .dpr, or .groupproj.
+   DPH reads the project; it does not compile or run the selected application.
+4. Start with Handoff dossier for the captured purpose evidence, startup
+   forms, commands, data candidates, and questions. Use Learning library,
+   Project map, Screenshots, and Application diagrams for deeper inspection.
+5. Screenshots reconstruct saved controls from .fmx and .dfm form files on
+   demand. They are not captures of the running application; custom painting
+   and runtime data may differ.
 6. Choose your language from the selector in the main header. All 35 language
    packs work offline and remain beside each Windows edition.
    The experimental English-to-German project-text model is also bundled in
    Localization\OfflineTranslation and runs without Internet access.
+7. A new capture stays temporary. When closing DPH or opening another
+   project, choose Yes to save it as a .dphdb, No to discard it, or Cancel
+   to continue. Keep a saved .dphdb and its adjacent .dphdb.views folder
+   together. Use Open saved project to restore them later.
+
+The Read public websites checkbox is off by default. Leave it off for
+fully offline use. When enabled, eligible public HTTPS pages referenced by
+the selected project may be read if an Internet connection is available.
 
 The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for
@@ -71,7 +82,7 @@ embedded pages; its supplied loader is a separate file.
 DPH reads source and project-local documents without changing or running the
 selected application. It generates empty design views from form definitions.
 This package contains no owner lesson databases or private documents.
-'@ | Set-Content -LiteralPath (Join-Path $packageRoot 'README.txt') -Encoding UTF8
+"@ | Set-Content -LiteralPath (Join-Path $packageRoot 'README.txt') -Encoding UTF8
 $hashes=[ordered]@{}
 foreach ($file in Get-ChildItem -LiteralPath $packageRoot -File -Recurse | Sort-Object FullName) {
  if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw 'Reparse package content is not permitted'}
