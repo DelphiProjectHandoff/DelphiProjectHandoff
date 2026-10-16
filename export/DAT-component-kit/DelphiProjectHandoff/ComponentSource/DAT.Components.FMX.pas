@@ -1304,6 +1304,8 @@ begin
   if not FBrowserLifecycleSubscriptions.TryGetValue(Browser,
     BrowserSubscription) then
     Exit;
+  if Browser.Visible then
+    BrowserSubscription.RequestedVisible := True;
   if BrowserSubscription.PendingGeneration <> 0 then
     BrowserSubscription.LoadedGeneration :=
       BrowserSubscription.PendingGeneration

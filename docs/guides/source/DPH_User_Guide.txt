@@ -17,7 +17,7 @@ Wait for preparation to finish. Read the progress message, then confirm the proj
 Open Screenshots to see whether saved form definitions produced design previews. A tabbed form has a separate preview for each saved tab.
 Explore the project without saving a permanent database. When you close DPH or open another project, choose Yes to save the capture as a .dphdb, No to discard it, or Cancel to keep exploring. Save outside the target source folder and keep the adjacent .dphdb.views folder with the database.
 @end
-If you already have a .dphdb, click Open saved project. Opening the saved file restores its captured findings and managed images; it does not automatically re-run the target application.
+If you already have a .dphdb, click Open saved project. Wait until the Handoff dossier itself appears before using the other tabs. DPH restores the captured findings and managed images, then checks any attached source in the background; it does not run the target application. The preparation panel stays visible until the real dossier page loads.
 @section 2.3 If information is missing
 A project may have no helpful guide, no saved form, or code that the analyzer cannot resolve. DPH should show the available evidence and mark uncertain conclusions. A missing document or diagram connection is not evidence that the target application lacks that behavior. Ask someone familiar with the application when its purpose or operating rules cannot be established from files.
 @part PART 2 Explore the application

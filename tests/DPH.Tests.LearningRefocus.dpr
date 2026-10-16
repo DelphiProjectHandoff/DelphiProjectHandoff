@@ -514,10 +514,12 @@ begin
                 ((Form.FindComponent('LearnerTab0') as TRectangle).Fill.Color<>$FFFFFFFF),
                 'The selected learner tab is white with an orange border');
               Form.LoadView(View.Document.Clone as TJSONObject,nil,True);
-              Check((Form.LearningTopics.ItemIndex<0) and not Form.LearningBrowser.Visible and
-                (Form.ExplorerList.Count=0),'Saved capture waits to build unrequested learning and explorer views');
-              Form.LearningTopics.ItemIndex:=0; Form.LearningClick(nil);
-              Check(Form.LearningBrowser.Visible,'Selecting a dossier topic builds the deferred learning view');
+              Check((Form.LearningTopics.ItemIndex=0) and not Form.LearningBrowser.Visible and
+                (Form.ExplorerList.Count=0),'Saved capture waits for its knowledge before building the dossier');
+              Form.LoadKnowledge(Store.KnowledgeJSON,True);
+              Check(Form.LearningBrowser.Visible,'Saved capture opens its real dossier after knowledge loads');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+              Check(True,'The saved dossier HTML is rendered in the browser');
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Check(Form.ScreenshotList.Count=0,'Generated previews wait until the Screenshots page is opened');
               Form.LoadScreenshots(Store.ScreenshotsJSON);
@@ -736,6 +738,20 @@ begin
         Check(SawIntermediateProgress and (PreviousProgress=100) and (Form.WorkspaceView<>nil) and
           (Form.ScreenshotList.Count=0),
           'Project preparation completes without generating unopened screen previews');
+        Form.OpenSelection('',TPath.Combine(Work,'progress-check.dphdb'));
+        Check(Form.ProjectPreparationLayout.Visible,'Saved open keeps preparation visible while the real dossier loads');
+        Watch:=TStopwatch.StartNew;
+        repeat
+          Application.ProcessMessages;
+          Form.PollTimerTimer(nil);
+          if not Form.ProjectPreparationLayout.Visible and Form.LearningBrowser.Visible then Break;
+          TThread.Sleep(20);
+        until Watch.ElapsedMilliseconds>30000;
+        WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+        Check(not Form.ProjectPreparationLayout.Visible and Form.LearningBrowser.Visible,
+          'Saved open shows the real dossier before clearing preparation');
+        WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+        Check(True,'Saved-open browser contains the captured project dossier');
       finally Form.Free; end;
       // Analyze a real generated Pascal body rather than manufacturing diagram edges.
       TDirectory.CreateDirectory(TPath.Combine(Work,'large-input'));
@@ -777,8 +793,14 @@ begin
       finally Semantic.Free; Analyzer.Free; end;
       ReferenceDB:=ParamStr(2); if ReferenceDB='--no-ui' then ReferenceDB:='';
       if ReferenceDB<>'' then begin
+        Watch:=TStopwatch.StartNew;
         ReferenceRoot:=TDPHKnowledgeStore.ProjectRoot(ReferenceDB); Store:=TDPHKnowledgeStore.Create(ReferenceDB,ReferenceRoot,TPath.Combine(Root,'migrations'));
-        try View:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Store.LoadWorkspaceView) as TJSONObject); finally Store.Free; end;
+        Writeln('Reference database open: ',Watch.ElapsedMilliseconds,' ms'); Flush(Output);
+        try
+          Watch:=TStopwatch.StartNew;
+          View:=TDPHWorkspaceView.Create(TJSONObject.ParseJSONValue(Store.LoadWorkspaceView) as TJSONObject);
+          Writeln('Reference capture read and parse: ',Watch.ElapsedMilliseconds,' ms'); Flush(Output);
+        finally Store.Free; end;
         try Model:=TDPHDocumentModel.Create(View,nil,[],[],True,True); Explain:=TDPHExplanationModel.Create(Model.Document);
           try
             Check(Model.Document.GetValue<TJSONArray>('startup').Count>0,'Pinned program startup is captured from its DPR body');
@@ -792,10 +814,21 @@ begin
             TFile.WriteAllBytes(TPath.Combine(Work,'reference-startup.html'),TEncoding.UTF8.GetBytes(Explain.TopicHTML(1)));
             Form:=TDPHMainForm.Create(nil);
             try Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False;
-              Watch:=TStopwatch.StartNew; Form.LoadView(View.Document.Clone as TJSONObject); ReferenceViewMS:=Watch.ElapsedMilliseconds;
-              Form.Show; Form.SearchEdit.Text:='btnConvertClick'; Form.ExplorerList.ItemIndex:=0; Form.ExplorerClick(nil);
+              Watch:=TStopwatch.StartNew;
+              Form.LoadView(View.Document.Clone as TJSONObject,nil,True);
+              Form.LoadKnowledge(TJSONArray.Create,True);
+              ReferenceViewMS:=Watch.ElapsedMilliseconds;
+              Writeln('Reference saved-open dossier projection: ',ReferenceViewMS,' ms'); Flush(Output);
+              Form.Show; Form.WorkspaceTabs.ActiveTab:=Form.ExplainTab; Form.WorkspacePageChange(nil);
+              Form.SearchEdit.Text:='btnConvertClick'; Form.KindCombo.ItemIndex:=3; Form.SearchChange(nil);
+              I:=0;
+              while (I<Form.ExplorerList.Count) and
+                not ContainsText(Form.ExplorerList.Items[I],'btnConvertClick') do Inc(I);
+              Check(I<Form.ExplorerList.Count,'Reference routine is present in the deferred explorer');
+              Form.ExplorerList.ItemIndex:=I; Form.ExplorerClick(nil);
               WaitHTML(Form.ExplainBrowser,'document.body.innerText','Understand this selection');
-              Check(ContainsText(Form.ExplainFallback.Text,'btnConvertClick'),'Reference object explanation works in the actual FMX form');
+              WaitHTML(Form.ExplainBrowser,'document.body.innerText','btnConvertClick');
+              Check(True,'Reference object explanation works in the actual FMX form');
               BrowserBitmap:=Form.ExplainBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-reference-explain.png')); finally BrowserBitmap.Free; end;
               WaitHTML(Form.ExplainBrowser,'(()=>{for(const d of document.querySelectorAll("details")){if(d.querySelector("summary")?.textContent.includes("Optional:"))d.open=true;}const h=Array.from(document.querySelectorAll("h2")).find(x=>x.textContent==="Follow the work"); if(!h||!h.offsetHeight)return "WAIT"; h.scrollIntoView();return "TRACE_READY";})()','TRACE_READY');

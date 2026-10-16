@@ -725,6 +725,7 @@ type
     procedure HistoryPaint(Sender:TObject;Canvas:TCanvas);
     procedure LearningClick(Sender: TObject);
     procedure LearningShouldLoad(Sender: TObject; const AURL: string; var ACancel: Boolean);
+    procedure LearningBrowserDidFinishLoad(Sender: TObject);
     procedure RelocateClick(Sender: TObject);
     procedure TaskFilterChange(Sender: TObject);
     procedure TaskProgressClick(Sender: TObject);
@@ -823,6 +824,7 @@ type
     FLearningFacts: TDPHDocumentModel;
     FExplanations: TDPHExplanationModel;
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
+    FExpectedDossierPage: string;
     FOfflinePreview: TDPHOfflinePreview;
     FImages: TJSONArray;
     FPendingScreenshots: TJSONArray;
@@ -2111,6 +2113,7 @@ begin
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   if (FUnsavedDatabase<>'') and not SameFileName(FUnsavedDatabase,ADatabase) and
     not ResolveUnsavedProject(False) then Exit;
+  FExpectedDossierPage:='';
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
   if AUnsaved or ((FUnsavedDatabase<>'') and SameFileName(FUnsavedDatabase,ADatabase)) then
     FPendingUnsavedDatabase:=ADatabase else FPendingUnsavedDatabase:='';
@@ -2267,12 +2270,6 @@ begin
       end;
       LoadView(R.Document,R.Screenshots,R.Knowledge<>nil); R.Document:=nil;
       FreeAndNil(R.Screenshots);
-      if R.Busy and (FPendingCommand='open') then begin
-        WorkspaceTabs.Enabled:=True;
-        FPreparingProject:=False;
-        FPreparationCompletionTicks:=0;
-        ProjectPreparationLayout.Visible:=False;
-      end;
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
@@ -2386,7 +2383,7 @@ begin
           'DPH.UI.Main.Runtime.StatusLabel_Text.Text.994988eeb78b8d77',
           '%s Some code could not be explained; check unanswered questions.', ['']);
     end;
-    if not R.Busy and FPreparingProject then begin
+    if not R.Busy and FPreparingProject and ((FPendingCommand<>'open') or R.Failed) then begin
       FPreparingProject:=False;
       if R.Failed then ProjectPreparationMessage.Text:=DATTranslateDynamicText(
         'Project preparation stopped. Read the status message for details.')
@@ -2397,6 +2394,15 @@ begin
       FPreparationCompletionTicks:=5;
     end;
   finally R.Free; end;
+  if FPreparingProject and (FPendingCommand='open') and (FView<>nil) and
+    (WorkspaceTabs.ActiveTab=OverviewTab) and
+    (FExpectedDossierPage='') and
+    not LearningBrowser.Visible and not OverviewMemo.Visible then begin
+    FPreparingProject:=True;
+    ProjectPreparationLayout.Visible:=True;
+    ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80);
+    RefreshLearning;
+  end;
   if (FPendingWorkspaceTab<>nil) and (FPendingWorkspaceTab=WorkspaceTabs.ActiveTab) and (FView<>nil) then begin
     FPendingWorkspaceTab:=nil;
     if ((WorkspaceTabs.ActiveTab=ActionPurposeTab) or (WorkspaceTabs.ActiveTab=KeyboardTab) or
@@ -2429,6 +2435,12 @@ var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options,Im
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
   FPendingWorkspaceTab:=nil;
+  FExpectedDossierPage:='';
+  if ADeferLearning and (FPendingCommand='open') then begin
+    FPreparingProject:=True;
+    FPreparationCompletionTicks:=0;
+    ProjectPreparationLayout.Visible:=True;
+  end;
   FLineageSeed:=''; FLineageDirection:='both';
   HistorySelectionChange(nil);
   SameProject:=(FView<>nil) and SameText(FView.Document.GetValue<string>('root'),ADocument.GetValue<string>('root')) and
@@ -2494,11 +2506,9 @@ begin
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
     if ADeferLearning then begin
-      OverviewMemo.Text:=DATTranslateText('DPHMainForm.CardPurpose.Text',
-        'Explore this application through its learning route, project documents and screens. Select a topic to read what DPH found.');
-      LearningTopics.ItemIndex:=-1;
+      LearningTopics.ItemIndex:=0;
       LearningBrowser.Visible:=False;
-      OverviewMemo.Visible:=True;
+      OverviewMemo.Visible:=False;
     end;
   finally FBinding:=False; end;
   if ADeferLearning then begin FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); end;
@@ -3315,16 +3325,36 @@ begin
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
+  FExpectedDossierPage:=TPath.GetFileName(PreviewPath);
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; OverviewMemo.Visible:=False; LearningBrowser.Visible:=True;
     if Offline then LearningBrowser.Navigate(FOfflinePreview.URLForPage(PreviewPath))
     else LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin
+    FExpectedDossierPage:='';
     Fallback:=Copy(HTML,Pos('<main>',HTML)+6,MaxInt);Fallback:=Copy(Fallback,1,Pos('</main>',Fallback)-1);
     Fallback:=TRegEx.Replace(Fallback,'</(p|h[1-6]|li|section|ol|ul|summary|pre)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
     OverviewMemo.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Fallback,'<[^>]+>','')).Trim;
     LearningBrowser.Visible:=False; OverviewMemo.Visible:=True;
     StatusLabel.Text:='Learning preview unavailable; text fallback is shown: '+E.Message;
+    if FPreparingProject and (FPendingCommand='open') then begin
+      FPreparingProject:=False;
+      WorkspaceTabs.Enabled:=True;
+      ProjectPreparationLayout.Visible:=False;
+    end;
   end; end;
+end;
+procedure TDPHMainForm.LearningBrowserDidFinishLoad(Sender: TObject);
+begin
+  if FPreparingProject and (FPendingCommand='open') and
+    (FExpectedDossierPage<>'') and
+    ContainsText(LearningBrowser.URL,FExpectedDossierPage) then begin
+    LearningBrowser.Visible:=True;
+    FPreparingProject:=False;
+    WorkspaceTabs.Enabled:=True;
+    ProjectPreparationProgress.Value:=100;
+    ProjectPreparationMessage.Text:=DATTranslateDynamicText('Project ready to explore.');
+    FPreparationCompletionTicks:=5;
+  end;
 end;
 procedure TDPHMainForm.ShowExplanation;
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
@@ -5745,8 +5775,8 @@ end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray; ADeferInitialViews: Boolean);
 begin
   FCardRows.Clear;CardList.Items.Clear;FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil);
+  RefreshLearning;
   if not ADeferInitialViews then begin
-    RefreshLearning;
     RefreshCoverage;
     RefreshQuestions;
   end;

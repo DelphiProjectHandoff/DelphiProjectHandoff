@@ -3001,6 +3001,7 @@ Align = Client
 Visible = False
 WindowsEngine = None
 EnableCaching = False
+OnDidFinishLoad = LearningBrowserDidFinishLoad
 OnShouldLoadURL = LearningShouldLoad
 end
 end

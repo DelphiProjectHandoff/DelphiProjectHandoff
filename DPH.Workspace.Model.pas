@@ -15,6 +15,7 @@ type
   private
     FDocument: TJSONObject;
     FSymbols: TDictionary<string,TJSONObject>;
+    FSourceFiles: TDictionary<string,TJSONObject>;
   public
     constructor Create(ADocument: TJSONObject);
     destructor Destroy; override;
@@ -642,12 +643,15 @@ begin
   inherited Create; FDocument:=ADocument;
   if (ADocument=nil) or (ADocument.GetValue<Integer>('workspace_schema',0)<>1) then raise EArgumentException.Create('Unsupported workspace document');
   FSymbols:=TDictionary<string,TJSONObject>.Create;
+  FSourceFiles:=TDictionary<string,TJSONObject>.Create;
   Semantic:=ADocument.GetValue<TJSONObject>('semantics');
   for V in Semantic.GetValue<TJSONArray>('symbols') do
   begin S:=V as TJSONObject; FSymbols.Add(S.GetValue<string>('key'),S); end;
+  for V in ADocument.GetValue<TJSONArray>('syntax.files') do
+  begin S:=V as TJSONObject; FSourceFiles.AddOrSetValue(UpperCase(S.GetValue<string>('path')),S); end;
 end;
 destructor TDPHWorkspaceView.Destroy;
-begin FSymbols.Free; FDocument.Free; inherited; end;
+begin FSourceFiles.Free; FSymbols.Free; FDocument.Free; inherited; end;
 function TDPHWorkspaceView.Symbol(const AKey: string): TJSONObject;
 begin if not FSymbols.TryGetValue(AKey,Result) then Result:=nil; end;
 
@@ -897,10 +901,8 @@ begin
   begin R:=V as TJSONObject; if R.GetValue<string>(Field,'')=AKey then Result.AddElement(R.Clone as TJSONObject); end;
 end;
 function TDPHWorkspaceView.SourceFile(const APath: string): TJSONObject;
-var V: TJSONValue;
 begin
-  Result:=nil; for V in FDocument.GetValue<TJSONObject>('syntax').GetValue<TJSONArray>('files') do
-    if SameText((V as TJSONObject).GetValue<string>('path'),APath) then Exit(V as TJSONObject);
+  if not FSourceFiles.TryGetValue(UpperCase(APath),Result) then Result:=nil;
 end;
 function TDPHWorkspaceView.Properties(const AKey: string): TJSONArray;
 var S,FileRow,N,Range: TJSONObject; V: TJSONValue; Nodes: TJSONArray; NodeID,I: Integer;
