@@ -2,8 +2,10 @@ FIND YOUR WAY AROUND DELPHI PROJECT HANDOFF
 
 Start with Try practice example. Its First day path, field guides, worked
 totals, error explanations and native pictures demonstrate how to learn an app.
-Choose application opens your own source. Open saved lessons reopens a .dphdb;
-keep its adjacent .dphdb.views folder with it.
+Choose application opens your own source in a temporary capture. On close or
+project change, choose Yes to save a .dphdb, No to discard it, or Cancel to keep
+exploring. Open saved lessons reopens a .dphdb; keep its adjacent .dphdb.views
+folder with it.
 
 The top-right selector opens Learn the project, Learn a task, Learning library,
 Explain, Form designs, Screenshots, Graphs, Business glossary, Search project

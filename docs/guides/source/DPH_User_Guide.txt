@@ -13,9 +13,9 @@ The header contains Open application, Open saved project, Close, the Read public
 @section 2.2 Open the source
 @steps
 Click Open application and choose the target application's .dproj, .dpr, or .groupproj file. Do not select DPH's own project.
-Save the proposed .dphdb outside the target source folder. Keep its adjacent .dphdb.views folder with it.
 Wait for preparation to finish. Read the progress message, then confirm the project name and capture status in Handoff dossier.
 Open Screenshots to see whether saved form definitions produced blank screen views.
+Explore the project without saving a permanent database. When you close DPH or open another project, choose Yes to save the capture as a .dphdb, No to discard it, or Cancel to keep exploring. Save outside the target source folder and keep the adjacent .dphdb.views folder with the database.
 @end
 If you already have a .dphdb, click Open saved project. Opening the saved file restores its captured findings and managed images; it does not automatically re-run the target application.
 @section 2.3 If information is missing

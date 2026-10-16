@@ -803,6 +803,7 @@ type
     FNetworkSettingsPath: string;
     FLoadingNetworkPreference: Boolean;
     FPendingEntry,FPendingDatabase: string;
+    FUnsavedDatabase,FPendingUnsavedDatabase,FPendingDiscardDatabase: string;
     FPendingWorkspaceTab: TTabItem;
     FScreenshotOriginTab: TTabItem;
     FPage: Integer;
@@ -942,9 +943,11 @@ type
     procedure UpdateLearnerNavigation;
     procedure GraphGroupDetails(const AGroup: string);
     procedure ClearWorkspace;
+    function ResolveUnsavedProject(AClosing: Boolean): Boolean;
+    procedure DiscardUnsavedProject(const ADatabase: string);
     function GraphRect(AIndex: Integer): TRectF;
   public
-    procedure OpenSelection(const AEntry,ADatabase: string);
+    procedure OpenSelection(const AEntry,ADatabase: string; AUnsaved: Boolean = False);
     procedure LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray = nil; ADeferLearning: Boolean = False);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
@@ -956,7 +959,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.IniFiles, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database,
+uses System.IOUtils, System.IniFiles, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database, DPH.Storage.Backup, FMX.DialogService.Sync,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
@@ -1169,7 +1172,27 @@ procedure TDPHMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if FKnowledgeEdited then begin CanClose:=False; StatusLabel.Text:='Save or discard the authored text before closing'; Exit; end;
   if FRenderingScreens then begin CanClose:=False; Exit; end;
-  CanClose:=not FBusy; if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; end;
+  CanClose:=not FBusy;
+  if not CanClose then begin FClosing:=True; FWorker.Stop; StatusLabel.Text:='Cancelling at a safe analysis boundary...'; Exit; end;
+  CanClose:=ResolveUnsavedProject(True);
+  if CanClose and (FPendingUnsavedDatabase<>'') then
+    try DiscardUnsavedProject(FPendingUnsavedDatabase);
+    except on E: Exception do begin
+      StatusLabel.Text:='Temporary project cleanup failed: '+E.Message;
+      CanClose:=False;
+    end; end;
+  if not CanClose and FWorker.Finished then begin
+    if (FPendingUnsavedDatabase<>'') and
+      not SameFileName(FPendingUnsavedDatabase,FUnsavedDatabase) then
+      try DiscardUnsavedProject(FPendingUnsavedDatabase);
+      except on E: Exception do StatusLabel.Text:='Temporary project cleanup failed: '+E.Message; end;
+    FPendingEntry:=''; FPendingDatabase:=''; FPendingUnsavedDatabase:='';
+    FPendingDiscardDatabase:=''; FPendingCommand:='';
+    FPreparingProject:=False; ProjectPreparationLayout.Visible:=False;
+    WorkspaceTabs.Enabled:=True;
+    FWorker.Free;
+    FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
+  end;
 end;
 procedure TDPHMainForm.CloseButtonClick(Sender: TObject);
 begin
@@ -2002,18 +2025,80 @@ begin
   if FBusy or not OpenProjectDialog.Execute then Exit;
   SelectedDatabase:=FDatabase;
   if (FDatabase='') or ((FView<>nil) and not SameFileName(ExcludeTrailingPathDelimiter(FView.Document.GetValue<string>('root')),ExcludeTrailingPathDelimiter(ExtractFilePath(OpenProjectDialog.FileName)))) then
-  begin
-    DatabaseDialog.FileName:=TPath.GetFileNameWithoutExtension(OpenProjectDialog.FileName)+'.dphdb';
-    if not DatabaseDialog.Execute then Exit; SelectedDatabase:=DatabaseDialog.FileName;
-  end;
-  OpenSelection(OpenProjectDialog.FileName,SelectedDatabase);
+    SelectedDatabase:=TPath.Combine(TPath.GetTempPath,'DPH-unsaved-'+TGUID.NewGuid.ToString+'.dphdb');
+  OpenSelection(OpenProjectDialog.FileName,SelectedDatabase,
+    not SameFileName(SelectedDatabase,FDatabase));
 end;
 procedure TDPHMainForm.OpenCacheClick(Sender: TObject);
 begin
   if FKnowledgeEdited then begin StatusLabel.Text:='Save or discard the authored text before changing projects'; Exit; end;
   if FBusy or not OpenCacheDialog.Execute then Exit; OpenSelection('',OpenCacheDialog.FileName);
 end;
-procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string);
+procedure TDPHMainForm.DiscardUnsavedProject(const ADatabase: string);
+var Database,Directory,Path,TempDirectory: string;
+begin
+  Database:=TPath.GetFullPath(ADatabase);
+  TempDirectory:=IncludeTrailingPathDelimiter(TPath.GetFullPath(TPath.GetTempPath));
+  if not Database.StartsWith(TempDirectory,True) or
+    not ExtractFileName(Database).StartsWith('DPH-unsaved-',True) or
+    not SameText(ExtractFileExt(Database),'.dphdb') then
+    raise EArgumentException.Create('Refusing to discard a database outside DPH temporary projects');
+  Directory:=Database+'.views';
+  if TDirectory.Exists(Directory) then begin
+    if (GetFileAttributes(PChar(Directory)) and FILE_ATTRIBUTE_REPARSE_POINT)<>0 then
+      raise EReadError.Create('Linked temporary view folders cannot be discarded automatically');
+    for Path in TDirectory.GetFiles(Directory) do TFile.Delete(Path);
+    TDirectory.Delete(Directory,False);
+  end;
+  for Path in [Database+'-wal',Database+'-shm',Database+'-journal',Database] do
+    if TFile.Exists(Path) then TFile.Delete(Path);
+end;
+function TDPHMainForm.ResolveUnsavedProject(AClosing: Boolean): Boolean;
+var Choice: Integer; Database,Destination,Prompt: string; Store: TDPHKnowledgeStore;
+begin
+  Result:=True;
+  if FUnsavedDatabase='' then Exit;
+  if AClosing then Prompt:='Save this unsaved project before closing?'
+  else Prompt:='Save this unsaved project before opening another?';
+  Choice:=TDialogServiceSync.MessageDialog(Prompt+sLineBreak+sLineBreak+
+    'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.',
+    TMsgDlgType.mtConfirmation,[TMsgDlgBtn.mbYes,TMsgDlgBtn.mbNo,TMsgDlgBtn.mbCancel],
+    TMsgDlgBtn.mbCancel,0);
+  case Choice of
+    mrYes: begin
+      DatabaseDialog.FileName:=TPath.GetFileNameWithoutExtension(FEntry)+'.dphdb';
+      if not DatabaseDialog.Execute then Exit(False);
+      Destination:=DatabaseDialog.FileName;
+      try
+        Store:=TDPHKnowledgeStore.Create(FUnsavedDatabase,
+          FView.Document.GetValue<string>('root'),TPath.Combine(FBaseDirectory,'migrations'));
+        try TDPHProjectBackup.Save(Store,Destination); finally Store.Free; end;
+      except on E: Exception do begin
+        StatusLabel.Text:='Project was not saved: '+E.Message;
+        Exit(False);
+      end; end;
+      Database:=FUnsavedDatabase;
+      FDatabase:=TPath.GetFullPath(Destination);
+      FUnsavedDatabase:='';
+      FPendingDiscardDatabase:='';
+      try DiscardUnsavedProject(Database);
+      except on E: Exception do StatusLabel.Text:='Project saved, but its temporary files could not be removed: '+E.Message; end;
+      if FCatalog<>nil then
+        try FCatalog.Remember(Destination); FCatalog.Save; RefreshProjectsClick(nil);
+        except on E: Exception do StatusLabel.Text:='Project saved, but the recent-project list could not be updated: '+E.Message; end;
+    end;
+    mrNo: begin
+      if AClosing then begin
+        try DiscardUnsavedProject(FUnsavedDatabase);
+        except on E: Exception do begin StatusLabel.Text:='Temporary project could not be discarded: '+E.Message; Exit(False); end; end;
+        FUnsavedDatabase:='';
+        FDatabase:='';
+      end else FPendingDiscardDatabase:=FUnsavedDatabase;
+    end;
+  else Exit(False);
+  end;
+end;
+procedure TDPHMainForm.OpenSelection(const AEntry,ADatabase: string; AUnsaved: Boolean);
 var Request: TDPHWorkspaceRequest;
 begin
   if FBusy then Exit;
@@ -2027,7 +2112,11 @@ begin
   if AEntry<>'' then begin Request.Configuration:=''; Request.Platform:=''; end;
   Request.Defines:=DefinesEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
   Request.ExternalRoots:=ExternalRootsEdit.Text.Split([';'],TStringSplitOptions.ExcludeEmpty);
+  if (FUnsavedDatabase<>'') and not SameFileName(FUnsavedDatabase,ADatabase) and
+    not ResolveUnsavedProject(False) then Exit;
   FWorker.Submit(Request); FPendingEntry:=AEntry; FPendingDatabase:=ADatabase;
+  if AUnsaved or ((FUnsavedDatabase<>'') and SameFileName(FUnsavedDatabase,ADatabase)) then
+    FPendingUnsavedDatabase:=ADatabase else FPendingUnsavedDatabase:='';
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False;
   ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
   FPreparingProject:=True;FPreparationCompletionTicks:=0;
@@ -2106,7 +2195,7 @@ end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
 var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject; TranslatedMessage: string;
 begin
-  if FClosing and FWorker.Finished then begin FBusy:=False; Close; Exit; end;
+  if FClosing and FWorker.Finished then begin FBusy:=False; FClosing:=False; Close; Exit; end;
   if FPendingLanguageRefresh then begin
     FPendingLanguageRefresh:=False;
     LanguageCombo.RefreshLanguages;
@@ -2146,7 +2235,15 @@ begin
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
     if R.Document<>nil then begin
       if FPendingDatabase<>'' then begin
-        ClearWorkspace; FEntry:=FPendingEntry; FDatabase:=FPendingDatabase;
+        ClearWorkspace;
+        if FPendingDiscardDatabase<>'' then begin
+          try DiscardUnsavedProject(FPendingDiscardDatabase);
+          except on E: Exception do StatusLabel.Text:='Previous temporary project could not be discarded: '+E.Message; end;
+          FPendingDiscardDatabase:='';
+        end;
+        FUnsavedDatabase:=FPendingUnsavedDatabase;
+        FPendingUnsavedDatabase:='';
+        FEntry:=FPendingEntry; FDatabase:=FPendingDatabase;
         FPendingEntry:=''; FPendingDatabase:='';
       end;
       if FPreparingProject then begin
@@ -2172,6 +2269,12 @@ begin
     if R.Failed and (FPendingCommand='screen_history') then begin HistorySelectionChange(nil);HistoryStatus.Text:='Comparison failed; read details below.';HistoryMemo.Text:=R.MessageText;end;
     if R.Failed and (FPendingCommand='validate_bundle') then ValidationMemo.Text:='FAILED: '+R.MessageText+sLineBreak+'The bundle has not passed validation. Correct the reported mismatch before using it.';
     if R.Failed then begin
+      if FPendingUnsavedDatabase<>'' then begin
+        try DiscardUnsavedProject(FPendingUnsavedDatabase);
+        except on E: Exception do StatusLabel.Text:='Temporary project cleanup failed: '+E.Message; end;
+      end;
+      FPendingUnsavedDatabase:='';
+      FPendingDiscardDatabase:='';
       FPendingEntry:=''; FPendingDatabase:='';
       if FView=nil then HelpClick(nil);
     end;
@@ -2354,7 +2457,7 @@ begin
     end;
   end;
   FreeAndNil(FDetails); DetailsList.Items.Clear; DetailsMemo.Text:='Select an object to inspect evidence from this generation.';
-  if (FCatalog<>nil) and (FDatabase<>'') then
+  if (FCatalog<>nil) and (FDatabase<>'') and (FUnsavedDatabase='') then
   try FCatalog.Remember(FDatabase); FCatalog.Save; RefreshProjectsClick(nil);
   except on E: Exception do StatusLabel.Text:='Project opened, but catalog could not be saved: '+E.Message; end;
   FBinding:=True;

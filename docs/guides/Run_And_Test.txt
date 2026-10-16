@@ -32,9 +32,10 @@ choices retain project content in its original language.
 OPEN AN APPLICATION
 
 4. Click Open application and select a Delphi .dproj, .dpr, or .groupproj file.
-   Choose an application other than DPH itself. Save the proposed .dphdb file
-   in DPH's Databases folder or another writable folder outside that
-   application's source tree.
+   Choose an application other than DPH itself. New captures remain temporary
+   while you explore. When closing DPH or changing projects, choose Yes to save
+   a .dphdb, No to discard the capture, or Cancel to keep it open. Save outside
+   the selected application's source tree.
 5. While DPH reads the project and its documents, inspect the progress bar.
    DPH reads the selected application without running it. Generated form
    previews are prepared when Screenshots is opened.

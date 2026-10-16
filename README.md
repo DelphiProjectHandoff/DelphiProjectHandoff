@@ -29,7 +29,7 @@ The main form is editable in the RAD Studio designer. To edit its DelphiAppTrans
 
 ## Explore an application
 
-Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. Save the resulting `.dphdb` outside the application source tree, together with its adjacent `.dphdb.views` folder. Later, **Open saved project** restores that analysis and its generated screen images.
+Choose **Open application** and select its `.dproj`, `.dpr`, or `.groupproj` file. DPH keeps a new capture temporary while you explore. When you close DPH or open another project, choose **Yes** to save it as a `.dphdb`, **No** to discard it, or **Cancel** to keep exploring. Save the `.dphdb` outside the application's source tree and keep its adjacent `.dphdb.views` folder. Later, **Open saved project** restores the saved analysis and generated screen images.
 
 While opening a project, DPH shows the current preparation step and a progress bar. It reads project startup information from `.dpr` and `.dproj`, identifies forms and controls from `.fmx` or `.dfm`, and traces their event handlers and related `.pas` code. It reads root-level documents and the selected project's top-level `docs`, `Help`, `Guides`, `Manual`, and `Notes` folders; nested release and upgrade packages are excluded. Supported document types include PDF, DOCX, Markdown, text, HTML, RTF, and ODT. DPH screens material before showing it. Existing saved projects are reassessed once under this narrower document rule.
 

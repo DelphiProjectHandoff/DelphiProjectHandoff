@@ -3013,7 +3013,7 @@ Lines.Strings = (
 'Build a source-backed maintenance handoff for an unfamiliar Delphi application.'
 ''
 '1. Click Open application at the top left and select its .dproj, .dpr or .groupproj file.'
-'2. Accept the proposed project file in Databases. For an existing file, click Open saved project.'
+'2. Explore without saving. When you close DPH or open another project, choose Yes to save or No to discard; Open saved project restores a saved .dphdb.'
 '3. Handoff dossier summarizes purpose, startup, commands, data and open questions.'
 '4. Learning library lists topics from this application''s guides and help.'
 '5. Screenshots shows available application images in fitted or native size.'
