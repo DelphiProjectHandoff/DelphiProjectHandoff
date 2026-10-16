@@ -444,7 +444,9 @@ begin
               try
                 if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
                 Status:=Store.Status;
-                Changed:=Status.AnalysisStale or (CachedFingerprint='') or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>CachedFingerprint)
+                // A partial capture remains marked stale. Repeating an unchanged capture on every open
+                // cannot make unavailable inputs complete; retry when inputs, analyzers, or selection change.
+                Changed:=Status.ReassessmentRequested or (CachedFingerprint='') or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>CachedFingerprint)
                   or (CachedSyntaxVersion<>DPHAnalyzerVersion)
                   or (CachedSemanticVersion<>DPHSemanticVersion)
                   or (CachedQualityVersion<>DPHQualityVersion)
