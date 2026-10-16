@@ -50,13 +50,19 @@ The six primary views in the current local development build are:
 
 DPH shows the source behind its explanations where available and marks conclusions that need checking. A form file cannot reveal every runtime change, and a call site alone cannot prove when an action completes. The application under study is never executed as part of passive discovery.
 
+### When the dossier says “STALE capture”
+
+The capture timestamp reports when the project was read; it is not an expiration date. To verify a saved capture, choose **Open saved project** while the original source is available. DPH checks the attached source in the background and rescans when its fingerprint or analyzer version changed. You can also choose **Open application** and select the same project entry again. Wait for preparation to finish, then revisit **Handoff dossier**.
+
+In the current local build, the dossier also displays **STALE capture** when syntax or semantic analysis is incomplete. If it persists after verification, inspect its diagnostics and missing inputs. A missing file can be restored and rescanned; unsupported constructs or unresolved connections may remain qualified even after a fresh scan. **Static inspection only** is always accurate: DPH reads the files but never runs the selected application. A warning shown inside a guide screenshot describes that example capture; refreshing your project cannot change the printed screenshot.
+
 **Export handoff** writes a new, read-only folder. Open `handoff-0.html` to start the four-part dossier, then follow included object pages and the technical index. The earlier teaching edition remains at `learning.html`. Review the full export before sharing; its checksum manifest detects changes relative to the capture but does not authenticate its author.
 
 ## Languages and offline use
 
 The header offers **35 offline language choices**, matching VCL2FMXConverter v7: English is the base language and 34 other interface packs are included. DPH changes its own controls and built-in explanations without an online translation service. Right-to-left interfaces keep navigation readable alongside source-code names and project material.
 
-An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it. The new dossier's built-in narrative remains English while its interface language coverage is completed.
+An experimental **English-to-German project-text translation** is included for selected project prose in the Handoff dossier and Learning library. It uses a bundled WebAssembly engine and model through a loopback-only preview server; it does not contact a translation service or require Internet access. The original project files and saved analysis are unchanged. Source code, identifiers, citations, form captions, and other languages remain in their original form. If local translation fails for a passage, DPH shows its original text. The translated output is machine-generated and should be checked before relying on it. DPH-authored memo directions use the installed interface packs; some project-derived prose and technical labels can still appear in their source language.
 
 The other 34 interface choices still work offline using the existing language packs. Optional referenced-site reading is the only part of normal project discovery that depends on Internet access; local preview and the German translation engine also work with the checkbox off.
 

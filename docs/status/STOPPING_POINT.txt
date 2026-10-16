@@ -1,3 +1,6 @@
+HISTORICAL CHECKPOINT - NOT THE CURRENT PROJECT STATUS
+For the current workflow, see README.md and docs/guides/Run_And_Test.txt.
+
 DPH STOPPING POINT
 Recorded: 2026-10-12
 Historical pause: superseded by the owner's 12 October 2026 resume and learning-refocus instruction.

@@ -1,37 +1,34 @@
-FIND YOUR WAY AROUND DELPHI PROJECT HANDOFF
+DELPHI PROJECT HANDOFF - WORKSPACE OPERATIONS
+Last changed: 16 October 2026
 
-Start with Try practice example. Its First day path, field guides, worked
-totals, error explanations and native pictures demonstrate how to learn an app.
-Choose application opens your own source in a temporary capture. On close or
-project change, choose Yes to save a .dphdb, No to discard it, or Cancel to keep
-exploring. Open saved lessons reopens a .dphdb; keep its adjacent .dphdb.views
-folder with it.
+Start with Getting started. Choose Open application and select the target
+.dproj, .dpr, or .groupproj. DPH reads files and local project documents; it
+does not run the target. Read public websites is optional and starts off.
 
-The top-right selector opens Learn the project, Learn a task, Learning library,
-Explain, Form designs, Screenshots, Graphs, Business glossary, Search project
-and Saved explanations. Getting started returns to introductory directions.
+The six main views are Getting started, Handoff dossier, Learning library,
+Project map, Screenshots, and Application diagrams. The dossier gives a
+source-linked orientation and marks uncertain findings. The library presents
+eligible project documents and topics. Project map follows units, forms,
+controls, routines, and connections. Screenshots reconstruct saved .fmx and
+.dfm forms on demand; they are not images of a running application. Diagrams
+show possible relationships, not recorded execution.
 
-Learn a task provides roles, learning paths and ordered actions/results. Open
-Before you begin and task context for prerequisites. Enter your name to save
-checked-step progress. I checked this result records a check; Next step only
-navigates. Clear my progress resets your own checks.
+New captures are temporary. On closing DPH or changing projects, Yes saves
+the capture as a .dphdb, No discards it, and Cancel keeps it open. Save outside
+the target source directory. Keep the adjacent .dphdb.views folder with the
+database. Open saved project restores a saved capture. When its original
+source is available, DPH verifies it in the background and scans again if
+the source fingerprint or analyzer/discovery version changed.
 
-Learning library presents meanings, worked examples, limits, safe help and
-practice answers for the selected application. Prepare an explanation and Edit
-explanation open its native teaching editor. Save explanation persists it and
-returns to the reader. Saving a contribution does not perform independent review.
+If Handoff dossier says STALE capture, wait for verification to finish or
+choose Open application and select the same project entry. Then review the
+dossier again. A persistent warning can mean syntax or semantic analysis is
+incomplete; inspect diagnostics and missing inputs. The capture date by
+itself does not expire the analysis. Static inspection only always remains
+because DPH never runs the selected application.
 
-Screenshots contains supplied screenshots, sample outputs and teaching pictures.
-Click a point and Explain this point to prepare an anchored callout. The original
-image stays unchanged. Form designs remain clearly labeled reconstructions.
-
-Prepare lessons contains descriptions, tasks and other lesson material. Advanced
-source settings begin collapsed. Profile, action-purpose and glossary dialogs
-Apply to a draft; click Save in Saved explanations to keep those drafts. Save
-task and Save explanation save directly to their readers.
-
-Double-click an object on the left to open Explain. Selection details labels
-the right pane. Drag dividers to resize panes. Scroll command strips horizontally
-and text/list areas vertically when content is outside the visible view.
-
-Follow Run_And_Test.txt for explicit first-session and repeatable checks.
+The header language selector changes DPH's interface offline. German has an
+experimental local translation for selected project prose; source names,
+citations, form captions, and unsupported passages remain in their original
+language. See the User Guide for limitations and the Engineering Guide for
+the underlying capture and verification rules.

@@ -1,3 +1,8 @@
+HISTORICAL CHECKPOINT - 13 OCTOBER 2026
+This records the former 0.5 learning delivery. It does not describe the
+current refocused interface or downloadable package. For current use, see
+README.md and docs/guides/DPH_User_Guide.docx.
+
 DPH LEARNING DELIVERY - 13 OCTOBER 2026
 
 The revised beginner-learning implementation and delivery are complete.

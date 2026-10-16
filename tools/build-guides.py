@@ -8,7 +8,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
 CHANGED='16 October 2026'
-VERSION=47
+VERSION=48
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -149,7 +149,7 @@ def document(kind,blocks):
  for name in ['Normal','Title','Subtitle','Heading 1','Heading 2','Heading 3','Caption','TOC 1','TOC 2']:
   if name not in doc.styles:doc.styles.add_style(name,1)
   style=doc.styles[name];style.font.name='Calibri';style.font.color.rgb=RGBColor(0,0,0)
- normal=doc.styles['Normal'];normal.font.size=Pt(11);normal.paragraph_format.space_after=Pt(7);normal.paragraph_format.line_spacing=1.1;normal.paragraph_format.widow_control=True
+ normal=doc.styles['Normal'];normal.font.size=Pt(10.5 if kind=='User' else 11);normal.paragraph_format.space_after=Pt(7);normal.paragraph_format.line_spacing=1.1;normal.paragraph_format.widow_control=True
  for name,size in [('Title',30),('Subtitle',15),('Heading 1',23),('Heading 2',18),('Heading 3',13),('Caption',10),('TOC 1',11),('TOC 2',10.5)]:doc.styles[name].font.size=Pt(size)
  for name in ['Heading 1','Heading 2','Heading 3']:
   style=doc.styles[name];style.paragraph_format.keep_with_next=True;style.paragraph_format.space_before=Pt(13);style.paragraph_format.space_after=Pt(7)
@@ -173,7 +173,7 @@ def document(kind,blocks):
   if k=='part':
    p=doc.add_heading(v,1);p.paragraph_format.page_break_before=v.startswith('PART 1');p.paragraph_format.space_before=Pt(24);part_pending=True
   elif k=='chapter':
-   p=doc.add_heading(v,2);p.paragraph_format.page_break_before=False;p.paragraph_format.space_before=Pt(22) if not part_pending else Pt(13);part_pending=False
+   p=doc.add_heading(v,2);p.paragraph_format.page_break_before=(kind=='User' and v.startswith('7 '));p.paragraph_format.space_before=Pt(22) if not part_pending else Pt(13);part_pending=False
   elif k=='section':doc.add_heading(v,3)
   elif k=='p':doc.add_paragraph(v)
   elif k=='steps':

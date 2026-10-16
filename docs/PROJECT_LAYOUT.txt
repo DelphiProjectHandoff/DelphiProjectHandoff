@@ -1,5 +1,5 @@
 Delphi Project Handoff project layout
-Last changed: 14 October 2026
+Last changed: 16 October 2026
 
 Project root
   DelphiProjectHandoff.dpr/.dproj/.res and DPH.*.pas/.fmx stay here so RAD Studio can open and edit the project and forms without path changes.
@@ -15,7 +15,7 @@ dcu
 Databases
   Application database location. README.txt explains the application database policy.
 docs/guides
-  Current editable User and Engineering Guides and the three current run/test directions. source contains the maintained prose from which manuals are built. reference holds historical specialist directions.
+  Current editable User and Engineering Guides, Run_And_Test.txt, Developer_Test_Directions.txt, and Workspace_Operations.txt. source contains the maintained prose from which manuals are built. website-mockup is a local design review, not a deployed site. reference holds historical specialist directions.
 docs/pdf
   Current companion PDF guides. The two owner files with " - Copy" in their names were left untouched.
 docs/planning
@@ -23,7 +23,7 @@ docs/planning
 docs/requirements
   Original requirement reconciliation (TXT/CSV/JSON) and implementation backlog.
 docs/status
-  Status, tracker and stopping-point notes.
+  Status, tracker and stopping-point notes. Older dated notes are historical checkpoints; use README.md and current guides for the present workflow.
 docs/history
   Earlier phase, work-package, acceptance and contract notes. These are historical records, not the current guide.
 docs/validation/reports

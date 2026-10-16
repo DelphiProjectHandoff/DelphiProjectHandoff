@@ -1,9 +1,9 @@
 {
-  "guide_version": 47,
+  "guide_version": 48,
   "last_changed": "2026-10-16",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
-    "DPH.Analysis.Explanations.pas": "72ff72e666edc6fcb143cf723c5866a62cc54302972ba03908dd197cb7110e93",
+    "DPH.Analysis.Explanations.pas": "8dfb6a91e3f2d27c7af8fdb8ff430608c501c3b9b7e5579f4b93cf6b85363812",
     "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
     "DPH.Analysis.Model.pas": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035",
     "DPH.Analysis.Persistence.pas": "08609c3df54250a8f6712e22e991f7ad8d444352e7103ba0959d2feba4a2b3c7",
@@ -37,7 +37,7 @@
     "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
     "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
     "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
-    "DPH.UI.Main.pas": "73f16bf9886d6ba68d3c3ed3a5aeb111c9473a7f7a9789822b998b4162609492",
+    "DPH.UI.Main.pas": "aae8d012555774faad6e4e8b175f28cd2da555d2e39effe9bdf2ee754f016fb0",
     "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
     "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
     "DPH.Workspace.Catalog.pas": "3da578ef1145e1f380e449245a310028d00c1a01bc915dc003c6d101e2d20643",
@@ -48,7 +48,7 @@
     "DPH.Workspace.DatabaseSchema.pas": "988548013d7465e7a95b4b1729c0fec5938f5d866afda932bfeab22639160bda",
     "DPH.Workspace.DynamicControls.pas": "abd5350eab05058b885b95e0c947a1badd54eba33877cbe9a448cac194db25ed",
     "DPH.Workspace.FormInheritance.pas": "b771383670720f9503454dc17f7d5e72ddd986a642fc526bc6aeeab6122129f8",
-    "DPH.Workspace.Graphs.pas": "1d2985c6fa30e72a7ddb7c55f41a2a774e6e1517d5056507efb2666f18b47804",
+    "DPH.Workspace.Graphs.pas": "f8c7f94b7ac3de1bf01ae7646757fdb6939a3a53a1c48efb4433059a386f4c5e",
     "DPH.Workspace.Keyboard.pas": "6e854d724e8360e3d5015d63077744636cf88f33eed5c9fcff175ef01e0f9923",
     "DPH.Workspace.LayoutRules.pas": "02dcd1a040fc209a557281fe8150bd40a59291a18a08fa48d5e07065dbac1c49",
     "DPH.Workspace.Model.pas": "e4814865756c3f71071b289159c7e7902b786e27d8bdba8e1d68fd61c8ecae56",
@@ -59,7 +59,7 @@
     "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
     "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
-    "DPH.UI.Main.fmx": "62c2fdf6ad8e8ef5b1ceeb616846811a59411a4769d2bbea1e74e056caa12ff4",
+    "DPH.UI.Main.fmx": "dbdb56fdde176c5c4d43fe530a18ca6c5d7352983d76c247e150332d5abe9c57",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
     "migrations/001_foundation.sql": "c71ee0d3dcefd160dd7e3e3c2f129b03ad3ead99eafecc903dc7b0f59dd87d87",
     "migrations/002_constraints.sql": "f73cf18d8b3f5537cf8de25e1d4b34c7c41f8d11c730902031ce04da8a3a5ac9",
@@ -70,8 +70,8 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "f5cae28cf8213228b4d3d6aaaef9c4318e3f0094f6f338fa5fced2d757474ab8",
-    "docs/guides/source/DPH_User_Guide.txt": "07e38af928b34b9e8b76e7194301bb6a70e072b8cd47c30552f853db437642ad",
+    "docs/guides/source/DPH_Engineering_Guide.txt": "cc2764ae8ca1b6ca9ee191799e5a467d059498130b2a18b069870ba3a2642f51",
+    "docs/guides/source/DPH_User_Guide.txt": "bc498caca7bed5c48ed8498088183692b8e535cbb1bc0fe56378a335441f002e",
     "DelphiProjectHandoff.dproj": "2cd9fc4a180c6bc848a2d74bfd46c2cda031f5721ae52f45d4d3cfa07e04b3e9"
   },
   "content": {
@@ -79,14 +79,14 @@
       "parts": 3,
       "chapters": 7,
       "subsections": 16,
-      "words": 1723,
+      "words": 1883,
       "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
-      "subsections": 174,
-      "words": 16819,
+      "subsections": 175,
+      "words": 17001,
       "figures": 0
     }
   },
