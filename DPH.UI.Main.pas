@@ -5449,6 +5449,7 @@ begin
   FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
   if (FSelected='') and (GraphCombo.ItemIndex in [0,3,4]) then FWholeGraph:=True;
+  GraphPaint.Width:=Max(1050,GraphScroll.Width-24);
   GraphPaint.Height:=4500;
   IsLineage:=GraphCombo.ItemIndex=6;
   if GraphCombo.ItemIndex>=0 then case GraphCombo.ItemIndex of
@@ -5657,6 +5658,10 @@ begin
   UpdateLearnerNavigation;
   UpdateScreenBounds;
   if ScreenshotImage<>nil then UpdateScreenshotBounds;
+  if GraphPaint<>nil then begin
+    GraphPaint.Width:=Max(1050,GraphScroll.Width-24);
+    GraphPaint.Repaint;
+  end;
 end;
 procedure TDPHMainForm.UpdateScreenBounds;
 var V: TJSONValue; R: TJSONObject; W,H: Single;

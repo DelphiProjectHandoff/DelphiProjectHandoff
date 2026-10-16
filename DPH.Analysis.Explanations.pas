@@ -497,7 +497,7 @@ begin
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+
     'pre{white-space:pre-wrap;font:15px/1.6 Segoe UI,Arial,sans-serif}table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:13px}td,th{border:1px solid #dce5ef;padding:9px;text-align:left;vertical-align:top;overflow-wrap:anywhere}'+
-    'small{color:#53697f}.diagram{width:100%;max-width:100%;overflow:auto;max-height:75vh;border:1px solid #dce5ef}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
+    'small{color:#53697f}.diagram{width:100%;max-width:100%;overflow:auto;max-height:75vh;border:1px solid #dce5ef}.diagram svg{min-width:100%;height:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
     '.card{break-inside:avoid}}</style></head><body><header>'+Logo+'<div><h1>'+Encode(ATitle)+'</h1><p>'+
     Encode(FFacts.GetValue<string>('project'))+'</p></div></header><main>'+
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+

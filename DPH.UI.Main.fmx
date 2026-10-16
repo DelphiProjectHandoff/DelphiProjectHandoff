@@ -3232,7 +3232,7 @@ Items.Strings = (
 'Custom zoom'
 'Full screen'
 )
-ItemIndex = 0
+ItemIndex = 1
 OnChange = ViewChange
 end
 object FullscreenButton: TButton
@@ -3332,7 +3332,7 @@ Position.Y = 8
 Width = 150
 Height = 30
 Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
-ItemIndex = 1
+ItemIndex = 0
 OnChange = ScreenshotViewChange
 end
 object ScreenshotZoom: TTrackBar
@@ -3387,7 +3387,7 @@ end
   WordWrap = True
   StyledSettings = []
   TextSettings.Font.Size = 16
-  Text = 'Select a form on the left. Use Native pixels and scroll to read the generated design preview, or choose Fit for an overview. It is reconstructed from saved .fmx or .dfm controls and may differ from the running app. For a real runtime image, enter the contributor and capture details above, then import a PNG you captured from the app.'
+  Text = 'Select a form on the left. Fit fills the available space while keeping the whole design visible; choose Native pixels or Custom zoom to inspect details. This view is reconstructed from saved .fmx or .dfm controls and may differ from the running app. To add an actual runtime image, enter the contributor and capture details above, then import a PNG captured from the app.'
   end
 object ScreenshotList: TListBox
 Align = Left
@@ -6013,7 +6013,7 @@ Items.Strings = (
 '125%'
 '150%'
 '200%')
-ItemIndex = 1
+ItemIndex = 2
 OnChange = DatabaseERFilterChange
 end
 object DatabaseERAll: TButton
@@ -7675,8 +7675,8 @@ TextSettings.FontColor = xFFFFFFFF
 end
 object GraphNodeStyle: TRectangle
 Visible = False
-Width = 190
-Height = 52
+Width = 230
+Height = 68
 Margins.Right = 30
 Margins.Bottom = 36
 Fill.Color = xFFEAF3FC

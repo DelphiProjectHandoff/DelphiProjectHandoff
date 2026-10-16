@@ -97,7 +97,7 @@ begin
   Text.Append('<li><a href="#knowledge_revision_'+Enc(N.GetValue<string>('revision'))+'">'+Enc(N.GetValue<string>('title'))+'</a> | '+Caption+' '+Enc(N.GetValue<string>('revision'))+' | '+Enc(N.GetValue<string>('state'))+' | reviewer '+Enc(N.GetValue<string>('reviewer'))+'</li>');
  end;
  if AGraph.GetValue<TJSONArray>('process_links').Count=0 then Text.Append('<li>No business-process revision linked in this scope. Use Implementation links to cite a reviewed process.</li>');
- Text.Append('</ul><div style="overflow:auto;max-height:70vh"><svg xmlns="http://www.w3.org/2000/svg" width="1050" height="'+IntToStr(H)+'" role="img" aria-label="Authored end-to-end process diagram"><defs><marker id="processBlue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="processOrange" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
+ Text.Append('</ul><div class="diagram"><svg xmlns="http://www.w3.org/2000/svg" width="1050" height="'+IntToStr(H)+'" viewBox="0 0 1050 '+IntToStr(H)+'" role="img" aria-label="Authored end-to-end process diagram"><defs><marker id="processBlue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#146cb4"/></marker><marker id="processOrange" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#bc5a00"/></marker></defs>');
  for V in Edges do begin E:=V as TJSONObject;
   if not Indices.TryGetValue(E.GetValue<string>('from'),A) or not Indices.TryGetValue(E.GetValue<string>('to'),B) then Continue;
   Y1:=Y(A);Y2:=Y(B);Colour:='#146cb4';Dash:='';Caption:='processBlue';
