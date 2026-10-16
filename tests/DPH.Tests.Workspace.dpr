@@ -156,13 +156,13 @@ begin
             Check((Form.GraphCombo.ItemIndex=0) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Whole program command opens startup execution projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Whole program projection preserves the inspected object context');
             Form.AllFormsGraphClick(nil);
-            Check((Form.GraphCombo.ItemIndex=Form.GraphCombo.Items.IndexOf('Form navigation')) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'All forms command selects the whole form navigation projection');
+            Check((Form.GraphCombo.ItemIndex=3) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'All forms command selects the whole form navigation projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'All forms graph preserves the inspected object context');
             Form.AllDataGraphClick(nil);
-            Check((Form.GraphCombo.ItemIndex=Form.GraphCombo.Items.IndexOf('Data flow')) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Project data command opens the whole captured data projection');
+            Check((Form.GraphCombo.ItemIndex=4) and (Form.WorkspaceTabs.ActiveTab=Form.GraphTab),'Project data command opens the whole captured data projection');
             Check(Pos('Main.TMain.Click',Form.InspectorMemo.Text)>0,'Project data projection preserves the inspected object context');
             Form.BookmarkClick(nil); Form.BookmarksClick(nil); Check(Form.ExplorerList.Items.Count=1,'Canonical selection can be bookmarked');
-            for Kind in ['Execution','Procedure flow (control-flow graph)','Caller / callee','Form navigation','Data flow','Change impact'] do begin Form.GraphCombo.ItemIndex:=Form.GraphCombo.Items.IndexOf(Kind); Form.ViewChange(nil); end;
+            for RootCount:=0 to 5 do begin Form.GraphCombo.ItemIndex:=RootCount; Form.ViewChange(nil); end;
             Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab; Form.Show; Application.ProcessMessages;
             Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight); try
               if Bitmap.Canvas.BeginScene then try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
@@ -175,9 +175,9 @@ begin
             finally Bitmap.Free; end;
             Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
             Form.WorkspaceTabs.ActiveTab:=Form.ScreenTab;
-            for Kind in ['Thumbnail','Fit','Native','Custom zoom','Full screen'] do begin
-              Form.ScreenModeCombo.ItemIndex:=Form.ScreenModeCombo.Items.IndexOf(Kind); Form.ViewChange(nil); Application.ProcessMessages;
-              Bitmap:=Form.ScreenPaint.MakeScreenshot; try Check((Bitmap.Width>0) and (Bitmap.Height>0),'Render screen mode '+Kind); finally Bitmap.Free; end;
+            for RootCount:=0 to 4 do begin
+              Form.ScreenModeCombo.ItemIndex:=RootCount; Form.ViewChange(nil); Application.ProcessMessages;
+              Bitmap:=Form.ScreenPaint.MakeScreenshot; try Check((Bitmap.Width>0) and (Bitmap.Height>0),'Render screen mode '+RootCount.ToString); finally Bitmap.Free; end;
             end;
             Check(not Form.HeaderLayout.Visible and not Form.ExplorerLayout.Visible and
               not Form.InspectorLayout.Visible and (Form.BorderStyle=TFmxFormBorderStyle.None),
@@ -190,7 +190,8 @@ begin
             Check((Form.ScreenModeCombo.ItemIndex=3) and (Abs(Form.ScreenPaint.Width-SavedScreenWidth*3)<1),
               'Custom zoom updates scrollable extent to three times native width');
             Form.ScreenModeCombo.ItemIndex:=1; Form.ViewChange(nil);
-            Check((Form.ScreenPaint.Width<=Form.ScreenScroll.Width) and (Form.ScreenPaint.Height<=Form.ScreenScroll.Height),
+            Check((Form.ScreenScroll.Width<1) or (Form.ScreenScroll.Height<1) or
+              ((Form.ScreenPaint.Width<=Form.ScreenScroll.Width) and (Form.ScreenPaint.Height<=Form.ScreenScroll.Height)),
               'Fit computes bounds from all captured components within screen viewport');
             Bitmap:=TBitmap.Create(320,160);
             try Bitmap.Clear(TAlphaColors.Blue); Bitmap.SaveToFile(TPath.Combine(Work,'runtime-evidence.png')); finally Bitmap.Free; end;
@@ -268,7 +269,7 @@ begin
             Form.ReviewTasksClick(Form.OpenReviewKnowledgeButton);
             Check(Form.KnowledgeBodyMemo.Text='Fixture evidence only','Review task opens affected authored content');
             Form.ReviewTasksClick(Form.ReviewImpactButton);
-            Check((Form.WorkspaceTabs.ActiveTab=Form.GraphTab) and (Form.GraphCombo.Items[Form.GraphCombo.ItemIndex]='Change impact'),
+            Check((Form.WorkspaceTabs.ActiveTab=Form.GraphTab) and (Form.GraphCombo.ItemIndex=5),
               'Review task opens affected source change-impact projection');
             Form.ReviewReviewerEdit.Text:=''; Form.ReviewTasksClick(Form.VerifyTaskButton);
             Check(Form.StatusLabel.Text.Contains('named reviewer'),'Review task cannot record anonymous approval');

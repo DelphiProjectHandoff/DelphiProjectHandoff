@@ -1117,8 +1117,9 @@ begin
   Counts.Free; Seen.Free; Answered.Free;
 end;
 function TDPHWorkspaceView.Coverage: TJSONObject;
-var Files,Relations,Diagnostics,Metrics,Nodes: TJSONArray; V,W,E: TJSONValue; R,IR,N,Edge: TJSONObject;
-  Parsed,Available,Complete,Confirmed,Unresolved,Events,BoundEvents,Evidence: Integer; Recognized,Tokens: Int64; Matched: Boolean;
+var Files,Relations,Diagnostics,Metrics,Nodes: TJSONArray; V,W: TJSONValue; R,IR,N: TJSONObject;
+  Parsed,Available,Complete,Confirmed,Unresolved,Events,BoundEvents,Evidence: Integer; Recognized,Tokens: Int64;
+  BoundEventSites: TDictionary<string,Boolean>;
   procedure Metric(const Name,Definition: string; Numerator,Denominator: Int64);
   var Row: TJSONObject;
   begin Row:=TJSONObject.Create; Metrics.AddElement(Row); Row.AddPair('name',Name);
@@ -1130,29 +1131,31 @@ begin
   Files:=FDocument.GetValue<TJSONArray>('syntax.files'); Relations:=FDocument.GetValue<TJSONArray>('semantics.relationships');
   Parsed:=0; Available:=0; Complete:=0; Recognized:=0; Tokens:=0; Confirmed:=0; Unresolved:=0;
   Events:=0; BoundEvents:=0; Evidence:=0;
-  for V in Files do begin R:=V as TJSONObject;
-    if R.GetValue<string>('sha256','')<>'' then Inc(Available);
-    if R.TryGetValue<TJSONObject>('ir',IR) then begin Inc(Parsed);
-      if IR.GetValue<Boolean>('complete',False) then Inc(Complete);
-      Inc(Recognized,IR.GetValue<Int64>('recognized_tokens',0)); Inc(Tokens,IR.GetValue<Int64>('significant_tokens',0));
-      if MatchText(ExtractFileExt(R.GetValue<string>('path')),['.fmx','.dfm']) and IR.TryGetValue<TJSONArray>('nodes',Nodes) then
-        for W in Nodes do begin N:=W as TJSONObject;
-          if (N.GetValue<string>('kind')<>'property') or not StartsText('On',N.GetValue<string>('name')) or (Trim(N.GetValue<string>('value'))='') then Continue;
-          Inc(Events); Matched:=False;
-          for E in Relations do begin Edge:=E as TJSONObject;
-            if (Edge.GetValue<string>('kind')='binds') and (Edge.GetValue<string>('resolution')='confirmed_static') and
-              SameText(Edge.GetValue<string>('range.source'),R.GetValue<string>('path')) and
-              (Edge.GetValue<Int64>('range.start')=N.GetValue<Int64>('start')) then begin Matched:=True; Break; end;
-          end;
-          if Matched then Inc(BoundEvents);
-        end;
+  BoundEventSites:=TDictionary<string,Boolean>.Create;
+  try
+    for V in Relations do begin R:=V as TJSONObject;
+      if R.GetValue<string>('resolution')='confirmed_static' then Inc(Confirmed);
+      if R.GetValue<string>('resolution')='unresolved' then Inc(Unresolved);
+      if (R.GetValue<string>('range.source','')<>'') and (R.GetValue<string>('rule','')<>'') then Inc(Evidence);
+      if (R.GetValue<string>('kind')='binds') and (R.GetValue<string>('resolution')='confirmed_static') then
+        BoundEventSites.AddOrSetValue(LowerCase(R.GetValue<string>('range.source'))+#0+
+          R.GetValue<Int64>('range.start').ToString,True);
     end;
-  end;
-  for V in Relations do begin R:=V as TJSONObject;
-    if R.GetValue<string>('resolution')='confirmed_static' then Inc(Confirmed);
-    if R.GetValue<string>('resolution')='unresolved' then Inc(Unresolved);
-    if (R.GetValue<string>('range.source','')<>'') and (R.GetValue<string>('rule','')<>'') then Inc(Evidence);
-  end;
+    for V in Files do begin R:=V as TJSONObject;
+      if R.GetValue<string>('sha256','')<>'' then Inc(Available);
+      if R.TryGetValue<TJSONObject>('ir',IR) then begin Inc(Parsed);
+        if IR.GetValue<Boolean>('complete',False) then Inc(Complete);
+        Inc(Recognized,IR.GetValue<Int64>('recognized_tokens',0)); Inc(Tokens,IR.GetValue<Int64>('significant_tokens',0));
+        if MatchText(ExtractFileExt(R.GetValue<string>('path')),['.fmx','.dfm']) and IR.TryGetValue<TJSONArray>('nodes',Nodes) then
+          for W in Nodes do begin N:=W as TJSONObject;
+            if (N.GetValue<string>('kind')<>'property') or not StartsText('On',N.GetValue<string>('name')) or (Trim(N.GetValue<string>('value'))='') then Continue;
+            Inc(Events);
+            if BoundEventSites.ContainsKey(LowerCase(R.GetValue<string>('path'))+#0+
+              N.GetValue<Int64>('start').ToString) then Inc(BoundEvents);
+          end;
+      end;
+    end;
+  finally BoundEventSites.Free; end;
   Metric('Fingerprinted inventory files','Files with captured SHA256 / files in selected inventory. Not all files on disk.',Available,Files.Count);
   Metric('Files with parsed IR','Files with an intermediate representation / selected inventory files. Opaque resources may have no IR.',Parsed,Files.Count);
   Metric('Complete parsed files','IR complete flag / files with IR. This does not measure semantic correctness.',Complete,Parsed);

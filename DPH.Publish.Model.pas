@@ -347,19 +347,21 @@ begin
           J.AddPair('text',Path);
         end;
       end;
-    Explanations:=TDPHExplanationModel.Create(FDocument);
-    try
-      for V in Sections do begin Section:=V as TJSONObject; Kind:=Section.GetValue<string>('id'); Paragraphs:=Section.GetValue<TJSONArray>('paragraphs');
-        if Kind='overview' then Paragraphs.Add(Explanations.TopicText(0));
-        if Kind='orientation' then begin Paragraphs.Add(Explanations.TopicText(1)); Paragraphs.Add(Explanations.TopicText(3)); Paragraphs.Add(Explanations.TopicText(10)); end;
-        if MatchText(Kind,['user','help']) then Paragraphs.Add(Explanations.TopicText(2));
-        if Kind='engineering' then begin Paragraphs.Add(Explanations.TopicText(4)); Paragraphs.Add(Explanations.TopicText(5)); Paragraphs.Add(Explanations.TopicText(6)); end;
-        if Kind='maintenance' then Paragraphs.Add(Explanations.TopicText(7));
-        if Kind='troubleshooting' then Paragraphs.Add(Explanations.TopicText(8));
-        if Kind='handoff' then Paragraphs.Add(Explanations.TopicText(9));
-        Section.AddPair('section_version',THashSHA2.GetHashString(Paragraphs.ToJSON+Section.GetValue<TJSONArray>('authored_sections').ToJSON));
-      end;
-    finally Explanations.Free; end;
+    if not ALocalDisplay then begin
+      Explanations:=TDPHExplanationModel.Create(FDocument);
+      try
+        for V in Sections do begin Section:=V as TJSONObject; Kind:=Section.GetValue<string>('id'); Paragraphs:=Section.GetValue<TJSONArray>('paragraphs');
+          if Kind='overview' then Paragraphs.Add(Explanations.TopicText(0));
+          if Kind='orientation' then begin Paragraphs.Add(Explanations.TopicText(1)); Paragraphs.Add(Explanations.TopicText(3)); Paragraphs.Add(Explanations.TopicText(10)); end;
+          if MatchText(Kind,['user','help']) then Paragraphs.Add(Explanations.TopicText(2));
+          if Kind='engineering' then begin Paragraphs.Add(Explanations.TopicText(4)); Paragraphs.Add(Explanations.TopicText(5)); Paragraphs.Add(Explanations.TopicText(6)); end;
+          if Kind='maintenance' then Paragraphs.Add(Explanations.TopicText(7));
+          if Kind='troubleshooting' then Paragraphs.Add(Explanations.TopicText(8));
+          if Kind='handoff' then Paragraphs.Add(Explanations.TopicText(9));
+          Section.AddPair('section_version',THashSHA2.GetHashString(Paragraphs.ToJSON+Section.GetValue<TJSONArray>('authored_sections').ToJSON));
+        end;
+      finally Explanations.Free; end;
+    end;
   finally Queue.Free; FlowIDs.Free; AllKeys.Free; Selected.Free; AllowedFiles.Free; end;
 end;
 constructor TDPHDocumentModel.CreateLocalizedSections(ABase: TDPHDocumentModel; const ALocale: string; ARows: TJSONArray);

@@ -108,6 +108,7 @@ procedure TDPHWorkspaceWorker.Execute;
 var Request: TDPHWorkspaceRequest; Analyzer: TDPHAnalyzer; Semantic: TDPHSemanticAnalyzer;
     Scan: TDPHScan; Graph: TDPHSemanticGraph; Store: TDPHKnowledgeStore; Inventory: TDPHInventory;
     Root,Text,MessageText,SourceEntry: string; Document,Cached: TJSONObject; Config,Generation: Int64;
+    CachedFingerprint,CachedSyntaxVersion,CachedSemanticVersion,CachedQualityVersion,CachedDiscoveryVersion,CachedSelectionHash: string;
     Defines: TJSONArray; Value: string; JSONValue: TJSONValue; Status: TDPHProjectStatus; Changed,RunScan,OpeningCached: Boolean;
     View: TDPHWorkspaceView; Model: TDPHDocumentModel; Knowledge,Images: TJSONArray; LifecycleResponse: TDPHWorkspaceResponse;
     TranslationCache: TDPHTranslationCache; Provider: IDPHTranslationProvider; TranslationEntry: TJSONObject; RecordValue: TJSONValue;
@@ -378,6 +379,12 @@ begin
             Document:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
             if TDPHWorkspaceView.IsHandoffProject(Document) then
             begin Document.Free; raise EReadError.Create(DPHSelfSelectionMessage); end;
+            CachedFingerprint:=Document.GetValue<string>('semantics.input_fingerprint','');
+            CachedSyntaxVersion:=Document.GetValue<string>('syntax.analyzer','');
+            CachedSemanticVersion:=Document.GetValue<string>('semantics.analyzer','');
+            CachedQualityVersion:=Document.GetValue<string>('source_quality.version','');
+            CachedDiscoveryVersion:=Document.GetValue<string>('learning_discovery_version','');
+            CachedSelectionHash:=Document.GetValue<string>('selection_hash','');
             Status:=Store.Status;
             MessageText:='Cached project - detached: source has not been attached';
             if Status.AnalysisStale then MessageText:=MessageText+' | analysis stale';
@@ -413,18 +420,31 @@ begin
           RunScan:=True; Changed:=False;
           if MatchText(Request.Command,['check','incremental']) then
           begin
-            Cached:=nil; Text:=Store.LoadWorkspaceView;
-            if Text<>'' then Cached:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
+            Cached:=nil;
+            if not OpeningCached then begin
+              Text:=Store.LoadWorkspaceView;
+              if Text<>'' then Cached:=TJSONObject.ParseJSONValue(Text) as TJSONObject;
+              CachedFingerprint:=''; CachedSyntaxVersion:=''; CachedSemanticVersion:='';
+              CachedQualityVersion:=''; CachedDiscoveryVersion:=''; CachedSelectionHash:='';
+              if Cached<>nil then begin
+                CachedFingerprint:=Cached.GetValue<string>('semantics.input_fingerprint','');
+                CachedSyntaxVersion:=Cached.GetValue<string>('syntax.analyzer','');
+                CachedSemanticVersion:=Cached.GetValue<string>('semantics.analyzer','');
+                CachedQualityVersion:=Cached.GetValue<string>('source_quality.version','');
+                CachedDiscoveryVersion:=Cached.GetValue<string>('learning_discovery_version','');
+                CachedSelectionHash:=Cached.GetValue<string>('selection_hash','');
+              end;
+            end;
             try
               Inventory:=TDPHInventory.Create(Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage);
               try
                 if Inventory.IsHandoffProject then raise EReadError.Create(DPHSelfSelectionMessage);
-                Changed:=(Cached=nil) or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>Cached.GetValue<TJSONObject>('semantics').GetValue<string>('input_fingerprint'))
-                  or (Cached.GetValue<string>('syntax.analyzer','')<>DPHAnalyzerVersion)
-                  or (Cached.GetValue<string>('semantics.analyzer','')<>DPHSemanticVersion)
-                  or (Cached.GetValue<string>('source_quality.version','')<>DPHQualityVersion)
-                  or (Cached.GetValue<string>('learning_discovery_version','')<>DPHLearningDiscoveryVersion)
-                  or (Cached.GetValue<string>('selection_hash','')<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
+                Changed:=(CachedFingerprint='') or (TDPHKnowledgeStore.ManifestHash(Inventory.Manifest)<>CachedFingerprint)
+                  or (CachedSyntaxVersion<>DPHAnalyzerVersion)
+                  or (CachedSemanticVersion<>DPHSemanticVersion)
+                  or (CachedQualityVersion<>DPHQualityVersion)
+                  or (CachedDiscoveryVersion<>DPHLearningDiscoveryVersion)
+                  or (CachedSelectionHash<>TDPHWorkspaceView.SelectionHash(Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots,Request.CodePage));
                 if Changed then Store.ObserveManifest(Inventory.Manifest);
               finally Inventory.Free; end;
               RunScan:=Changed;

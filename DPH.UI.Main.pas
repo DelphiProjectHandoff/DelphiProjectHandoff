@@ -1,4 +1,4 @@
-﻿unit DPH.UI.Main;
+unit DPH.UI.Main;
 interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
@@ -945,7 +945,7 @@ type
     function GraphRect(AIndex: Integer): TRectF;
   public
     procedure OpenSelection(const AEntry,ADatabase: string);
-    procedure LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray = nil);
+    procedure LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray = nil; ADeferLearning: Boolean = False);
     procedure LoadKnowledge(ARows: TJSONArray);
     procedure LoadScreenshots(ARows: TJSONArray);
     procedure LoadReviewTasks(ARows: TJSONArray);
@@ -1802,7 +1802,7 @@ begin
     HelpClick(nil);
     FHelpLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = OverviewTab) and
-    (FExplanations <> nil) and
+    (FLearningFacts <> nil) and
     (FOverviewLanguageGeneration <> DATLanguageManager.Generation) then begin
     LearningClick(nil);
     FOverviewLanguageGeneration := DATLanguageManager.Generation;
@@ -1812,7 +1812,7 @@ begin
     CardSelectionChange(nil);
     FLibraryLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = ExplainTab) and
-    (FExplanations <> nil) and
+    (FLearningFacts <> nil) and
     (FMapLanguageGeneration <> DATLanguageManager.Generation) then begin
     ShowExplanation;
     FMapLanguageGeneration := DATLanguageManager.Generation;
@@ -2158,8 +2158,14 @@ begin
           ProjectPreparationMessage.Text:=DATTranslateDynamicText('Preparing the learning library and screen previews...');
         end;
       end;
-      LoadView(R.Document,R.Screenshots); R.Document:=nil;
+      LoadView(R.Document,R.Screenshots,R.Knowledge<>nil); R.Document:=nil;
       FreeAndNil(R.Screenshots);
+      if R.Busy and (FPendingCommand='open') then begin
+        WorkspaceTabs.Enabled:=True;
+        FPreparingProject:=False;
+        FPreparationCompletionTicks:=0;
+        ProjectPreparationLayout.Visible:=False;
+      end;
     end;
     if R.SourceEntry<>'' then FEntry:=R.SourceEntry;
     if R.ValidationReport<>'' then ValidationMemo.Text:=R.ValidationReport;
@@ -2305,7 +2311,7 @@ begin
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
-procedure TDPHMainForm.LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray);
+procedure TDPHMainForm.LoadView(ADocument: TJSONObject; AScreenshots: TJSONArray; ADeferLearning: Boolean);
 var V: TJSONValue; Row: TJSONObject; Path,SavedKey,SavedForm: string; Options,Images: TJSONArray;
   SameProject: Boolean; Index: Integer; SavedTab: TTabItem;
 begin
@@ -2375,7 +2381,9 @@ begin
     if FormCombo.Items.Count>0 then begin FormCombo.ItemIndex:=FormCombo.Items.IndexOf(SavedForm); if FormCombo.ItemIndex<0 then FormCombo.ItemIndex:=0; end;
     OverviewMemo.Text:=FView.FlagsText;
   finally FBinding:=False; end;
-  RefreshExplorer; RefreshLearning; RefreshQuestions;
+  if ADeferLearning then begin FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); end;
+  RefreshExplorer;
+  if not ADeferLearning then begin RefreshLearning; RefreshCoverage; RefreshQuestions; end;
   if AScreenshots<>nil then Images:=AScreenshots.Clone as TJSONArray
   else begin
     Images:=TJSONArray.Create;
@@ -3112,7 +3120,6 @@ begin
   FCardRows.Clear; CardList.Items.Clear;
   FreeAndNil(FExplanations); FreeAndNil(FLearningFacts); if FView=nil then Exit;
   FLearningFacts:=TDPHDocumentModel.Create(FView,FKnowledge,[],[],FDetached,not FView.Document.GetValue<Boolean>('analysis_complete'),nil,True);
-  FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   if FLearningDirectory='' then begin CreateGUID(ID);
     FLearningDirectory:=TPath.Combine(TPath.GetTempPath,'DPH-Learning-'+GUIDToString(ID));
     FExplainDirectory:=TPath.Combine(FLearningDirectory,'object');
@@ -3171,7 +3178,7 @@ end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
-  if FExplanations=nil then Exit;
+  if FLearningFacts=nil then Exit;
   HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
     Max(0,LearningTopics.ItemIndex));
   HTML:=HTML.Replace('href="#','href="index.html#');
@@ -3195,7 +3202,8 @@ end;
 procedure TDPHMainForm.ShowExplanation;
 var HTML,PreviewPath,Fallback: string; Offline: Boolean;
 begin
-  if FExplanations=nil then Exit;
+  if FLearningFacts=nil then Exit;
+  if FExplanations=nil then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
@@ -4435,11 +4443,12 @@ begin
  if (DepartmentalWorkflowList.ItemIndex<0) or (DepartmentalWorkflowList.ItemIndex>=FDepartmentalWorkflowRows.Count) then Exit;
  Row:=FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex];
  try
-  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Business process');
+  GraphCombo.ItemIndex:=7;
   FreeAndNil(FGraph);FGraph:=TDPHGraphProjection.Workflow(Row,FKnowledge,FView.Document.GetValue<Int64>('generation_id'));
   GraphGroupingCombo.Enabled:=False;
   GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
   GraphPaint.Height:=Max(4500,FGraph.GetValue<TJSONArray>('nodes').Count*190+40);GraphPaint.Repaint;
+  if (FExplanations=nil) and (FLearningFacts<>nil) then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   HTML:=DATTranslateHtmlText(FExplanations.GraphHTML(FGraph));GraphPath:=TPath.Combine(FFlowDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(GraphPath) then begin TFile.WriteAllBytes(GraphPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(GraphPath);end;
   WorkspaceTabs.ActiveTab:=GraphTab;FlowBrowser.Visible:=False;
@@ -5318,28 +5327,27 @@ end;
 procedure TDPHMainForm.AllFormsGraphClick(Sender: TObject);
 begin
   if FView=nil then Exit;
-  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Form navigation'); FWholeGraph:=True; RefreshGraphics;
+  GraphCombo.ItemIndex:=3; FWholeGraph:=True; RefreshGraphics;
   WorkspaceTabs.ActiveTab:=GraphTab;
   StatusLabel.Text:='Form navigation from captured forms and declared instances. Show/Hide/Close actions are static possibilities; runtime screens and order are unobserved.';
 end;
 procedure TDPHMainForm.AllDataGraphClick(Sender: TObject);
 begin
   if FView=nil then Exit;
-  GraphCombo.ItemIndex:=GraphCombo.Items.IndexOf('Data flow'); FWholeGraph:=True; RefreshGraphics;
+  GraphCombo.ItemIndex:=4; FWholeGraph:=True; RefreshGraphics;
   WorkspaceTabs.ActiveTab:=GraphTab;
   StatusLabel.Text:='Project data: source input/output dependencies, resources, SQL and artifacts. Arrow labels retain their rules; runtime values and context are unverified.';
 end;
 procedure TDPHMainForm.RefreshGraphics;
-const WholeKinds: array[0..2] of string = ('Execution','Form navigation','Data flow');
+const GraphKinds: array[0..7] of string = ('Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact','Data lineage','Business process');
 var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
 begin
   FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
   FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
-  if (FSelected='') and (GraphCombo.ItemIndex>=0) and
-    MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FWholeGraph:=True;
+  if (FSelected='') and (GraphCombo.ItemIndex in [0,3,4]) then FWholeGraph:=True;
   GraphPaint.Height:=4500;
-  IsLineage:=(GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Data lineage');
+  IsLineage:=GraphCombo.ItemIndex=6;
   if GraphCombo.ItemIndex>=0 then case GraphCombo.ItemIndex of
     0: GraphPurpose.Text:='Execution shows which routines may call other routines. Follow a connection to understand how an action moves through the code.';
     1: GraphPurpose.Text:='A control-flow graph shows the paths through one procedure, including choices, loops and exits.';
@@ -5353,7 +5361,7 @@ begin
   GraphLegend.Text:='Blue: direct connection in the project files. Orange dashed: possible connection that needs interpretation. Select a box for details.';
   Limit:=120; GraphGroupingCombo.Enabled:=(GraphCombo.ItemIndex<>1) and not IsLineage;
   if (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then Limit:=1000;
-  if (GraphCombo.ItemIndex>=0) and (GraphCombo.Selected.Text='Business process') then begin
+  if GraphCombo.ItemIndex=7 then begin
    GraphGroupingCombo.Enabled:=False;
    GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
    if FKnowledgeEdited then StatusLabel.Text:='Save or discard the current Knowledge draft before opening a saved workflow diagram.'
@@ -5367,9 +5375,9 @@ begin
    if FDatabaseInventory<>nil then FGraph:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,Seed,Direction);
    GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
   end
-  else if FWholeGraph and MatchText(GraphCombo.Items[GraphCombo.ItemIndex],WholeKinds) then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],'',Limit)
+  else if FWholeGraph and (GraphCombo.ItemIndex in [0,3,4]) then FGraph:=FView.Graph(GraphKinds[GraphCombo.ItemIndex],'',Limit)
   else if GraphCombo.ItemIndex=1 then FGraph:=FView.Graph('Procedure CFG',FSelected,Limit)
-  else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphCombo.Items[GraphCombo.ItemIndex],FSelected,Limit);
+  else if GraphCombo.ItemIndex>=0 then FGraph:=FView.Graph(GraphKinds[GraphCombo.ItemIndex],FSelected,Limit);
   if (GraphCombo.ItemIndex=0) and not FWholeGraph and (FSelected<>'') and
     (FGraph<>nil) and (FGraph.GetValue<TJSONArray>('nodes').Count=1) and
     (FGraph.GetValue<TJSONArray>('edges').Count=0) then begin
@@ -5381,6 +5389,8 @@ begin
   if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
   end;
+  if (FGraph<>nil) and (FExplanations=nil) and (FLearningFacts<>nil) then
+    FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
   if (FGraph<>nil) and (FExplanations<>nil) then begin
     if GraphCombo.ItemIndex=1 then HTML:=FExplanations.FlowHTML(FSelected) else HTML:=FExplanations.GraphHTML(FGraph);
     HTML:=HTML.Replace('href="#','href="index.html#');
@@ -5566,7 +5576,13 @@ begin
   ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.LoadKnowledge(ARows: TJSONArray);
-begin FCardRows.Clear;CardList.Items.Clear;FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil); RefreshLearning; RefreshCoverage; RefreshQuestions; DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil);CardFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);end;
+begin
+  FCardRows.Clear;CardList.Items.Clear;FTaskRows.Clear;FKnowledge.Free; FKnowledge:=ARows;DepartmentalWorkflowFilterChange(nil); if not FKnowledgeEdited then NewKnowledgeClick(nil); KnowledgeFilterChange(nil); GlossaryFilterChange(nil);
+  RefreshLearning;
+  RefreshCoverage;
+  RefreshQuestions;
+  DependencyFilterChange(nil); DatabaseSchemaSelectionChange(nil);FileFormatsSelectionChange(nil);DataRetentionFilterChange(nil);TargetRecoveryFilterChange(nil);BusinessProcessFilterChange(nil);CalculationFilterChange(nil);BusinessRuleFilterChange(nil);DepartmentalWorkflowFilterChange(nil);DataQualityFilterChange(nil);TaskFilterChange(nil);CardFilterChange(nil); FActionPurposeRows.Clear;FreeAndNil(FActionPurposes);ActionPurposeFilterChange(nil);if (FView<>nil) and (WorkspaceTabs.ActiveTab=ActionPurposeTab) then WorkspacePageChange(nil);
+end;
 procedure TDPHMainForm.KnowledgeEdited(Sender: TObject);
 begin if not FBinding then begin if not FKnowledgeEdited and (FKnowledgeID=0) then FKnowledgeLink:=FSelected; FKnowledgeEdited:=True; end; end;
 procedure TDPHMainForm.DiscardKnowledgeClick(Sender: TObject);
