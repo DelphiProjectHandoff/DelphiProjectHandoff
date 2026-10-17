@@ -62,10 +62,11 @@ CHECK THE LEARNING VIEWS
    and static connections cannot prove what happens at runtime.
    If it says STALE capture, wait for automatic background verification when
    the original source is available, or reselect the source entry with Open
-   application. Review again after preparation. PARTIAL capture means some
-   syntax or semantic analysis is incomplete; inspect diagnostics and missing
-   inputs. The capture time alone does not make a project stale. Static
-   inspection only always remains because DPH does not run the target.
+   application. Review again after preparation. If DPH says "Project analysis
+   is incomplete," some results may be missing. Open Coverage, select a
+   diagnostic, then Inspect selected gap. Correct missing inputs and rescan.
+   The capture time alone does not make a project stale. Static inspection
+   only always remains because DPH does not run the target.
 8. Open Learning library. Choose several topics on the left and check that
    paragraphs, headings, and lists are readable. The library draws from
    root-level documents and the selected project's top-level docs, Help,

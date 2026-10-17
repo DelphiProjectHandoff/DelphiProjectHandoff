@@ -33,6 +33,7 @@ var
   Name, Caption, EventName, Key, Source, Purpose, PurposeEvidence, Status,
     Title, Kind, DirectoryName: string;
   Count, Total, Index: Integer;
+  IncompleteAnalysis: Boolean;
   function Esc(const AText: string): string;
   begin
     Result:=AText.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;')
@@ -84,15 +85,25 @@ begin
       Key:=Row.GetValue<string>('key','');
       if Key<>'' then ByKey.AddOrSetValue(Key,Row);
     end;
+    IncompleteAnalysis:=not AFacts.GetValue<Boolean>('stale',False) and
+      not AFacts.GetValue<Boolean>('analysis_complete',False);
     Status:='Source-derived, unreviewed';
     if AFacts.GetValue<Boolean>('stale',False) then Status:='STALE capture - refresh before relying on it'
-    else if not AFacts.GetValue<Boolean>('analysis_complete',False) then
-      Status:='PARTIAL capture - inspect missing inputs and diagnostics';
-    Body.Append('<p class="scope"><strong>'+Esc(Status)+'</strong> | '+
+    else if IncompleteAnalysis then Status:='Project analysis is incomplete';
+    Body.Append('<section class="scope"><p><strong>'+Esc(Status)+'</strong> | '+
       Esc(AFacts.GetValue<string>('configuration','unknown configuration'))+' / '+
       Esc(AFacts.GetValue<string>('platform','unknown platform'))+' | captured '+
       Esc(AFacts.GetValue<string>('captured_utc','unknown time'))+
       '. Static inspection only; the selected application was not run.</p>');
+    if IncompleteAnalysis then begin
+      Body.Append('<p>DPH saved what it found, but some results may be missing. ');
+      if AExport then Body.Append('In DPH, open Coverage')
+      else Body.Append('<a href="#open_coverage">Open Coverage</a>');
+      Body.Append(', select a diagnostic, and choose <strong>Inspect selected gap</strong> '+
+        'to see the affected source. If the gap is caused by a missing file, path, '+
+        'or project setting, correct it and choose <strong>Rescan project</strong>.</p>');
+    end;
+    Body.Append('</section>');
     case APage of
       0: begin
         Purpose:=''; PurposeEvidence:='';

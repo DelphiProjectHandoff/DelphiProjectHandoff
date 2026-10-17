@@ -185,10 +185,18 @@ begin
               ContainsText(FlowText,'Project directories and build paths') and
               ContainsText(FlowText,'DCC_UnitSearchPath') and
               ContainsText(FlowText,'#open_dependencies') and
-              ContainsText(FlowText,'PARTIAL capture') and
+              ContainsText(FlowText,'Project analysis is incomplete') and
+              ContainsText(FlowText,'DPH saved what it found') and
+              ContainsText(FlowText,'href="#open_coverage"') and
+              ContainsText(FlowText,'Inspect selected gap') and
+              ContainsText(FlowText,'Rescan project') and
               ContainsText(FlowText,'Semantic.dproj') and
               not ContainsText(FlowText,'SHA-256'),
               'Handoff overview identifies the selected capture and its evidence limits');
+            FlowText:=TDPHHandoffDossier.Render(Model.Document,0,True);
+            Check(ContainsText(FlowText,'In DPH, open Coverage') and
+              not ContainsText(FlowText,'href="#open_coverage"'),
+              'Portable handoff explains Coverage without an app-only link');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,1);
             Check(ContainsText(FlowText,'Commands and workflows') and
               ContainsText(FlowText,'#open_commands') and

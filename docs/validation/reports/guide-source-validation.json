@@ -1,6 +1,6 @@
 {
-  "guide_version": 57,
-  "last_changed": "2026-10-16",
+  "guide_version": 58,
+  "last_changed": "2026-10-17",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
     "DPH.Analysis.Explanations.pas": "40a3a2191960c3cc67628aac8f47edda18512d8bc5c470dea48986c04142a0fd",
@@ -10,7 +10,7 @@
     "DPH.Analysis.Quality.pas": "50196d33a8d15cfeb52528dde93a2bfdc22b153e2533830b08e3ac097e14fd82",
     "DPH.Analysis.SQL.pas": "68ea587d47e2c7ebf660f85eed6b605f6076480ead3a461742b8290fec7a130e",
     "DPH.Analysis.Symbols.pas": "47c187a32ad1a040760bd9459e843d9c6fa7ced7b4ea5843280d2680127cc047",
-    "DPH.Handoff.Dossier.pas": "7483ef958bf4d339702bbadc1d1c5e5c52572b77643b1505177960e541b7d149",
+    "DPH.Handoff.Dossier.pas": "642b31509a9b2fd025842bda1bd8ad3bcbeb63b35ba6105a93c90f852b9b9ddf",
     "DPH.Knowledge.ActionPurpose.pas": "bd548e1d5bbb886d3d3f2b5ba59d1cd86144a92877eba20596f956582740573f",
     "DPH.Knowledge.ComponentDependency.pas": "56bc1021fffa88f0a383a2a159b4c74328d735597f72c3ec279ef42ad2a2ccbe",
     "DPH.Knowledge.Glossary.pas": "9c50a06ccf405f786526e206e5e84ea956604eeb42e1a84b9f91c31cced70dcb",
@@ -72,16 +72,16 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "009e3ff12c8bf12072d8429795454df44a43eee0bf15fdebd8771a90f3654691",
-    "docs/guides/source/DPH_User_Guide.txt": "5121fce3ff5622f656bd5855dd6b85aa7877b72a8540943cc5d1f3a65f752e9b",
-    "DelphiProjectHandoff.dproj": "7d7653b71afbe6a16eef01146be6f03d527bdb43235f488badb7c454cb251dd4"
+    "docs/guides/source/DPH_Engineering_Guide.txt": "d8a163b3f906b68d515a04c9640d5791a4f987c175ee824b25ba5fdf0cc4a044",
+    "docs/guides/source/DPH_User_Guide.txt": "4ded1884ed9a20728b38ef073eca6c79cb5d54cf984a85bd4166498dc0fec4f6",
+    "DelphiProjectHandoff.dproj": "79121bf6131d1aa1501e6348977e3bde0754b0d141059083385c8c7a880b06ad"
   },
   "content": {
     "User": {
       "parts": 3,
       "chapters": 7,
       "subsections": 17,
-      "words": 2516,
+      "words": 2548,
       "figures": 4
     },
     "Engineering": {
