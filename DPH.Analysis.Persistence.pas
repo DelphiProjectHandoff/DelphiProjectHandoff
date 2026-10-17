@@ -1,18 +1,20 @@
 unit DPH.Analysis.Persistence;
 
 interface
-uses DPH.Analysis.Model, DPH.Project.Analysis, DPH.Storage.Database;
+uses System.SysUtils, DPH.Analysis.Model, DPH.Project.Analysis, DPH.Storage.Database;
 type
   TDPHSemanticPersistence = class
   public
-    class function Stage(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore; AConfiguration: Int64): Int64; static;
+    class function Stage(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore;
+      AConfiguration: Int64; AProgress: TProc<Integer,Integer> = nil): Int64; static;
     class function Publish(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore; AGeneration: Int64): Boolean; static;
   end;
 implementation
-uses System.SysUtils, System.JSON, DPH.Parse.Model;
+uses System.JSON, DPH.Parse.Model;
 
-class function TDPHSemanticPersistence.Stage(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore; AConfiguration: Int64): Int64;
-var Entities,Nodes: TArray<Int64>; I: Integer; S: TDPHSymbol; R: TDPHRelation;
+class function TDPHSemanticPersistence.Stage(AScan: TDPHScan; AGraph: TDPHSemanticGraph; AStore: TDPHKnowledgeStore;
+  AConfiguration: Int64; AProgress: TProc<Integer,Integer>): Int64;
+var Entities,Nodes: TArray<Int64>; I,Done,Total: Integer; S: TDPHSymbol; R: TDPHRelation;
     N: TDPHFlowNode; E: TDPHFlowEdge; D: TDPHDiagnostic; J,Range: TJSONObject;
     Evidence,Target: Int64; Verification,Context: string;
 begin
@@ -22,6 +24,8 @@ begin
   AStore.BeginFacts(Result);
   Context:='initializing semantic facts';
   try
+    Done:=0;
+    Total:=AGraph.Symbols.Count+AGraph.Relations.Count+AGraph.FlowNodes.Count+AGraph.FlowEdges.Count;
     SetLength(Entities,AGraph.Symbols.Count); SetLength(Nodes,AGraph.FlowNodes.Count);
     for I:=0 to AGraph.Symbols.Count-1 do
     begin
@@ -32,6 +36,8 @@ begin
         Entities[I]:=AStore.AddSourceEntity(Result,S.Location.Source,S.Key,'semantic_'+S.Kind,S.QualifiedName,S.Signature,
           S.Location.StartByte,S.Location.EndByte,J.ToJSON);
       finally J.Free; end;
+      Inc(Done);
+      if Assigned(AProgress) and ((Done mod 2000=0) or (Done=Total)) then AProgress(Done,Total);
     end;
     for R in AGraph.Relations do
     begin
@@ -45,6 +51,8 @@ begin
         Target:=0; if R.ToSymbol>=0 then Target:=Entities[R.ToSymbol];
         AStore.AddRelationship(Result,Entities[R.FromSymbol],Target,Evidence,R.Kind,R.Resolution,R.Condition);
       finally Range.Free; J.Free; end;
+      Inc(Done);
+      if Assigned(AProgress) and ((Done mod 2000=0) or (Done=Total)) then AProgress(Done,Total);
     end;
     for I:=0 to AGraph.FlowNodes.Count-1 do
     begin
@@ -55,8 +63,14 @@ begin
         AStore.AddEvidence(Result,N.Location.Source,Range.ToJSON,'control_flow_derivation',N.ExpressionText,'inferred');
         Nodes[I]:=AStore.AddFlowNode(Result,Entities[N.Routine],N.Kind,Range.ToJSON,N.ExpressionText);
       finally Range.Free; end;
+      Inc(Done);
+      if Assigned(AProgress) and ((Done mod 2000=0) or (Done=Total)) then AProgress(Done,Total);
     end;
-    for E in AGraph.FlowEdges do AStore.AddFlowEdge(Result,Nodes[E.FromNode],Nodes[E.ToNode],E.Kind,E.Resolution);
+    for E in AGraph.FlowEdges do begin
+      AStore.AddFlowEdge(Result,Nodes[E.FromNode],Nodes[E.ToNode],E.Kind,E.Resolution);
+      Inc(Done);
+      if Assigned(AProgress) and ((Done mod 2000=0) or (Done=Total)) then AProgress(Done,Total);
+    end;
     for D in AGraph.Diagnostics do
     begin Range:=DPHRangeJSON(D.Location); try AStore.AddDiagnostic(Result,D.Severity,D.Code,D.MessageText,Range.ToJSON); finally Range.Free; end; end;
     AStore.CommitFacts;

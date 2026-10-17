@@ -4,7 +4,7 @@ interface
 
 uses System.JSON;
 
-const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-3';
+const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-4';
 
 type
   TDPHLearningDiscovery = class
@@ -58,6 +58,9 @@ var
   ProgramMatch,UnitMatch: TMatch;
   ProgramBytes: TBytes;
   ByteIndex,SourceLine: Integer;
+  CurrentMajor,ReadmePath: string;
+  VersionMatch: TMatch;
+  SitemapPath,SitemapLine,SitemapHost: string;
   PageMatches,Paragraphs: TMatchCollection;
   PageMatch,Paragraph: TMatch;
   PageNumber: Integer;
@@ -107,6 +110,15 @@ var
         '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
         '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex']) or
         (Paths.Count+PreferredPaths.Count>=300) then Continue;
+      if (ADepth=0) and not
+        (MatchText(LowerName,['readme.md','readme.txt']) or
+         ContainsText(LowerName,'guide') or ContainsText(LowerName,'manual')) then Continue;
+      if (ADepth=1) and not
+        (MatchText(LowerName,['readme.md','readme.txt']) or
+         ContainsText(LowerName,'guide') or ContainsText(LowerName,'manual')) then Continue;
+      VersionMatch:=TRegEx.Match(LowerName,'(?i)(?:^|[_\W])v(\d+)(?:[_\W]|$)');
+      if (CurrentMajor<>'') and VersionMatch.Success and
+        (VersionMatch.Groups[1].Value<>CurrentMajor) then Continue;
       Preferred:=(ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
         ContainsText(LowerName,'notes') or ContainsText(LowerName,'getting start') or
@@ -115,7 +127,8 @@ var
         ContainsText(LowerName,'faq') or ContainsText(LowerName,'release') or
         ContainsText(LowerName,'requirement') or ContainsText(LowerName,'workflow') or
         ContainsText(LowerName,'architecture') or ContainsText(LowerName,'design') or
-        ContainsText(LowerName,'contract') or ContainsText(LowerName,'training'));
+        ContainsText(LowerName,'contract') or ContainsText(LowerName,'training') or
+        ContainsText(LowerCase(AFolder),'docs\guides'));
       if (Ext='.log') or (MatchText(Ext,['.html','.htm']) and not Preferred) then Continue;
       if ((Ext='.log') and (TFile.GetSize(Entry)<=16777216)) or
         (MatchText(Ext,['.pdf','.docx','.docm','.doc','.dot','.dotx','.odt',
@@ -131,8 +144,12 @@ var
         'export','tests','tools','source distributions',
         'node_modules','vendor','dependencies']) then Continue;
       if ADepth=0 then begin
-        if MatchText(Base,['images','image','icons','assets','resources']) then
+        if Base='docs' then Visit(Entry,ADepth+1,True)
+        else if MatchText(Base,['images','image','icons','assets','resources']) then
           Visit(Entry,ADepth+1,False);
+      end else if (ADepth=1) and (SameText(TPath.GetFileName(AFolder),'docs')) and
+        MatchText(Base,['guides','pdf','notes']) then begin
+        Visit(Entry,ADepth+1,True);
       end;
     end;
   end;
@@ -208,6 +225,29 @@ begin
     end;
   end;
   if (Root='') or not TDirectory.Exists(Root) then Exit;
+  CurrentMajor:='';
+  ReadmePath:=TPath.Combine(Root,'README.md');
+  if not TFile.Exists(ReadmePath) then ReadmePath:=TPath.Combine(Root,'README.txt');
+  if TFile.Exists(ReadmePath) and (TFile.GetSize(ReadmePath)<=131072) then begin
+    VersionMatch:=TRegEx.Match(TFile.ReadAllText(ReadmePath),'(?i)\bv\s*(\d+)(?:\.\d+)?\b');
+    if VersionMatch.Success then CurrentMajor:=VersionMatch.Groups[1].Value;
+  end;
+  SitemapPath:=TPath.Combine(Root,'sitemap.txt'); SitemapHost:='';
+  if TFile.Exists(SitemapPath) and (TFile.GetSize(SitemapPath)<=65536) and
+    ((GetFileAttributes(PChar(SitemapPath)) and FILE_ATTRIBUTE_REPARSE_POINT)=0) then
+    for SitemapLine in TFile.ReadAllLines(SitemapPath) do begin
+      URL:=Trim(SitemapLine);
+      if not StartsText('https://',URL) then Continue;
+      try
+        URI:=TURI.Create(URL); Host:=LowerCase(URI.Host);
+        if (Host='') or (Pos('.',Host)=0) or
+          ((SitemapHost<>'') and not SameText(SitemapHost,Host)) then Continue;
+        if SitemapHost='' then SitemapHost:=Host;
+        Sites.AddElement(TJSONObject.Create.AddPair('url',URL)
+          .AddPair('source','sitemap.txt').AddPair('text',''));
+        if Sites.Count>=3 then Break;
+      except on E: Exception do Continue; end;
+    end;
   // Delphi syntax is ASCII even when a legacy-encoded comment prevents the
   // full parser from decoding a program file. Read that syntax without
   // interpreting non-ASCII bytes, and keep the result tied to captured files.
@@ -287,7 +327,9 @@ begin
     TotalBytes:=0; DocumentCount:=0; LogCount:=0;
     for Path in Paths do begin
       Ext:=LowerCase(TPath.GetExtension(Path));
-      if (Ext='.pdf') and TFile.Exists(TPath.ChangeExtension(Path,'.docx')) then Continue;
+      if (Ext='.pdf') and
+        (TFile.Exists(TPath.ChangeExtension(Path,'.docx')) or
+         TFile.Exists(TPath.Combine(Root,'docs\guides\'+TPath.GetFileNameWithoutExtension(Path)+'.docx'))) then Continue;
       if (Ext='.log') and (LogCount>=8) then Continue;
       if (Ext<>'.log') and (DocumentCount>=24) then Continue;
       if Ext='.log' then begin

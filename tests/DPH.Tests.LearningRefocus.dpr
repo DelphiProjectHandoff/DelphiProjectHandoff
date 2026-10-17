@@ -41,19 +41,21 @@ begin
     try
       Root:=TPath.GetFullPath(ParamStr(1)); CreateGUID(ID); Work:=TPath.Combine(Root,'bin\lr-'+GUIDToString(ID)); TDirectory.CreateDirectory(Work);
       TFile.WriteAllText(TPath.Combine(Work,'README.md'),'The learning fixture has a documented first task.',TEncoding.UTF8);
-      TFile.WriteAllText(TPath.Combine(Work,'Setup_Notes.txt'),
+      TDirectory.CreateDirectory(TPath.Combine(Work,'docs\guides'));
+      TDirectory.CreateDirectory(TPath.Combine(Work,'docs\pdf'));
+      TFile.WriteAllText(TPath.Combine(Work,'docs\guides\Setup_Notes.txt'),
         'The Unicode setup note explains the first screen.',TEncoding.Unicode);
-      TFile.WriteAllText(TPath.Combine(Work,'Miscellaneous.txt'),
+      TFile.WriteAllText(TPath.Combine(Work,'docs\guides\Miscellaneous.txt'),
         'The unfamiliar application keeps another useful instruction here.',TEncoding.UTF8);
-      TFile.WriteAllText(TPath.Combine(Work,'دليل التشغيل.txt'),
+      TFile.WriteAllText(TPath.Combine(Work,'docs\guides\دليل التشغيل.txt'),
         'يوضح هذا الدليل شاشة البداية وكيفية تشغيل التطبيق ومراجعة النتائج.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Work,'activity.log'),StringOfChar('x',1100000)+sLineBreak+
         'The Convert action completed at 10:30.',TEncoding.UTF8);
       TFile.Copy(TPath.Combine(Root,'docs\pdf\DPH_User_Guide.pdf'),
-        TPath.Combine(Work,'User_Guide.pdf'));
+        TPath.Combine(Work,'docs\pdf\User_Guide.pdf'));
       TFile.Copy(TPath.Combine(Root,'docs\guides\DPH_Engineering_Guide.docx'),
-        TPath.Combine(Work,'Engineering_Guide.docx'));
-      TFile.WriteAllText(TPath.Combine(Work,'Training_Notes.rtf'),
+        TPath.Combine(Work,'docs\guides\Engineering_Guide.docx'));
+      TFile.WriteAllText(TPath.Combine(Work,'docs\guides\Training_Notes.rtf'),
         '{\rtf1\ansi The test application has a saved training note.}',TEncoding.ASCII);
       TFile.WriteAllBytes(TPath.Combine(Work,'Legacy.dpr'),
         TEncoding.GetEncoding(1252).GetBytes('program Legacy; // caf'+#$00E9+sLineBreak+
@@ -66,7 +68,7 @@ begin
         '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p>ODT learning guide explains the saved screen.</text:p></office:text></office:body></office:document-content>',TEncoding.UTF8);
       var ODTZip:=TZipFile.Create;
       try
-        ODTZip.Open(TPath.Combine(Work,'Learning_Guide.odt'),zmWrite);
+        ODTZip.Open(TPath.Combine(Work,'docs\guides\Learning_Guide.odt'),zmWrite);
         ODTZip.Add(ODTContent,'content.xml');
       finally ODTZip.Free;end;
       TFile.Delete(ODTContent);
@@ -75,7 +77,7 @@ begin
         '</text:p></office:text></office:body></office:document-content>',TEncoding.UTF8);
       ODTZip:=TZipFile.Create;
       try
-        ODTZip.Open(TPath.Combine(Work,'Oversized_Guide.odt'),zmWrite);
+        ODTZip.Open(TPath.Combine(Work,'docs\guides\Oversized_Guide.odt'),zmWrite);
         ODTZip.Add(ODTContent,'content.xml');
       finally ODTZip.Free;end;
       TFile.Delete(ODTContent);
@@ -116,38 +118,38 @@ begin
             if SameText(Discovered.GetValue<string>('source',''),'docs/Project_Guide.md') then FoundProjectGuide:=True;
             if SameText(Discovered.GetValue<string>('source',''),'Help/Starting.md') then FoundHelpTopic:=True;
             if ContainsText(Discovered.GetValue<string>('source',''),'CarillonBells_7_2_4_to_8_1_Upgrade') then FoundOtherRelease:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Oversized_Guide.odt') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Oversized_Guide.odt') and
               ContainsText(Discovered.ToJSON,'ZZZZZZZZ') then FoundOversizedODT:=True;
             if SameText(Discovered.GetValue<string>('source',''),'activity.log') and
               ContainsText(Discovered.ToJSON,'Convert action completed') then FoundLog:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'User_Guide.pdf') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/pdf/User_Guide.pdf') and
               ContainsText(Discovered.ToJSON,'Delphi Project Handoff User Guide') then FoundPDF:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Engineering_Guide.docx') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Engineering_Guide.docx') and
               ContainsText(Discovered.ToJSON,'Delphi Project Handoff Engineering Guide') then FoundDOCX:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Training_Notes.rtf') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Training_Notes.rtf') and
               ContainsText(Discovered.ToJSON,'saved training note') then FoundRTF:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Learning_Guide.odt') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Learning_Guide.odt') and
               ContainsText(Discovered.ToJSON,'ODT learning guide') then FoundODT:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Setup_Notes.txt') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Setup_Notes.txt') and
               ContainsText(Discovered.ToJSON,'Unicode setup note') then FoundTXT:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'Miscellaneous.txt') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/Miscellaneous.txt') and
               ContainsText(Discovered.ToJSON,'another useful instruction') then FoundUnlabelledTXT:=True;
-            if SameText(Discovered.GetValue<string>('source',''),'دليل التشغيل.txt') and
+            if SameText(Discovered.GetValue<string>('source',''),'docs/guides/دليل التشغيل.txt') and
               (Discovered.GetValue<string>('read_status','')='read') and
               ContainsText((Discovered.GetValue<TJSONArray>('sections').Items[0] as TJSONObject).GetValue<string>('text',''),'شاشة البداية') then
               FoundArabicTXT:=True;
           end;
         Check(not FoundLog and FoundUnlabelledTXT,
-          'Source-directory text is retained while log output stays out of documentation');
+          'Selected docs/guides text is retained while root log output stays out of documentation');
         Check(FoundPDF and FoundDOCX and FoundRTF and FoundODT and FoundTXT and FoundUnlabelledTXT,
-          Format('Root PDF, DOCX, RTF, ODT and named notes contribute extracted text (pdf=%s docx=%s rtf=%s odt=%s txt=%s unnamed=%s)',
+          Format('Project docs PDF, DOCX, RTF, ODT and notes contribute extracted text (pdf=%s docx=%s rtf=%s odt=%s txt=%s unnamed=%s)',
             [BoolToStr(FoundPDF,True),BoolToStr(FoundDOCX,True),BoolToStr(FoundRTF,True),
              BoolToStr(FoundODT,True),BoolToStr(FoundTXT,True),BoolToStr(FoundUnlabelledTXT,True)]));
         Check(not FoundOversizedODT,
           'Oversized compressed document text is rejected before decompression into memory');
         Check(FoundArabicTXT,'Readable non-Latin project documentation is preserved in its original language');
-        Check(not FoundProjectGuide and not FoundHelpTopic and not FoundOtherRelease,
-          'Only the selected source directory is read; nested docs, Help and release packages are excluded');
+        Check(FoundProjectGuide and not FoundHelpTopic and not FoundOtherRelease,
+          'Selected project docs are included; unrelated Help and release packages are excluded');
       finally DiscoveryFacts.Free;end;
       Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
@@ -479,6 +481,8 @@ begin
             Form:=TDPHMainForm.Create(nil);
             try
               Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False; Form.Show;
+              Check((Form.ScreenshotModeCombo.ItemIndex=2) and (Round(Form.ScreenshotZoom.Value)=90),
+                'Generated screen previews start at 90 percent zoom');
               WaitHTML(Form.HelpBrowser,'document.body.innerText','Welcome to Delphi Project Handoff');
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
@@ -522,6 +526,11 @@ begin
                 ((Form.FindComponent('LearnerTab1') as TRectangle).Stroke.Color=$FFF28C28) and
                 ((Form.FindComponent('LearnerTab0') as TRectangle).Fill.Color<>$FFFFFFFF),
                 'The selected learner tab is white with an orange border');
+              TDPHLearningDiscovery.AddEvidence(View.Document,View.Document,False);
+              View.Document.GetValue<TJSONArray>('project_sites').AddElement(
+                TJSONObject.Create.AddPair('url','https://project.example.test/guide')
+                  .AddPair('source','sitemap.txt')
+                  .AddPair('text','Public conversion guide describes the application workflow.'));
               Form.LoadView(View.Document.Clone as TJSONObject,nil,True);
               Check((Form.LearningTopics.ItemIndex=0) and not Form.LearningBrowser.Visible and
                 (Form.ExplorerList.Count=0),'Saved capture waits for its knowledge before building the dossier');
@@ -555,13 +564,18 @@ begin
                 'Learning library opens with project documents and screens, without duplicating learning routes');
               Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
               Form.CardList.ItemIndex:=0; Form.CardSelectionChange(nil);
+              Form.CardFilter.Text:='project.example.test';Form.CardFilterChange(nil);
+              Check((Form.CardList.Count=1) and StartsText('Public website:',Form.CardList.Items[0]),
+                'Fetched public website text appears in the Learning library');
+              WaitHTML(Form.CardBrowser,'document.body.innerText','Public conversion guide describes the application workflow');
               Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
               Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]) and
-                (Form.CardDocumentLocation.Items.Count=1),
-                'Learning library excludes a nested README outside the source directory');
+                (Form.CardDocumentLocation.Items.Count=2),
+                'Learning library lists root and project docs README locations together');
               Form.CardSelectionChange(nil);
-              WaitHTML(Form.CardBrowser,'document.body.innerText','This example application teaches a newcomer');
+              WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
               Check(True,'A discovered project document opens as readable content');
+              Form.CardDocumentLocation.ItemIndex:=1; Form.CardSelectionChange(Form.CardDocumentLocation);
               WaitHTML(Form.CardBrowser,'document.querySelector("table thead th").innerText','Unit');
               WaitHTML(Form.CardBrowser,'document.querySelector("table tbody td").innerText','Main.pas');
               WaitHTML(Form.CardBrowser,'String(document.querySelectorAll("ul li").length)','2');
@@ -725,8 +739,16 @@ begin
       try
         Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False; Form.Show;
         Form.OpenSelection(TPath.Combine(Fixture,'Semantic.dproj'),TPath.Combine(Work,'progress-check.dphdb'));
-        Check(Form.ProjectPreparationLayout.Visible and (Form.ProjectPreparationProgress.Value=5),
-          'Project preparation starts with a small visible progress step');
+        Check(Form.ProjectPreparationLayout.Visible and (Form.ProjectPreparationProgress.Value=5) and
+          (Form.ProjectPreparationPercent.Text='5%') and
+          ContainsText(Form.ProjectPreparationHint.Text,'few minutes'),
+          'Centered project preparation starts with a visible percentage and time guidance');
+        Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
+        try
+          if Bitmap.Canvas.BeginScene then
+            try Form.PaintTo(Bitmap.Canvas); finally Bitmap.Canvas.EndScene; end;
+          Bitmap.SaveToFile(TPath.Combine(Work,'progress-panel.png'));
+        finally Bitmap.Free; end;
         var PreviousProgress:=Form.ProjectPreparationProgress.Value;
         var SawIntermediateProgress:=False;
         Watch:=TStopwatch.StartNew;

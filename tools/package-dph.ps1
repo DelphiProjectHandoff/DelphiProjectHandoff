@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.6',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.7',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -60,8 +60,8 @@ Experimental Windows desktop handoff application - version $Version
    forms, commands, data candidates, and questions. Use Learning library,
    Project map, Screenshots, and Application diagrams for deeper inspection.
 5. Screenshots reconstruct saved controls from .fmx and .dfm form files on
-   demand. They are not captures of the running application; custom painting
-   and runtime data may differ.
+   demand and open at 90 percent zoom. They are not captures of the running
+   application; custom painting and runtime data may differ.
 6. Choose your language from the selector in the main header. All 35 language
    packs work offline and remain beside each Windows edition.
    The experimental English-to-German project-text model is also bundled in
@@ -71,9 +71,11 @@ Experimental Windows desktop handoff application - version $Version
    to continue. Keep a saved .dphdb and its adjacent .dphdb.views folder
    together. Use Open saved project to restore them later.
 
-The Read public websites checkbox is off by default. Leave it off for
-fully offline use. When enabled, eligible public HTTPS pages referenced by
-the selected project may be read if an Internet connection is available.
+The centered preparation panel shows progress during a new capture. The
+Learning library reads guides from the selected project's docs folder and
+the project's README. The Read public websites checkbox is off by default.
+Leave it off for fully offline use. When enabled, eligible public HTTPS pages
+from that project's sitemap or documents may appear in the Learning library.
 
 The included guides and HTML help describe the app-specific learning route.
 Keep all supplied files together. Microsoft WebView2 Runtime is needed for

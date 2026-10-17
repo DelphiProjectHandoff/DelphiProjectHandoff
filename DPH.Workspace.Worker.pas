@@ -50,6 +50,7 @@ type
     ScreenToken:Int64;
     ScreenDatabase:string;
     MessageText: string;
+    ProgressPercent: Integer;
     Busy,Changed,Detached,Failed: Boolean;
     destructor Destroy; override;
   end;
@@ -58,7 +59,7 @@ type
     FRequests: TThreadedQueue<TDPHWorkspaceRequest>;
     FResponses: TThreadedQueue<TDPHWorkspaceResponse>;
     FBaseDirectory: string;
-    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil; const AExportDirectory: string = ''; AImages: TJSONArray = nil; const ASourceEntry: string = '');
+    procedure Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray = nil; const AExportDirectory: string = ''; AImages: TJSONArray = nil; const ASourceEntry: string = ''; AProgressPercent: Integer = -1);
   protected
     procedure Execute; override;
   public
@@ -69,7 +70,7 @@ type
     procedure Stop;
   end;
 implementation
-uses System.IOUtils, System.StrUtils, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
+uses System.IOUtils, System.StrUtils, System.Math, System.Hash, Winapi.ActiveX, DPH.Storage.Database, DPH.Storage.Types,
   DPH.Project.Analysis, DPH.Project.Inventory, DPH.Analysis.Model, DPH.Analysis.Symbols,
   DPH.Analysis.Persistence, DPH.Workspace.Model, DPH.Publish.Model, DPH.Publish.Export, DPH.Storage.Backup, DPH.Parse.Model, DPH.Publish.Translation, DPH.Analysis.Quality, DPH.Workspace.Comparison,DPH.Workspace.ScreenHistory, DPH.Learning.Discovery;
 
@@ -93,10 +94,11 @@ procedure TDPHWorkspaceWorker.Submit(const ARequest: TDPHWorkspaceRequest);
 begin if FRequests.PushItem(ARequest)<>wrSignaled then raise EInvalidOperation.Create('Workspace request queue is full'); end;
 function TDPHWorkspaceWorker.Poll(out AResponse: TDPHWorkspaceResponse): Boolean;
 begin Result:=(FResponses.PopItem(AResponse)=wrSignaled) and (AResponse<>nil); end;
-procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray; const AExportDirectory: string; AImages: TJSONArray; const ASourceEntry: string);
+procedure TDPHWorkspaceWorker.Respond(ADocument: TJSONObject; const AMessage: string; ABusy,AChanged,ADetached,AFailed: Boolean; AKnowledge: TJSONArray; const AExportDirectory: string; AImages: TJSONArray; const ASourceEntry: string; AProgressPercent: Integer);
 var Response: TDPHWorkspaceResponse;
 begin
   Response:=TDPHWorkspaceResponse.Create; Response.Document:=ADocument; Response.MessageText:=AMessage;
+  Response.ProgressPercent:=AProgressPercent;
   Response.Knowledge:=AKnowledge;
   Response.Screenshots:=AImages;
   Response.ExportDirectory:=AExportDirectory;
@@ -496,7 +498,12 @@ begin
             try
               if Terminated then Continue;
               Respond(nil,'Saving project findings and preparing learning views...',True,Changed,False,False);
-              Generation:=TDPHSemanticPersistence.Stage(Scan,Graph,Store,Config);
+              Generation:=TDPHSemanticPersistence.Stage(Scan,Graph,Store,Config,
+                procedure(Done,Total: Integer)
+                begin
+                  Respond(nil,'Saving project findings and preparing learning views...',True,Changed,False,False,
+                    nil,'',nil,'',45+Round(40*Done/Max(Total,1)));
+                end);
               if Terminated then begin Store.FailGeneration(Generation,'Cancelled by user'); Continue; end;
               Document:=TDPHWorkspaceView.Capture(Scan,Graph,Generation,Request.Entry,Request.Configuration,Request.Platform,Request.Defines,Request.ExternalRoots);
               try

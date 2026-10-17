@@ -17,7 +17,7 @@ type
     ProjectSearchProgress,ProjectPreparationLayout: TLayout;
     ProjectSearchSpinner: TAniIndicator;
     ProjectSearchProgressText: TLabel;
-    ProjectPreparationMessage: TLabel;
+    ProjectPreparationMessage,ProjectPreparationHint,ProjectPreparationPercent: TLabel;
     ProjectPreparationProgress: TProgressBar;
     HeaderLayout,HeaderBrandRow,LearnerNavRow1,LearnerNavRow2,ExplorerLayout,InspectorLayout,FilterLayout: TLayout;
     HeaderLogo: TImage;
@@ -1254,7 +1254,7 @@ begin
   finally ProjectMemberMemo.Lines.EndUpdate; end;
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
-var V,W:TJSONValue;R,Section,Group:TJSONObject; Guides,Screens,GuideIndexes:TJSONArray;
+var V,W:TJSONValue;R,Section,Group:TJSONObject; Guides,Screens,Sites,GuideIndexes:TJSONArray;
   Title,Query,Source,GroupKey,DisplayTitle:string; I,J:Integer; MatchesQuery:Boolean;
 begin
  if FCardRows=nil then Exit;
@@ -1291,6 +1291,14 @@ begin
      J:=FCardRows.IndexOf(Group);
      CardList.Items[J]:='Document: '+Group.GetValue<string>('heading')+' ('+GuideIndexes.Count.ToString+' locations)';
    end;
+  end;
+  Sites:=FLearningFacts.Document.GetValue<TJSONArray>('project_sites',nil);
+  if Sites<>nil then for V in Sites do begin
+   R:=V as TJSONObject;
+   if R.GetValue<string>('text','').Trim='' then Continue;
+   Title:=R.GetValue<string>('url','');
+   if (Query<>'') and not ContainsText(Title+' '+R.GetValue<string>('text',''),Query) then Continue;
+   FCardRows.Add(R);CardList.Items.Add('Public website: '+Title);
   end;
   Screens:=FLearningFacts.Document.GetValue<TJSONArray>('project_screens',nil);
   if Screens<>nil then for V in Screens do begin
@@ -1353,6 +1361,11 @@ begin
      R.GetValue<Integer>('route_index',0));
    Body:=TRegEx.Replace(HTML,'</(p|h[1-6]|li|section|ol|ul)>|<br\s*/?>',sLineBreak,[roIgnoreCase]);
    CardReader.Text:=TNetEncoding.HTML.Decode(TRegEx.Replace(Body,'<[^>]+>','')).Trim;
+ end else if R.GetValue<string>('url','')<>'' then begin
+   Title:=R.GetValue<string>('url','Public website');
+   Body:='Captured from this public website during project analysis:'+sLineBreak+sLineBreak+
+     R.GetValue<string>('text','');
+   CardReader.Text:=Body;
  end else if R.GetValue<TJSONArray>('sections',nil)<>nil then begin
    Source:=R.GetValue<string>('source','');Title:=TPath.GetFileName(Source);
    Body:='';Sections:=R.GetValue<TJSONArray>('sections');
@@ -1468,7 +1481,7 @@ begin
    if InTable then HTML:=HTML+'</tbody></table></div>';
    if InCode then HTML:=HTML+'</code></pre>';
  finally Lines.Free;end;
- if R.GetValue<TJSONArray>('sections',nil)=nil then
+ if (R.GetValue<TJSONArray>('sections',nil)=nil) and (R.GetValue<string>('url','')='') then
    HTML:=HTML+'<p><a href="index.html#form_'+THashSHA2.GetHashString(R.GetValue<string>('source',''))+'">Open this screen</a></p>';
  HTML:=HTML+'</article></body></html>';
  end;
@@ -2020,7 +2033,8 @@ begin
   if ACommand='full' then begin
     ProjectPreparationMessage.Text:='Reading the selected application''s project files...';
     FPreparingProject:=True;FPreparationCompletionTicks:=0;
-    ProjectPreparationProgress.Value:=5;ProjectPreparationLayout.Visible:=True;
+    ProjectPreparationProgress.Value:=5; ProjectPreparationPercent.Text:='5%';
+    ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
   end;
     FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
 end;
@@ -2127,7 +2141,8 @@ begin
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False;
   ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
   FPreparingProject:=True;FPreparationCompletionTicks:=0;
-  ProjectPreparationProgress.Value:=5; ProjectPreparationLayout.Visible:=True;
+  ProjectPreparationProgress.Value:=5; ProjectPreparationPercent.Text:='5%';
+  ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -2243,13 +2258,16 @@ begin
     end;
     FBusy:=R.Busy;if not R.Busy then WorkspaceTabs.Enabled:=True;
     if R.Busy and FPreparingProject then begin
-      if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,25)
+      if R.ProgressPercent>=0 then
+        ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,R.ProgressPercent)
+      else if ContainsText(R.MessageText,'Reading Delphi project files') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,25)
       else if ContainsText(R.MessageText,'Tracing forms') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,45)
       else if ContainsText(R.MessageText,'Saving project findings') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,60)
       else if ContainsText(R.MessageText,'Searching project-local') or
         ContainsText(R.MessageText,'Refreshing project-local') then ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,75)
       else ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,10);
       if R.MessageText<>'' then ProjectPreparationMessage.Text:=TranslatedMessage;
+      ProjectPreparationPercent.Text:=Format('%d%%',[Round(ProjectPreparationProgress.Value)]);
     end;
     if (FPendingCommand='search') and not R.Busy then ProjectSearchProgress.Visible:=False;
     if not R.Busy and not R.Failed then FDetached:=R.Detached;
@@ -2274,6 +2292,7 @@ begin
           ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80);
           ProjectPreparationMessage.Text:=DATTranslateDynamicText('Preparing the learning library and screen previews...');
         end;
+        ProjectPreparationPercent.Text:=Format('%d%%',[Round(ProjectPreparationProgress.Value)]);
       end;
       LoadView(R.Document,R.Screenshots,R.Knowledge<>nil); R.Document:=nil;
       FreeAndNil(R.Screenshots);
@@ -2396,6 +2415,7 @@ begin
         'Project preparation stopped. Read the status message for details.')
       else begin
         ProjectPreparationProgress.Value:=100;
+        ProjectPreparationPercent.Text:='100%';
         ProjectPreparationMessage.Text:=DATTranslateDynamicText('Project ready to explore.');
       end;
       FPreparationCompletionTicks:=5;
@@ -2406,8 +2426,9 @@ begin
     (FExpectedDossierPage='') and
     not LearningBrowser.Visible and not OverviewMemo.Visible then begin
     FPreparingProject:=True;
-    ProjectPreparationLayout.Visible:=True;
+    ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
     ProjectPreparationProgress.Value:=Max(ProjectPreparationProgress.Value,80);
+    ProjectPreparationPercent.Text:=Format('%d%%',[Round(ProjectPreparationProgress.Value)]);
     RefreshLearning;
   end;
   if (FPendingWorkspaceTab<>nil) and (FPendingWorkspaceTab=WorkspaceTabs.ActiveTab) and (FView<>nil) then begin
@@ -2446,7 +2467,7 @@ begin
   if ADeferLearning and (FPendingCommand='open') then begin
     FPreparingProject:=True;
     FPreparationCompletionTicks:=0;
-    ProjectPreparationLayout.Visible:=True;
+    ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
   end;
   FLineageSeed:=''; FLineageDirection:='both';
   HistorySelectionChange(nil);
@@ -3372,6 +3393,7 @@ begin
     FPreparingProject:=False;
     WorkspaceTabs.Enabled:=True;
     ProjectPreparationProgress.Value:=100;
+    ProjectPreparationPercent.Text:='100%';
     ProjectPreparationMessage.Text:=DATTranslateDynamicText('Project ready to explore.');
     FPreparationCompletionTicks:=5;
   end;
@@ -4014,7 +4036,9 @@ begin
                 'DPH.UI.Main.Runtime.ProjectPreparationMessage_Text.Text.b907fb4fd5f67390',
                 'Preparing screen previews: %d of %d complete; %d remaining.',
                 [Done,Count,Count-Done]);
+              ProjectPreparationPercent.Text:=Format('%d%%',[Round(ProjectPreparationProgress.Value)]);
               ProjectPreparationMessage.Repaint; ProjectPreparationProgress.Repaint;
+              ProjectPreparationPercent.Repaint;
               Application.ProcessMessages;
             end;
           end;

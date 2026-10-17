@@ -1383,29 +1383,58 @@ Margins.Left = 8
 Margins.Right = 8
 end
 object ProjectPreparationLayout: TLayout
-Align = Top
-Height = 50
+Align = Center
+Width = 650
+Height = 170
 Visible = False
+object ProjectPreparationPanel: TRectangle
+Align = Client
+Fill.Color = xFFFFFFFF
+Stroke.Color = xFF146CB4
+Stroke.Thickness = 2
+XRadius = 10
+YRadius = 10
 object ProjectPreparationMessage: TLabel
-Align = Left
-Width = 520
-Margins.Left = 16
+Position.X = 24
+Position.Y = 18
+Width = 600
+Height = 52
 WordWrap = True
 StyledSettings = []
-TextSettings.Font.Size = 15
+TextSettings.Font.Size = 17
 TextSettings.FontColor = xFF146CB4
 Text = 'Checking the selected application...'
 end
-object ProjectPreparationProgress: TProgressBar
-Align = Left
-Width = 300
+object ProjectPreparationHint: TLabel
+Position.X = 24
+Position.Y = 77
+Width = 600
 Height = 24
-Margins.Left = 96
-Margins.Top = 13
-Margins.Bottom = 13
+StyledSettings = []
+TextSettings.Font.Size = 14
+TextSettings.FontColor = xFF31506B
+Text = 'This may take a few minutes...'
+end
+object ProjectPreparationProgress: TProgressBar
+Position.X = 24
+Position.Y = 117
+Width = 535
+Height = 24
 Min = 0
 Max = 100
 Value = 0
+end
+object ProjectPreparationPercent: TLabel
+Position.X = 568
+Position.Y = 114
+Width = 58
+Height = 30
+StyledSettings = []
+TextSettings.Font.Size = 16
+TextSettings.FontColor = xFF146CB4
+TextSettings.HorzAlign = Center
+Text = '0%'
+end
 end
 
 end
@@ -3339,7 +3368,7 @@ Position.Y = 8
 Width = 150
 Height = 30
 Items.Strings = ('Fit' 'Native pixels' 'Custom zoom')
-ItemIndex = 1
+ItemIndex = 2
 OnChange = ScreenshotViewChange
 end
 object ScreenshotZoom: TTrackBar
@@ -3349,8 +3378,8 @@ Width = 140
 Height = 30
 Min = 25
 Max = 400
-Value = 100
-Frequency = 25
+Value = 90
+Frequency = 10
 Hint = 'Screenshot zoom: 25 to 400 percent'
 ShowHint = True
 OnChange = ScreenshotViewChange

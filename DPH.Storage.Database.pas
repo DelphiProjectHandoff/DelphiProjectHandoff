@@ -18,6 +18,8 @@ type
     FWriteQueue: TThreadedQueue<TProc<TDPHKnowledgeStore>>;
     FReady: Boolean;
     FClosing: Integer;
+    FBatchGenerationID: Int64;
+    FEvidenceRevisionCache: TDictionary<string,Int64>;
     procedure RequireWriter;
     procedure ApplyMigrations(const AMigrationDirectory: string);
     function NewQuery(const ASQL: string; const AValues: array of Variant): TFDQuery;
@@ -130,6 +132,7 @@ begin
   inherited Create;
   FThreadID := GetCurrentThreadID;
   FWriteQueue := TThreadedQueue<TProc<TDPHKnowledgeStore>>.Create(256,0,0);
+  FEvidenceRevisionCache := TDictionary<string,Int64>.Create;
   FDatabasePath := TPath.GetFullPath(ADatabasePath);
   FSourceRoot := IncludeTrailingPathDelimiter(TPath.GetFullPath(ASourceRoot));
   CheckOutsideSource(FDatabasePath);
@@ -200,6 +203,7 @@ begin
     end;
   finally
     FWriteQueue.Free;
+    FEvidenceRevisionCache.Free;
     FConnection.Free;
     if FWriterMutex <> 0 then
     begin
@@ -551,6 +555,7 @@ end;
 procedure TDPHKnowledgeStore.RequireRunning(AGenerationID: Int64);
 begin
   RequireWriter;
+  if (AGenerationID<>0) and (AGenerationID=FBatchGenerationID) and FConnection.InTransaction then Exit;
   if VarToStr(Scalar('SELECT status FROM analysis_generations WHERE generation_id=:id AND project_id=1',
     [AGenerationID])) <> 'running' then raise EDPHStorage.Create('Generation is not running');
 end;
@@ -644,10 +649,17 @@ function TDPHKnowledgeStore.AddEvidence(AGenerationID: Int64;
   const APath, ARangeJSON, AKind, APayload, AVerification: string): Int64;
 var
   RevisionID: Variant;
+  CachedRevisionID: Int64;
 begin
   RequireRunning(AGenerationID);
-  RevisionID := Scalar('SELECT gf.file_revision_id FROM generation_files gf JOIN source_files sf ON sf.file_id=gf.file_id '+
-    'WHERE gf.generation_id=:generation AND sf.canonical_relpath=:path',[AGenerationID,APath]);
+  if (AGenerationID=FBatchGenerationID) and FEvidenceRevisionCache.TryGetValue(APath,CachedRevisionID) then
+    RevisionID:=CachedRevisionID
+  else begin
+    RevisionID := Scalar('SELECT gf.file_revision_id FROM generation_files gf JOIN source_files sf ON sf.file_id=gf.file_id '+
+      'WHERE gf.generation_id=:generation AND sf.canonical_relpath=:path',[AGenerationID,APath]);
+    if (AGenerationID=FBatchGenerationID) and not VarIsNull(RevisionID) then
+      FEvidenceRevisionCache.AddOrSetValue(APath,Int64(RevisionID));
+  end;
   if VarIsNull(RevisionID) then raise EDPHStorage.Create('Evidence source is not captured');
   FConnection.ExecSQL('INSERT INTO evidence(project_id,generation_id,file_revision_id,source_range_json,evidence_kind,'+
     'payload_ref,analyzer_version,capture_time,verification_state) '+
@@ -1387,11 +1399,25 @@ begin
 end;
 
 procedure TDPHKnowledgeStore.BeginFacts(AGenerationID: Int64);
-begin RequireRunning(AGenerationID); if FConnection.InTransaction then raise EDPHStorage.Create('Fact batch already active'); FConnection.StartTransaction; end;
+begin
+  RequireRunning(AGenerationID);
+  if FConnection.InTransaction then raise EDPHStorage.Create('Fact batch already active');
+  FConnection.StartTransaction;
+  FBatchGenerationID:=AGenerationID;
+  FEvidenceRevisionCache.Clear;
+end;
 procedure TDPHKnowledgeStore.CommitFacts;
-begin RequireWriter; FConnection.Commit; end;
+begin
+  RequireWriter;
+  try FConnection.Commit;
+  finally FBatchGenerationID:=0; FEvidenceRevisionCache.Clear; end;
+end;
 procedure TDPHKnowledgeStore.RollbackFacts;
-begin RequireWriter; if FConnection.InTransaction then FConnection.Rollback; end;
+begin
+  RequireWriter;
+  try if FConnection.InTransaction then FConnection.Rollback;
+  finally FBatchGenerationID:=0; FEvidenceRevisionCache.Clear; end;
+end;
 
 class function TDPHKnowledgeStore.ProjectRoot(const ADatabasePath: string): string;
 var Connection: TFDConnection; Query: TFDQuery;

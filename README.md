@@ -8,14 +8,14 @@ Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the o
 
 DPH is experimental Windows software built with Delphi 13.1. It is not a production 1.0 release.
 
-**Release status (16 October 2026):** **0.8.0.6** is the current experimental release. Learned documents now come only from the selected application's source directory. The main form and each saved tab have separate generated design previews. Application diagrams no longer show part of the previous page while loading; the reference screen map prepared in 650 ms in the native test. Opening a saved project still displays its real HTML dossier before preparation closes.
+**Release status (16 October 2026):** **0.8.0.7** is the current experimental release. A new project shows centered progress with a percentage while DPH captures it. The Learning library reads the selected project's guides under `docs`, along with its README, and can show text fetched from that project's public website when you enable website reading. Form previews now open at 90 percent zoom. A fresh capture of a large reference project completed in 66.6 seconds on the test machine; timing will vary with project size and hardware.
 
 ## Choose a download
 
-- **Run the packaged 0.8.0.6 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.6-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
-- **Build the matching editable source:** Download the source distribution from the [0.8.0.6 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.6-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
+- **Run the packaged 0.8.0.7 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.7-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
+- **Build the matching editable source:** Download the source distribution from the [0.8.0.7 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.7-experimental), or clone this repository. Open `DelphiProjectHandoff.dproj` in RAD Studio 37. GitHub's **Code → Download ZIP** contains no compiled executable.
 
-The [0.8.0.6 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.6-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
+The [0.8.0.7 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.7-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
 
 ## Build and start from source
 
