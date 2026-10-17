@@ -1,4 +1,4 @@
-unit DPH.UI.Main;
+﻿unit DPH.UI.Main;
 interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
