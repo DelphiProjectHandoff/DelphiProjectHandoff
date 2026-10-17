@@ -51,7 +51,7 @@ constructor TDPHDocumentModel.Create(AView: TDPHWorkspaceView; AKnowledge: TJSON
 var AllowedFiles,Selected,AllKeys,FlowIDs: TDictionary<string,Boolean>; Queue: TQueue<string>;
     V,W,LinkFileValue: TJSONValue; S,R,J,Range,Section: TJSONObject; Symbols,Relations,Files,Excluded,Evidence,Knowledge,FlowNodes,FlowEdges,Sections,Paragraphs,Links: TJSONArray;
     Path,Prefix,Key,FromKey,ToKey,Kind,EvidenceID,SectionAudience: string; Exclude,IncludeRow: Boolean; Generation: Int64; I,Confirmed,Unresolved,Parent,Depth: Integer;
-    Startup,Nodes,Comments,AuthoredSections,Questions: TJSONArray; Node,FileRow,LinkedRow,LinkRange,QuestionMetadata: TJSONObject; Explanations: TDPHExplanationModel; CommentCount,LinkIndex,Omitted: Integer;
+    Startup,Nodes,Comments,AuthoredSections,Questions,BuildPaths: TJSONArray; Node,FileRow,LinkedRow,LinkRange,QuestionMetadata: TJSONObject; Explanations: TDPHExplanationModel; CommentCount,LinkIndex,Omitted: Integer;
     LinkRecords: TList<TJSONObject>; LinkValue,TargetRecord,TargetRevision: TJSONValue; TargetFound: Boolean;
   function CaptureValue(AValue: TJSONValue): TJSONValue;
   begin
@@ -97,6 +97,7 @@ begin
     Evidence:=TJSONArray.Create; Knowledge:=TJSONArray.Create; FlowNodes:=TJSONArray.Create; FlowEdges:=TJSONArray.Create;
     Sections:=TJSONArray.Create;
     FDocument.AddPair('files',Files); FDocument.AddPair('exclusions',Excluded); FDocument.AddPair('symbols',Symbols); FDocument.AddPair('relationships',Relations);
+    BuildPaths:=TJSONArray.Create; FDocument.AddPair('project_build_paths',BuildPaths);
     FDocument.AddPair('evidence',Evidence); FDocument.AddPair('knowledge',Knowledge); FDocument.AddPair('flow_nodes',FlowNodes); FDocument.AddPair('flow_edges',FlowEdges); FDocument.AddPair('sections',Sections);
     for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin R:=V as TJSONObject; Path:=R.GetValue<string>('path');
       Exclude:=StartsText('external/',Path) or ContainsText(Path,'.env') or ContainsText(Path,'credential') or ContainsText(Path,'secret') or
@@ -158,6 +159,18 @@ begin
       end;
     end;
     for V in AView.Document.GetValue<TJSONArray>('syntax.files') do begin R:=V as TJSONObject; Path:=R.GetValue<string>('path'); if not AllowedFiles.ContainsKey(Path) then Continue;
+      if MatchText(ExtractFileExt(Path),['.dproj','.groupproj']) and R.TryGetValue<TJSONArray>('ir.nodes',Nodes) then
+        for W in Nodes do begin
+          Node:=W as TJSONObject;
+          if (Node.GetValue<string>('kind','')='project_property') and
+            MatchText(Node.GetValue<string>('name',''),
+              ['DCC_UnitSearchPath','DCC_IncludePath','DCC_ResourcePath','DCC_Namespace','DCC_UnitOutputDir','DCC_ExeOutput']) then
+            BuildPaths.AddElement(TJSONObject.Create
+              .AddPair('name',Node.GetValue<string>('name',''))
+              .AddPair('value',Node.GetValue<string>('value',''))
+              .AddPair('source',Path)
+              .AddPair('line',TJSONNumber.Create(Node.GetValue<Integer>('range.line',0))));
+        end;
       IncludeRow:=Length(ASeeds)=0; if not IncludeRow then for W in Symbols do if (W as TJSONObject).GetValue<string>('range.source')=Path then begin IncludeRow:=True; Break; end;
       if IncludeRow then begin J:=TJSONObject.Create; J.AddPair('path',Path); J.AddPair('sha256',R.GetValue<string>('sha256')); J.AddPair('bytes',TJSONNumber.Create(R.GetValue<Int64>('bytes'))); J.AddPair('availability',R.GetValue<string>('availability')); Files.AddElement(J); end;
     end;

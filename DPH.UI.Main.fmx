@@ -1097,6 +1097,16 @@ Text = 'Save project'
 Enabled = False
 OnClick = SaveProjectClick
 end
+object RescanProjectButton: TButton
+Align = Left
+Width = 112
+Margins.Top = 3
+Margins.Bottom = 3
+Margins.Right = 6
+Text = 'Rescan project'
+Enabled = False
+OnClick = RescanProjectClick
+end
 object CloseButton: TButton
 Align = Right
 Width = 88

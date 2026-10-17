@@ -56,6 +56,16 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            HelpText := Runtime.Translate('DPHMainForm.RescanProjectButton.Text',
+              'Rescan project');
+            if (HelpText = '') or (HelpText = 'Rescan project') then
+              raise Exception.Create('Untranslated Rescan project action in ' +
+                Descriptor.LanguageCode);
+            Html := Runtime.TranslateHtmlText(
+              '<html lang="en"><body><p>Select Open application and choose a .dproj file. DPH reads project files.</p></body></html>');
+            if Pos('Select Open application and choose a .dproj file. DPH reads project files.', Html) = 0 then
+              raise Exception.Create('HTML translation mixed languages inside a sentence in ' +
+                Descriptor.LanguageCode);
             HelpText := Runtime.Translate('DPHMainForm.SaveProjectButton.Text',
               'Save project');
             if (HelpText = '') or (HelpText = 'Save project') then

@@ -429,22 +429,16 @@ var
       constant time before invoking compound dynamic matching. Large reports
       contain thousands of identifiers; sending every one through every
       source phrase was the cause of multi-second language changes. }
+    { A prose node must have a complete translation. Dynamic term replacement
+      can splice isolated translated words into an otherwise English sentence,
+      which is misleading in every locale. Keep the complete source node when
+      the pack has no exact translation for it. }
     if not FActivePack.TryTranslateSource(ExactText, TranslatedText) then
       if not (FActivePack.SourceTemplates.TryGetValue(ExactText,
         TranslatedText) and (TranslatedText <> '')) then
       begin
-        if (Pos(' ', ExactText) = 0) and (Pos(#9, ExactText) = 0) and
-          (Pos(#10, ExactText) = 0) and (Pos(#13, ExactText) = 0) then
-        begin
-          FHtmlTranslationCache.AddOrSetValue(ExactText, ExactText);
-          Exit(AText);
-        end;
-        if not FActivePack.TryTranslateDynamicText(ExactText,
-          TranslatedText) then
-        begin
-          FHtmlTranslationCache.AddOrSetValue(ExactText, ExactText);
-          Exit(AText);
-        end;
+        FHtmlTranslationCache.AddOrSetValue(ExactText, ExactText);
+        Exit(AText);
       end;
 
     if TranslatedText <> '' then

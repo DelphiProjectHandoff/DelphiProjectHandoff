@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.8')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.9')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -67,7 +67,9 @@ legacy Word, RTF and several other older word-processing formats.
 The selected Delphi application is read as input; DPH does not run or modify it.
 Start with Handoff dossier. A new capture remains temporary until the user
 clicks Save project, or chooses Yes at close or on a project change; No discards it and
-Cancel keeps it open. Generated form views are reconstructions, not runtime
+Cancel keeps it open. Rescan project checks an attached source project for changes.
+The dossier maps captured directories and project build paths and links component
+and database evidence. Generated form views are reconstructions, not runtime
 screenshots.
 The Read public websites checkbox is off by default and controls optional
 HTTPS requests for public sites referenced in selected project documents.

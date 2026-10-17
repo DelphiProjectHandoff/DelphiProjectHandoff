@@ -24,7 +24,7 @@ type
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
-    OpenProjectButton,OpenCacheButton,SaveProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenProjectButton,OpenCacheButton,SaveProjectButton,RescanProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -754,6 +754,7 @@ type
     procedure OpenCacheClick(Sender: TObject);
     procedure CloseButtonClick(Sender: TObject);
     procedure SaveProjectClick(Sender: TObject);
+    procedure RescanProjectClick(Sender: TObject);
     procedure AllowInternetChange(Sender: TObject);
     procedure PollTimerTimer(Sender: TObject);
     procedure ChangeTimerTimer(Sender: TObject);
@@ -1095,16 +1096,20 @@ begin
     OpenCacheButton.Width:=Min(240,Max(142,Ceil(TextLayout.Width)+30));
     TextLayout.Text:=SaveProjectButton.Text.Replace(#$00AD,'');
     SaveProjectButton.Width:=Min(190,Max(112,Ceil(TextLayout.Width)+30));
+    TextLayout.Text:=RescanProjectButton.Text.Replace(#$00AD,'');
+    RescanProjectButton.Width:=Min(190,Max(112,Ceil(TextLayout.Width)+30));
     TextLayout.Text:=CloseButton.Text.Replace(#$00AD,'');
     CloseButton.Width:=Min(150,Max(88,Ceil(TextLayout.Width)+24));
     OpenProjectButton.Height:=36;
     OpenCacheButton.Height:=36;
     SaveProjectButton.Height:=36;
+    RescanProjectButton.Height:=36;
     CloseButton.Height:=36;
     AvailableWidth:=Max(1,ClientWidth-LearnerNavRow1.Margins.Left-LearnerNavRow1.Margins.Right);
     RowWidth:=OpenProjectButton.Width+OpenProjectButton.Margins.Left+OpenProjectButton.Margins.Right+
       OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right+
       SaveProjectButton.Width+SaveProjectButton.Margins.Left+SaveProjectButton.Margins.Right+
+      RescanProjectButton.Width+RescanProjectButton.Margins.Left+RescanProjectButton.Margins.Right+
       CloseButton.Width+CloseButton.Margins.Left+CloseButton.Margins.Right;
     SecondRow:=False;
     for Index:=0 to High(Tabs) do begin
@@ -1209,6 +1214,15 @@ begin
   if FBusy or (FUnsavedDatabase='') then Exit;
   ResolveUnsavedProject(False,True);
   SaveProjectButton.Enabled:=FUnsavedDatabase<>'';
+end;
+procedure TDPHMainForm.RescanProjectClick(Sender: TObject);
+begin
+  if FBusy or FDetached or (FEntry='') or (FView=nil) then Exit;
+  if FKnowledgeEdited then begin
+    StatusLabel.Text:='Save or discard the authored text before rescanning the project';
+    Exit;
+  end;
+  Submit('incremental');
 end;
 procedure TDPHMainForm.AllowInternetChange(Sender: TObject);
 var Settings: TIniFile;
@@ -2044,8 +2058,8 @@ begin
   end;
   FPendingCommand:=ACommand;
   FWorker.Submit(R); FBusy:=True;
-  if ACommand<>'full' then StatusLabel.Text:='Processing the selected request...';
-  if ACommand='full' then begin
+  if not MatchText(ACommand,['full','incremental']) then StatusLabel.Text:='Processing the selected request...';
+  if MatchText(ACommand,['full','incremental']) then begin
     ProjectPreparationMessage.Text:=DATTranslateDynamicText('Reading the selected application''s project files...');
     FPreparingProject:=True;FPreparationCompletionTicks:=0;
     ProjectPreparationProgress.Value:=5; ProjectPreparationPercent.Text:='5%';
@@ -2490,6 +2504,7 @@ begin
     if not ProjectPreparationLayout.Visible then FProgressForm.Hide;
   end;
   SaveProjectButton.Enabled:=(FUnsavedDatabase<>'') and not FBusy;
+  RescanProjectButton.Enabled:=(FView<>nil) and (FEntry<>'') and not FDetached and not FBusy;
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;
@@ -3513,6 +3528,12 @@ begin
   if EndsText('#open_data',AURL) then begin
     ACancel:=True; WorkspaceTabs.ActiveTab:=DatabaseInventoryTab; Exit;
   end;
+  if EndsText('#open_schema',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=DatabaseSchemaTab; Exit;
+  end;
+  if EndsText('#open_dependencies',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=DependencyTab; Exit;
+  end;
   if EndsText('#open_files',AURL) then begin
     ACancel:=True; WorkspaceTabs.ActiveTab:=FileFormatsTab; Exit;
   end;
@@ -3619,7 +3640,19 @@ begin
     '<p>Build a source-backed maintenance handoff for an unfamiliar Delphi application.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>'+
     '<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>'+
     '<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section></main></body></html>';
-  HTML:=DATTranslateHtmlText(HTML);
+  if SameText(DATActiveLanguageCode,'de-DE') then begin
+    HTML:=HTML.Replace('<html lang="en">','<html lang="de">')
+      .Replace('Explore an application with DPH','Eine Anwendung mit DPH erkunden')
+      .Replace('Welcome to Delphi Project Handoff','Willkommen bei Delphi Project Handoff')
+      .Replace('Build a source-backed maintenance handoff for an unfamiliar Delphi application.',
+        'Erstellen Sie eine anhand des Quellcodes belegte Übergabe für eine unbekannte Delphi-Anwendung.')
+      .Replace('<section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>',
+        '<section><h2>Anwendungsprojekt öffnen</h2><p>Wählen Sie <strong>Anwendung öffnen</strong> und danach eine .dproj-, .dpr- oder .groupproj-Datei. DPH liest Projektdateien, Formularentwürfe, Quellcode und geeignete lokale Dokumentation. Um eine vorhandene Erfassung zu laden, wählen Sie <strong>Gespeichertes Projekt öffnen</strong>.</p></section>')
+      .Replace('<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>',
+        '<section><h2>Die Übergabe lesen</h2><ol><li>Das <strong>Übergabedossier</strong> zeigt Belege zum Zweck, die Startreihenfolge, Befehlszuordnungen, Datenkandidaten und offene Fragen.</li><li>Die <strong>Lernbibliothek</strong> zeigt projektspezifische Anleitungen und Hilfen.</li><li>Die <strong>Projektkarte</strong> verbindet erfasste Objekte mit Quellcode und Beziehungen.</li><li>Unter <strong>Screenshots</strong> lassen sich Formularvorschauen bei Bedarf aus .dfm- oder .fmx-Dateien erzeugen; importierte Laufzeitbilder bleiben getrennte Belege.</li><li>Die <strong>Anwendungsdiagramme</strong> zeigen statische Verbindungen, die noch zur Laufzeit bestätigt werden müssen.</li></ol></section>')
+      .Replace('<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section>',
+        '<section><h2>Grenzen der Belege</h2><p>Extrahierte Fakten, aus dem Quellcode abgeleitete Schlussfolgerungen und Angaben von Mitwirkenden haben unterschiedliche Gewissheit. Prüfen Sie jede Schlussfolgerung anhand ihres Quellverweises und der Erfassungskonfiguration. DPH führt die ausgewählte Anwendung nicht aus und verändert sie nicht. Das Kontrollkästchen oben steuert das optionale Lesen öffentlicher Websites.</p></section>');
+  end;
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;

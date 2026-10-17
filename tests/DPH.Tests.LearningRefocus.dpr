@@ -182,6 +182,9 @@ begin
             FlowText:=TDPHHandoffDossier.Render(Model.Document,0);
             Check(ContainsText(FlowText,'Handoff overview') and
               ContainsText(FlowText,'Startup reading order') and
+              ContainsText(FlowText,'Project directories and build paths') and
+              ContainsText(FlowText,'DCC_UnitSearchPath') and
+              ContainsText(FlowText,'#open_dependencies') and
               ContainsText(FlowText,'PARTIAL capture') and
               ContainsText(FlowText,'Semantic.dproj') and
               not ContainsText(FlowText,'SHA-256'),
@@ -191,6 +194,13 @@ begin
               ContainsText(FlowText,'#open_commands') and
               ContainsText(FlowText,'confirmed_static'),
               'Command dossier links static bindings to deeper inspection');
+            FlowText:=TDPHHandoffDossier.Render(Model.Document,2);
+            Check(ContainsText(FlowText,'Database connections and bindings') and
+              ContainsText(FlowText,'DriverID=IB') and
+              ContainsText(FlowText,'DriverID=MSSQL') and
+              ContainsText(FlowText,'DriverID=SQLite') and
+              ContainsText(FlowText,'Unit-level variables'),
+              'Data dossier shows connection templates and captured variable evidence');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,3);
             Check(ContainsText(FlowText,'Questions to resolve') and
               ContainsText(FlowText,'Unknown without people'),
@@ -481,9 +491,12 @@ begin
             Form:=TDPHMainForm.Create(nil);
             try
               Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False; Form.Show;
+              Form.DATLanguageManager.SelectLanguage('en-US');
+              Application.ProcessMessages;
+              Form.HelpClick(nil);
               Check((Form.ScreenshotModeCombo.ItemIndex=2) and (Round(Form.ScreenshotZoom.Value)=90),
                 'Generated screen previews start at 90 percent zoom');
-              WaitHTML(Form.HelpBrowser,'document.body.innerText','Welcome to Delphi Project Handoff');
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Delphi Project Handoff');
               Check(Form.WorkspaceTabs.ActiveTab=Form.HelpTab,'First launch provides directions before a project is loaded');
               BrowserBitmap:=Form.HelpBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-getting-started.png')); finally BrowserBitmap.Free; end;
@@ -501,6 +514,11 @@ begin
               Application.ProcessMessages;
               Check(Form.SaveProjectButton.Text='Speichern',
                 'New Save project action uses the offline German interface pack');
+              Check(Form.RescanProjectButton.Text='Projekt erneut einlesen',
+                'Rescan project action uses the offline German interface pack');
+              Form.HelpClick(nil);
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Grenzen der Belege');
+              Check(True,'German getting-started page uses complete translated prose');
               Check(Form.ProjectPreparationHint.Text='Dies kann einige Minuten dauern...',
                 'Project preparation time guidance uses the offline German interface pack');
               Check((Form.FindComponent('DPHProgressForm') as TDPHProgressForm).ProgressHint.Text=
@@ -512,7 +530,7 @@ begin
                 'Narrow display moves overflow tabs to a second visible row');
               Check(Form.OpenCacheButton.Height<=Form.LearnerNavRow1.Height,
                 'Translated open buttons stay within the navigation row');
-              Form.Width:=1400; Application.ProcessMessages;
+              Form.Width:=1800; Application.ProcessMessages;
               Check(not Form.LearnerNavRow2.Visible,
                 'Wider display returns learner tabs to one row');
               Check(Form.DATLanguageManager.SelectLanguage('en-US'),
@@ -782,6 +800,21 @@ begin
         Check(SawIntermediateProgress and (PreviousProgress=100) and (Form.WorkspaceView<>nil) and
           (Form.ScreenshotList.Count=0),
           'Project preparation completes without generating unopened screen previews');
+        Check(Form.RescanProjectButton.Enabled,
+          'Rescan is available after an attached project becomes ready');
+        Form.RescanProjectClick(nil);
+        Check(ProgressWindow.Visible and (ProgressWindow.ProgressPercent.Text='5%'),
+          'Manual rescan immediately opens the centered progress dialog');
+        Watch:=TStopwatch.StartNew;
+        repeat
+          Application.ProcessMessages;
+          Form.PollTimerTimer(nil);
+          if Form.RescanProjectButton.Enabled and not ProgressWindow.Visible then Break;
+          TThread.Sleep(20);
+        until Watch.ElapsedMilliseconds>30000;
+        Check(Form.RescanProjectButton.Enabled and (Form.WorkspaceView<>nil) and
+          not ProgressWindow.Visible,
+          'Manual rescan of unchanged source returns to the ready project');
         Check(not Form.SaveProjectButton.Enabled,'Explicitly named capture does not show an unsaved Save action');
         Form.OpenSelection('',TPath.Combine(Work,'progress-check.dphdb'),True);
         Check(Form.ProjectPreparationLayout.Visible,'Saved open keeps preparation visible while the real dossier loads');

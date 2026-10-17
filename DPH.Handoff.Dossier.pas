@@ -25,12 +25,13 @@ const
 var
   Body, HTML: TStringBuilder;
   Files, Symbols, Relations, Screens, Startup, Guides, Questions, Diagnostics,
-    Knowledge, Properties, Sections: TJSONArray;
+    Knowledge, Properties, Sections, BuildPaths: TJSONArray;
   ByKey: TDictionary<string,TJSONObject>;
+  DirectoryCounts: TDictionary<string,Integer>;
   Value, Other: TJSONValue;
   Row, Target, Control, Guide, Section, Profile, Fields: TJSONObject;
   Name, Caption, EventName, Key, Source, Purpose, PurposeEvidence, Status,
-    Title, Kind: string;
+    Title, Kind, DirectoryName: string;
   Count, Total, Index: Integer;
   function Esc(const AText: string): string;
   begin
@@ -72,7 +73,9 @@ begin
   Questions:=AFacts.GetValue<TJSONArray>('author_questions',nil);
   Diagnostics:=AFacts.GetValue<TJSONArray>('diagnostics',nil);
   Knowledge:=AFacts.GetValue<TJSONArray>('knowledge',nil);
+  BuildPaths:=AFacts.GetValue<TJSONArray>('project_build_paths',nil);
   ByKey:=TDictionary<string,TJSONObject>.Create;
+  DirectoryCounts:=TDictionary<string,Integer>.Create;
   Body:=TStringBuilder.Create;
   HTML:=TStringBuilder.Create;
   try
@@ -136,6 +139,33 @@ begin
         if Relations<>nil then Body.Append('<span><strong>'+IntToStr(Relations.Count)+'</strong> relationships</span>');
         if Screens<>nil then Body.Append('<span><strong>'+IntToStr(Screens.Count)+'</strong> form designs</span>');
         Body.Append('</div><p>Counts describe this selected capture, not all possible build variants or runtime paths.</p></section>');
+        Body.Append('<section class="card"><h2>Project directories and build paths</h2>');
+        if Files<>nil then for Value in Files do begin
+          Row:=Value as TJSONObject;
+          DirectoryName:=Row.GetValue<string>('path','').Replace('\','/');
+          Index:=LastDelimiter('/',DirectoryName);
+          if Index=0 then DirectoryName:='(project root)'
+          else DirectoryName:=Copy(DirectoryName,1,Index);
+          if DirectoryCounts.TryGetValue(DirectoryName,Count) then
+            DirectoryCounts[DirectoryName]:=Count+1
+          else DirectoryCounts.Add(DirectoryName,1);
+        end;
+        Count:=0;
+        for DirectoryName in DirectoryCounts.Keys do begin
+          Body.Append('<p><code>'+Esc(DirectoryName)+'</code> &mdash; '+
+            IntToStr(DirectoryCounts[DirectoryName])+' captured files</p>');
+          Inc(Count); if Count>=40 then Break;
+        end;
+        if DirectoryCounts.Count>Count then Body.Append('<p>Further directories are available in the Project map.</p>');
+        if BuildPaths<>nil then for Value in BuildPaths do begin
+          Row:=Value as TJSONObject;
+          Body.Append('<p><strong>'+Esc(Row.GetValue<string>('name',''))+'</strong>: <code>'+
+            Esc(Row.GetValue<string>('value',''))+'</code> <small><code>'+
+            Esc(Row.GetValue<string>('source',''))+':'+
+            IntToStr(Row.GetValue<Integer>('line',0))+'</code></small></p>');
+        end;
+        Body.Append('<p>These are captured project properties for the selected build variant. Delphi IDE global Library and Browsing paths are not stored in the project and require confirmation on the maintainer machine. Unresolved units can indicate a missing library path, package, source root or conditional variant.</p></section>');
+        if not AExport then Body.Append('<section class="card"><h2>Component packs</h2><p>Inspect serialized VCL/FMX controls, captured class declarations and package references. Record the exact vendor, product version, license and install path when confirmed; a class prefix alone cannot identify a third-party pack.</p><p><a href="#open_dependencies">Inspect component dependencies</a></p></section>');
         Body.Append('<section class="card"><h2>Startup reading order</h2>');
         Count:=0;
         if Startup<>nil then for Value in Startup do begin
@@ -238,6 +268,24 @@ begin
         if AExport then Body.Append('<p><a href="index.html">Browse data relationships</a></p></section>')
         else Body.Append('<p><a href="#open_data">Inspect database evidence</a> | '+
           '<a href="#open_files">Inspect file-format candidates</a></p></section>');
+        Body.Append('<section class="card"><h2>Database connections and bindings</h2><p>Database connections inventories captured FireDAC, InterBase/IBX, ADO and other recognized connection, dataset, data source and binding components. A declared driver family does not prove a successful connection. Review each source citation and missing definition before configuring an environment.</p>');
+        if not AExport then Body.Append('<p><a href="#open_data">Inspect database connections</a> | <a href="#open_schema">Inspect captured database schema</a></p>');
+        Body.Append('<p>Starting templates for a maintainer to complete outside source control:</p>'+
+          '<pre>FireDAC / InterBase: DriverID=IB; Database=&lt;server:path&gt;; User_Name=&lt;user&gt;; Password=&lt;local secret&gt;'+#10+
+          'FireDAC / SQL Server: DriverID=MSSQL; Server=&lt;host or instance&gt;; Database=&lt;name&gt;; OSAuthent=&lt;Yes/No&gt;'+#10+
+          'FireDAC / SQLite: DriverID=SQLite; Database=&lt;absolute database path&gt;</pre>'+
+          '<p>Confirm the required FireDAC driver unit and client library on the target machine, along with actual server, authentication, file path and deployment policy. Do not copy production credentials into the capture.</p></section>');
+        Body.Append('<section class="card"><h2>Unit-level variables</h2>');
+        Count:=0;
+        if Symbols<>nil then for Value in Symbols do begin
+          Row:=Value as TJSONObject;
+          if Row.GetValue<string>('kind','')<>'variable' then Continue;
+          Body.Append('<p>'+ObjectLink(Row)+' <code>'+Esc(Row.GetValue<string>('type',''))+
+            '</code> '+Cite(Row)+'</p>');
+          Inc(Count); if Count>=30 then Break;
+        end;
+        if Count=0 then Body.Append('<p>No unit-level variable declaration was captured in this selection.</p>');
+        Body.Append('<p>Declaration does not establish initialization order, sharing, mutation or runtime value. Follow source and relationships for each relevant variable.</p></section>');
         Body.Append('<section class="card"><h2>Operational limits</h2><p>Build instructions, '+
           'live connection settings, permissions, scheduled jobs and deployment steps are unknown '+
           'unless a specific source or reviewed document establishes them. Do not open production '+
@@ -296,7 +344,7 @@ begin
       '.metrics span{background:#eaf3fc;border-radius:6px;padding:10px 16px}.metrics strong{font-size:22px}'+
       '.badge{font-size:11px;font-weight:700;color:#125a92;background:#e8f2fb;padding:3px 7px;'+
       'border-radius:4px;text-transform:uppercase}.inferred{color:#945000;background:#fff1df}'+
-      '.cite{display:block;color:#597087}pre.project-prose{font:inherit;white-space:pre-wrap}'+
+      '.cite{display:block;color:#597087}.card pre{white-space:pre-wrap;overflow-wrap:anywhere}pre.project-prose{font:inherit;white-space:pre-wrap}'+
       '.unknown{color:#865500}'+
       'a{color:#146cb4}code{direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}'+
       'nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}nav a{color:#fff}'+
@@ -311,7 +359,7 @@ begin
     HTML.Append('</nav></header><main>'+Body.ToString+'</main></body></html>');
     Result:=HTML.ToString;
   finally
-    HTML.Free; Body.Free; ByKey.Free;
+    HTML.Free; Body.Free; ByKey.Free; DirectoryCounts.Free;
   end;
 end;
 

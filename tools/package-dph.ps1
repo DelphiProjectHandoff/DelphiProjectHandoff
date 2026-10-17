@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.8',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.9',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -59,6 +59,8 @@ Experimental Windows desktop handoff application - version $Version
 4. Start with Handoff dossier for the captured purpose evidence, startup
    forms, commands, data candidates, and questions. Use Learning library,
    Project map, Screenshots, and Application diagrams for deeper inspection.
+   Use Rescan project after attached source files change. The dossier also
+   lists captured build paths, component leads, and database templates.
 5. Screenshots reconstruct saved controls from .fmx and .dfm form files on
    demand and open at 90 percent zoom. They are not captures of the running
    application; custom painting and runtime data may differ.
