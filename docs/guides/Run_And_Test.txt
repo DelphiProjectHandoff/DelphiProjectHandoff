@@ -36,10 +36,12 @@ OPEN AN APPLICATION
 
 4. Click Open application and select a Delphi .dproj, .dpr, or .groupproj file.
    Choose an application other than DPH itself. New captures remain temporary
-   while you explore. When closing DPH or changing projects, choose Yes to save
+   while you explore. Click Save project whenever you want to keep a capture.
+   When closing DPH or changing projects before saving, choose Yes to save
    a .dphdb, No to discard the capture, or Cancel to keep it open. Save outside
    the selected application's source tree.
-5. While DPH reads the project and its documents, inspect the progress bar.
+5. While DPH reads the project and its documents, inspect the centered progress
+   window, including the changing step, bar and percentage.
    DPH reads the selected application without running it. Generated form
    previews are prepared when Screenshots is opened.
 6. If the application was studied previously, click Open saved project and

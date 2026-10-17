@@ -1087,6 +1087,16 @@ Margins.Right = 12
 Text = 'Open saved project'
 OnClick = OpenCacheClick
 end
+object SaveProjectButton: TButton
+Align = Left
+Width = 112
+Margins.Top = 3
+Margins.Bottom = 3
+Margins.Right = 6
+Text = 'Save project'
+Enabled = False
+OnClick = SaveProjectClick
+end
 object CloseButton: TButton
 Align = Right
 Width = 88

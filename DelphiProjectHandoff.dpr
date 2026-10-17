@@ -4,6 +4,7 @@ uses
   System.StartUpCopy,
   FMX.Forms,
   DPH.UI.Main in 'DPH.UI.Main.pas' {DPHMainForm},
+  DPH.UI.Progress in 'DPH.UI.Progress.pas' {DPHProgressForm},
   DPH.Storage.Types in 'DPH.Storage.Types.pas',
   DPH.Storage.Database in 'DPH.Storage.Database.pas',
   DPH.Storage.Backup in 'DPH.Storage.Backup.pas',

@@ -1,0 +1,53 @@
+object DPHProgressForm: TDPHProgressForm
+  Caption = 'Delphi Project Handoff'
+  ClientWidth = 650
+  ClientHeight = 170
+  Constraints.MinWidth = 650
+  Constraints.MinHeight = 170
+  Position = ScreenCenter
+  BorderStyle = Single
+  BorderIcons = []
+  FormStyle = StayOnTop
+  Fill.Color = xFFFFFFFF
+  object ProgressMessage: TLabel
+    Position.X = 24
+    Position.Y = 18
+    Width = 600
+    Height = 52
+    WordWrap = True
+    StyledSettings = []
+    TextSettings.Font.Size = 17
+    TextSettings.FontColor = xFF146CB4
+    Text = 'Checking the selected application...'
+  end
+  object ProgressHint: TLabel
+    Position.X = 24
+    Position.Y = 77
+    Width = 600
+    Height = 24
+    StyledSettings = []
+    TextSettings.Font.Size = 14
+    TextSettings.FontColor = xFF31506B
+    Text = 'This may take a few minutes...'
+  end
+  object ProgressBar: TProgressBar
+    Position.X = 24
+    Position.Y = 117
+    Width = 535
+    Height = 24
+    Min = 0
+    Max = 100
+    Value = 0
+  end
+  object ProgressPercent: TLabel
+    Position.X = 568
+    Position.Y = 114
+    Width = 58
+    Height = 30
+    StyledSettings = []
+    TextSettings.Font.Size = 16
+    TextSettings.FontColor = xFF146CB4
+    TextSettings.HorzAlign = Center
+    Text = '0%'
+  end
+end

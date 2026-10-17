@@ -58,6 +58,7 @@ LAYER_PURPOSE={
 'Publish.BrowserPolicy':'Constrains local embedded navigation and internal routes. Rendering success does not replace URL containment tests.',
 'Publish.Translation':'Adapts pinned translation capabilities and revision/locale cache state. Provider configuration and named review remain separate.',
 'UI.Main':'Binds serialized FireMonkey controls to worker requests and owned models. Preserve pending drafts, busy state, selection identity and close guards.',
+'UI.Progress':'Defines the IDE-editable centered preparation window. The main form updates its stage message, progress bar and percentage from worker responses.',
 'UI.ProjectProfile':'Collects application-profile fields in an IDE-editable dialog. Applying returns a draft; general knowledge saving persists it.',
 'UI.Glossary':'Collects a business term and its supporting meaning/aliases. Validate before applying the draft to saved knowledge.',
 'UI.ActionPurpose':'Collects an action explanation in a serialized dialog. Keep user purpose and supporting captured target clearly identified.',
@@ -161,7 +162,7 @@ def document(kind,blocks):
  for border in list(doc.styles.element.iter(qn('w:pBdr'))):border.getparent().remove(border)
  title='Delphi Project Handoff '+kind+' Guide'
  props=doc.core_properties;props.author='';props.last_modified_by='';props.title=title;props.subject='Detailed application operation' if kind=='User' else 'Architecture contracts implementation and maintenance';props.comments='';props.keywords=''
- doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.7  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
+ doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.8  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
  intro='Open a project, follow its files into screens and actions, and assess what the evidence can show' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
  doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Information about a selected Delphi application is presented separately by the program.')
  doc.add_page_break();doc.add_paragraph('Contents','Title');field(doc.add_paragraph(),'begin',' TOC \\o "1-2" \\h \\z \\u ');field(doc.add_paragraph(),'separate')

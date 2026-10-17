@@ -3,7 +3,7 @@
 {$SETPEFLAGS $20}
 uses FMX.Objects, FMX.Types, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
-  DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
+  DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.UI.Progress in '..\DPH.UI.Progress.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
   DPH.Handoff.Dossier in '..\DPH.Handoff.Dossier.pas',
   DPH.Publish.Model in '..\DPH.Publish.Model.pas', DPH.Publish.Export in '..\DPH.Publish.Export.pas',
@@ -499,6 +499,13 @@ begin
               Form.WindowState:=TWindowState.wsNormal; Form.Width:=960; Application.ProcessMessages;
               Check(Form.DATLanguageManager.SelectLanguage('de-DE'),'German interface pack applies to the native form');
               Application.ProcessMessages;
+              Check(Form.SaveProjectButton.Text='Speichern',
+                'New Save project action uses the offline German interface pack');
+              Check(Form.ProjectPreparationHint.Text='Dies kann einige Minuten dauern...',
+                'Project preparation time guidance uses the offline German interface pack');
+              Check((Form.FindComponent('DPHProgressForm') as TDPHProgressForm).ProgressHint.Text=
+                'Dies kann einige Minuten dauern...',
+                'Native progress dialog uses the offline German interface pack');
               Check((Form.FindComponent('LearnerTab1') as TRectangle).Width>100,
                 'German learner tab expands to fit its translated label');
               Check(Form.LearnerNavRow2.Visible and (Form.HeaderLayout.Height>106),
@@ -729,7 +736,11 @@ begin
               Check(True,'Portable handoff renders in the native preview browser');
               Form.PublishBrowser.OnShouldLoadURL:=Form.BrowserShouldLoad;
               Form.Hide;
-            finally Form.Free; end;
+            finally
+              Watch:=TStopwatch.StartNew;
+              Form.Free;
+              Writeln('FMX form shutdown: ',Watch.ElapsedMilliseconds,' ms');
+            end;
             end;
           finally Explain.Free; Model.Free; end;
           Check(THashSHA2.GetHashStringFromFile(TPath.Combine(Fixture,'Main.pas'))=BeforeHash,'Selected fixture source remains unchanged');
@@ -743,6 +754,11 @@ begin
           (Form.ProjectPreparationPercent.Text='5%') and
           ContainsText(Form.ProjectPreparationHint.Text,'few minutes'),
           'Centered project preparation starts with a visible percentage and time guidance');
+        var ProgressWindow:=Form.FindComponent('DPHProgressForm') as TDPHProgressForm;
+        Check((ProgressWindow<>nil) and ProgressWindow.Visible and
+          (ProgressWindow.ProgressBar.Value=5) and (ProgressWindow.ProgressPercent.Text='5%') and
+          ContainsText(ProgressWindow.ProgressHint.Text,'few minutes'),
+          'Native progress dialog is visible above the workspace with its bar and percentage');
         Bitmap:=TBitmap.Create(Form.ClientWidth,Form.ClientHeight);
         try
           if Bitmap.Canvas.BeginScene then
@@ -766,7 +782,8 @@ begin
         Check(SawIntermediateProgress and (PreviousProgress=100) and (Form.WorkspaceView<>nil) and
           (Form.ScreenshotList.Count=0),
           'Project preparation completes without generating unopened screen previews');
-        Form.OpenSelection('',TPath.Combine(Work,'progress-check.dphdb'));
+        Check(not Form.SaveProjectButton.Enabled,'Explicitly named capture does not show an unsaved Save action');
+        Form.OpenSelection('',TPath.Combine(Work,'progress-check.dphdb'),True);
         Check(Form.ProjectPreparationLayout.Visible,'Saved open keeps preparation visible while the real dossier loads');
         Watch:=TStopwatch.StartNew;
         repeat
@@ -778,6 +795,8 @@ begin
         WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
         Check(not Form.ProjectPreparationLayout.Visible and Form.LearningBrowser.Visible,
           'Saved open shows the real dossier before clearing preparation');
+        Check(not ProgressWindow.Visible,'Native progress dialog closes after the dossier is ready');
+        Check(Form.SaveProjectButton.Enabled,'Unsaved capture offers an explicit Save project button');
         WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
         Check(True,'Saved-open browser contains the captured project dossier');
       finally Form.Free; end;

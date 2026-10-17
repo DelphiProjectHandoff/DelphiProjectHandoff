@@ -6,7 +6,7 @@ uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITyp
   FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser, DAT.Components.FMX,
   DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
   DPH.Publish.Model, DPH.Publish.OfflinePreview, DPH.Analysis.Explanations,
-  DPH.Handoff.Dossier, DPH.Workspace.Catalog;
+  DPH.Handoff.Dossier, DPH.Workspace.Catalog, DPH.UI.Progress;
 type
   TDPHMainForm = class(TForm)
     DATLanguageManager: TDATFMXLanguageManager;
@@ -24,7 +24,7 @@ type
     ScreenToolbar: THorzScrollBox;
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
-    OpenProjectButton,OpenCacheButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenProjectButton,OpenCacheButton,SaveProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -753,6 +753,7 @@ type
     procedure OpenProjectClick(Sender: TObject);
     procedure OpenCacheClick(Sender: TObject);
     procedure CloseButtonClick(Sender: TObject);
+    procedure SaveProjectClick(Sender: TObject);
     procedure AllowInternetChange(Sender: TObject);
     procedure PollTimerTimer(Sender: TObject);
     procedure ChangeTimerTimer(Sender: TObject);
@@ -795,6 +796,7 @@ type
       ANewLanguage: string; const AGeneration: Cardinal);
   private
     FWorker: TDPHWorkspaceWorker;
+    FProgressForm: TDPHProgressForm;
     FView: TDPHWorkspaceView;
     FGraph,FScreen: TJSONObject;
     FExplorerKeys,FRelationKeys,FHistory,FBookmarks,FExpandedKeys: TList<string>;
@@ -945,7 +947,7 @@ type
     procedure UpdateLearnerNavigation;
     procedure GraphGroupDetails(const AGroup: string);
     procedure ClearWorkspace;
-    function ResolveUnsavedProject(AClosing: Boolean): Boolean;
+    function ResolveUnsavedProject(AClosing: Boolean; ADirectSave: Boolean = False): Boolean;
     procedure DiscardUnsavedProject(const ADatabase: string);
     function GraphRect(AIndex: Integer): TRectF;
   public
@@ -1018,6 +1020,7 @@ begin
     RestoreDestinationDialog.InitialDir:=DatabaseDirectory;
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
+  FProgressForm:=TDPHProgressForm.Create(Self);
   LearningTopics.ItemIndex:=0;
   OverviewMemo.Visible:=False;
   LanguageCombo.RefreshLanguages;
@@ -1030,6 +1033,7 @@ procedure TDPHMainForm.FormDestroy(Sender: TObject);
 var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
+  FProgressForm.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FCardRows.Free;FLibraryEntries.Free;FCardDraft.Free;
   FContinuity.Free;
@@ -1089,14 +1093,18 @@ begin
     OpenProjectButton.Width:=Min(230,Max(132,Ceil(TextLayout.Width)+30));
     TextLayout.Text:=OpenCacheButton.Text.Replace(#$00AD,'');
     OpenCacheButton.Width:=Min(240,Max(142,Ceil(TextLayout.Width)+30));
+    TextLayout.Text:=SaveProjectButton.Text.Replace(#$00AD,'');
+    SaveProjectButton.Width:=Min(190,Max(112,Ceil(TextLayout.Width)+30));
     TextLayout.Text:=CloseButton.Text.Replace(#$00AD,'');
     CloseButton.Width:=Min(150,Max(88,Ceil(TextLayout.Width)+24));
     OpenProjectButton.Height:=36;
     OpenCacheButton.Height:=36;
+    SaveProjectButton.Height:=36;
     CloseButton.Height:=36;
     AvailableWidth:=Max(1,ClientWidth-LearnerNavRow1.Margins.Left-LearnerNavRow1.Margins.Right);
     RowWidth:=OpenProjectButton.Width+OpenProjectButton.Margins.Left+OpenProjectButton.Margins.Right+
       OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right+
+      SaveProjectButton.Width+SaveProjectButton.Margins.Left+SaveProjectButton.Margins.Right+
       CloseButton.Width+CloseButton.Margins.Left+CloseButton.Margins.Right;
     SecondRow:=False;
     for Index:=0 to High(Tabs) do begin
@@ -1195,6 +1203,12 @@ end;
 procedure TDPHMainForm.CloseButtonClick(Sender: TObject);
 begin
   Close;
+end;
+procedure TDPHMainForm.SaveProjectClick(Sender: TObject);
+begin
+  if FBusy or (FUnsavedDatabase='') then Exit;
+  ResolveUnsavedProject(False,True);
+  SaveProjectButton.Enabled:=FUnsavedDatabase<>'';
 end;
 procedure TDPHMainForm.AllowInternetChange(Sender: TObject);
 var Settings: TIniFile;
@@ -2028,15 +2042,21 @@ begin
     R.PublicationLocale:=Trim(PublishLocaleEdit.Text);
     if PublishScopeCombo.ItemIndex=1 then begin if FSelected='' then begin StatusLabel.Text:='Select an object for a task bundle'; Exit; end; R.Seeds:=[FSelected]; end else R.Seeds:=[];
   end;
+  FPendingCommand:=ACommand;
   FWorker.Submit(R); FBusy:=True;
   if ACommand<>'full' then StatusLabel.Text:='Processing the selected request...';
   if ACommand='full' then begin
-    ProjectPreparationMessage.Text:='Reading the selected application''s project files...';
+    ProjectPreparationMessage.Text:=DATTranslateDynamicText('Reading the selected application''s project files...');
     FPreparingProject:=True;FPreparationCompletionTicks:=0;
     ProjectPreparationProgress.Value:=5; ProjectPreparationPercent.Text:='5%';
     ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
+    FProgressForm.ProgressMessage.Text:=ProjectPreparationMessage.Text;
+    FProgressForm.ProgressBar.Value:=5;
+    FProgressForm.ProgressPercent.Text:='5%';
+    FProgressForm.Show;
+    Application.ProcessMessages;
   end;
-    FPendingCommand:=ACommand; if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
+    if ACommand='save_knowledge' then FSavedKnowledgeText:=KnowledgeTitleEdit.Text+#0+KnowledgeBodyMemo.Text+#0+IntToStr(KnowledgeDocumentCombo.ItemIndex)+#0+IntToStr(KnowledgeAudienceCombo.ItemIndex)+#0+FEditableLinks.ToJSON+#0+FKnowledgeQuestionJSON+#0+FKnowledgeStructuredJSON;
 end;
 procedure TDPHMainForm.OpenProjectClick(Sender: TObject);
 var SelectedDatabase: string;
@@ -2073,17 +2093,20 @@ begin
   for Path in [Database+'-wal',Database+'-shm',Database+'-journal',Database] do
     if TFile.Exists(Path) then TFile.Delete(Path);
 end;
-function TDPHMainForm.ResolveUnsavedProject(AClosing: Boolean): Boolean;
+function TDPHMainForm.ResolveUnsavedProject(AClosing,ADirectSave: Boolean): Boolean;
 var Choice: Integer; Database,Destination,Prompt: string; Store: TDPHKnowledgeStore;
 begin
   Result:=True;
   if FUnsavedDatabase='' then Exit;
-  if AClosing then Prompt:='Save this unsaved project before closing?'
-  else Prompt:='Save this unsaved project before opening another?';
-  Choice:=TDialogServiceSync.MessageDialog(Prompt+sLineBreak+sLineBreak+
-    'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.',
-    TMsgDlgType.mtConfirmation,[TMsgDlgBtn.mbYes,TMsgDlgBtn.mbNo,TMsgDlgBtn.mbCancel],
-    TMsgDlgBtn.mbCancel,0);
+  if ADirectSave then Choice:=mrYes
+  else begin
+    if AClosing then Prompt:='Save this unsaved project before closing?'
+    else Prompt:='Save this unsaved project before opening another?';
+    Choice:=TDialogServiceSync.MessageDialog(Prompt+sLineBreak+sLineBreak+
+      'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.',
+      TMsgDlgType.mtConfirmation,[TMsgDlgBtn.mbYes,TMsgDlgBtn.mbNo,TMsgDlgBtn.mbCancel],
+      TMsgDlgBtn.mbCancel,0);
+  end;
   case Choice of
     mrYes: begin
       DatabaseDialog.FileName:=TPath.GetFileNameWithoutExtension(FEntry)+'.dphdb';
@@ -2139,10 +2162,15 @@ begin
   if AUnsaved or ((FUnsavedDatabase<>'') and SameFileName(FUnsavedDatabase,ADatabase)) then
     FPendingUnsavedDatabase:=ADatabase else FPendingUnsavedDatabase:='';
   FPendingCommand:=Request.Command; FBusy:=True;WorkspaceTabs.Enabled:=False;
-  ProjectPreparationMessage.Text:='Checking the selected application and its Delphi files...';
+  ProjectPreparationMessage.Text:=DATTranslateDynamicText('Checking the selected application and its Delphi files...');
   FPreparingProject:=True;FPreparationCompletionTicks:=0;
   ProjectPreparationProgress.Value:=5; ProjectPreparationPercent.Text:='5%';
   ProjectPreparationLayout.Visible:=True; ProjectPreparationLayout.BringToFront;
+  FProgressForm.ProgressMessage.Text:=ProjectPreparationMessage.Text;
+  FProgressForm.ProgressBar.Value:=5;
+  FProgressForm.ProgressPercent.Text:='5%';
+  FProgressForm.Show;
+  Application.ProcessMessages;
 end;
 procedure TDPHMainForm.RelocateClick(Sender: TObject);
 var Generation: Int64; Request: TDPHWorkspaceRequest;
@@ -2455,6 +2483,13 @@ begin
     if WorkspaceTabs.ActiveTab=QualityTab then QualityClick(nil);
     if (WorkspaceTabs.ActiveTab=GraphTab) or (WorkspaceTabs.ActiveTab=ScreenTab) then RefreshGraphics;
   end;
+  if FProgressForm.Visible then begin
+    FProgressForm.ProgressMessage.Text:=ProjectPreparationMessage.Text;
+    FProgressForm.ProgressBar.Value:=ProjectPreparationProgress.Value;
+    FProgressForm.ProgressPercent.Text:=ProjectPreparationPercent.Text;
+    if not ProjectPreparationLayout.Visible then FProgressForm.Hide;
+  end;
+  SaveProjectButton.Enabled:=(FUnsavedDatabase<>'') and not FBusy;
 end;
 procedure TDPHMainForm.ChangeTimerTimer(Sender: TObject);
 begin if not FBusy and not FDetached and (FEntry<>'') then Submit('check'); end;

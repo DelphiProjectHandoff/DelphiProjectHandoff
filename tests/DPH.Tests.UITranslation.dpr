@@ -56,6 +56,16 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            HelpText := Runtime.Translate('DPHMainForm.SaveProjectButton.Text',
+              'Save project');
+            if (HelpText = '') or (HelpText = 'Save project') then
+              raise Exception.Create('Untranslated Save project action in ' +
+                Descriptor.LanguageCode);
+            HelpText := Runtime.Translate('DPHProgressForm.ProgressHint.Text',
+              'This may take a few minutes...');
+            if (HelpText = '') or (HelpText = 'This may take a few minutes...') then
+              raise Exception.Create('Untranslated progress guidance in ' +
+                Descriptor.LanguageCode);
             HelpText := Runtime.Translate('DPHMainForm.ScreenshotHelp.Text',
               'DPH generates these blank screen views from the application''s .fmx and .dfm files. Select a form, then use Fit or Native pixels. Custom painting and runtime data may differ.');
             if HelpText.StartsWith('DPH generates these blank screen views') then

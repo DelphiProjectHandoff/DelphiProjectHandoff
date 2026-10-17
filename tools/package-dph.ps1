@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.7',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.8',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -66,13 +66,14 @@ Experimental Windows desktop handoff application - version $Version
    packs work offline and remain beside each Windows edition.
    The experimental English-to-German project-text model is also bundled in
    Localization\OfflineTranslation and runs without Internet access.
-7. A new capture stays temporary. When closing DPH or opening another
-   project, choose Yes to save it as a .dphdb, No to discard it, or Cancel
+7. A new capture stays temporary. Click Save project at any time to keep it.
+   When closing DPH or opening another project, choose Yes to save it as a
+   .dphdb, No to discard it, or Cancel
    to continue. Keep a saved .dphdb and its adjacent .dphdb.views folder
    together. Use Open saved project to restore them later.
 
-The centered preparation panel shows progress during a new capture. The
-Learning library reads guides from the selected project's docs folder and
+A centered progress window shows the current step and percentage during a new
+capture. The Learning library reads guides from the selected project's docs folder and
 the project's README. The Read public websites checkbox is off by default.
 Leave it off for fully offline use. When enabled, eligible public HTTPS pages
 from that project's sitemap or documents may appear in the Learning library.

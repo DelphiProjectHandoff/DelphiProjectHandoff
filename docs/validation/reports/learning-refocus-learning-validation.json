@@ -1,8 +1,8 @@
 ﻿{
-  "checks_passed": 206,
-  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\lr-{6333A8A9-F99F-47F4-9B13-4315875E3005}",
-  "reference_cache": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\VCL2FMXConverter-validation.dphdb",
+  "checks_passed": 197,
+  "work": "C:\\New Delphi Projects\\Delphi Project Handoff\\bin\\lr-{EC2E5854-20AA-406B-8308-38763BE91557}",
+  "reference_cache": "",
   "human_acceptance": "not_run",
   "guides_review": "Manual review and rendered-guide verification are recorded separately from this native learning suite",
-  "reference_learning_projection_ms": 2977
+  "reference_learning_projection_ms": 0
 }
