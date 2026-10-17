@@ -1187,6 +1187,9 @@ begin
       if Kind='routine' then LabelText:='Procedures and functions';
       if Kind='unit' then LabelText:='Pascal units';
       if Kind='component' then LabelText:='Screen controls';
+      if Kind='type' then LabelText:='Types';
+      if Kind='event' then LabelText:='Events';
+      if Kind='property' then LabelText:='Properties';
       if Kind='variable' then LabelText:='Unit variables';
       if Kind='local' then LabelText:='Local variables';
       if Kind='field' then LabelText:='Fields';

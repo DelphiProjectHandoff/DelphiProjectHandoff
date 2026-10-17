@@ -158,6 +158,24 @@ begin
           end;
           Inc(Count);
         end;
+        Runtime.LoadLanguage('de-DE');
+        if Runtime.TranslateDynamicText(
+          'Save this unsaved project before closing?').StartsWith('Save this') or
+          Runtime.TranslateDynamicText(
+          'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.').StartsWith('Yes saves') or
+          Runtime.TranslateDynamicText(
+          'Reading local guides, help, notes, logs and referenced public websites...').StartsWith('Reading local guides') then
+          raise Exception.Create('German save dialog or progress message remained partly English.');
+        Html := Runtime.TranslateHtmlText(
+          '<html lang="en"><body><p>This overview reached its display limit. It shows 120 boxes and 260 connections; additional connections may exist. To explore a smaller area, select an item in Project map and return here, or choose Types or Units in the grouping menu above.</p>' +
+          '<article class="project-prose"><p>Bundled Interface Language Packs</p><strong>Mapping Packs</strong></article></body></html>');
+        if Pos('Diese ', Html) = 0 then
+          raise Exception.Create('German diagram notice with live counts was not translated as a whole sentence.');
+        if (Pos('120 ', Html) = 0) or
+          (Pos('260 Verbindungen', Html) = 0) or
+          (Pos('Bundled Interface Language Packs', Html) = 0) or
+          (Pos('>Mapping Packs</strong>', Html) = 0) then
+          raise Exception.Create('German count placement or original project document text changed.');
         Runtime.LoadLanguage('fr-FR');
         Writeln('PASS: ', Count,
           ' DPH language packs load; localized heading, French UI, and RTL mixed text verified.');

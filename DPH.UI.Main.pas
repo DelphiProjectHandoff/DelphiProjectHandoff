@@ -2114,24 +2114,40 @@ begin
   if FUnsavedDatabase='' then Exit;
   if ADirectSave then Choice:=mrYes
   else begin
-    if AClosing then Prompt:='Save this unsaved project before closing?'
-    else Prompt:='Save this unsaved project before opening another?';
+    if AClosing then Prompt:=DATTranslateDynamicText(
+      'Save this unsaved project before closing?')
+    else Prompt:=DATTranslateDynamicText(
+      'Save this unsaved project before opening another?');
     Choice:=TDialogServiceSync.MessageDialog(Prompt+sLineBreak+sLineBreak+
-      'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.',
+      DATTranslateDynamicText(
+        'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.'),
       TMsgDlgType.mtConfirmation,[TMsgDlgBtn.mbYes,TMsgDlgBtn.mbNo,TMsgDlgBtn.mbCancel],
       TMsgDlgBtn.mbCancel,0);
   end;
   case Choice of
     mrYes: begin
-      DatabaseDialog.FileName:=TPath.GetFileNameWithoutExtension(FEntry)+'.dphdb';
+      // A full filename keeps the save dialog in DPH's Databases folder even
+      // when Windows remembers another folder from an earlier file dialog.
+      Destination:=TPath.Combine(DatabaseDialog.InitialDir,
+        TPath.GetFileNameWithoutExtension(FEntry)+'.dphdb');
+      if TFile.Exists(Destination) or TDirectory.Exists(Destination+'.views') then
+        Destination:=TPath.Combine(DatabaseDialog.InitialDir,
+          TPath.GetFileNameWithoutExtension(FEntry)+'-'+
+          FormatDateTime('yyyymmdd-hhnnss',Now)+'.dphdb');
+      DatabaseDialog.FileName:=Destination;
       if not DatabaseDialog.Execute then Exit(False);
-      Destination:=DatabaseDialog.FileName;
+      Destination:=TPath.GetFullPath(DatabaseDialog.FileName);
       try
         Store:=TDPHKnowledgeStore.Create(FUnsavedDatabase,
           FView.Document.GetValue<string>('root'),TPath.Combine(FBaseDirectory,'migrations'));
         try TDPHProjectBackup.Save(Store,Destination); finally Store.Free; end;
+        if not TFile.Exists(Destination) or
+          not TFile.Exists(TPath.Combine(Destination+'.views','backup-manifest.json')) then
+          raise EReadError.Create('Saved database or its managed views are missing');
       except on E: Exception do begin
         StatusLabel.Text:='Project was not saved: '+E.Message;
+        TDialogServiceSync.ShowMessage(DATTranslateDynamicText('Project was not saved.')+
+          sLineBreak+E.Message);
         Exit(False);
       end; end;
       Database:=FUnsavedDatabase;
@@ -2143,6 +2159,9 @@ begin
       if FCatalog<>nil then
         try FCatalog.Remember(Destination); FCatalog.Save; RefreshProjectsClick(nil);
         except on E: Exception do StatusLabel.Text:='Project saved, but the recent-project list could not be updated: '+E.Message; end;
+      StatusLabel.Text:='Project saved to '+FDatabase;
+      TDialogServiceSync.ShowMessage(DATTranslateDynamicText('Project saved to:')+
+        sLineBreak+FDatabase);
     end;
     mrNo: begin
       if AClosing then begin

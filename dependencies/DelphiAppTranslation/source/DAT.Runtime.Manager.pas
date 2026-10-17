@@ -401,7 +401,7 @@ var
   DirectionStyleInjected: Boolean;
   IsRightToLeft: Boolean;
   Output: TStringBuilder;
-  ProtectedDepth: Integer;
+  ProtectedTags: TStack<string>;
   Segment: string;
   TagText: string;
   TextIndex: Integer;
@@ -479,7 +479,7 @@ var
   begin
     if Segment = '' then
       Exit;
-    if ProtectedDepth = 0 then
+    if ProtectedTags.Count = 0 then
       Output.Append(TranslateVisibleSegment(Segment))
     else
       Output.Append(Segment);
@@ -506,8 +506,8 @@ var
     Name := TagName(TagText);
     ClosingTag := StartsText('</', TrimLeft(TagText));
     SelfClosingTag := EndsText('/>', TrimRight(TagText));
-    if ClosingTag and IsProtectedTag(Name) and (ProtectedDepth > 0) then
-      Dec(ProtectedDepth);
+    if ClosingTag and (ProtectedTags.Count>0) and
+      SameText(ProtectedTags.Peek,Name) then ProtectedTags.Pop;
     if IsRightToLeft and not ClosingTag and (Name = 'html') then
     begin
       TagText := StringReplace(TagText, 'dir="ltr"', 'dir="rtl"',
@@ -528,8 +528,13 @@ var
       DirectionStyleInjected := True;
     end;
     Output.Append(TagText);
-    if not ClosingTag and not SelfClosingTag and IsProtectedTag(Name) then
-      Inc(ProtectedDepth);
+    if not ClosingTag and not SelfClosingTag and
+      (IsProtectedTag(Name) or ContainsText(TagText,'translate="no"') or
+       ContainsText(TagText,'translate=''no''') or
+       ContainsText(TagText,'class="notranslate') or
+       ContainsText(TagText,'class=''notranslate') or
+       ContainsText(TagText,'project-prose')) then
+      ProtectedTags.Push(Name);
     TagText := '';
   end;
 
@@ -539,11 +544,11 @@ begin
     SameText(FActivePack.LanguageCode, FActivePack.SourceLanguage) then
     Exit;
   Output := TStringBuilder.Create(Length(AHtmlText));
+  ProtectedTags:=TStack<string>.Create;
   try
     Segment := '';
     TagText := '';
     InTag := False;
-    ProtectedDepth := 0;
     IsRightToLeft := SameText(Trim(FActivePack.TextDirection), 'rtl');
     DirectionStyleInjected := ContainsText(AHtmlText,
       'id="dat-text-direction"') or ContainsText(AHtmlText,
@@ -577,6 +582,7 @@ begin
     AppendSegment;
     Result := Output.ToString;
   finally
+    ProtectedTags.Free;
     Output.Free;
   end;
 end;

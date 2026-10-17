@@ -3,7 +3,7 @@
   "last_changed": "2026-10-17",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
-    "DPH.Analysis.Explanations.pas": "40a3a2191960c3cc67628aac8f47edda18512d8bc5c470dea48986c04142a0fd",
+    "DPH.Analysis.Explanations.pas": "78c899fe05b35ef6e866bc0430a6581f3a10a0002c4e4fa122e8cdc55476a2af",
     "DPH.Analysis.Flow.pas": "ee7610544411a64da399659f2af11e84408d285837a45205d610d2c37af8ef57",
     "DPH.Analysis.Model.pas": "93d7e969508ff4862a98f7e4d7b6cb690cf741792d5a0e4dbac9f012bc8c5035",
     "DPH.Analysis.Persistence.pas": "fa0f3a5d3f25a46c3ceef1e862afcee7dfb0a4c6433e1bf5a79331a32b129802",
@@ -37,7 +37,7 @@
     "DPH.UI.ComponentDependency.pas": "dc711088afbccd032f4511b9fe3da95b89640b505edb1868ee7b47c7e2a64682",
     "DPH.UI.DatabaseDictionary.pas": "c55bc57ac98df6caa84f29c5b775b4915c8afaf3837859f3e197f8b1fffbf90b",
     "DPH.UI.Glossary.pas": "fb15295b29a9bbb9caa05cea723e737c81b2418a271f59fb6071dbffe37f8741",
-    "DPH.UI.Main.pas": "1deeab03145d3e50ddb31f1345b7c5d67c5505a967feda8908a422641713f0dc",
+    "DPH.UI.Main.pas": "ebab5e6ce3b951c930fee275d7ccb4eb80bd3dfa7870662aead0889c640c6bbd",
     "DPH.UI.Progress.pas": "f165197dcc4758839ab42b10254a2efa601e51fdff2dc345e36910d60f7ae114",
     "DPH.UI.ProjectProfile.pas": "f3fe7ed94987e956999e7449887cd8ca259f009b3d4ac934c1e8e09b8e9fab59",
     "DPH.Workspace.ActionPurposes.pas": "e720b935f3d9f38f07348bead5f21c9c9e3ec89ad102f4dae0c6e902c0a101e4",
@@ -72,8 +72,8 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "d8a163b3f906b68d515a04c9640d5791a4f987c175ee824b25ba5fdf0cc4a044",
-    "docs/guides/source/DPH_User_Guide.txt": "4ded1884ed9a20728b38ef073eca6c79cb5d54cf984a85bd4166498dc0fec4f6",
+    "docs/guides/source/DPH_Engineering_Guide.txt": "e2bde6d9f99ae2a46c75dff3416aaff75c6f7ca1df3542bfe35f2ebfe2abff05",
+    "docs/guides/source/DPH_User_Guide.txt": "f824446955bafb8046645f559c8a9e716b79576d08d07ada5d3c2a2659772ee1",
     "DelphiProjectHandoff.dproj": "79121bf6131d1aa1501e6348977e3bde0754b0d141059083385c8c7a880b06ad"
   },
   "content": {
@@ -81,14 +81,14 @@
       "parts": 3,
       "chapters": 7,
       "subsections": 17,
-      "words": 2548,
+      "words": 2640,
       "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
       "subsections": 176,
-      "words": 17872,
+      "words": 17960,
       "figures": 0
     }
   },

@@ -1,7 +1,11 @@
-DELPHI PROJECT HANDOFF 0.8.0.5 - DEVELOPER TEST DIRECTIONS
-Last changed: 16 October 2026
+DELPHI PROJECT HANDOFF 0.8.0.10 - DEVELOPER TEST DIRECTIONS
+Last changed: 17 October 2026
 
-Build DelphiProjectHandoff.dproj with RAD Studio 37 for Win32 and Win64 in
+Before opening the main form in the designer, install the supplied DAT design
+package through RAD Studio's Component > Install Packages > Add command. See
+export\DAT-component-kit\DelphiProjectHandoff\README.txt. No separate
+dependency-preparation command is required. Build DelphiProjectHandoff.dproj
+with RAD Studio 37 for Win32 and Win64 in
 Debug and Release as needed. Run from the matching bin\platform\configuration
 folder with WebView2Loader.dll beside the executable and the repository's
 Localization, migrations, help, and images and icons folders accessible.

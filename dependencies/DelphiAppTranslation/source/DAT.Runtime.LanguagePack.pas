@@ -642,11 +642,24 @@ begin
   Result := FSources.TryGetValue(AKey, AText) and (AText <> '');
 end;
 
+function TryApplyFormatTemplate(const ACurrentText, ASourceTemplate,
+  ATranslatedTemplate: string;
+  const ASourceTranslations: TDictionary<string, string>;
+  AWholeTextOnly: Boolean;
+  out ATranslatedText: string): Boolean; forward;
+
 function TRuntimeLanguagePack.TryTranslateSource(const ASourceText: string;
   out ATranslatedText: string): Boolean;
+var SourceTemplate: string;
 begin
   Result := FSourceStrings.TryGetValue(ASourceText, ATranslatedText) and
     (ATranslatedText <> '');
+  if Result then Exit;
+  for SourceTemplate in FSourceTemplates.Keys do
+    if (Pos('%',SourceTemplate)>0) and
+      TryApplyFormatTemplate(ASourceText,SourceTemplate,
+        FSourceTemplates[SourceTemplate],FSourceStrings,True,ATranslatedText) then
+      Exit(True);
 end;
 
 function TRuntimeLanguagePack.IsKnownTranslatedText(
@@ -654,12 +667,6 @@ function TRuntimeLanguagePack.IsKnownTranslatedText(
 begin
   Result := FTranslatedStrings.ContainsKey(AText);
 end;
-
-function TryApplyFormatTemplate(const ACurrentText, ASourceTemplate,
-  ATranslatedTemplate: string;
-  const ASourceTranslations: TDictionary<string, string>;
-  AWholeTextOnly: Boolean;
-  out ATranslatedText: string): Boolean; forward;
 
 function TRuntimeLanguagePack.TryRestoreDynamicText(
   const ATranslatedText: string; out ASourceText: string): Boolean;

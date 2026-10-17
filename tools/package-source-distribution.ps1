@@ -48,10 +48,13 @@ Git history, or compiled DPH executable.
 
 TO BUILD
 1. Extract the entire ZIP into a writable local folder. Do not build in the ZIP.
-2. Open DelphiProjectHandoff.dproj in RAD Studio 37 or later.
-   To edit the form in the designer, install the supplied DAT FMX design package
-   using export\DAT-component-kit\DelphiProjectHandoff\README.txt.
-3. Select Win64 or Win32 and the Release configuration; then choose Build.
+2. Before opening the main form in RAD Studio 37, choose Component > Install
+   Packages > Add and select the supplied DAT FMX design BPL under
+   export\DAT-component-kit\DelphiProjectHandoff\DesignPackages\Win32\Release.
+   Keep its adjacent runtime BPLs. The project already includes the DAT source
+   search path; there is no separate dependency preparation command. See
+   export\DAT-component-kit\DelphiProjectHandoff\README.txt for details.
+3. Open DelphiProjectHandoff.dproj. Select Win64 or Win32 and Release; Build.
 4. Find the executable in bin\Win64\Release or bin\Win32\Release. Keep the
    corresponding WebView2Loader.dll beside it. The project copies that loader
    automatically after a successful build.
@@ -66,8 +69,12 @@ LibreOffice at its standard Windows path is needed to extract text from PDF,
 legacy Word, RTF and several other older word-processing formats.
 The selected Delphi application is read as input; DPH does not run or modify it.
 Start with Handoff dossier. A new capture remains temporary until the user
-clicks Save project, or chooses Yes at close or on a project change; No discards it and
-Cancel keeps it open. Rescan project checks an attached source project for changes.
+clicks Save project, or chooses Yes at close or on a project change. The save
+dialog starts in DPH's databases folder and suggests a dated name if an older
+save already has the project name; a confirmation shows the full saved path.
+Keep the .dphdb and adjacent .dphdb.views folder together. On failure,
+DPH reports the error and retains the temporary capture. No discards the
+capture and Cancel keeps it open. Rescan project checks attached source for changes.
 The dossier maps captured directories and project build paths and links component
 and database evidence. Generated form views are reconstructions, not runtime
 screenshots.

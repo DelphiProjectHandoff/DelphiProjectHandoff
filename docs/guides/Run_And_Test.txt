@@ -1,13 +1,15 @@
-RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.5
-Last changed: 16 October 2026
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.10
+Last changed: 17 October 2026
 
 BUILD AND START FROM SOURCE
 
-1. Clone the public source repository or use GitHub's Code > Download ZIP,
-   then extract the source to a writable local folder. Open
-   DelphiProjectHandoff.dproj in RAD Studio 37 and build Win64 or Win32,
-   Debug or Release. Install the supplied DAT design package first if you
-   intend to edit its translation controls in the form designer.
+1. Clone the public source repository or extract the release source ZIP to a
+   writable local folder. In RAD Studio 37, first use Component > Install
+   Packages > Add to install the supplied
+   export\DAT-component-kit\DelphiProjectHandoff\DesignPackages\Win32\Release\DATLanguageManagerFMXDesign.bpl.
+   The adjacent runtime BPL files must remain beside it. Then open
+   DelphiProjectHandoff.dproj and build Win64 or Win32, Debug or Release.
+   The DPROJ already includes the bundled translation source search path.
 2. Run bin\Win64\Release\DelphiProjectHandoff.exe if you built Win64 Release;
    otherwise use the matching bin\platform\configuration folder. Keep
    WebView2Loader.dll beside the executable and keep help, migrations,
@@ -37,9 +39,13 @@ OPEN AN APPLICATION
 4. Click Open application and select a Delphi .dproj, .dpr, or .groupproj file.
    Choose an application other than DPH itself. New captures remain temporary
    while you explore. Click Save project whenever you want to keep a capture.
-   When closing DPH or changing projects before saving, choose Yes to save
-   a .dphdb, No to discard the capture, or Cancel to keep it open. Save outside
-   the selected application's source tree.
+   When closing DPH or changing projects before saving, choose Yes to open
+   the save dialog, No to discard the capture, or Cancel to keep it open. The
+   save dialog starts in DPH's databases folder and suggests a dated name if
+   that project's name is already used. A successful save confirms
+   the complete path; check that both the .dphdb and .dphdb.views folder are
+   there. On an error, DPH keeps the temporary capture and displays the
+   reason. You may choose another location outside the source being read.
 5. While DPH reads the project and its documents, inspect the centered progress
    window, including the changing step, bar and percentage.
    DPH reads the selected application without running it. Generated form

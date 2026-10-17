@@ -1,25 +1,36 @@
-﻿DELPHI APP TRANSLATION - COMPONENT INTEGRATION KIT
-==================================================
+DELPHI APP TRANSLATION - DPH SOURCE-BUILD INSTRUCTIONS
+=====================================================
 
-Target: DelphiProjectHandoff
-Framework: FireMonkey
+These steps are for a developer opening DelphiProjectHandoff.dproj in RAD
+Studio 37. They use ordinary RAD Studio commands. There is no separate
+"Prepare / Update Dependencies" command in RAD Studio.
 
-The Studio prepares the project-local dependency from this kit. It atomically installs the complete DAT source set under dependencies\DelphiAppTranslation\source, uses that folder temporarily for Studio-initiated builds, and deploys the current language packs directly. Target Pascal, DPR, DPROJ, DFM, and FMX files remain developer-owned and are never rewritten.
+1. Extract the complete DPH source distribution to a writable local folder.
+   Keep this kit and dependencies\DelphiAppTranslation\source in place. The
+   DPH project already names that source folder in its compiler search path.
+2. Before opening DPH.UI.Main.fmx in the Form Designer, start RAD Studio and
+   choose Component > Install Packages. Click Add and select:
+   export\DAT-component-kit\DelphiProjectHandoff\DesignPackages\Win32\Release\DATLanguageManagerFMXDesign.bpl
+   The two accompanying runtime BPL files must remain beside the design BPL.
+   Check that the DAT Language Manager package is enabled, then click OK.
+   Restart RAD Studio if it requests a restart.
+3. Open DelphiProjectHandoff.dproj. Its main form contains an existing
+   TDATFMXLanguageManager and TDATFMXLanguageComboBox. You do not need to
+   place another copy of either control.
+4. Build the desired Win32 or Win64, Debug or Release configuration. Run the
+   corresponding executable under bin\<platform>\<configuration>. Keep
+   WebView2Loader.dll beside the executable and the Localization, migrations,
+   help, and images and icons folders in the extracted source root.
 
-1. Choose Prepare / Update Dependencies. Repeating this operation refreshes one managed dependency folder without creating duplicate copies.
-2. In RAD Studio, open Project > Options > Building > Delphi Compiler. For all configurations and platforms, add $(PROJECTDIR)\dependencies\DelphiAppTranslation\source to Search path. Keep all existing entries. The Studio deliberately does not edit the DPROJ.
-3. After preparation, choose Show Design BPL. The Studio selects DesignPackages\Win32\Release\DATLanguageManagerFMXDesign.bpl inside this kit. The matching core and framework runtime BPLs are beside it.
-4. In RAD Studio choose Component > Install Packages, then choose Add.
-5. Select that exact design BPL and choose Open. Never use Install Component and never select a DPK.
-6. Confirm the DAT Language Manager package is checked, then choose OK.
-7. Open the target application and its primary form in the Form Designer.
-8. Place one TDATFMXLanguageManager from the DAT Localization palette page.
-9. Set ApplicationId to "DelphiProjectHandoff".
-10. Leave LanguagesFolder as "Localization\Languages" and set SourceLanguage to "en-US".
-11. Place one TDATFMXLanguageComboBox. In Object Inspector, set its LanguageManager property to the manager component. Do not leave this property blank. A visible selector is required unless the application provides an equivalent connected Language menu.
-12. Build and test every platform and configuration you distribute. Changing the selector applies the language immediately and saves the preference.
-13. For a portable, network, or USB installation, enter its full application folder on the Wizard Deployment page. Final processing and Wizard-initiated builds deploy it whenever the destination is available. The component property stays relative as Localization\Languages.
+If the designer reports either DAT control class as missing, close the form,
+return to Component > Install Packages, and confirm that the design package
+in step 2 is listed and checked. Do not remove the controls from the form.
+If compilation reports a missing DAT unit, confirm that the complete
+dependencies\DelphiAppTranslation\source folder exists and that Project >
+Options > Building > Delphi Compiler > Search path contains its path. The
+checked-in DPROJ already supplies this entry for normal builds.
 
-Ordinary forms need no component. For inherited or unusually renamed forms, configure FormIdentityMappings on the manager using FormClass=ScannerFormRoot entries.
-
-The only package-registration action left to the developer is adding the verified design BPL through RAD Studio. The Studio deliberately does not register IDE packages on the developer's behalf.
+This kit also contains component source and language packs for integration
+work on other projects. DPH itself already includes the matching dependency
+source and its language packs; copying the kit over the DPH files is not a
+normal build step.
