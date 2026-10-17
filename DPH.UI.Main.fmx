@@ -7776,6 +7776,9 @@ Filter = 'DPH knowledge database|*.dphdb'
 InitialDir = 'Databases'
 Title = 'Save knowledge database outside the analyzed source folder'
 end
+object FDGUIxWaitCursor: TFDGUIxWaitCursor
+Provider = 'FMX'
+end
 object ExportDialog: TSaveDialog
 Title = 'Choose a new export folder name outside the analyzed source'
 Filter = 'Handoff folder name|*.*'

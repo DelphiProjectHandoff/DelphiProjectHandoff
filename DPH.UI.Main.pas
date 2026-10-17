@@ -3,7 +3,8 @@ interface
 uses Winapi.Windows, System.Classes, System.SysUtils, System.Types, System.UITypes, System.JSON, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.Layouts, FMX.ListBox, FMX.Edit, FMX.Memo, FMX.Text, FMX.TabControl, FMX.Dialogs,
-  FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser, DAT.Components.FMX,
+  FMX.Objects, FMX.Graphics, FMX.TextLayout, FMX.WebBrowser,
+  FireDAC.Comp.UI, FireDAC.FMXUI.Wait, DAT.Components.FMX,
   DAT.Components.FMX.LanguageSelector, DPH.Workspace.Model, DPH.Workspace.Worker,
   DPH.Publish.Model, DPH.Publish.OfflinePreview, DPH.Analysis.Explanations,
   DPH.Handoff.Dossier, DPH.Workspace.Catalog, DPH.UI.Progress;
@@ -46,6 +47,7 @@ type
     GraphNodeStyle,ScreenNodeStyle,ScreenBackgroundStyle,HeaderStyle: TRectangle;
     OpenProjectDialog,OpenCacheDialog: TOpenDialog;
     DatabaseDialog: TSaveDialog;
+    FDGUIxWaitCursor: TFDGUIxWaitCursor;
     PollTimer,ChangeTimer: TTimer;
     KnowledgeTab: TTabItem;
     KnowledgeToolbar,KnowledgeEditorLayout: TLayout;
