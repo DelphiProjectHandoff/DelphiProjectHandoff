@@ -185,21 +185,19 @@ begin
               ContainsText(FlowText,'Project directories and build paths') and
               ContainsText(FlowText,'DCC_UnitSearchPath') and
               ContainsText(FlowText,'#open_dependencies') and
-              ContainsText(FlowText,'Project analysis is incomplete') and
-              ContainsText(FlowText,'DPH saved what it found') and
-              ContainsText(FlowText,'href="#open_coverage"') and
-              ContainsText(FlowText,'Inspect selected gap') and
-              ContainsText(FlowText,'Rescan project') and
+              not ContainsText(FlowText,'Project analysis is incomplete') and
               ContainsText(FlowText,'Semantic.dproj') and
               not ContainsText(FlowText,'SHA-256'),
-              'Handoff overview identifies the selected capture and its evidence limits');
+              'Handoff overview keeps project detail without repeating the capture notice');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,0,True);
-            Check(ContainsText(FlowText,'In DPH, open Coverage') and
+            Check(ContainsText(FlowText,'Project analysis is incomplete') and
+              ContainsText(FlowText,'In DPH, open Coverage') and
               not ContainsText(FlowText,'href="#open_coverage"'),
-              'Portable handoff explains Coverage without an app-only link');
+              'Portable handoff overview retains capture limitations without an app-only link');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,1);
             Check(ContainsText(FlowText,'Commands and workflows') and
               ContainsText(FlowText,'#open_commands') and
+              not ContainsText(FlowText,'Project analysis is incomplete') and
               ContainsText(FlowText,'confirmed_static'),
               'Command dossier links static bindings to deeper inspection');
             FlowText:=TDPHHandoffDossier.Render(Model.Document,2);
@@ -538,6 +536,9 @@ begin
                 'Narrow display moves overflow tabs to a second visible row');
               Check(Form.OpenCacheButton.Height<=Form.LearnerNavRow1.Height,
                 'Translated open buttons stay within the navigation row');
+              Check((Form.FindComponent('LearnerTab0') as TRectangle).Index<
+                Form.OpenProjectButton.Index,
+                'Getting started remains the first navigation control');
               Form.Width:=1800; Application.ProcessMessages;
               Check(not Form.LearnerNavRow2.Visible,
                 'Wider display returns learner tabs to one row');
@@ -572,6 +573,11 @@ begin
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
               Check(True,'The saved dossier HTML is rendered in the browser');
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
+              Form.HelpClick(nil);
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Project analysis is incomplete');
+              Check(True,'Getting started shows the selected capture notice');
+              Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Handoff dossier');
+              Form.WorkspacePageChange(Form.LessonPageCombo);
               Check(Form.ScreenshotList.Count=0,'Generated previews wait until the Screenshots page is opened');
               Form.LoadScreenshots(Store.ScreenshotsJSON);
               Check(Form.ScreenshotList.Count>0,'Imported runtime images appear beside generated design previews');

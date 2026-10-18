@@ -1069,6 +1069,28 @@ Align = Top
 Height = 42
 Margins.Left = 12
 Margins.Right = 12
+object LearnerTab0: TRectangle
+Tag = 0
+Align = Left
+Width = 100
+Margins.Right = 6
+Margins.Top = 3
+Margins.Bottom = 3
+Fill.Color = xFFE8F2FB
+Stroke.Color = xFFB5CFE5
+XRadius = 7
+YRadius = 7
+OnClick = LearnerTabClick
+object LearnerTabLabel0: TLabel
+Align = Client
+HitTest = False
+StyledSettings = []
+TextSettings.Font.Size = 13
+TextSettings.FontColor = xFF125A92
+TextSettings.HorzAlign = Center
+Text = 'Getting started'
+end
+end
 object OpenProjectButton: TButton
 Align = Left
 Width = 132
@@ -1115,28 +1137,6 @@ Margins.Top = 3
 Margins.Bottom = 3
 Text = 'Close'
 OnClick = CloseButtonClick
-end
-object LearnerTab0: TRectangle
-Tag = 0
-Align = Left
-Width = 100
-Margins.Right = 6
-Margins.Top = 3
-Margins.Bottom = 3
-Fill.Color = xFFE8F2FB
-Stroke.Color = xFFB5CFE5
-XRadius = 7
-YRadius = 7
-OnClick = LearnerTabClick
-object LearnerTabLabel0: TLabel
-Align = Client
-HitTest = False
-StyledSettings = []
-TextSettings.Font.Size = 13
-TextSettings.FontColor = xFF125A92
-TextSettings.HorzAlign = Center
-Text = 'Getting started'
-end
 end
 object LearnerTab1: TRectangle
 Tag = 1

@@ -1108,13 +1108,17 @@ begin
     RescanProjectButton.Height:=36;
     CloseButton.Height:=36;
     AvailableWidth:=Max(1,ClientWidth-LearnerNavRow1.Margins.Left-LearnerNavRow1.Margins.Right);
+    TextLayout.Font:=Labels[0].TextSettings.Font;
+    TextLayout.Text:=Labels[0].Text.Replace(#$00AD,'');
+    Tabs[0].Width:=Min(205,Max(100,Ceil(TextLayout.Width)+30));
     RowWidth:=OpenProjectButton.Width+OpenProjectButton.Margins.Left+OpenProjectButton.Margins.Right+
       OpenCacheButton.Width+OpenCacheButton.Margins.Left+OpenCacheButton.Margins.Right+
       SaveProjectButton.Width+SaveProjectButton.Margins.Left+SaveProjectButton.Margins.Right+
       RescanProjectButton.Width+RescanProjectButton.Margins.Left+RescanProjectButton.Margins.Right+
-      CloseButton.Width+CloseButton.Margins.Left+CloseButton.Margins.Right;
+      CloseButton.Width+CloseButton.Margins.Left+CloseButton.Margins.Right+
+      Tabs[0].Width+Tabs[0].Margins.Left+Tabs[0].Margins.Right;
     SecondRow:=False;
-    for Index:=0 to High(Tabs) do begin
+    for Index:=1 to High(Tabs) do begin
       if not Tabs[Index].Visible then Continue;
       TextLayout.Font:=Labels[Index].TextSettings.Font;
       TextLayout.Text:=Labels[Index].Text.Replace(#$00AD,'');
@@ -1866,8 +1870,7 @@ begin
   end;
   if FView<>nil then FPendingWorkspaceTab:=WorkspaceTabs.ActiveTab;
   if (FLearningDirectory = '') or (DATLanguageManager.Generation = 0) then Exit;
-  if (WorkspaceTabs.ActiveTab = HelpTab) and
-    (FHelpLanguageGeneration <> DATLanguageManager.Generation) then begin
+  if WorkspaceTabs.ActiveTab = HelpTab then begin
     HelpClick(nil);
     FHelpLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = OverviewTab) and
@@ -3641,7 +3644,8 @@ begin
   end;
 end;
 procedure TDPHMainForm.HelpClick(Sender: TObject);
-var ID:TGUID; HTML,PreviewPath,Logo,ImagePath:string;
+var ID:TGUID; HTML,PreviewPath,Logo,ImagePath,StatusNotice,Status:string;
+    Facts:TJSONObject; IncompleteAnalysis,IsGerman:Boolean;
 begin
   WorkspaceTabs.ActiveTab:=HelpTab;
   if FLearningDirectory='' then begin
@@ -3656,7 +3660,7 @@ begin
     '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
     '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:22px}header img{width:88px;height:88px;object-fit:contain}h1{margin:0;font-size:34px}main{padding:26px;max-width:1000px;margin:auto}'+
-    'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
+    'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}.scope{border-left:5px solid #f28c28}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>Explore an application with DPH</title></head><body><header>'+Logo+'<div><h1>Welcome to Delphi Project Handoff</h1>'+
     '<p>Build a source-backed maintenance handoff for an unfamiliar Delphi application.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>'+
     '<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>'+
@@ -3673,6 +3677,45 @@ begin
         '<section><h2>Die Übergabe lesen</h2><ol><li>Das <strong>Übergabedossier</strong> zeigt Belege zum Zweck, die Startreihenfolge, Befehlszuordnungen, Datenkandidaten und offene Fragen.</li><li>Die <strong>Lernbibliothek</strong> zeigt projektspezifische Anleitungen und Hilfen.</li><li>Die <strong>Projektkarte</strong> verbindet erfasste Objekte mit Quellcode und Beziehungen.</li><li>Unter <strong>Screenshots</strong> lassen sich Formularvorschauen bei Bedarf aus .dfm- oder .fmx-Dateien erzeugen; importierte Laufzeitbilder bleiben getrennte Belege.</li><li>Die <strong>Anwendungsdiagramme</strong> zeigen statische Verbindungen, die noch zur Laufzeit bestätigt werden müssen.</li></ol></section>')
       .Replace('<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section>',
         '<section><h2>Grenzen der Belege</h2><p>Extrahierte Fakten, aus dem Quellcode abgeleitete Schlussfolgerungen und Angaben von Mitwirkenden haben unterschiedliche Gewissheit. Prüfen Sie jede Schlussfolgerung anhand ihres Quellverweises und der Erfassungskonfiguration. DPH führt die ausgewählte Anwendung nicht aus und verändert sie nicht. Das Kontrollkästchen oben steuert das optionale Lesen öffentlicher Websites.</p></section>');
+  end;
+  Facts:=nil;
+  if FLearningFacts<>nil then Facts:=FLearningFacts.Document
+  else if FView<>nil then Facts:=FView.Document;
+  if Facts<>nil then begin
+    IsGerman:=SameText(DATActiveLanguageCode,'de-DE');
+    IncompleteAnalysis:=not Facts.GetValue<Boolean>('stale',False) and
+      not Facts.GetValue<Boolean>('analysis_complete',False);
+    if Facts.GetValue<Boolean>('stale',False) then begin
+      if IsGerman then Status:='Gespeicherte Erfassung muss aktualisiert werden'
+      else Status:='Saved capture needs source refresh';
+    end else if IncompleteAnalysis then begin
+      if IsGerman then Status:='Projektanalyse ist unvollständig'
+      else Status:='Project analysis is incomplete';
+    end else if IsGerman then Status:='Aus dem Quellcode abgeleitet, ungeprüft'
+    else Status:='Source-derived, unreviewed';
+    StatusNotice:='<section class="scope"><p><strong>'+Status+'</strong> | '+
+      TNetEncoding.HTML.Encode(Facts.GetValue<string>('configuration','unknown configuration'))+' / '+
+      TNetEncoding.HTML.Encode(Facts.GetValue<string>('platform','unknown platform'));
+    if IsGerman then StatusNotice:=StatusNotice+' | erfasst '
+    else StatusNotice:=StatusNotice+' | captured ';
+    StatusNotice:=StatusNotice+
+      TNetEncoding.HTML.Encode(Facts.GetValue<string>('captured_utc','unknown time'));
+    if IsGerman then StatusNotice:=StatusNotice+
+      '. Nur statische Analyse; die ausgewählte Anwendung wurde nicht ausgeführt.</p>'
+    else StatusNotice:=StatusNotice+
+      '. Static inspection only; the selected application was not run.</p>';
+    if IncompleteAnalysis then begin
+      if IsGerman then StatusNotice:=StatusNotice+
+        '<p>DPH hat die gefundenen Ergebnisse gespeichert, aber einige können fehlen. '+
+        'Öffnen Sie Abdeckung, wählen Sie eine Diagnose und dann Ausgewählte Lücke untersuchen, '+
+        'um die betroffene Quelldatei zu sehen. Korrigieren Sie fehlende Dateien, Pfade oder '+
+        'Projekteinstellungen und wählen Sie danach Projekt erneut prüfen.</p>'
+      else StatusNotice:=StatusNotice+
+        '<p>DPH saved what it found, but some results may be missing. Open Coverage, '+
+        'select a diagnostic, and choose Inspect selected gap to see the affected source. '+
+        'If a file, path, or project setting is missing, correct it and choose Rescan project.</p>';
+    end;
+    HTML:=HTML.Replace('<main>','<main>'+StatusNotice+'</section>');
   end;
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;

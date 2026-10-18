@@ -90,20 +90,20 @@ begin
     Status:='Source-derived, unreviewed';
     if AFacts.GetValue<Boolean>('stale',False) then Status:='STALE capture - refresh before relying on it'
     else if IncompleteAnalysis then Status:='Project analysis is incomplete';
-    Body.Append('<section class="scope"><p><strong>'+Esc(Status)+'</strong> | '+
-      Esc(AFacts.GetValue<string>('configuration','unknown configuration'))+' / '+
-      Esc(AFacts.GetValue<string>('platform','unknown platform'))+' | captured '+
-      Esc(AFacts.GetValue<string>('captured_utc','unknown time'))+
-      '. Static inspection only; the selected application was not run.</p>');
-    if IncompleteAnalysis then begin
-      Body.Append('<p>DPH saved what it found, but some results may be missing. ');
-      if AExport then Body.Append('In DPH, open Coverage')
-      else Body.Append('<a href="#open_coverage">Open Coverage</a>');
-      Body.Append(', select a diagnostic, and choose <strong>Inspect selected gap</strong> '+
-        'to see the affected source. If the gap is caused by a missing file, path, '+
-        'or project setting, correct it and choose <strong>Rescan project</strong>.</p>');
+    if AExport and (APage=0) then begin
+      Body.Append('<section class="scope"><p><strong>'+Esc(Status)+'</strong> | '+
+        Esc(AFacts.GetValue<string>('configuration','unknown configuration'))+' / '+
+        Esc(AFacts.GetValue<string>('platform','unknown platform'))+' | captured '+
+        Esc(AFacts.GetValue<string>('captured_utc','unknown time'))+
+        '. Static inspection only; the selected application was not run.</p>');
+      if IncompleteAnalysis then
+        Body.Append('<p>DPH saved what it found, but some results may be missing. '+
+          'In DPH, open Coverage, select a diagnostic, and choose '+
+          '<strong>Inspect selected gap</strong> to see the affected source. '+
+          'If the gap is caused by a missing file, path, or project setting, '+
+          'correct it and choose <strong>Rescan project</strong>.</p>');
+      Body.Append('</section>');
     end;
-    Body.Append('</section>');
     case APage of
       0: begin
         Purpose:=''; PurposeEvidence:='';
