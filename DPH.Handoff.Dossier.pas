@@ -31,8 +31,9 @@ var
   Value, Other: TJSONValue;
   Row, Target, Control, Guide, Section, Profile, Fields: TJSONObject;
   Name, Caption, EventName, Key, Source, Purpose, PurposeEvidence, Status,
-    Title, Kind, DirectoryName: string;
-  Count, Total, Index: Integer;
+    Title, Kind, DirectoryName, GuideSource, CandidatePurpose: string;
+  Count, Total, Index, PurposeScore, CandidateScore, BindingCount,
+    OutputCount, DataCount, ContractCount: Integer;
   IncompleteAnalysis: Boolean;
   function Esc(const AText: string): string;
   begin
@@ -122,35 +123,77 @@ begin
             Break;
           end;
         end;
+        PurposeScore:=-1;
         if (Purpose='') and (Guides<>nil) then for Value in Guides do begin
           Guide:=Value as TJSONObject;
+          GuideSource:=LowerCase(Guide.GetValue<string>('source','').Replace('\','/'));
+          if StartsText('contracts/',GuideSource) or StartsText('tests/',GuideSource) or
+            ContainsText(GuideSource,'/archive/') or
+            ContainsText(GuideSource,'engineering_guide') or
+            ContainsText(GuideSource,'validation') then Continue;
+          CandidateScore:=0;
+          if MatchText(GuideSource,['readme.md','readme.txt']) then CandidateScore:=100
+          else if StartsText('docs/guides/',GuideSource) and
+            (ContainsText(GuideSource,'user_guide') or
+             ContainsText(GuideSource,'getting_started')) then CandidateScore:=70
+          else if StartsText('docs/',GuideSource) then CandidateScore:=20;
           Sections:=Guide.GetValue<TJSONArray>('sections',nil);
           if Sections=nil then Continue;
           for Other in Sections do begin
             Section:=Other as TJSONObject;
             Title:=Section.GetValue<string>('heading','');
-            if not (ContainsText(Title,'purpose') or ContainsText(Title,'overview') or
-              ContainsText(Title,'introduction')) then Continue;
-            Purpose:=Trim(Section.GetValue<string>('text',''));
-            if Purpose='' then Continue;
-            PurposeEvidence:='Project document '+Esc(Guide.GetValue<string>('source',''))+
-              ' | author statement, not runtime verification';
+            CandidatePurpose:=Trim(Section.GetValue<string>('text',''));
+            if CandidatePurpose='' then Continue;
+            if ContainsText(Title,'purpose') or ContainsText(Title,'overview') or
+              ContainsText(Title,'introduction') or ContainsText(Title,'about') then
+              Inc(CandidateScore,10)
+            else if CandidateScore<100 then Continue;
+            if CandidateScore>PurposeScore then begin
+              Purpose:=CandidatePurpose;
+              PurposeScore:=CandidateScore;
+              PurposeEvidence:='Project document '+Esc(Guide.GetValue<string>('source',''))+
+                ' | author statement, not runtime verification';
+            end;
             Break;
           end;
-          if Purpose<>'' then Break;
         end;
-        Body.Append('<section class="card"><h2>Purpose and evidence</h2>');
+        Body.Append('<section class="card"><h2>What this application is for</h2>');
         if Purpose<>'' then Body.Append('<pre dir="auto" class="project-prose">'+
           Esc(Copy(Purpose,1,1800))+'</pre><p><small>'+PurposeEvidence+'</small></p>')
         else Body.Append('<p class="unknown">Purpose is not established by the captured evidence. '+
           'Use the screens, commands and local guides below as leads; do not treat a filename as a business description.</p>');
-        Body.Append('</section><section class="card"><h2>What was captured</h2><div class="metrics">');
+        Body.Append('</section><section class="card"><h2>What the captured source shows</h2>');
+        if (Startup<>nil) and (Startup.Count>0) then begin
+          Row:=Startup.Items[0] as TJSONObject;
+          Body.Append('<p>The project entry registers <strong>'+Esc(
+            Row.GetValue<string>('instance','the first form'))+'</strong> '+
+            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) from '+
+            '<code>'+Esc(Row.GetValue<string>('program',''))+':'+
+            IntToStr(Row.GetValue<Integer>('line',0))+'</code>.</p>');
+        end else Body.Append('<p>The initial form registration was not resolved in this capture.</p>');
+        BindingCount:=0; OutputCount:=0; DataCount:=0;
+        if Relations<>nil then for Value in Relations do begin
+          Row:=Value as TJSONObject;
+          Kind:=Row.GetValue<string>('kind','');
+          if Kind='binds' then Inc(BindingCount)
+          else if Kind='output_candidate' then Inc(OutputCount)
+          else if MatchText(Kind,['static_sql','dynamic_sql','reads','writes']) then
+            Inc(DataCount);
+        end;
+        Body.Append('<p>The saved source and forms expose '+IntToStr(BindingCount)+
+          ' event bindings, '+IntToStr(OutputCount)+' candidate output sites and '+
+          IntToStr(DataCount)+' data-access relationships. Follow the connected '+
+          'handlers, files and reports to see each path in detail. These are '+
+          'static findings; they do not establish that a conversion or other '+
+          'operation completed at runtime.</p>');
+        Body.Append('<div class="metrics">');
         if Files<>nil then Body.Append('<span><strong>'+IntToStr(Files.Count)+'</strong> files</span>');
         if Symbols<>nil then Body.Append('<span><strong>'+IntToStr(Symbols.Count)+'</strong> objects</span>');
         if Relations<>nil then Body.Append('<span><strong>'+IntToStr(Relations.Count)+'</strong> relationships</span>');
         if Screens<>nil then Body.Append('<span><strong>'+IntToStr(Screens.Count)+'</strong> form designs</span>');
         Body.Append('</div><p>Counts describe this selected capture, not all possible build variants or runtime paths.</p></section>');
-        Body.Append('<section class="card"><h2>Project directories and build paths</h2>');
+        Body.Append('<section class="card"><h2>Dependencies and build paths</h2>'+
+          '<h3>Project directories and build paths</h3>');
         if Files<>nil then for Value in Files do begin
           Row:=Value as TJSONObject;
           DirectoryName:=Row.GetValue<string>('path','').Replace('\','/');
@@ -175,8 +218,21 @@ begin
             Esc(Row.GetValue<string>('source',''))+':'+
             IntToStr(Row.GetValue<Integer>('line',0))+'</code></small></p>');
         end;
-        Body.Append('<p>These are captured project properties for the selected build variant. Delphi IDE global Library and Browsing paths are not stored in the project and require confirmation on the maintainer machine. Unresolved units can indicate a missing library path, package, source root or conditional variant.</p></section>');
-        if not AExport then Body.Append('<section class="card"><h2>Component packs</h2><p>Inspect serialized VCL/FMX controls, captured class declarations and package references. Record the exact vendor, product version, license and install path when confirmed; a class prefix alone cannot identify a third-party pack.</p><p><a href="#open_dependencies">Inspect component dependencies</a></p></section>');
+        Body.Append('<p>These are captured project properties for the selected build variant. Delphi IDE global Library and Browsing paths are not stored in the project and require confirmation on the maintainer machine. Unresolved units can indicate a missing library path, package, source root or conditional variant.</p>');
+        Body.Append('<p>Third-party component packs require the exact vendor, version, license and install location. A class prefix alone cannot confirm a package.</p>');
+        if not AExport then Body.Append('<p><a href="#open_dependencies">Inspect component dependencies</a></p>');
+        Body.Append('</section><section class="card"><h2>Contracts and validation</h2>');
+        ContractCount:=0;
+        if Files<>nil then for Value in Files do begin
+          Row:=Value as TJSONObject;
+          Name:=Row.GetValue<string>('path','').Replace('\','/');
+          if not (ContainsText(Name,'contract') or StartsText('tests/',Name)) then Continue;
+          Inc(ContractCount);
+          if ContractCount<=6 then Body.Append('<p><code>'+Esc(Name)+'</code></p>');
+        end;
+        if ContractCount=0 then Body.Append('<p>No contract or test file was identified in this capture. Check the project documentation and build scripts before claiming validation coverage.</p>')
+        else Body.Append('<p>'+IntToStr(ContractCount)+' contract or test files were identified in the captured file set. Their presence does not show that they passed; review the current test results and the applicable build variant.</p>');
+        Body.Append('</section>');
         Body.Append('<section class="card"><h2>Startup reading order</h2>');
         Count:=0;
         if Startup<>nil then for Value in Startup do begin

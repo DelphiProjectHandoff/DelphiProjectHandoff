@@ -1363,7 +1363,7 @@ var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSO
   TocHTML,TocText,TocBlock:string;
   Lines:TStringList; Sections,Symbols:TJSONArray;
   Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
-    IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding,IsRuntimeFlow,IsDetailedFlow:Boolean;
+    IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding,IsDetailedFlow:Boolean;
   StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation; WaitResult:Cardinal;
   TocTable,TocRow,TocParts,TocStart,TocEnd:TMatch; TocRows:TMatchCollection;
 begin
@@ -1469,38 +1469,38 @@ begin
            ConvertedPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'.html');
            RichPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'-view.html');
            IsDetailedFlow:=ContainsText(Source,'Detailed_Runtime_Flow');
-           IsRuntimeFlow:=IsDetailedFlow or ContainsText(Source,'Converter_Runtime_Flow');
-           if IsRuntimeFlow and TFile.Exists(RichPath) and
+           if TFile.Exists(RichPath) and
              not ContainsText(TFile.ReadAllText(RichPath,TEncoding.UTF8),
-               'name="dph-runtime-flow-version" content="2"') then
+               'name="dph-document-view-version" content="3"') then
              TFile.Delete(RichPath);
            if not TFile.Exists(RichPath) then begin
              StatusLabel.Text:='Preparing the formatted document...';
              Application.ProcessMessages;
-             ProfileURL:='file:///'+TPath.Combine(FLearningDirectory,'document-profile').Replace('\','/').Replace(' ','%20');
-             CommandLine:='"'+Converter+'" "-env:UserInstallation='+ProfileURL+'" --headless '+
-               '--convert-to "html:XHTML Writer File:UTF8" --outdir "'+RichDirectory+'" "'+SourcePath+'"';
-             UniqueString(CommandLine);
-             FillChar(StartupInfo,SizeOf(StartupInfo),0);
-             StartupInfo.cb:=SizeOf(StartupInfo);
-             StartupInfo.dwFlags:=STARTF_USESHOWWINDOW;
-             StartupInfo.wShowWindow:=SW_HIDE;
-             if CreateProcess(nil,PChar(CommandLine),nil,nil,False,CREATE_NO_WINDOW,nil,nil,
-               StartupInfo,ProcessInfo) then begin
-               try
-                 WaitResult:=WaitForSingleObject(ProcessInfo.hProcess,15000);
-                 if WaitResult=WAIT_TIMEOUT then TerminateProcess(ProcessInfo.hProcess,1);
-               finally
-                 CloseHandle(ProcessInfo.hThread);
-                 CloseHandle(ProcessInfo.hProcess);
+             if not TFile.Exists(ConvertedPath) then begin
+               ProfileURL:='file:///'+TPath.Combine(FLearningDirectory,'document-profile').Replace('\','/').Replace(' ','%20');
+               CommandLine:='"'+Converter+'" "-env:UserInstallation='+ProfileURL+'" --headless '+
+                 '--convert-to "html:XHTML Writer File:UTF8" --outdir "'+RichDirectory+'" "'+SourcePath+'"';
+               UniqueString(CommandLine);
+               FillChar(StartupInfo,SizeOf(StartupInfo),0);
+               StartupInfo.cb:=SizeOf(StartupInfo);
+               StartupInfo.dwFlags:=STARTF_USESHOWWINDOW;
+               StartupInfo.wShowWindow:=SW_HIDE;
+               if CreateProcess(nil,PChar(CommandLine),nil,nil,False,CREATE_NO_WINDOW,nil,nil,
+                 StartupInfo,ProcessInfo) then begin
+                 try
+                   WaitResult:=WaitForSingleObject(ProcessInfo.hProcess,15000);
+                   if WaitResult=WAIT_TIMEOUT then TerminateProcess(ProcessInfo.hProcess,1);
+                 finally
+                   CloseHandle(ProcessInfo.hThread);
+                   CloseHandle(ProcessInfo.hProcess);
+                 end;
                end;
              end;
              if TFile.Exists(ConvertedPath) and (TFile.GetSize(ConvertedPath)<=16777216) then begin
                RichHTML:=TFile.ReadAllText(ConvertedPath,TEncoding.UTF8);
                RichHTML:=TRegEx.Replace(RichHTML,'(?is)<\?xml[^>]*\?>|<!DOCTYPE[^>]*>','');
-               if IsRuntimeFlow then
-                 RichHTML:=TRegEx.Replace(RichHTML,
-                   '(?i)<(a|span)\b([^>]*)\s*/>','<$1$2></$1>');
+               RichHTML:=TRegEx.Replace(RichHTML,
+                 '(?i)<(a|span)\b([^>]*)\s*/>','<$1$2></$1>');
                RichHTML:=TRegEx.Replace(RichHTML,'(?is)<script\b[^>]*>.*?</script>|'+
                  '<(?:iframe|object|embed|form|base|link)\b[^>]*>','');
                RichHTML:=TRegEx.Replace(RichHTML,'(?i)\s+href\s*=\s*"(?!#)[^"]*"','');
@@ -1552,19 +1552,52 @@ begin
                    end;
                  end;
                end;
-               if IsRuntimeFlow then begin
-                 RichHTML:=TRegEx.Replace(RichHTML,
-                   '(?is)<p\b[^>]*>(?:\s|'+#65533+'|&nbsp;|&#160;)*</p>','');
-                 RichHTML:=TRegEx.Replace(RichHTML,'(?i)<body\b',
-                   '<body class="runtime-flow"');
-                 RichHTML:=TRegEx.Replace(RichHTML,
-                   '(?is)(<body\b[^>]*>)(.*?)(<nav class="toc")',
-                   '$1<section class="document-cover">$2</section>$3');
-                 if IsDetailedFlow then
-                   RichHTML:=TRegEx.Replace(RichHTML,
-                     '(?is)(<h1\b[^>]*>\s*<a id="a__Lifecycle_at_a_glance")',
-                     '</section><section class="document-overview">$1');
+               if not ContainsText(RichHTML,'<nav class="toc"') then begin
+                 TocStart:=TRegEx.Match(RichHTML,
+                   '(?is)<p\b[^>]*>\s*(?:Table of Contents|Contents)\s*</p>');
+                 if TocStart.Success then begin
+                   TocEnd:=TRegEx.Match(RichHTML.Substring(TocStart.Index+TocStart.Length),
+                     '(?is)<h1\b[^>]*>');
+                   if TocEnd.Success and (TocEnd.Index<100000) then begin
+                     TocBlock:=RichHTML.Substring(TocStart.Index,TocStart.Length+TocEnd.Index);
+                     TocRows:=TRegEx.Matches(TocBlock,'(?is)<p\b[^>]*>(.*?)</p>');
+                     TocHTML:='<nav class="toc" aria-label="Contents"><h2>Contents</h2>';
+                     Count:=0;
+                     for TocRow in TocRows do begin
+                       TocText:=TNetEncoding.HTML.Decode(
+                         TRegEx.Replace(TocRow.Groups[1].Value,'<[^>]+>','')).Trim;
+                       TocParts:=TRegEx.Match(TocText,'(?s)^(.*?)\s+(\d+)$');
+                       if not TocParts.Success then Continue;
+                       TocHTML:=TocHTML+'<div class="toc-row"><span class="toc-title">'+
+                         TNetEncoding.HTML.Encode(TocParts.Groups[1].Value.Trim)+'</span>'+
+                         '<span class="toc-dots"></span><span class="toc-page">'+
+                         TocParts.Groups[2].Value+'</span></div>';
+                       Inc(Count);
+                     end;
+                     if Count>=2 then RichHTML:=RichHTML.Replace(TocBlock,TocHTML+'</nav>');
+                   end;
+                 end;
                end;
+               RichHTML:=TRegEx.Replace(RichHTML,
+                 '(?is)<p\b[^>]*>(?:\s|'+#65533+'|&nbsp;|&#160;)*</p>','');
+               RichHTML:=TRegEx.Replace(RichHTML,'(?i)<body\b',
+                 '<body class="project-document"');
+               RichHTML:=TRegEx.Replace(RichHTML,
+                 '(?is)(<body\b[^>]*>)(.*?)(<nav class="toc")',
+                 '$1<section class="document-cover">$2</section>$3');
+               if not ContainsText(RichHTML,'class="document-cover"') then begin
+                 TocStart:=TRegEx.Match(RichHTML,'(?i)<body\b[^>]*>');
+                 if TocStart.Success then
+                   RichHTML:=RichHTML.Replace(TocStart.Value,TocStart.Value+
+                     '<section class="document-cover"><h1>'+
+                     TNetEncoding.HTML.Encode(
+                       TPath.GetFileNameWithoutExtension(SourcePath).Replace('_',' '))+
+                     '</h1></section>');
+               end;
+               if IsDetailedFlow then
+                 RichHTML:=TRegEx.Replace(RichHTML,
+                   '(?is)(<h1\b[^>]*>\s*<a id="a__Lifecycle_at_a_glance")',
+                   '</section><section class="document-overview">$1');
                RichHTML:=TRegEx.Replace(RichHTML,'(?i)</head>',
                  '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; '+
                  'style-src ''unsafe-inline''; img-src ''self'' data:; font-src ''self'' data:; '+
@@ -1572,19 +1605,28 @@ begin
                  'object-src ''none''; form-action ''none''; base-uri ''none''">'+
                  '<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;color:#19364e}'+
                  'h1,h2,h3,h4{color:#146cb4;line-height:1.25}'+
-                 'body.runtime-flow{box-sizing:border-box!important;width:auto!important;'+
+                 'body.project-document{box-sizing:border-box!important;width:auto!important;'+
                  'max-width:960px!important;margin:0 auto!important;padding:24px!important;'+
                  'font:16px/1.55 Segoe UI,Arial,sans-serif!important}'+
-                 'body.runtime-flow *{box-sizing:border-box}'+
-                 'body.runtime-flow h1,body.runtime-flow h2{font-family:Cambria,Georgia,serif!important;'+
-                 'color:#2f5496!important}'+
-                 'body.runtime-flow table{width:100%!important;max-width:100%!important;'+
+                 'body.project-document *{box-sizing:border-box}'+
+                 'body.project-document p{font-size:16px!important;line-height:1.6!important;'+
+                 'margin:0 0 14px!important;overflow-wrap:anywhere}'+
+                 'body.project-document h1,body.project-document h2,body.project-document h3{'+
+                 'font-family:Cambria,Georgia,serif!important;color:#2f5496!important;'+
+                 'line-height:1.25!important;margin:28px 0 12px!important}'+
+                 'body.project-document h1{font-size:27px!important}'+
+                 'body.project-document h2{font-size:22px!important}'+
+                 'body.project-document h3{font-size:18px!important}'+
+                 'body.project-document img{max-width:100%!important;height:auto!important}'+
+                 'body.project-document table{width:100%!important;max-width:100%!important;'+
                  'table-layout:fixed!important;margin-left:0!important;border-collapse:collapse!important}'+
-                 'body.runtime-flow table col{width:auto!important}'+
-                 'body.runtime-flow table td,body.runtime-flow table th{width:auto!important;'+
+                 'body.project-document table col{width:auto!important}'+
+                 'body.project-document table td,body.project-document table th{width:auto!important;'+
                  'min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;'+
-                 'border:1px solid #d7e2ec;padding:7px 9px}'+
-                 'body.runtime-flow table.table-Table5{max-width:460px!important}'+
+                 'border:1px solid #d7e2ec;padding:7px 9px!important}'+
+                 'body.project-document table p{font-size:14px!important;'+
+                 'line-height:1.45!important;margin:0!important}'+
+                 'body.project-document table.table-Table5{max-width:460px!important}'+
                  '.document-cover{padding:34px;margin:0 0 26px;border-top:7px solid #176ab2;'+
                  'border-bottom:4px solid #f28a28;background:#f3f7fb;border-radius:7px}'+
                  '.document-cover p.paragraph-P2 .text-T1,.document-cover p.paragraph-Title{'+
@@ -1601,14 +1643,13 @@ begin
                  '.toc-sub{padding-left:22px}.toc-title{max-width:78%;overflow-wrap:anywhere}'+
                  '.toc-dots{flex:1;min-width:10px;border-bottom:2px dotted #8ca5bd;transform:translateY(-3px)}'+
                  '.toc-page{flex:0 0 auto;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}'+
-                 'body.runtime-flow p.paragraph-Source_20_Anchor{font:13px/1.45 Segoe UI,Arial,sans-serif!important;'+
+                 'body.project-document p.paragraph-Source_20_Anchor{font:13px/1.45 Segoe UI,Arial,sans-serif!important;'+
                  'color:#53697d;margin:0 0 18px}'+
-                 '@media(max-width:650px){body.runtime-flow{padding:14px!important}'+
+                 '@media(max-width:650px){body.project-document{padding:14px!important}'+
                  '.document-cover,.document-overview,.toc{padding:18px}.toc-sub{padding-left:12px}}'+
                  '</style></head>');
-               if IsRuntimeFlow then
-                 RichHTML:=RichHTML.Replace('</head>',
-                   '<meta name="dph-runtime-flow-version" content="2"></head>');
+               RichHTML:=RichHTML.Replace('</head>',
+                 '<meta name="dph-document-view-version" content="3"></head>');
                TFile.WriteAllText(RichPath,RichHTML,TEncoding.UTF8);
              end;
            end;
@@ -1633,10 +1674,28 @@ begin
    end; end;
  end;
  if R.GetValue<string>('library_kind','')<>'route' then begin
- HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2,h3{color:#146cb4;line-height:1.3;margin-top:32px}h2{font-size:23px}h3{font-size:19px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal;overflow-wrap:anywhere}ul{padding-left:26px}'+
-   'code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}'+
-   'table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid #d7e2ec}th{background:#e8f2fa;color:#145c99}tr:nth-child(even) td{background:#f8fbfd}</style></head><body><article><h1>'+
-   TNetEncoding.HTML.Encode(Title)+'</h1>';
+ HTML:='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" '+
+   'content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}'+
+   'body.project-document{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#19364e;'+
+   'max-width:960px;margin:0 auto;padding:24px;background:#fff;overflow-wrap:anywhere}'+
+   '.document-cover{padding:34px;margin:0 0 26px;border-top:7px solid #176ab2;'+
+   'border-bottom:4px solid #f28a28;background:#f3f7fb;border-radius:7px}'+
+   '.document-cover h1{font:700 30px/1.2 Cambria,Georgia,serif;color:#1d578c;margin:0}'+
+   'article{white-space:normal;overflow-wrap:anywhere}'+
+   'article h2,article h3{font-family:Cambria,Georgia,serif;color:#2f5496;'+
+   'line-height:1.3;margin:30px 0 12px}article h2{font-size:23px}article h3{font-size:19px}'+
+   'p{margin:0 0 15px}li{margin:8px 0}ul,ol{padding-left:28px}'+
+   'code{font:0.9em Consolas,monospace;background:#edf3f8;padding:2px 4px;border-radius:3px}'+
+   'pre{overflow:auto;background:#edf3f8;padding:16px;border-radius:6px}pre code{padding:0}'+
+   'blockquote{border-left:4px solid #f28a28;margin:20px 0;padding:4px 18px;background:#fff8f0}'+
+   '.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}'+
+   'table{border-collapse:collapse;width:100%;max-width:100%;table-layout:fixed;'+
+   'font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;'+
+   'border:1px solid #d7e2ec;overflow-wrap:anywhere}th{background:#e8f2fa;color:#145c99}'+
+   'tr:nth-child(even) td{background:#f8fbfd}'+
+   '@media(max-width:650px){body.project-document{padding:14px}.document-cover{padding:18px}}'+
+   '</style></head><body class="project-document"><header class="document-cover"><h1>'+
+   TNetEncoding.HTML.Encode(Title)+'</h1></header><article>';
  if R.GetValue<TJSONArray>('sections',nil)<>nil then
    HTML:=HTML.Replace('<article>','<article class="project-prose">');
  Lines:=TStringList.Create;

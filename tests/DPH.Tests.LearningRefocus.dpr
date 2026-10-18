@@ -187,6 +187,16 @@ begin
           try
             FlowText:=TDPHHandoffDossier.Render(Model.Document,0);
             Check(ContainsText(FlowText,'Handoff overview') and
+              ContainsText(FlowText,'What this application is for') and
+              ContainsText(FlowText,'What the captured source shows') and
+              ContainsText(FlowText,'Dependencies and build paths') and
+              ContainsText(FlowText,'Contracts and validation') and
+              (Pos('What this application is for',FlowText)<
+               Pos('What the captured source shows',FlowText)) and
+              (Pos('What the captured source shows',FlowText)<
+               Pos('Dependencies and build paths',FlowText)) and
+              (Pos('Dependencies and build paths',FlowText)<
+               Pos('Contracts and validation',FlowText)) and
               ContainsText(FlowText,'Startup reading order') and
               ContainsText(FlowText,'Project directories and build paths') and
               ContainsText(FlowText,'DCC_UnitSearchPath') and
@@ -195,6 +205,18 @@ begin
               ContainsText(FlowText,'Semantic.dproj') and
               not ContainsText(FlowText,'SHA-256'),
               'Handoff overview keeps project detail without repeating the capture notice');
+            var PriorityFacts:=Model.Document.Clone as TJSONObject;
+            try
+              var PriorityGuides:=PriorityFacts.GetValue<TJSONArray>('project_guides');
+              PriorityGuides.AddElement(TJSONObject.Create.AddPair('source',
+                'docs/guides/Contracts_Overview.md').AddPair('sections',TJSONArray.Create(
+                TJSONObject.Create.AddPair('heading','Overview').AddPair('text',
+                  'CONTRACT_ONLY_DESCRIPTION'))));
+              FlowText:=TDPHHandoffDossier.Render(PriorityFacts,0);
+              Check(ContainsText(FlowText,'Project document README.md') and
+                not ContainsText(FlowText,'CONTRACT_ONLY_DESCRIPTION'),
+                'Handoff purpose prefers the project introduction over a contracts overview');
+            finally PriorityFacts.Free;end;
             FlowText:=TDPHHandoffDossier.Render(Model.Document,0,True);
             Check(ContainsText(FlowText,'Project analysis is incomplete') and
               ContainsText(FlowText,'In DPH, open Coverage') and
@@ -576,7 +598,7 @@ begin
                 (Form.ExplorerList.Count=0),'Saved capture waits for its knowledge before building the dossier');
               Form.LoadKnowledge(Store.KnowledgeJSON,True);
               Check(Form.LearningBrowser.Visible,'Saved capture opens its real dossier after knowledge loads');
-              WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','What this application is for');
               Check(True,'The saved dossier HTML is rendered in the browser');
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
@@ -593,8 +615,16 @@ begin
               Check(Form.CardBrowser.Visible and ContainsText(Form.CardBrowser.URL,'-view.html') and
                 TFile.Exists(Path) and
                 ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Content-Security-Policy') and
+                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'dph-document-view-version') and
+                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'class="project-document"') and
+                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'class="document-cover"') and
                 ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Delphi Project Handoff Engineering Guide'),
                 'Selecting a Word guide displays its formatted, restricted HTML conversion');
+              WaitHTML(Form.CardBrowser,
+                'String(document.querySelectorAll(".toc-row").length > 10)','true');
+              WaitHTML(Form.CardBrowser,
+                'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
+              Check(True,'The Word guide has a right-aligned contents list and fits the viewer width');
               Check(not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(
                 TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
                 'documents\invalid\unreviewed-view.html'),
@@ -880,12 +910,12 @@ begin
           if not Form.ProjectPreparationLayout.Visible and Form.LearningBrowser.Visible then Break;
           TThread.Sleep(20);
         until Watch.ElapsedMilliseconds>30000;
-        WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+        WaitHTML(Form.LearningBrowser,'document.body.innerText','What this application is for');
         Check(not Form.ProjectPreparationLayout.Visible and Form.LearningBrowser.Visible,
           'Saved open shows the real dossier before clearing preparation');
         Check(not ProgressWindow.Visible,'Native progress dialog closes after the dossier is ready');
         Check(Form.SaveProjectButton.Enabled,'Unsaved capture offers an explicit Save project button');
-        WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
+        WaitHTML(Form.LearningBrowser,'document.body.innerText','What this application is for');
         Check(True,'Saved-open browser contains the captured project dossier');
       finally Form.Free; end;
       // Analyze a real generated Pascal body rather than manufacturing diagram edges.
