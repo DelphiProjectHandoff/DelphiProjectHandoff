@@ -1453,7 +1453,12 @@ begin
      Extension:=LowerCase(TPath.GetExtension(SourcePath));
      if StartsText(SourceRoot,SourcePath) and TFile.Exists(SourcePath) and
        SameText(THashSHA2.GetHashStringFromFile(SourcePath),R.GetValue<string>('sha256','')) then begin
-       if Extension='.pdf' then RichPath:=SourcePath
+       if Extension='.pdf' then begin
+         RichDirectory:=TPath.Combine(FLearningDirectory,'documents\'+R.GetValue<string>('sha256'));
+         TDirectory.CreateDirectory(RichDirectory);
+         RichPath:=TPath.Combine(RichDirectory,TPath.GetFileName(SourcePath));
+         if not TFile.Exists(RichPath) then TFile.Copy(SourcePath,RichPath);
+       end
        else if MatchText(Extension,['.docx','.docm','.doc','.odt','.rtf']) then begin
          Converter:='C:\Program Files\LibreOffice\program\soffice.com';
          if TFile.Exists(Converter) then begin
@@ -3591,7 +3596,7 @@ begin
   Directory:=FLearningDirectory; if Sender=ExplainBrowser then Directory:=FExplainDirectory;
   if Sender=FlowBrowser then Directory:=FFlowDirectory;
   if Sender=HelpBrowser then Directory:=FLearningDirectory;
-  ACancel:=not (TDPHBrowserPolicy.Allowed(AURL,Directory,False,True) or
+  ACancel:=not (TDPHBrowserPolicy.Allowed(AURL,Directory,False,True,Sender=CardBrowser) or
     ((FOfflinePreview<>nil) and FOfflinePreview.Allows(AURL,Directory)));
   if ACancel then Exit;
   if EndsText('#open_forms',AURL) then begin

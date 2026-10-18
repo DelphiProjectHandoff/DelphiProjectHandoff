@@ -1,12 +1,14 @@
 unit DPH.Publish.BrowserPolicy;
 interface
 type TDPHBrowserPolicy = class
-  class function Allowed(const AURL,ADirectory: string; AObjectPages: Boolean = False; AHashedPages: Boolean = False): Boolean; static;
+  class function Allowed(const AURL,ADirectory: string; AObjectPages: Boolean = False;
+    AHashedPages: Boolean = False; ADocumentPages: Boolean = False): Boolean; static;
 end;
 implementation
 uses System.SysUtils, System.StrUtils, System.IOUtils, System.NetEncoding;
-class function TDPHBrowserPolicy.Allowed(const AURL,ADirectory: string; AObjectPages,AHashedPages: Boolean): Boolean;
-var Path,Name: string; P: Integer; C: Char;
+class function TDPHBrowserPolicy.Allowed(const AURL,ADirectory: string;
+  AObjectPages,AHashedPages,ADocumentPages: Boolean): Boolean;
+var Path,Name,Hash: string; P: Integer; C: Char;
 begin
   Result:=SameText(AURL,'about:blank'); if Result then Exit;
   if (ADirectory='') or not StartsText('file://',AURL) then Exit(False);
@@ -30,6 +32,15 @@ begin
       (AHashedPages and SameFileName(ExtractFileDir(Path),TPath.GetFullPath(ADirectory)))) then begin
       Name:=TPath.GetFileNameWithoutExtension(Path); Result:=(Length(Name)=64) and SameText(ExtractFileExt(Path),'.html');
       for C in Name do if not CharInSet(C,['0'..'9','a'..'f','A'..'F']) then Result:=False;
+    end;
+    if not Result and ADocumentPages and
+      SameFileName(ExtractFileDir(ExtractFileDir(Path)),
+        TPath.Combine(TPath.GetFullPath(ADirectory),'documents')) then begin
+      Hash:=TPath.GetFileName(ExtractFileDir(Path));
+      Name:=TPath.GetFileName(Path);
+      Result:=(Length(Hash)=64) and
+        (EndsText('-view.html',Name) or SameText(TPath.GetExtension(Name),'.pdf'));
+      for C in Hash do if not CharInSet(C,['0'..'9','a'..'f','A'..'F']) then Result:=False;
     end;
   except Result:=False; end;
 end;

@@ -156,8 +156,11 @@ begin
         TFile.Copy(Path,TPath.Combine(Fixture,TPath.GetFileName(Path)));
       TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs'));
       TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs\guides'));
+      TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs\pdf'));
       TFile.Copy(TPath.Combine(Root,'docs\guides\DPH_Engineering_Guide.docx'),
         TPath.Combine(Fixture,'docs\guides\Engineering_Guide.docx'));
+      TFile.Copy(TPath.Combine(Root,'docs\pdf\DPH_User_Guide.pdf'),
+        TPath.Combine(Fixture,'docs\pdf\User_Guide.pdf'));
       TFile.WriteAllText(TPath.Combine(Fixture,'docs\README.md'),
         'The second README explains the same application from a different project folder. It retains its own document location.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Fixture,'Westminster_Chimes_and_Carillon_Bells_8_1_Engineering_Guide.txt'),
@@ -582,11 +585,32 @@ begin
                 'The captured Word guide is available for explicit selection');
               Form.CardSelectionChange(Form.CardList);
               Path:=Copy(Form.CardBrowser.URL,8,MaxInt);
+              Check(TDPHBrowserPolicy.Allowed(Form.CardBrowser.URL,
+                TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
+                False,True,True),
+                'The Learning browser permits its generated document page');
+              WaitHTML(Form.CardBrowser,'document.title','Delphi Project Handoff Engineering Guide');
               Check(Form.CardBrowser.Visible and ContainsText(Form.CardBrowser.URL,'-view.html') and
                 TFile.Exists(Path) and
                 ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Content-Security-Policy') and
                 ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Delphi Project Handoff Engineering Guide'),
                 'Selecting a Word guide displays its formatted, restricted HTML conversion');
+              Check(not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(
+                TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
+                'documents\invalid\unreviewed-view.html'),
+                TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
+                False,True,True),
+                'The Learning browser rejects unvalidated document paths');
+              Form.CardFilter.Text:='User_Guide.pdf'; Form.CardFilterChange(nil);
+              Form.CardSelectionChange(Form.CardList);
+              Path:=Copy(Form.CardBrowser.URL,8,MaxInt);
+              Check(Form.CardBrowser.Visible and SameText(TPath.GetExtension(Path),'.pdf') and
+                TFile.Exists(Path) and
+                TDPHBrowserPolicy.Allowed(Form.CardBrowser.URL,
+                  TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
+                  False,True,True),
+                'Selecting a PDF guide opens its managed copy in the browser');
+              Form.CardFilter.Text:=''; Form.CardFilterChange(nil);
               Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               Form.HelpClick(nil);
               WaitHTML(Form.HelpBrowser,'document.body.innerText','Saved capture needs source refresh');
@@ -623,10 +647,12 @@ begin
                 'Fetched public website text appears in the Learning library');
               WaitHTML(Form.CardBrowser,'document.body.innerText','Public conversion guide describes the application workflow');
               Form.CardFilter.Text:='README';Form.CardFilterChange(nil);
-              Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]) and
+              I:=Form.CardList.Items.IndexOf('Document: README (2 locations)');
+              if I>=0 then Form.CardList.ItemIndex:=I;
+              Form.CardSelectionChange(nil);
+              Check((I>=0) and
                 (Form.CardDocumentLocation.Items.Count=2),
                 'Learning library lists root and project docs README locations together');
-              Form.CardSelectionChange(nil);
               WaitHTML(Form.CardBrowser,'document.body.innerText','The second README explains the same application');
               Check(True,'A discovered project document opens as readable content');
               Form.CardDocumentLocation.ItemIndex:=1; Form.CardSelectionChange(Form.CardDocumentLocation);
