@@ -1289,7 +1289,7 @@ begin
 end;
 procedure TDPHMainForm.CardFilterChange(Sender:TObject);
 var V,W:TJSONValue;R,Section,Group:TJSONObject; Guides,Screens,Sites,GuideIndexes:TJSONArray;
-  Title,Query,Source,GroupKey,DisplayTitle:string; I,J:Integer; MatchesQuery:Boolean;
+  Title,Query,Source,GroupKey,DisplayTitle:string; I,J:Integer; MatchesQuery,OldBinding:Boolean;
 begin
  if FCardRows=nil then Exit;
  FCardRows.Clear;CardList.Items.Clear;FreeAndNil(FLibraryEntries);FLibraryEntries:=TJSONArray.Create;
@@ -1350,16 +1350,22 @@ begin
    else if Length(CardList.Items[I])>42 then CardList.ListItems[I].Height:=54
    else CardList.ListItems[I].Height:=30;
  end;
- if CardList.Count>0 then CardList.ItemIndex:=0;
+ if CardList.Count>0 then begin
+   OldBinding:=FBinding;FBinding:=True;
+   try CardList.ItemIndex:=0; finally FBinding:=OldBinding;end;
+ end;
  CardSelectionChange(nil);
 end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
 var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSONArray; Body,Title,HTML,Line,Path,ParagraphText,
-  Source,CaptionText,NextLine,CellText:string; Lines:TStringList; Sections,Symbols:TJSONArray;
+  Source,CaptionText,NextLine,CellText,SourceRoot,SourcePath,RichPath,
+  RichDirectory,ConvertedPath,RichHTML,Converter,ProfileURL,CommandLine,Extension:string;
+  Lines:TStringList; Sections,Symbols:TJSONArray;
   Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
     IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding:Boolean;
+  StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation; WaitResult:Cardinal;
 begin
- if FBinding and (Sender=CardDocumentLocation) then Exit;
+ if FBinding then Exit;
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
  CardReader.Text:='Choose a topic to explore this application.';
  if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then begin
@@ -1436,6 +1442,85 @@ begin
    end;
    if Count=0 then Body:=Body+sLineBreak+sLineBreak+'No labeled controls were captured for this screen.';
    CardReader.Text:=Title+sLineBreak+sLineBreak+Body;
+ end;
+ RichPath:='';
+ if ((Sender=CardList) or (Sender=CardDocumentLocation)) and
+   (R.GetValue<TJSONArray>('sections',nil)<>nil) and (FView<>nil) and
+   (FLearningDirectory<>'') then begin
+   try
+     SourceRoot:=IncludeTrailingPathDelimiter(TPath.GetFullPath(FView.Document.GetValue<string>('root')));
+     SourcePath:=TPath.GetFullPath(TPath.Combine(SourceRoot,Source.Replace('/',PathDelim)));
+     Extension:=LowerCase(TPath.GetExtension(SourcePath));
+     if StartsText(SourceRoot,SourcePath) and TFile.Exists(SourcePath) and
+       SameText(THashSHA2.GetHashStringFromFile(SourcePath),R.GetValue<string>('sha256','')) then begin
+       if Extension='.pdf' then RichPath:=SourcePath
+       else if MatchText(Extension,['.docx','.docm','.doc','.odt','.rtf']) then begin
+         Converter:='C:\Program Files\LibreOffice\program\soffice.com';
+         if TFile.Exists(Converter) then begin
+           RichDirectory:=TPath.Combine(FLearningDirectory,'documents\'+R.GetValue<string>('sha256'));
+           TDirectory.CreateDirectory(RichDirectory);
+           ConvertedPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'.html');
+           RichPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'-view.html');
+           if not TFile.Exists(RichPath) then begin
+             StatusLabel.Text:='Preparing the formatted document...';
+             Application.ProcessMessages;
+             ProfileURL:='file:///'+TPath.Combine(FLearningDirectory,'document-profile').Replace('\','/').Replace(' ','%20');
+             CommandLine:='"'+Converter+'" "-env:UserInstallation='+ProfileURL+'" --headless '+
+               '--convert-to "html:XHTML Writer File:UTF8" --outdir "'+RichDirectory+'" "'+SourcePath+'"';
+             UniqueString(CommandLine);
+             FillChar(StartupInfo,SizeOf(StartupInfo),0);
+             StartupInfo.cb:=SizeOf(StartupInfo);
+             StartupInfo.dwFlags:=STARTF_USESHOWWINDOW;
+             StartupInfo.wShowWindow:=SW_HIDE;
+             if CreateProcess(nil,PChar(CommandLine),nil,nil,False,CREATE_NO_WINDOW,nil,nil,
+               StartupInfo,ProcessInfo) then begin
+               try
+                 WaitResult:=WaitForSingleObject(ProcessInfo.hProcess,15000);
+                 if WaitResult=WAIT_TIMEOUT then TerminateProcess(ProcessInfo.hProcess,1);
+               finally
+                 CloseHandle(ProcessInfo.hThread);
+                 CloseHandle(ProcessInfo.hProcess);
+               end;
+             end;
+             if TFile.Exists(ConvertedPath) and (TFile.GetSize(ConvertedPath)<=16777216) then begin
+               RichHTML:=TFile.ReadAllText(ConvertedPath,TEncoding.UTF8);
+               RichHTML:=TRegEx.Replace(RichHTML,'(?is)<\?xml[^>]*\?>|<!DOCTYPE[^>]*>','');
+               RichHTML:=TRegEx.Replace(RichHTML,'(?is)<script\b[^>]*>.*?</script>|'+
+                 '<(?:iframe|object|embed|form|base|link)\b[^>]*>','');
+               RichHTML:=TRegEx.Replace(RichHTML,'(?i)\s+href\s*=\s*"(?!#)[^"]*"','');
+               RichHTML:=TRegEx.Replace(RichHTML,'(?i)(<head\b[^>]*>)','$1'+
+                 '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; '+
+                 'style-src ''unsafe-inline''; img-src ''self'' data:; font-src ''self'' data:; '+
+                 'script-src ''none''; connect-src ''none''; frame-src ''none''; '+
+                 'object-src ''none''; form-action ''none''; base-uri ''none''">'+
+                 '<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;'+
+                 'color:#19364e;max-width:1100px;margin:32px auto;padding:0 28px}'+
+                 'h1,h2,h3,h4{color:#146cb4;line-height:1.25}'+
+                 'h1{border-bottom:4px solid #f28a28;padding-bottom:14px}'+
+                 'table{max-width:100%;border-collapse:collapse}'+
+                 'td,th{border:1px solid #d7e2ec;padding:6px 10px}</style>');
+               TFile.WriteAllText(RichPath,RichHTML,TEncoding.UTF8);
+             end;
+           end;
+           if not TFile.Exists(RichPath) then RichPath:='';
+         end;
+       end;
+     end else StatusLabel.Text:='The document changed since capture. Choose Rescan project to refresh it.';
+   except on E:Exception do begin
+     RichPath:='';
+     StatusLabel.Text:='Formatted view unavailable; showing extracted text: '+E.Message;
+   end; end;
+ end;
+ if RichPath<>'' then begin
+   try
+     CardBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;
+     CardReader.Visible:=False;CardBrowser.Visible:=True;
+     CardBrowser.Navigate('file://'+RichPath);
+     Exit;
+   except on E:Exception do begin
+     CardBrowser.Visible:=False;CardReader.Visible:=True;
+     StatusLabel.Text:='Formatted view unavailable; showing extracted text: '+E.Message;
+   end; end;
  end;
  if R.GetValue<string>('library_kind','')<>'route' then begin
  HTML:='<!doctype html><html><head><meta charset="utf-8"><style>body{font:17px/1.65 Segoe UI,Arial,sans-serif;color:#19364e;max-width:950px;margin:36px auto;padding:0 28px;background:#fff}h1{color:#146cb4;font-size:30px;line-height:1.25;border-bottom:4px solid #f28a28;padding-bottom:14px}h2,h3{color:#146cb4;line-height:1.3;margin-top:32px}h2{font-size:23px}h3{font-size:19px}p{margin:16px 0}li{margin:8px 0}article{white-space:normal;overflow-wrap:anywhere}ul{padding-left:26px}'+

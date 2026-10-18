@@ -1630,6 +1630,7 @@ Width = 380
 ItemHeight = 0
 Margins.Left = 12
 Margins.Right = 12
+OnClick = CardSelectionChange
 OnChange = CardSelectionChange
 end
 object CardReadingArea: TLayout

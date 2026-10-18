@@ -155,6 +155,9 @@ begin
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
         TFile.Copy(Path,TPath.Combine(Fixture,TPath.GetFileName(Path)));
       TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs'));
+      TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs\guides'));
+      TFile.Copy(TPath.Combine(Root,'docs\guides\DPH_Engineering_Guide.docx'),
+        TPath.Combine(Fixture,'docs\guides\Engineering_Guide.docx'));
       TFile.WriteAllText(TPath.Combine(Fixture,'docs\README.md'),
         'The second README explains the same application from a different project folder. It retains its own document location.',TEncoding.UTF8);
       TFile.WriteAllText(TPath.Combine(Fixture,'Westminster_Chimes_and_Carillon_Bells_8_1_Engineering_Guide.txt'),
@@ -573,8 +576,20 @@ begin
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Purpose and evidence');
               Check(True,'The saved dossier HTML is rendered in the browser');
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
+              Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
+              Form.CardFilter.Text:='Engineering_Guide.docx'; Form.CardFilterChange(nil);
+              Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]),
+                'The captured Word guide is available for explicit selection');
+              Form.CardSelectionChange(Form.CardList);
+              Path:=Copy(Form.CardBrowser.URL,8,MaxInt);
+              Check(Form.CardBrowser.Visible and ContainsText(Form.CardBrowser.URL,'-view.html') and
+                TFile.Exists(Path) and
+                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Content-Security-Policy') and
+                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Delphi Project Handoff Engineering Guide'),
+                'Selecting a Word guide displays its formatted, restricted HTML conversion');
+              Form.WorkspaceTabs.ActiveTab:=Form.OverviewTab;
               Form.HelpClick(nil);
-              WaitHTML(Form.HelpBrowser,'document.body.innerText','Project analysis is incomplete');
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Saved capture needs source refresh');
               Check(True,'Getting started shows the selected capture notice');
               Form.LessonPageCombo.ItemIndex:=Form.LessonPageCombo.Items.IndexOf('Handoff dossier');
               Form.WorkspacePageChange(Form.LessonPageCombo);
