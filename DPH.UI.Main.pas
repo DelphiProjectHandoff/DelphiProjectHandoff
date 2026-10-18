@@ -1359,11 +1359,13 @@ end;
 procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
 var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSONArray; Body,Title,HTML,Line,Path,ParagraphText,
   Source,CaptionText,NextLine,CellText,SourceRoot,SourcePath,RichPath,
-  RichDirectory,ConvertedPath,RichHTML,Converter,ProfileURL,CommandLine,Extension:string;
+  RichDirectory,ConvertedPath,RichHTML,Converter,ProfileURL,CommandLine,Extension,
+  TocHTML,TocText:string;
   Lines:TStringList; Sections,Symbols:TJSONArray;
   Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
     IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding:Boolean;
   StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation; WaitResult:Cardinal;
+  TocTable,TocRow,TocParts:TMatch; TocRows:TMatchCollection;
 begin
  if FBinding then Exit;
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
@@ -1493,17 +1495,57 @@ begin
                RichHTML:=TRegEx.Replace(RichHTML,'(?is)<script\b[^>]*>.*?</script>|'+
                  '<(?:iframe|object|embed|form|base|link)\b[^>]*>','');
                RichHTML:=TRegEx.Replace(RichHTML,'(?i)\s+href\s*=\s*"(?!#)[^"]*"','');
+               TocTable:=TRegEx.Match(RichHTML,
+                 '(?is)<table\b[^>]*class="table-Sect1"[^>]*>.*?</table>');
+               if TocTable.Success and ContainsText(TocTable.Value,'Table of Contents') then begin
+                 TocHTML:='<nav class="toc" aria-label="Table of Contents">'+
+                   '<h2>Table of Contents</h2>';
+                 TocRows:=TRegEx.Matches(TocTable.Value,
+                   '(?is)<tr\b[^>]*>\s*<td\b[^>]*>\s*<p\b[^>]*>(.*?)</p>\s*</td>\s*</tr>');
+                 for TocRow in TocRows do begin
+                   TocText:=TNetEncoding.HTML.Decode(
+                     TRegEx.Replace(TocRow.Groups[1].Value,'<[^>]+>','')).Trim;
+                   TocParts:=TRegEx.Match(TocText,'(?s)^(.*?)\s+(\d+)$');
+                   if TocParts.Success then
+                     TocHTML:=TocHTML+'<div class="toc-row"><span class="toc-title">'+
+                       TNetEncoding.HTML.Encode(TocParts.Groups[1].Value.Trim)+'</span>'+
+                       '<span class="toc-dots"></span><span class="toc-page">'+
+                       TocParts.Groups[2].Value+'</span></div>';
+                 end;
+                 TocHTML:=TocHTML+'</nav>';
+                 RichHTML:=RichHTML.Replace(TocTable.Value,TocHTML);
+               end;
+               if ContainsText(Source,'Detailed_Runtime_Flow') then
+                 RichHTML:=RichHTML.Replace('<body>','<body class="runtime-flow">');
                RichHTML:=TRegEx.Replace(RichHTML,'(?i)(<head\b[^>]*>)','$1'+
                  '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; '+
                  'style-src ''unsafe-inline''; img-src ''self'' data:; font-src ''self'' data:; '+
                  'script-src ''none''; connect-src ''none''; frame-src ''none''; '+
                  'object-src ''none''; form-action ''none''; base-uri ''none''">'+
                  '<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;'+
-                 'color:#19364e;max-width:1100px;margin:32px auto;padding:0 28px}'+
+                 'color:#19364e;max-width:960px;margin:32px auto;padding:0 28px}'+
                  'h1,h2,h3,h4{color:#146cb4;line-height:1.25}'+
-                 'h1{border-bottom:4px solid #f28a28;padding-bottom:14px}'+
+                 'h1,h2{font-family:Cambria,Georgia,serif}'+
                  'table{max-width:100%;border-collapse:collapse}'+
-                 'td,th{border:1px solid #d7e2ec;padding:6px 10px}</style>');
+                 'td,th{border:1px solid #d7e2ec;padding:6px 10px}'+
+                 '.toc{max-width:760px;margin:24px 0 36px}.toc h2{font:700 24px Cambria,Georgia,serif;color:#2f5496}'+
+                 '.toc-row{display:flex;align-items:flex-end;gap:8px;padding:7px 0}'+
+                 '.toc-title{max-width:76%;overflow-wrap:anywhere}'+
+                 '.toc-dots{flex:1;border-bottom:2px dotted #8ca5bd;transform:translateY(-4px)}'+
+                 '.toc-page{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}'+
+                 'table.table-Table5{width:440px!important;table-layout:fixed}'+
+                 'table.table-Table5 col:first-child{width:315px!important}'+
+                 'table.table-Table5 col:last-child{width:125px!important}'+
+                 'table.table-Table5 td{width:auto!important;white-space:normal!important;overflow-wrap:anywhere}'+
+                 'body.runtime-flow{max-width:900px;font:17px/1.6 Segoe UI,Arial,sans-serif}'+
+                 'body.runtime-flow p.paragraph-Standard{font:inherit!important;margin:0 0 15px}'+
+                 'body.runtime-flow h1.paragraph-Heading_20_1{font:700 26px/1.25 Cambria,Georgia,serif!important;'+
+                 'color:#2f5496!important;margin:30px 0 14px;max-width:760px}'+
+                 'body.runtime-flow h2.paragraph-Heading_20_2{font:700 21px/1.3 Cambria,Georgia,serif!important;'+
+                 'color:#2f5496!important;margin:22px 0 9px;max-width:760px}'+
+                 'body.runtime-flow p.paragraph-Source_20_Anchor{font:13px/1.45 Segoe UI,Arial,sans-serif!important;'+
+                 'color:#53697d;margin:0 0 18px}'+
+                 '</style>');
                TFile.WriteAllText(RichPath,RichHTML,TEncoding.UTF8);
              end;
            end;
