@@ -63,7 +63,8 @@ type
     function SQLiteVersion: string;
     function SupportsFTS5: Boolean;
     class function ProjectRoot(const ADatabasePath: string): string; static;
-    procedure SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
+    procedure SaveWorkspaceView(AGenerationID: Int64; const AJSON: string;
+      ARefreshCapturedDocuments: Boolean = False);
     function LoadWorkspaceView(AGenerationID: Int64 = 0; ASkipGenerationParse: Boolean = False): string;
     procedure RelocateSource(const ANewRoot: string; AGenerationID: Int64; const AVerifiedManifest: TDPHManifest);
     procedure BeginFacts(AGenerationID: Int64);
@@ -1434,10 +1435,19 @@ begin
   finally Query.Free; Connection.Free; end;
 end;
 
-procedure TDPHKnowledgeStore.SaveWorkspaceView(AGenerationID: Int64; const AJSON: string);
+procedure TDPHKnowledgeStore.SaveWorkspaceView(AGenerationID: Int64; const AJSON: string;
+  ARefreshCapturedDocuments: Boolean);
 var Bytes: TBytes; Hash,Directory,Path: string; Hasher: THashSHA2;
+  CurrentGeneration: Int64;
 begin
-  RequireRunning(AGenerationID);
+  if ARefreshCapturedDocuments then begin
+    RequireWriter;
+    CurrentGeneration:=Status.PublishedGeneration;
+    if CurrentGeneration=0 then
+      CurrentGeneration:=Scalar('SELECT coalesce(max(generation_id),0) FROM analysis_generations WHERE status=''partial''',[]);
+    if (AGenerationID<=0) or (AGenerationID<>CurrentGeneration) then
+      raise EDPHStorage.Create('Document refresh requires the current captured generation');
+  end else RequireRunning(AGenerationID);
   Bytes:=TEncoding.UTF8.GetBytes(AJSON);
   if Length(Bytes)>128*1024*1024 then raise EDPHStorage.Create('Workspace view exceeds 128 MiB');
   Hasher:=THashSHA2.Create; Hasher.Update(Bytes); Hash:=Hasher.HashAsString;

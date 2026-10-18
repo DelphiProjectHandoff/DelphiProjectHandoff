@@ -469,13 +469,21 @@ begin
               end
               else if Request.Command='incremental' then
               begin
+                // Delphi files are unchanged, but project-local guides may have changed.
+                // Refresh only the learning evidence in the published workspace view.
+                for Value in ['learning_discovery_version','project_guides',
+                  'project_sites','project_screens','project_assets',
+                  'project_startup_forms'] do Cached.RemovePair(Value).Free;
+                Respond(nil,'Refreshing project-local documents and learning views...',True,False,False,False);
+                TDPHLearningDiscovery.AddEvidence(Cached,Cached,Request.AllowInternet);
+                Store.SaveWorkspaceView(Cached.GetValue<Int64>('generation_id'),Cached.ToJSON,True);
                 Knowledge:=nil; Images:=nil;
                 try
                   Knowledge:=Store.KnowledgeJSON;
                   try Images:=Store.ScreenshotsJSON;
                   except on E: Exception do Images:=TJSONArray.Create; end;
                   Respond(Cached.Clone as TJSONObject,
-                    'Saved project opened; Delphi source unchanged',False,False,False,False,
+                    'Project documents refreshed; Delphi source unchanged',False,True,False,False,
                     Knowledge,'',Images,Request.Entry);
                   Knowledge:=nil; Images:=nil;
                 finally Knowledge.Free; Images.Free; end;

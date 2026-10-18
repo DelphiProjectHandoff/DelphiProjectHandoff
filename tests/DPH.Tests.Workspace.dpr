@@ -58,6 +58,29 @@ begin
         try
           Generation:=View.Document.GetValue<Int64>('generation_id');
           Check(Generation>0,'Workspace includes its immutable generation');
+          TDirectory.CreateDirectory(TPath.Combine(Fixture,'docs\guides'));
+          TFile.WriteAllText(TPath.Combine(Fixture,'docs\guides\Runtime_Flow.md'),
+            '# Updated runtime flow'+sLineBreak+'Launch, choose the source, and inspect the result.',TEncoding.UTF8);
+          Request.Command:='incremental'; Worker.Submit(Request); Response:=WaitResponse;
+          try
+            Check(not Response.Failed and (Response.Document<>nil) and
+              (Response.Document.GetValue<Int64>('generation_id')=Generation),
+              'Rescan refreshes documents without creating a new source-analysis generation');
+            FoundChild:=False;
+            for V in Response.Document.GetValue<TJSONArray>('project_guides') do
+              if V.GetValue<string>('source')='docs/guides/Runtime_Flow.md' then FoundChild:=True;
+            Check(FoundChild,'New runtime-flow guide appears in the refreshed learning evidence');
+          finally Response.Free; end;
+          with TDPHKnowledgeStore.Create(Request.Database,Fixture,TPath.Combine(Root,'migrations')) do
+          try
+            J:=TJSONObject.ParseJSONValue(LoadWorkspaceView) as TJSONObject;
+            try
+              FoundChild:=False;
+              for V in J.GetValue<TJSONArray>('project_guides') do
+                if V.GetValue<string>('source')='docs/guides/Runtime_Flow.md' then FoundChild:=True;
+              Check(FoundChild,'Refreshed guide remains in the saved project view');
+            finally J.Free; end;
+          finally Free; end;
           Rows:=View.Search('Click','routine',''); try Check(Rows.Count=1,'Project-wide search selects method identity'); Key:=(Rows.Items[0] as TJSONObject).GetValue<string>('key'); finally Rows.Free; end;
           Rows:=View.Search('btnConvert','component',''); try Check(Rows.Count=1,'Form component is searchable'); ComponentKey:=(Rows.Items[0] as TJSONObject).GetValue<string>('key'); finally Rows.Free; end;
           Rows:=View.Properties(ComponentKey); try Check(Rows.Count>0,'Inspector retains serialized properties'); finally Rows.Free; end;
