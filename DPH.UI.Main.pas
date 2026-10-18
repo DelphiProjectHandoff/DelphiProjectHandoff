@@ -1360,12 +1360,12 @@ procedure TDPHMainForm.CardSelectionChange(Sender:TObject);
 var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSONArray; Body,Title,HTML,Line,Path,ParagraphText,
   Source,CaptionText,NextLine,CellText,SourceRoot,SourcePath,RichPath,
   RichDirectory,ConvertedPath,RichHTML,Converter,ProfileURL,CommandLine,Extension,
-  TocHTML,TocText:string;
+  TocHTML,TocText,TocBlock:string;
   Lines:TStringList; Sections,Symbols:TJSONArray;
   Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
-    IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding:Boolean;
+    IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding,IsRuntimeFlow,IsDetailedFlow:Boolean;
   StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation; WaitResult:Cardinal;
-  TocTable,TocRow,TocParts:TMatch; TocRows:TMatchCollection;
+  TocTable,TocRow,TocParts,TocStart,TocEnd:TMatch; TocRows:TMatchCollection;
 begin
  if FBinding then Exit;
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
@@ -1468,6 +1468,12 @@ begin
            TDirectory.CreateDirectory(RichDirectory);
            ConvertedPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'.html');
            RichPath:=TPath.Combine(RichDirectory,TPath.GetFileNameWithoutExtension(SourcePath)+'-view.html');
+           IsDetailedFlow:=ContainsText(Source,'Detailed_Runtime_Flow');
+           IsRuntimeFlow:=IsDetailedFlow or ContainsText(Source,'Converter_Runtime_Flow');
+           if IsRuntimeFlow and TFile.Exists(RichPath) and
+             not ContainsText(TFile.ReadAllText(RichPath,TEncoding.UTF8),
+               'name="dph-runtime-flow-version" content="2"') then
+             TFile.Delete(RichPath);
            if not TFile.Exists(RichPath) then begin
              StatusLabel.Text:='Preparing the formatted document...';
              Application.ProcessMessages;
@@ -1492,6 +1498,9 @@ begin
              if TFile.Exists(ConvertedPath) and (TFile.GetSize(ConvertedPath)<=16777216) then begin
                RichHTML:=TFile.ReadAllText(ConvertedPath,TEncoding.UTF8);
                RichHTML:=TRegEx.Replace(RichHTML,'(?is)<\?xml[^>]*\?>|<!DOCTYPE[^>]*>','');
+               if IsRuntimeFlow then
+                 RichHTML:=TRegEx.Replace(RichHTML,
+                   '(?i)<(a|span)\b([^>]*)\s*/>','<$1$2></$1>');
                RichHTML:=TRegEx.Replace(RichHTML,'(?is)<script\b[^>]*>.*?</script>|'+
                  '<(?:iframe|object|embed|form|base|link)\b[^>]*>','');
                RichHTML:=TRegEx.Replace(RichHTML,'(?i)\s+href\s*=\s*"(?!#)[^"]*"','');
@@ -1515,37 +1524,91 @@ begin
                  TocHTML:=TocHTML+'</nav>';
                  RichHTML:=RichHTML.Replace(TocTable.Value,TocHTML);
                end;
-               if ContainsText(Source,'Detailed_Runtime_Flow') then
-                 RichHTML:=RichHTML.Replace('<body>','<body class="runtime-flow">');
-               RichHTML:=TRegEx.Replace(RichHTML,'(?i)(<head\b[^>]*>)','$1'+
+               if IsDetailedFlow then begin
+                 TocStart:=TRegEx.Match(RichHTML,
+                   '(?is)<h1\b[^>]*>\s*<a id="a__Contents"');
+                 if TocStart.Success then begin
+                   TocEnd:=TRegEx.Match(RichHTML.Substring(TocStart.Index+TocStart.Length),
+                     '(?is)<h1\b[^>]*>');
+                   if TocEnd.Success then begin
+                     TocBlock:=RichHTML.Substring(TocStart.Index,TocStart.Length+TocEnd.Index);
+                     TocRows:=TRegEx.Matches(TocBlock,
+                       '(?is)<p\b[^>]*>\s*(.*?)'+
+                       '<span\b[^>]*style="position:absolute;[^"]*"[^>]*>(\d+)</span>.*?</p>');
+                     if TocRows.Count>0 then begin
+                       TocHTML:='<nav class="toc" aria-label="Contents"><h2>Contents</h2>';
+                       for TocRow in TocRows do begin
+                         TocText:=TNetEncoding.HTML.Decode(
+                           TRegEx.Replace(TocRow.Groups[1].Value,'<[^>]+>','')).Trim;
+                         if TRegEx.IsMatch(TocText,'^\d+\.\d+\s') then
+                           TocHTML:=TocHTML+'<div class="toc-row toc-sub">'
+                         else TocHTML:=TocHTML+'<div class="toc-row">';
+                         TocHTML:=TocHTML+'<span class="toc-title">'+
+                           TNetEncoding.HTML.Encode(TocText)+'</span><span class="toc-dots"></span>'+
+                           '<span class="toc-page">'+TocRow.Groups[2].Value+'</span></div>';
+                       end;
+                       RichHTML:=RichHTML.Replace(TocBlock,TocHTML+'</nav>');
+                     end;
+                   end;
+                 end;
+               end;
+               if IsRuntimeFlow then begin
+                 RichHTML:=TRegEx.Replace(RichHTML,
+                   '(?is)<p\b[^>]*>(?:\s|'+#65533+'|&nbsp;|&#160;)*</p>','');
+                 RichHTML:=TRegEx.Replace(RichHTML,'(?i)<body\b',
+                   '<body class="runtime-flow"');
+                 RichHTML:=TRegEx.Replace(RichHTML,
+                   '(?is)(<body\b[^>]*>)(.*?)(<nav class="toc")',
+                   '$1<section class="document-cover">$2</section>$3');
+                 if IsDetailedFlow then
+                   RichHTML:=TRegEx.Replace(RichHTML,
+                     '(?is)(<h1\b[^>]*>\s*<a id="a__Lifecycle_at_a_glance")',
+                     '</section><section class="document-overview">$1');
+               end;
+               RichHTML:=TRegEx.Replace(RichHTML,'(?i)</head>',
                  '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; '+
                  'style-src ''unsafe-inline''; img-src ''self'' data:; font-src ''self'' data:; '+
                  'script-src ''none''; connect-src ''none''; frame-src ''none''; '+
                  'object-src ''none''; form-action ''none''; base-uri ''none''">'+
-                 '<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;'+
-                 'color:#19364e;max-width:960px;margin:32px auto;padding:0 28px}'+
+                 '<style>body{font-family:Segoe UI,Arial,sans-serif;line-height:1.55;color:#19364e}'+
                  'h1,h2,h3,h4{color:#146cb4;line-height:1.25}'+
-                 'h1,h2{font-family:Cambria,Georgia,serif}'+
-                 'table{max-width:100%;border-collapse:collapse}'+
-                 'td,th{border:1px solid #d7e2ec;padding:6px 10px}'+
-                 '.toc{max-width:760px;margin:24px 0 36px}.toc h2{font:700 24px Cambria,Georgia,serif;color:#2f5496}'+
-                 '.toc-row{display:flex;align-items:flex-end;gap:8px;padding:7px 0}'+
-                 '.toc-title{max-width:76%;overflow-wrap:anywhere}'+
-                 '.toc-dots{flex:1;border-bottom:2px dotted #8ca5bd;transform:translateY(-4px)}'+
-                 '.toc-page{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}'+
-                 'table.table-Table5{width:440px!important;table-layout:fixed}'+
-                 'table.table-Table5 col:first-child{width:315px!important}'+
-                 'table.table-Table5 col:last-child{width:125px!important}'+
-                 'table.table-Table5 td{width:auto!important;white-space:normal!important;overflow-wrap:anywhere}'+
-                 'body.runtime-flow{max-width:900px;font:17px/1.6 Segoe UI,Arial,sans-serif}'+
-                 'body.runtime-flow p.paragraph-Standard{font:inherit!important;margin:0 0 15px}'+
-                 'body.runtime-flow h1.paragraph-Heading_20_1{font:700 26px/1.25 Cambria,Georgia,serif!important;'+
-                 'color:#2f5496!important;margin:30px 0 14px;max-width:760px}'+
-                 'body.runtime-flow h2.paragraph-Heading_20_2{font:700 21px/1.3 Cambria,Georgia,serif!important;'+
-                 'color:#2f5496!important;margin:22px 0 9px;max-width:760px}'+
+                 'body.runtime-flow{box-sizing:border-box!important;width:auto!important;'+
+                 'max-width:960px!important;margin:0 auto!important;padding:24px!important;'+
+                 'font:16px/1.55 Segoe UI,Arial,sans-serif!important}'+
+                 'body.runtime-flow *{box-sizing:border-box}'+
+                 'body.runtime-flow h1,body.runtime-flow h2{font-family:Cambria,Georgia,serif!important;'+
+                 'color:#2f5496!important}'+
+                 'body.runtime-flow table{width:100%!important;max-width:100%!important;'+
+                 'table-layout:fixed!important;margin-left:0!important;border-collapse:collapse!important}'+
+                 'body.runtime-flow table col{width:auto!important}'+
+                 'body.runtime-flow table td,body.runtime-flow table th{width:auto!important;'+
+                 'min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;'+
+                 'border:1px solid #d7e2ec;padding:7px 9px}'+
+                 'body.runtime-flow table.table-Table5{max-width:460px!important}'+
+                 '.document-cover{padding:34px;margin:0 0 26px;border-top:7px solid #176ab2;'+
+                 'border-bottom:4px solid #f28a28;background:#f3f7fb;border-radius:7px}'+
+                 '.document-cover p.paragraph-P2 .text-T1,.document-cover p.paragraph-Title{'+
+                 'font:700 30px/1.18 Cambria,Georgia,serif!important;color:#1d578c!important}'+
+                 '.document-cover p.paragraph-P2 .text-T2{font:italic 18px/1.45 Segoe UI,Arial,sans-serif!important}'+
+                 '.document-cover h1,.document-cover h2{margin:18px 0 10px!important}'+
+                 '.document-overview{padding:20px 26px;margin:0 0 24px;background:#fff;'+
+                 'border:1px solid #d7e2ec;border-radius:7px}'+
+                 '.toc{padding:22px 26px;margin:0 0 36px;border:1px solid #d7e2ec;'+
+                 'background:#fff;max-width:100%}'+
+                 '.toc h2{font:700 25px Cambria,Georgia,serif!important;color:#2f5496!important;'+
+                 'margin:0 0 16px!important}'+
+                 '.toc-row{display:flex;align-items:baseline;gap:8px;min-width:0;padding:6px 0}'+
+                 '.toc-sub{padding-left:22px}.toc-title{max-width:78%;overflow-wrap:anywhere}'+
+                 '.toc-dots{flex:1;min-width:10px;border-bottom:2px dotted #8ca5bd;transform:translateY(-3px)}'+
+                 '.toc-page{flex:0 0 auto;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}'+
                  'body.runtime-flow p.paragraph-Source_20_Anchor{font:13px/1.45 Segoe UI,Arial,sans-serif!important;'+
                  'color:#53697d;margin:0 0 18px}'+
-                 '</style>');
+                 '@media(max-width:650px){body.runtime-flow{padding:14px!important}'+
+                 '.document-cover,.document-overview,.toc{padding:18px}.toc-sub{padding-left:12px}}'+
+                 '</style></head>');
+               if IsRuntimeFlow then
+                 RichHTML:=RichHTML.Replace('</head>',
+                   '<meta name="dph-runtime-flow-version" content="2"></head>');
                TFile.WriteAllText(RichPath,RichHTML,TEncoding.UTF8);
              end;
            end;
