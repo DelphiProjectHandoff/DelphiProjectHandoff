@@ -117,8 +117,8 @@ begin
           if Fields=nil then Continue;
           Purpose:=Trim(Fields.GetValue<string>('purpose',''));
           if Purpose<>'' then begin
-            PurposeEvidence:='Reviewed contributor record | '+
-              Esc(Row.GetValue<string>('owner','unknown author'))+' | revision '+
+            PurposeEvidence:='<span>Reviewed contributor record</span> | '+
+              Esc(Row.GetValue<string>('owner','unknown author'))+' | <span>revision</span> '+
               Esc(Row.GetValue<string>('revision','unknown'));
             Break;
           end;
@@ -151,23 +151,25 @@ begin
             if CandidateScore>PurposeScore then begin
               Purpose:=CandidatePurpose;
               PurposeScore:=CandidateScore;
-              PurposeEvidence:='Project document '+Esc(Guide.GetValue<string>('source',''))+
-                ' | author statement, not runtime verification';
+              PurposeEvidence:='<span>Project document</span> '+
+                '<code>'+Esc(Guide.GetValue<string>('source',''))+'</code> | '+
+                '<span>author statement, not runtime verification</span>';
             end;
             Break;
           end;
         end;
         Body.Append('<section class="card"><h2>What this application is for</h2>');
-        if Purpose<>'' then Body.Append('<pre dir="auto" class="project-prose">'+
+        if Purpose<>'' then Body.Append('<p class="source-note">Project description from the selected source (shown in its original language).</p>'+
+          '<pre dir="auto" class="project-prose">'+
           Esc(Copy(Purpose,1,1800))+'</pre><p><small>'+PurposeEvidence+'</small></p>')
         else Body.Append('<p class="unknown">Purpose is not established by the captured evidence. '+
           'Use the screens, commands and local guides below as leads; do not treat a filename as a business description.</p>');
         Body.Append('</section><section class="card"><h2>What the captured source shows</h2>');
         if (Startup<>nil) and (Startup.Count>0) then begin
           Row:=Startup.Items[0] as TJSONObject;
-          Body.Append('<p>The project entry registers <strong>'+Esc(
+          Body.Append('<p><span>The project entry registers</span> <strong>'+Esc(
             Row.GetValue<string>('instance','the first form'))+'</strong> '+
-            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) from '+
+            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) <span>from</span> '+
             '<code>'+Esc(Row.GetValue<string>('program',''))+':'+
             IntToStr(Row.GetValue<Integer>('line',0))+'</code>.</p>');
         end else Body.Append('<p>The initial form registration was not resolved in this capture.</p>');
@@ -180,17 +182,18 @@ begin
           else if MatchText(Kind,['static_sql','dynamic_sql','reads','writes']) then
             Inc(DataCount);
         end;
-        Body.Append('<p>The saved source and forms expose '+IntToStr(BindingCount)+
-          ' event bindings, '+IntToStr(OutputCount)+' candidate output sites and '+
-          IntToStr(DataCount)+' data-access relationships. Follow the connected '+
-          'handlers, files and reports to see each path in detail. These are '+
-          'static findings; they do not establish that a conversion or other '+
+        Body.Append('<p><span>The saved source and forms expose</span> <strong>'+IntToStr(BindingCount)+
+          '</strong> <span>event bindings,</span> <strong>'+IntToStr(OutputCount)+
+          '</strong> <span>candidate output sites and</span> <strong>'+IntToStr(DataCount)+
+          '</strong> <span>data-access relationships.</span></p>'+
+          '<p>Follow the connected handlers, files and reports to see each path in detail. '+
+          'These are static findings; they do not establish that a conversion or other '+
           'operation completed at runtime.</p>');
         Body.Append('<div class="metrics">');
-        if Files<>nil then Body.Append('<span><strong>'+IntToStr(Files.Count)+'</strong> files</span>');
-        if Symbols<>nil then Body.Append('<span><strong>'+IntToStr(Symbols.Count)+'</strong> objects</span>');
-        if Relations<>nil then Body.Append('<span><strong>'+IntToStr(Relations.Count)+'</strong> relationships</span>');
-        if Screens<>nil then Body.Append('<span><strong>'+IntToStr(Screens.Count)+'</strong> form designs</span>');
+        if Files<>nil then Body.Append('<span><strong>'+IntToStr(Files.Count)+'</strong> <em>files</em></span>');
+        if Symbols<>nil then Body.Append('<span><strong>'+IntToStr(Symbols.Count)+'</strong> <em>objects</em></span>');
+        if Relations<>nil then Body.Append('<span><strong>'+IntToStr(Relations.Count)+'</strong> <em>relationships</em></span>');
+        if Screens<>nil then Body.Append('<span><strong>'+IntToStr(Screens.Count)+'</strong> <em>form designs</em></span>');
         Body.Append('</div><p>Counts describe this selected capture, not all possible build variants or runtime paths.</p></section>');
         Body.Append('<section class="card"><h2>Dependencies and build paths</h2>'+
           '<h3>Project directories and build paths</h3>');
@@ -207,7 +210,8 @@ begin
         Count:=0;
         for DirectoryName in DirectoryCounts.Keys do begin
           Body.Append('<p><code>'+Esc(DirectoryName)+'</code> &mdash; '+
-            IntToStr(DirectoryCounts[DirectoryName])+' captured files</p>');
+            '<strong>'+IntToStr(DirectoryCounts[DirectoryName])+'</strong> '+
+            '<span>captured files</span></p>');
           Inc(Count); if Count>=40 then Break;
         end;
         if DirectoryCounts.Count>Count then Body.Append('<p>Further directories are available in the Project map.</p>');
@@ -231,7 +235,9 @@ begin
           if ContractCount<=6 then Body.Append('<p><code>'+Esc(Name)+'</code></p>');
         end;
         if ContractCount=0 then Body.Append('<p>No contract or test file was identified in this capture. Check the project documentation and build scripts before claiming validation coverage.</p>')
-        else Body.Append('<p>'+IntToStr(ContractCount)+' contract or test files were identified in the captured file set. Their presence does not show that they passed; review the current test results and the applicable build variant.</p>');
+        else Body.Append('<p><strong>'+IntToStr(ContractCount)+'</strong> '+
+          '<span>contract or test files were identified in the captured file set.</span> '+
+          '<span>Their presence does not show that they passed; review the current test results and the applicable build variant.</span></p>');
         Body.Append('</section>');
         Body.Append('<section class="card"><h2>Startup reading order</h2>');
         Count:=0;
@@ -310,7 +316,8 @@ begin
           Inc(Count);
         end;
         if Total=0 then Body.Append('<p class="unknown">No form event binding was captured. This does not prove the application has no commands.</p>');
-        if Total>Count then Body.Append('<p>'+IntToStr(Total-Count)+' more bindings are available in the Project map.</p>');
+        if Total>Count then Body.Append('<p><strong>'+IntToStr(Total-Count)+'</strong> '+
+          '<span>more bindings are available in the Project map.</span></p>');
         if AExport then Body.Append('<p><a href="index.html">Browse captured objects</a></p></section>')
         else Body.Append('<p><a href="#open_commands">Inspect full menus, actions and shortcuts</a> | '+
           '<a href="#all_objects">Open the Project map</a></p></section>');
@@ -331,7 +338,8 @@ begin
           Inc(Count);
         end;
         if Total=0 then Body.Append('<p class="unknown">No supported data or output relationship was captured. Dynamic code and missing inputs may hide additional behavior.</p>');
-        if Total>Count then Body.Append('<p>'+IntToStr(Total-Count)+' further relationships are available in the Project map.</p>');
+        if Total>Count then Body.Append('<p><strong>'+IntToStr(Total-Count)+'</strong> '+
+          '<span>further relationships are available in the Project map.</span></p>');
         if AExport then Body.Append('<p><a href="index.html">Browse data relationships</a></p></section>')
         else Body.Append('<p><a href="#open_data">Inspect database evidence</a> | '+
           '<a href="#open_files">Inspect file-format candidates</a></p></section>');

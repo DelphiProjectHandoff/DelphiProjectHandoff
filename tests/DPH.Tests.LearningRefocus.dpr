@@ -1,7 +1,7 @@
 ﻿program DPH.Tests.LearningRefocus;
 {$APPTYPE CONSOLE}
 {$SETPEFLAGS $20}
-uses FMX.Objects, FMX.Types, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
+uses FMX.Objects, FMX.Types, FMX.Layouts, FMX.StdCtrls, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.UI.Progress in '..\DPH.UI.Progress.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
@@ -213,7 +213,7 @@ begin
                 TJSONObject.Create.AddPair('heading','Overview').AddPair('text',
                   'CONTRACT_ONLY_DESCRIPTION'))));
               FlowText:=TDPHHandoffDossier.Render(PriorityFacts,0);
-              Check(ContainsText(FlowText,'Project document README.md') and
+              Check(ContainsText(FlowText,'<span>Project document</span> <code>README.md</code>') and
                 not ContainsText(FlowText,'CONTRACT_ONLY_DESCRIPTION'),
                 'Handoff purpose prefers the project introduction over a contracts overview');
             finally PriorityFacts.Free;end;
@@ -560,10 +560,22 @@ begin
                 'Native progress dialog uses the offline German interface pack');
               Check((Form.FindComponent('LearnerTab1') as TRectangle).Width>100,
                 'German learner tab expands to fit its translated label');
-              Check(Form.LearnerNavRow2.Visible and (Form.HeaderLayout.Height>106),
+              Check(Form.LearnerNavRow2.Visible and (Form.HeaderLayout.Height=100),
                 'Narrow display moves overflow tabs to a second visible row');
               Check(Form.OpenCacheButton.Height<=Form.LearnerNavRow1.Height,
                 'Translated open buttons stay within the navigation row');
+              Check(Form.DATLanguageManager.SelectLanguage('es-ES'),
+                'Spanish interface pack applies to the native form');
+              Application.ProcessMessages;
+              Check((Form.OpenProjectButton.Text='Abrir aplicación') and
+                ((Form.FindComponent('LearnerTabLabel1') as TLabel).Text='Informe de transferencia') and
+                ((Form.FindComponent('LearnerTab1') as TRectangle).Width>100) and
+                ((Form.FindComponent('LanguageSelectorLayout') as TLayout).Width<=290) and
+                (Form.LanguageCombo.Height<=36),
+                'Spanish actions and language selector keep readable, bounded widths');
+              Form.HelpClick(nil);
+              WaitHTML(Form.HelpBrowser,'document.body.innerText','Límites de las pruebas');
+              Check(True,'Spanish getting-started browser shows complete localized prose');
               Check((Form.FindComponent('LearnerTab0') as TRectangle).Index<
                 Form.OpenProjectButton.Index,
                 'Getting started remains the first navigation control');
@@ -600,6 +612,27 @@ begin
               Check(Form.LearningBrowser.Visible,'Saved capture opens its real dossier after knowledge loads');
               WaitHTML(Form.LearningBrowser,'document.body.innerText','What this application is for');
               Check(True,'The saved dossier HTML is rendered in the browser');
+              Check(Form.DATLanguageManager.SelectLanguage('es-ES'),
+                'Spanish can be selected while a saved project is open');
+              Form.PollTimerTimer(nil);
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Resumen de la transferencia');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Propósito de esta aplicación');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Qué muestra el código recopilado');
+              WaitHTML(Form.LearningBrowser,'document.documentElement.lang','es-ES');
+              WaitHTML(Form.LearningBrowser,
+                'String(!document.body.innerText.includes("What this application is for"))','true');
+              Check(True,'The saved dossier browser translates its headings and application sections to Spanish');
+              Form.LearningTopics.ItemIndex:=1; Form.LearningClick(nil);
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Comandos visibles y controladores relacionados');
+              Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Pruebas sobre datos y salidas');
+              Form.LearningTopics.ItemIndex:=3; Form.LearningClick(nil);
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Preguntas por resolver');
+              Form.LearningTopics.ItemIndex:=0; Form.LearningClick(nil);
+              Check(True,'All four dossier pages show Spanish application headings');
+              Check(Form.DATLanguageManager.SelectLanguage('en-US'),
+                'English can be restored after the Spanish dossier check');
+              Form.PollTimerTimer(nil);
               Check(Form.WorkspaceTabs.ActiveTab=Form.OverviewTab,'A newly opened application starts its learning route');
               Form.WorkspaceTabs.ActiveTab:=Form.CardLibraryTab;
               Form.CardFilter.Text:='Engineering_Guide.docx'; Form.CardFilterChange(nil);

@@ -14,7 +14,7 @@ Constraints.MinHeight = 600
   FormFactor.Devices = [Desktop]
 object HeaderLayout: TLayout
 Align = Top
-Height = 106
+Height = 100
 object HeaderBrandRow: TLayout
 Align = Top
 Height = 58
@@ -977,7 +977,9 @@ end
 end
 object HeaderPreferencesLayout: TLayout
 Align = Right
-Width = 634
+Width = 500
+Height = 42
+Position.Y = 8
 Margins.Right = 18
 object AllowInternetCheck: TCheckBox
 Align = Left
@@ -991,7 +993,8 @@ OnChange = AllowInternetChange
 end
 object LanguageSelectorLayout: TLayout
 Align = Right
-Width = 358
+Width = 290
+Height = 42
 object LanguageLabel: TLabel
 Align = Left
 Width = 104
