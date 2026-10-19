@@ -508,6 +508,16 @@ var
     SelfClosingTag := EndsText('/>', TrimRight(TagText));
     if ClosingTag and (ProtectedTags.Count>0) and
       SameText(ProtectedTags.Peek,Name) then ProtectedTags.Pop;
+    if not ClosingTag and (Name = 'html') then
+    begin
+      TagText := StringReplace(TagText, 'lang="en"',
+        'lang="' + FActivePack.LanguageCode + '"', [rfReplaceAll, rfIgnoreCase]);
+      TagText := StringReplace(TagText, 'lang=''en''',
+        'lang="' + FActivePack.LanguageCode + '"', [rfReplaceAll, rfIgnoreCase]);
+      if not ContainsText(TagText, ' lang=') then
+        Insert(' lang="' + FActivePack.LanguageCode + '"', TagText,
+          Length(TagText));
+    end;
     if IsRightToLeft and not ClosingTag and (Name = 'html') then
     begin
       TagText := StringReplace(TagText, 'dir="ltr"', 'dir="rtl"',

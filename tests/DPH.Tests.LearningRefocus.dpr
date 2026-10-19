@@ -638,20 +638,56 @@ begin
               Form.CardFilter.Text:='Engineering_Guide.docx'; Form.CardFilterChange(nil);
               Check((Form.CardList.Count=1) and StartsText('Document:',Form.CardList.Items[0]),
                 'The captured Word guide is available for explicit selection');
+              var DocumentOpenWatch:=TStopwatch.StartNew;
               Form.CardSelectionChange(Form.CardList);
+              Check(DocumentOpenWatch.ElapsedMilliseconds<3000,
+                'Opening an unconverted Word guide returns control without waiting for LibreOffice');
+              var LongestDocumentPoll: Int64:=0;
+              repeat
+                Application.ProcessMessages;
+                var DocumentPollWatch:=TStopwatch.StartNew;
+                Form.PollTimerTimer(nil);
+                if DocumentPollWatch.ElapsedMilliseconds>LongestDocumentPoll then
+                  LongestDocumentPoll:=DocumentPollWatch.ElapsedMilliseconds;
+                if Form.CardBrowser.Visible and
+                  ContainsText(Form.CardBrowser.URL,'-view.html') then Break;
+                TThread.Sleep(20);
+              until DocumentOpenWatch.ElapsedMilliseconds>20000;
+              Writeln('Longest document UI poll: ',LongestDocumentPoll,' ms'); Flush(Output);
+              Check(LongestDocumentPoll<3000,
+                'Finishing document conversion does not stall the interface for several seconds');
+              Check(Form.CardBrowser.Visible and
+                ContainsText(Form.CardBrowser.URL,'-view.html'),
+                'Formatted Word guide appears when background conversion finishes');
               Path:=Copy(Form.CardBrowser.URL,8,MaxInt);
               Check(TDPHBrowserPolicy.Allowed(Form.CardBrowser.URL,
                 TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
                 False,True,True),
                 'The Learning browser permits its generated document page');
               WaitHTML(Form.CardBrowser,'document.title','Delphi Project Handoff Engineering Guide');
+              var WordVisibleWatch:=TStopwatch.StartNew;
+              while not Form.CardBrowser.Visible and
+                (WordVisibleWatch.ElapsedMilliseconds<3000) do begin
+                Application.ProcessMessages;
+                TThread.Sleep(10);
+              end;
+              var WordViewText: string:='';
+              if TFile.Exists(Path) then WordViewText:=TFile.ReadAllText(Path,TEncoding.UTF8);
+              Writeln('Word view checks: visible=',Form.CardBrowser.Visible,
+                ' tab=',Form.WorkspaceTabs.ActiveTab.Name,
+                ' selected=',Form.CardList.ItemIndex,' count=',Form.CardList.Count,
+                ' file=',TFile.Exists(Path),' csp=',ContainsText(WordViewText,'Content-Security-Policy'),
+                ' version=',ContainsText(WordViewText,'dph-document-view-version'),
+                ' body=',ContainsText(WordViewText,'class="project-document"'),
+                ' cover=',ContainsText(WordViewText,'class="document-cover"'),
+                ' title=',ContainsText(WordViewText,'Delphi Project Handoff Engineering Guide'));
               Check(Form.CardBrowser.Visible and ContainsText(Form.CardBrowser.URL,'-view.html') and
                 TFile.Exists(Path) and
-                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Content-Security-Policy') and
-                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'dph-document-view-version') and
-                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'class="project-document"') and
-                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'class="document-cover"') and
-                ContainsText(TFile.ReadAllText(Path,TEncoding.UTF8),'Delphi Project Handoff Engineering Guide'),
+                ContainsText(WordViewText,'Content-Security-Policy') and
+                ContainsText(WordViewText,'dph-document-view-version') and
+                ContainsText(WordViewText,'class="project-document"') and
+                ContainsText(WordViewText,'class="document-cover"') and
+                ContainsText(WordViewText,'Delphi Project Handoff Engineering Guide'),
                 'Selecting a Word guide displays its formatted, restricted HTML conversion');
               WaitHTML(Form.CardBrowser,
                 'String(document.querySelectorAll(".toc-row").length > 10)','true');
@@ -1117,8 +1153,17 @@ begin
               Check(not Form.ProjectPreparationLayout.Visible and
                 Form.LearningBrowser.Visible and (Form.WorkspaceView<>nil),
                 'Full saved-project command opens the large reference dossier as HTML');
-              Check(Form.WorkspaceView.Document.GetValue<TJSONArray>('project_guides').Count=0,
-                'An older saved capture does not display nested legacy guides while source scope refreshes');
+              var SavedGuides:=Form.WorkspaceView.Document.GetValue<TJSONArray>('project_guides');
+              var GuidesStayInSource:=SavedGuides.Count>0;
+              for var SavedGuide in SavedGuides do begin
+                var GuideSource:=SavedGuide.GetValue<string>('source','');
+                if not (StartsText('docs/',GuideSource) or
+                  SameText(GuideSource,'README.md') or SameText(GuideSource,'README.txt')) or
+                  not TFile.Exists(TPath.Combine(ReferenceRoot,GuideSource.Replace('/',PathDelim))) then
+                  GuidesStayInSource:=False;
+              end;
+              Check(GuidesStayInSource,
+                'Saved capture guides exist only in the selected project source and documentation folders');
               Writeln('Reference end-to-end saved open: ',OpenWatch.ElapsedMilliseconds,' ms'); Flush(Output);
               ScreenWatch:=TStopwatch.StartNew;
               Form.WorkspaceTabs.ActiveTab:=Form.ScreenshotTab;

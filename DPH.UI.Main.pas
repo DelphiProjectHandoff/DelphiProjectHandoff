@@ -829,7 +829,7 @@ type
     FLearningFacts: TDPHDocumentModel;
     FExplanations: TDPHExplanationModel;
     FLearningDirectory,FExplainDirectory,FFlowDirectory: string;
-    FExpectedDossierPage,FExpectedGraphPage: string;
+    FExpectedDossierPage,FExpectedGraphPage,FExpectedCardPage: string;
     FOfflinePreview: TDPHOfflinePreview;
     FImages: TJSONArray;
     FPendingScreenshots: TJSONArray;
@@ -839,6 +839,9 @@ type
     FLibraryEntries:TJSONArray;
     FCardDraft:TJSONObject;
     FCardSavingID:string;
+    FDocumentConversionHandle: THandle;
+    FDocumentConversionStarted: UInt64;
+    FDocumentConversionSource,FDocumentConversionPath,FDocumentConversionFailedPath: string;
     FPictureX,FPictureY:Integer;
     FPicturePointValid:Boolean;
     FContinuity: TJSONArray;
@@ -1036,6 +1039,12 @@ procedure TDPHMainForm.FormDestroy(Sender: TObject);
 var Directory: string;
 begin
   PollTimer.Enabled:=False; ChangeTimer.Enabled:=False; FWorker.Free;
+  if FDocumentConversionHandle<>0 then begin
+    if WaitForSingleObject(FDocumentConversionHandle,0)=WAIT_TIMEOUT then
+      TerminateProcess(FDocumentConversionHandle,1);
+    CloseHandle(FDocumentConversionHandle);
+    FDocumentConversionHandle:=0;
+  end;
   FProgressForm.Free;
   FCatalog.Free; FCatalogPaths.Free;
   FCardRows.Free;FLibraryEntries.Free;FCardDraft.Free;
@@ -1364,13 +1373,21 @@ var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSO
   Lines:TStringList; Sections,Symbols:TJSONArray;
   Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
     IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding,IsDetailedFlow:Boolean;
-  StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation; WaitResult:Cardinal;
+  StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation;
   TocTable,TocRow,TocParts,TocStart,TocEnd:TMatch; TocRows:TMatchCollection;
 begin
  if FBinding then Exit;
  CardEdit.Enabled:=False;CardRelated.Enabled:=False;CardRelated.TagString:='';
- CardReader.Text:='Choose a topic to explore this application.';
+ CardReader.Text:=DATTranslateDynamicText('Choose a topic to explore this application.');
  if (FCardRows=nil) or (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) then begin
+   FExpectedCardPage:='';
+   if FDocumentConversionHandle<>0 then begin
+     if WaitForSingleObject(FDocumentConversionHandle,0)=WAIT_TIMEOUT then
+       TerminateProcess(FDocumentConversionHandle,1);
+     CloseHandle(FDocumentConversionHandle);
+     FDocumentConversionHandle:=0;
+     FDocumentConversionSource:='';FDocumentConversionPath:='';
+   end;
    CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
    CardBrowser.Visible:=False;CardReader.Visible:=True;Exit;
  end;
@@ -1397,6 +1414,19 @@ begin
  end else begin
    CardDocumentLocation.TagString:='';CardDocumentLocation.Visible:=False;CardDocumentLocationLabel.Visible:=False;
  end;
+ if FDocumentConversionHandle<>0 then begin
+   if SameText(FDocumentConversionSource,R.GetValue<string>('source','')) then begin
+     CardBrowser.Visible:=False;CardReader.Visible:=True;
+     CardReader.Text:=DATTranslateDynamicText('Wait for the current operation to finish.');
+     Exit;
+   end;
+   if WaitForSingleObject(FDocumentConversionHandle,0)=WAIT_TIMEOUT then
+     TerminateProcess(FDocumentConversionHandle,1);
+   CloseHandle(FDocumentConversionHandle);
+   FDocumentConversionHandle:=0;
+   FDocumentConversionSource:='';FDocumentConversionPath:='';
+ end;
+ FExpectedCardPage:='';
  if R.GetValue<string>('library_kind','')='route' then begin
    Title:=R.GetValue<string>('heading','Learning route');
    HTML:=TDPHHandoffDossier.Render(FLearningFacts.Document,
@@ -1474,9 +1504,9 @@ begin
                'name="dph-document-view-version" content="3"') then
              TFile.Delete(RichPath);
            if not TFile.Exists(RichPath) then begin
-             StatusLabel.Text:='Preparing the formatted document...';
-             Application.ProcessMessages;
-             if not TFile.Exists(ConvertedPath) then begin
+             StatusLabel.Text:=DATTranslateDynamicText('Wait for the current operation to finish.');
+             if not TFile.Exists(ConvertedPath) and
+               not SameText(FDocumentConversionFailedPath,ConvertedPath) then begin
                ProfileURL:='file:///'+TPath.Combine(FLearningDirectory,'document-profile').Replace('\','/').Replace(' ','%20');
                CommandLine:='"'+Converter+'" "-env:UserInstallation='+ProfileURL+'" --headless '+
                  '--convert-to "html:XHTML Writer File:UTF8" --outdir "'+RichDirectory+'" "'+SourcePath+'"';
@@ -1487,13 +1517,15 @@ begin
                StartupInfo.wShowWindow:=SW_HIDE;
                if CreateProcess(nil,PChar(CommandLine),nil,nil,False,CREATE_NO_WINDOW,nil,nil,
                  StartupInfo,ProcessInfo) then begin
-                 try
-                   WaitResult:=WaitForSingleObject(ProcessInfo.hProcess,15000);
-                   if WaitResult=WAIT_TIMEOUT then TerminateProcess(ProcessInfo.hProcess,1);
-                 finally
-                   CloseHandle(ProcessInfo.hThread);
-                   CloseHandle(ProcessInfo.hProcess);
-                 end;
+                 FDocumentConversionHandle:=ProcessInfo.hProcess;
+                 CloseHandle(ProcessInfo.hThread);
+                 FDocumentConversionStarted:=GetTickCount64;
+                 FDocumentConversionSource:=Source;
+                 FDocumentConversionPath:=ConvertedPath;
+                 FExpectedCardPage:='';
+                 CardBrowser.Visible:=False;CardReader.Visible:=True;
+                 CardReader.Text:=DATTranslateDynamicText('Wait for the current operation to finish.');
+                 Exit;
                end;
              end;
              if TFile.Exists(ConvertedPath) and (TFile.GetSize(ConvertedPath)<=16777216) then begin
@@ -1666,6 +1698,7 @@ begin
    try
      CardBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;
      CardReader.Visible:=False;CardBrowser.Visible:=True;
+     FExpectedCardPage:=TPath.GetFileName(RichPath);
      CardBrowser.Navigate('file://'+RichPath);
      Exit;
    except on E:Exception do begin
@@ -1781,6 +1814,7 @@ begin
    TFile.WriteAllBytes(Path,TEncoding.UTF8.GetBytes(HTML));
    TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
    CardBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly;CardReader.Visible:=False;CardBrowser.Visible:=True;
+   FExpectedCardPage:=TPath.GetFileName(Path);
    if Offline then CardBrowser.Navigate(FOfflinePreview.URLForPage(Path))
    else CardBrowser.Navigate('file://'+Path);
  except on E:Exception do begin CardBrowser.Visible:=False;CardReader.Visible:=True;end;end;
@@ -2140,7 +2174,9 @@ begin
     (FLibraryLanguageGeneration <> DATLanguageManager.Generation) then begin
     if (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) or
        (FCardRows[CardList.ItemIndex].GetValue<string>('library_kind','')<>'document_group') then
-      CardSelectionChange(nil);
+      CardSelectionChange(nil)
+    else if FDocumentConversionHandle<>0 then
+      CardReader.Text:=DATTranslateDynamicText('Wait for the current operation to finish.');
     FLibraryLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = ExplainTab) and
     (FView <> nil) and
@@ -2483,6 +2519,15 @@ begin
 end;
 procedure TDPHMainForm.ClearWorkspace;
 begin
+  if FDocumentConversionHandle<>0 then begin
+    if WaitForSingleObject(FDocumentConversionHandle,0)=WAIT_TIMEOUT then
+      TerminateProcess(FDocumentConversionHandle,1);
+    CloseHandle(FDocumentConversionHandle);
+    FDocumentConversionHandle:=0;
+  end;
+  FDocumentConversionPath:='';FDocumentConversionFailedPath:='';
+  FDocumentConversionSource:='';
+  FExpectedCardPage:='';
   FCardRows.Clear;CardList.Items.Clear;CardSelectionChange(nil);FreeAndNil(FCardDraft);FCardSavingID:='';
   FTaskRows.Clear;TaskList.Items.Clear;FreeAndNil(FTaskDraft);TaskSelectionChange(nil);
   FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
@@ -2537,9 +2582,29 @@ begin
   PublishBrowser.Visible:=False; PublishMemo.Text:=''; GraphPaint.Repaint; ScreenPaint.Repaint;
 end;
 procedure TDPHMainForm.PollTimerTimer(Sender: TObject);
-var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject; TranslatedMessage: string;
+var R: TDPHWorkspaceResponse; Value: TJSONValue; Row: TJSONObject;
+  TranslatedMessage,CompletedDocumentPath: string; ConversionState: Cardinal;
 begin
   if FClosing and FWorker.Finished then begin FBusy:=False; FClosing:=False; Close; Exit; end;
+  if FDocumentConversionHandle<>0 then begin
+    ConversionState:=WaitForSingleObject(FDocumentConversionHandle,0);
+    if (ConversionState<>WAIT_TIMEOUT) or
+      (GetTickCount64-FDocumentConversionStarted>=15000) then begin
+      CompletedDocumentPath:=FDocumentConversionPath;
+      if ConversionState=WAIT_TIMEOUT then
+        TerminateProcess(FDocumentConversionHandle,1);
+      CloseHandle(FDocumentConversionHandle);
+      FDocumentConversionHandle:=0;
+      FDocumentConversionSource:='';FDocumentConversionPath:='';
+      if (ConversionState=WAIT_TIMEOUT) or not TFile.Exists(CompletedDocumentPath) then begin
+        FDocumentConversionFailedPath:=CompletedDocumentPath;
+        StatusLabel.Text:=DATTranslateDynamicText(
+          'Formatted view unavailable; captured content is shown.');
+      end else FDocumentConversionFailedPath:='';
+      if not FClosing then
+        CardSelectionChange(CardList);
+    end;
+  end;
   if FPendingLanguageRefresh then begin
     FPendingLanguageRefresh:=False;
     LanguageCombo.SelectLanguageCode(DATActiveLanguageCode);
@@ -3712,6 +3777,15 @@ begin
 end;
 procedure TDPHMainForm.LearningBrowserDidFinishLoad(Sender: TObject);
 begin
+  if Sender=CardBrowser then begin
+    if (FExpectedCardPage<>'') and
+      ContainsText(CardBrowser.URL,FExpectedCardPage) and
+      (WorkspaceTabs.ActiveTab=CardLibraryTab) then begin
+      CardReader.Visible:=False;
+      CardBrowser.Visible:=True;
+    end;
+    Exit;
+  end;
   if Sender=FlowBrowser then begin
     if (FExpectedGraphPage<>'') and
       ContainsText(FlowBrowser.URL,FExpectedGraphPage) and
@@ -6242,7 +6316,7 @@ begin
   end;
 end;
 procedure TDPHMainForm.UpdateScreenBounds;
-var V: TJSONValue; R: TJSONObject; W,H: Single;
+var V: TJSONValue; R: TJSONObject; W,H: Single; ZoomTemplate,PercentPattern: string;
 begin
   if FScreen=nil then Exit;
   W:=1; H:=1;
@@ -6257,7 +6331,14 @@ begin
     3: FScreenScale:=ScreenZoom.Value/100;
   end;
   FScreenScale:=EnsureRange(FScreenScale,0.001,4.0);
-  ScreenZoomLabel.Text:=Format('Zoom %.0f%%',[FScreenScale*100]);
+  ZoomTemplate:=DATTranslateText('DPHMainForm.ScreenZoomLabel.Text','Zoom 100%');
+  PercentPattern:='[%'+#$066A+']';
+  if TRegEx.IsMatch(ZoomTemplate,PercentPattern+'\S+') then
+    ScreenZoomLabel.Text:=TRegEx.Replace(ZoomTemplate,PercentPattern+'\S+',
+      Format('%%%.0f',[FScreenScale*100]))
+  else
+    ScreenZoomLabel.Text:=TRegEx.Replace(ZoomTemplate,'\S+\s*'+PercentPattern,
+      Format('%.0f%%',[FScreenScale*100]));
   ScreenPaint.Width:=Max(1,W*FScreenScale); ScreenPaint.Height:=Max(1,H*FScreenScale);
   ScreenPaint.Repaint;
 end;

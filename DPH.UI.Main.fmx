@@ -1670,6 +1670,7 @@ Margins.Right = 12
 Margins.Bottom = 12
 WindowsEngine = None
 EnableCaching = False
+OnDidFinishLoad = LearningBrowserDidFinishLoad
 OnShouldLoadURL = LearningShouldLoad
 end
 end

@@ -5,6 +5,8 @@ program DPH.Tests.UITranslation;
 uses
   System.SysUtils,
   System.IOUtils,
+  System.JSON,
+  System.RegularExpressions,
   System.Generics.Collections,
   DAT.Runtime.LanguagePack,
   DAT.Runtime.Manager;
@@ -14,7 +16,9 @@ var
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
   Runtime: TTranslationRuntime;
-  PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText: string;
+  EnglishPack,EnglishStrings: TJSONObject;
+  PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText,
+    PercentPattern: string;
   Count, SafePaneRuleCount: Integer;
   PreferenceID: TGUID;
 begin
@@ -22,6 +26,9 @@ begin
     if ParamCount <> 1 then
       raise Exception.Create('Pass the Localization\Languages directory.');
     PackDirectory := TPath.GetFullPath(ParamStr(1));
+    EnglishPack := TJSONObject.ParseJSONValue(TFile.ReadAllText(
+      TPath.Combine(PackDirectory,'en-US.json'),TEncoding.UTF8)) as TJSONObject;
+    EnglishStrings := EnglishPack.GetValue<TJSONObject>('strings');
     CreateGUID(PreferenceID);
     PreferencePath := TPath.Combine(TPath.GetTempPath,
       'DPH-translation-smoke-' + GUIDToString(PreferenceID) + '.ini');
@@ -56,6 +63,21 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            for TitleSource in [
+              'DPHMainForm.StatusLabel.Text',
+              'DPHMainForm.InspectorPurpose.Text',
+              'DPHMainForm.InspectorMemo.Lines.Strings.2',
+              'DPHMainForm.SetupPurpose.Text',
+              'DPHMainForm.HelpFallback.Lines.Strings.0',
+              'DPHMainForm.HelpFallback.Lines.Strings.4',
+              'DPHMainForm.PublishPurpose.Text',
+              'DPHMainForm.PublishButton.Text',
+              'DPHMainForm.PreviewButton.Text'] do
+              if Runtime.Translate(TitleSource,
+                EnglishStrings.Values[TitleSource].Value) =
+                EnglishStrings.Values[TitleSource].Value then
+                raise Exception.Create('Untranslated interface guidance in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
             HelpText := Runtime.Translate('DPHMainForm.LearnerTabLabel1.Text',
               'Handoff dossier');
             if (HelpText = '') or (HelpText = 'Handoff dossier') then
@@ -74,6 +96,27 @@ begin
             if (Pos('>Handoff dossier<', Html) > 0) or
               (Pos('>reads<', Html) > 0) or (Pos('>writes<', Html) > 0) then
               raise Exception.Create('Mixed handoff or relationship labels in ' +
+                Descriptor.LanguageCode);
+            Html := Runtime.TranslateHtmlText(
+              '<html lang="en"><head></head><body><p>reads</p></body></html>');
+            if Pos('lang="' + Descriptor.LanguageCode + '"', Html) = 0 then
+              raise Exception.Create('Translated HTML retains English language metadata in ' +
+                Descriptor.LanguageCode);
+            HelpText := Runtime.TranslateDynamicText(
+              'Formatted view unavailable; captured content is shown.');
+            if HelpText = 'Formatted view unavailable; captured content is shown.' then
+              raise Exception.Create('Untranslated formatted-document fallback in ' +
+                Descriptor.LanguageCode);
+            HelpText := Runtime.Translate('DPHMainForm.ScreenZoomLabel.Text',
+              'Zoom 100%');
+            PercentPattern := '[%' + #$066A + ']';
+            if TRegEx.IsMatch(HelpText,PercentPattern+'\S+') then
+              Html := TRegEx.Replace(HelpText,PercentPattern+'\S+','%90')
+            else
+              Html := TRegEx.Replace(HelpText,'\S+\s*'+PercentPattern,'90%');
+            if (Html = HelpText) or
+              ((Pos('90%',Html)=0) and (Pos('%90',Html)=0)) then
+              raise Exception.Create('Translated screen zoom cannot update in ' +
                 Descriptor.LanguageCode);
             HelpText := Runtime.Translate('DPHMainForm.RescanProjectButton.Text',
               'Rescan project');
@@ -203,6 +246,7 @@ begin
       end;
     finally
       Runtime.Free;
+      EnglishPack.Free;
     end;
     Runtime := TTranslationRuntime.Create('DelphiProjectHandoff',
       PackDirectory, PreferencePath, 'en-US', 'FireMonkey');
