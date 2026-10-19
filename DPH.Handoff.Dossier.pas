@@ -169,7 +169,7 @@ begin
           Row:=Startup.Items[0] as TJSONObject;
           Body.Append('<p><span>The project entry registers</span> <strong>'+Esc(
             Row.GetValue<string>('instance','the first form'))+'</strong> '+
-            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) — '+
+            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) &mdash; '+
             '<code>'+Esc(Row.GetValue<string>('program',''))+':'+
             IntToStr(Row.GetValue<Integer>('line',0))+'</code>.</p>');
         end else Body.Append('<p>The initial form registration was not resolved in this capture.</p>');
@@ -408,7 +408,7 @@ begin
       'style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''">'+
       '<title>'+Esc(Titles[APage])+'</title>'+
       '<style>*{box-sizing:border-box}body{margin:0;background:#f1f5fa;color:#19364e;'+
-      'font:16px/1.55 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
+      'font:16px/1.55 Segoe UI,Arial,sans-serif;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
       'header{background:#146cb4;color:#fff;border-bottom:5px solid #f28c28;padding:22px 30px}'+
       'header h1{margin:0;font-size:27px}header p{margin:5px 0 0}'+
       'main{max-width:1120px;margin:auto;padding:16px 24px 40px}.scope,.card{background:#fff;'+
@@ -419,7 +419,7 @@ begin
       '.metrics span{background:#eaf3fc;border-radius:6px;padding:10px 16px}.metrics strong{font-size:22px}'+
       '.badge{font-size:11px;font-weight:700;color:#125a92;background:#e8f2fb;padding:3px 7px;'+
       'border-radius:4px;text-transform:uppercase}.inferred{color:#945000;background:#fff1df}'+
-      '.cite{display:block;color:#597087}.card pre{white-space:pre-wrap;overflow-wrap:anywhere}pre.project-prose{font:inherit;white-space:pre-wrap}'+
+      '.cite{display:block;color:#597087}.card pre{white-space:pre-wrap;overflow-wrap:anywhere}pre.project-prose{font:inherit;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
       '.unknown{color:#865500}'+
       'a{color:#146cb4}code{direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}'+
       'nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}nav a{color:#fff}'+

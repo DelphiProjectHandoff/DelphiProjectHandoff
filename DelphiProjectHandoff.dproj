@@ -27,6 +27,7 @@
     <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
     <DCCReference Include="DPH.UI.Main.pas"><Form>DPHMainForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.UI.Progress.pas"><Form>DPHProgressForm</Form><FormType>fmx</FormType></DCCReference>
+    <DCCReference Include="DPH.UI.SavePrompt.pas"><Form>DPHSavePromptForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.UI.ProjectProfile.pas"><Form>DPHProjectProfileForm</Form><FormType>fmx</FormType></DCCReference>
     <DCCReference Include="DPH.Knowledge.ProjectProfile.pas" />
       <DCCReference Include="DPH.Knowledge.Glossary.pas" />

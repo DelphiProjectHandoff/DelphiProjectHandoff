@@ -7,6 +7,7 @@ uses
   System.Classes,
   System.IOUtils,
   System.JSON,
+  System.Diagnostics,
   System.RegularExpressions,
   System.Generics.Collections,
   DAT.Runtime.LanguagePack,
@@ -17,6 +18,7 @@ var
   Languages: TObjectList<TLanguagePackDescriptor>;
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
+  SourcePair: TPair<string,string>;
   MissingText: TStringList;
   Runtime: TTranslationRuntime;
   EnglishPack,EnglishStrings,AuditFacts,PopulatedFacts: TJSONObject;
@@ -25,6 +27,7 @@ var
   DossierMatch: TMatch;
   Count, SafePaneRuleCount, DossierPage, AuditVariant: Integer;
   PreferenceID: TGUID;
+  HtmlTimer: TStopwatch;
 begin
   try
     if ParamCount <> 1 then
@@ -68,6 +71,23 @@ begin
         begin
           if not Runtime.LoadLanguage(Descriptor.LanguageCode) then
             raise Exception.Create('Could not load ' + Descriptor.LanguageCode);
+          for SourcePair in Runtime.ActivePack.SourceStrings do
+            if SourcePair.Value.Contains('[[S') or
+              SourcePair.Value.Contains(#$00AD) then
+              raise Exception.Create('Leaked marker or soft hyphen in ' +
+                Descriptor.LanguageCode + ': ' + SourcePair.Key);
+          for SourcePair in Runtime.ActivePack.Strings do
+            if SourcePair.Value.Contains('[[S') or
+              SourcePair.Value.Contains(#$00AD) then
+              raise Exception.Create('Leaked marker or soft hyphen in form text for ' +
+                Descriptor.LanguageCode + ': ' + SourcePair.Key);
+          for TitleSource in ['PromptLabel','DetailLabel','YesButton',
+            'NoButton','CancelButton'] do
+            if not Runtime.ActivePack.TryGetText(
+              'DPHSavePromptForm.' + TitleSource + '.Text', HelpText) or
+              (HelpText = '') then
+              raise Exception.Create('Missing localized save confirmation in ' +
+                Descriptor.LanguageCode + ': ' + TitleSource);
           Caption := Runtime.Translate('DPHMainForm.OpenProjectButton.Text',
             'Open application');
           if Caption = '' then
@@ -86,6 +106,16 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            for TitleSource in [
+              'Project preparation stopped. Read the status message for details.',
+              'Project saved to:',
+              'Project was not saved.',
+              'Save this unsaved project before closing?',
+              'Save this unsaved project before opening another?',
+              'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.'] do
+              if Runtime.TranslateDynamicText(TitleSource) = TitleSource then
+                raise Exception.Create('Untranslated dialog text in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
             for TitleSource in [
               'DPHMainForm.StatusLabel.Text',
               'DPHMainForm.InspectorPurpose.Text',
@@ -182,7 +212,7 @@ begin
               begin
                 TitleSource := Trim(DossierMatch.Groups[1].Value);
                 if (TitleSource = 'audit.dproj') or
-                  (TitleSource = '&mdash;') or
+                  TitleSource.Contains('&mdash;') or
                   (Pos('X',TitleSource) > 0) or
                   (Pos('{',TitleSource) > 0) or
                   not TRegEx.IsMatch(TitleSource,'[A-Za-z]{3}') then Continue;
@@ -357,6 +387,21 @@ begin
           (Pos('Bundled Interface Language Packs', Html) = 0) or
           (Pos('>Mapping Packs</strong>', Html) = 0) then
           raise Exception.Create('German count placement or original project document text changed.');
+        Runtime.LoadLanguage('fr-FR');
+        Runtime.LoadLanguage('pt-BR');
+        HtmlTimer := TStopwatch.StartNew;
+        Html := Runtime.TranslateHtmlText('<html lang="en"><body><p>' +
+          StringOfChar('x',500000) + '</p><p>reads</p></body></html>');
+        HtmlTimer.Stop;
+        if (HtmlTimer.ElapsedMilliseconds > 15000) or
+          (Pos('lang="pt-BR"',Html)=0) or
+          (Pos('>reads<',Html)>0) then
+          raise Exception.CreateFmt('Large Portuguese HTML translation failed or took %d ms.',
+            [HtmlTimer.ElapsedMilliseconds]);
+        Writeln('PASS: 500,000-character Portuguese HTML translation took ',
+          HtmlTimer.ElapsedMilliseconds, ' ms.');
+        if Pos(' &mdash; ',TDPHHandoffDossier.Render(PopulatedFacts,0))=0 then
+          raise Exception.Create('Dossier em dash is not encoded safely.');
         Runtime.LoadLanguage('fr-FR');
         Writeln('PASS: ', Count,
           ' DPH language packs load; localized heading, French UI, and RTL mixed text verified.');

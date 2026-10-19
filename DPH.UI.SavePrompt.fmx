@@ -1,0 +1,56 @@
+object DPHSavePromptForm: TDPHSavePromptForm
+  Caption = 'Delphi Project Handoff'
+  ClientWidth = 640
+  ClientHeight = 210
+  Constraints.MinWidth = 640
+  Constraints.MinHeight = 210
+  Position = ScreenCenter
+  BorderStyle = Single
+  Fill.Color = xFFFFFFFF
+  object PromptLabel: TLabel
+    Position.X = 24
+    Position.Y = 22
+    Width = 590
+    Height = 52
+    WordWrap = True
+    StyledSettings = []
+    TextSettings.Font.Size = 17
+    TextSettings.FontColor = xFF146CB4
+    Text = 'Save this unsaved project before continuing?'
+  end
+  object DetailLabel: TLabel
+    Position.X = 24
+    Position.Y = 82
+    Width = 590
+    Height = 56
+    WordWrap = True
+    StyledSettings = []
+    TextSettings.Font.Size = 13
+    TextSettings.FontColor = xFF31506B
+    Text = 'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.'
+  end
+  object YesButton: TButton
+    Position.X = 282
+    Position.Y = 157
+    Width = 100
+    Height = 36
+    ModalResult = 6
+    Text = 'Yes'
+  end
+  object NoButton: TButton
+    Position.X = 392
+    Position.Y = 157
+    Width = 100
+    Height = 36
+    ModalResult = 7
+    Text = 'No'
+  end
+  object CancelButton: TButton
+    Position.X = 502
+    Position.Y = 157
+    Width = 112
+    Height = 36
+    ModalResult = 2
+    Text = 'Cancel'
+  end
+end

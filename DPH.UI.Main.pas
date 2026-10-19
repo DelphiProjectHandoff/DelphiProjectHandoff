@@ -969,7 +969,7 @@ type
   end;
 var DPHMainForm: TDPHMainForm;
 implementation
-uses System.IOUtils, System.IniFiles, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database, DPH.Storage.Backup, FMX.DialogService.Sync,
+uses System.IOUtils, System.IniFiles, System.StrUtils, System.Math, System.Hash, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding, DAT.Components.Core, DPH.Storage.Database, DPH.Storage.Backup, DPH.UI.SavePrompt, FMX.DialogService.Sync,
   Winapi.EdgeUtils, DPH.Workspace.Screen, DPH.Workspace.Graphs, DPH.Project.Source, DPH.Parse.Model, DPH.Publish.BrowserPolicy,
   DPH.Knowledge.ProjectProfile, DPH.UI.ProjectProfile, DPH.Workspace.Comparison, DPH.Knowledge.Glossary, DPH.UI.Glossary, DPH.Workspace.Keyboard, DPH.Workspace.Commands, DPH.Workspace.DynamicControls, DPH.Workspace.LayoutRules, DPH.Workspace.ComponentDependencies, DPH.Knowledge.ComponentDependency, DPH.UI.ComponentDependency, DPH.Workspace.FormInheritance, DPH.Knowledge.ActionPurpose, DPH.Workspace.ActionPurposes, DPH.UI.DatabaseDictionary, DPH.UI.ActionPurpose,DPH.Workspace.ScreenHistory,DPH.Workspace.DatabaseConnections,DPH.Workspace.DatabaseSchema;
 {$R *.fmx}
@@ -1642,7 +1642,7 @@ begin
                  'font:16px/1.55 Segoe UI,Arial,sans-serif!important}'+
                  'body.project-document *{box-sizing:border-box}'+
                  'body.project-document p{font-size:16px!important;line-height:1.6!important;'+
-                 'margin:0 0 14px!important;overflow-wrap:anywhere}'+
+                 'margin:0 0 14px!important;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
                  'body.project-document h1,body.project-document h2,body.project-document h3{'+
                  'font-family:Cambria,Georgia,serif!important;color:#2f5496!important;'+
                  'line-height:1.25!important;margin:28px 0 12px!important}'+
@@ -1654,7 +1654,7 @@ begin
                  'table-layout:fixed!important;margin-left:0!important;border-collapse:collapse!important}'+
                  'body.project-document table col{width:auto!important}'+
                  'body.project-document table td,body.project-document table th{width:auto!important;'+
-                 'min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;'+
+                 'min-width:0!important;white-space:normal!important;overflow-wrap:break-word!important;'+
                  'border:1px solid #d7e2ec;padding:7px 9px!important}'+
                  'body.project-document table p{font-size:14px!important;'+
                  'line-height:1.45!important;margin:0!important}'+
@@ -1672,7 +1672,7 @@ begin
                  '.toc h2{font:700 25px Cambria,Georgia,serif!important;color:#2f5496!important;'+
                  'margin:0 0 16px!important}'+
                  '.toc-row{display:flex;align-items:baseline;gap:8px;min-width:0;padding:6px 0}'+
-                 '.toc-sub{padding-left:22px}.toc-title{max-width:78%;overflow-wrap:anywhere}'+
+                 '.toc-sub{padding-left:22px}.toc-title{max-width:78%;overflow-wrap:break-word}'+
                  '.toc-dots{flex:1;min-width:10px;border-bottom:2px dotted #8ca5bd;transform:translateY(-3px)}'+
                  '.toc-page{flex:0 0 auto;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}'+
                  'body.project-document p.paragraph-Source_20_Anchor{font:13px/1.45 Segoe UI,Arial,sans-serif!important;'+
@@ -1710,11 +1710,11 @@ begin
  HTML:='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" '+
    'content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}'+
    'body.project-document{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#19364e;'+
-   'max-width:960px;margin:0 auto;padding:24px;background:#fff;overflow-wrap:anywhere}'+
+   'max-width:960px;margin:0 auto;padding:24px;background:#fff;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
    '.document-cover{padding:34px;margin:0 0 26px;border-top:7px solid #176ab2;'+
    'border-bottom:4px solid #f28a28;background:#f3f7fb;border-radius:7px}'+
    '.document-cover h1{font:700 30px/1.2 Cambria,Georgia,serif;color:#1d578c;margin:0}'+
-   'article{white-space:normal;overflow-wrap:anywhere}'+
+   'article{white-space:normal;overflow-wrap:break-word}'+
    'article h2,article h3{font-family:Cambria,Georgia,serif;color:#2f5496;'+
    'line-height:1.3;margin:30px 0 12px}article h2{font-size:23px}article h3{font-size:19px}'+
    'p{margin:0 0 15px}li{margin:8px 0}ul,ol{padding-left:28px}'+
@@ -1724,7 +1724,7 @@ begin
    '.table-scroll{overflow-x:auto;margin:20px 0;border:1px solid #d7e2ec;border-radius:6px}'+
    'table{border-collapse:collapse;width:100%;max-width:100%;table-layout:fixed;'+
    'font-size:15px;line-height:1.5}th,td{text-align:left;vertical-align:top;padding:10px 12px;'+
-   'border:1px solid #d7e2ec;overflow-wrap:anywhere}th{background:#e8f2fa;color:#145c99}'+
+   'border:1px solid #d7e2ec;overflow-wrap:break-word}th{background:#e8f2fa;color:#145c99}'+
    'tr:nth-child(even) td{background:#f8fbfd}'+
    '@media(max-width:650px){body.project-document{padding:14px}.document-cover{padding:18px}}'+
    '</style></head><body class="project-document"><header class="document-cover"><h1>'+
@@ -2405,21 +2405,16 @@ begin
     if TFile.Exists(Path) then TFile.Delete(Path);
 end;
 function TDPHMainForm.ResolveUnsavedProject(AClosing,ADirectSave: Boolean): Boolean;
-var Choice: Integer; Database,Destination,Prompt: string; Store: TDPHKnowledgeStore;
+var Choice: Integer; Database,Destination: string; Store: TDPHKnowledgeStore;
+  PromptForm: TDPHSavePromptForm;
 begin
   Result:=True;
   if FUnsavedDatabase='' then Exit;
   if ADirectSave then Choice:=mrYes
   else begin
-    if AClosing then Prompt:=DATTranslateDynamicText(
-      'Save this unsaved project before closing?')
-    else Prompt:=DATTranslateDynamicText(
-      'Save this unsaved project before opening another?');
-    Choice:=TDialogServiceSync.MessageDialog(Prompt+sLineBreak+sLineBreak+
-      DATTranslateDynamicText(
-        'Yes saves a project database. No discards this temporary capture. Cancel keeps it open.'),
-      TMsgDlgType.mtConfirmation,[TMsgDlgBtn.mbYes,TMsgDlgBtn.mbNo,TMsgDlgBtn.mbCancel],
-      TMsgDlgBtn.mbCancel,0);
+    PromptForm:=TDPHSavePromptForm.Create(Self);
+    try Choice:=PromptForm.ShowModal;
+    finally PromptForm.Free; end;
   end;
   case Choice of
     mrYes: begin
@@ -3990,7 +3985,7 @@ begin
     TNetEncoding.Base64.EncodeBytesToString(TFile.ReadAllBytes(ImagePath))+'" alt="Delphi Project Handoff logo">';
   HTML:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
     '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
-    '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
+    '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:22px}header img{width:88px;height:88px;object-fit:contain}h1{margin:0;font-size:34px}main{padding:26px;max-width:1000px;margin:auto}'+
     'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}.scope{border-left:5px solid #f28c28}h2{color:#146cb4;font-size:24px}.step{margin:12px 0}'+
     '*{box-sizing:border-box}a{color:#146cb4}</style><title>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Welcome to Delphi Project Handoff'))+'</title></head><body><header>'+Logo+'<div><h1>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Welcome to Delphi Project Handoff'))+'</h1>'+

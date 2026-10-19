@@ -405,6 +405,8 @@ var
   Segment: string;
   TagText: string;
   TextIndex: Integer;
+  SegmentStart: Integer;
+  TagStart: Integer;
 
   function TranslateVisibleSegment(const AText: string): string;
   var
@@ -559,6 +561,8 @@ begin
     Segment := '';
     TagText := '';
     InTag := False;
+    SegmentStart := 1;
+    TagStart := 0;
     IsRightToLeft := SameText(Trim(FActivePack.TextDirection), 'rtl');
     DirectionStyleInjected := ContainsText(AHtmlText,
       'id="dat-text-direction"') or ContainsText(AHtmlText,
@@ -567,28 +571,29 @@ begin
     begin
       if AHtmlText[TextIndex] = '<' then
       begin
+        if not InTag then
+          Segment := Copy(AHtmlText, SegmentStart, TextIndex - SegmentStart);
         AppendSegment;
         InTag := True;
-        TagText := '<';
+        TagStart := TextIndex;
       end
       else if AHtmlText[TextIndex] = '>' then
       begin
         if InTag then
         begin
-          TagText := TagText + '>';
+          TagText := Copy(AHtmlText, TagStart, TextIndex - TagStart + 1);
           AppendTag;
         end
         else
-          Segment := Segment + '>';
+          Continue;
         InTag := False;
-      end
-      else if InTag then
-        TagText := TagText + AHtmlText[TextIndex]
-      else
-        Segment := Segment + AHtmlText[TextIndex];
+        SegmentStart := TextIndex + 1;
+      end;
     end;
-    if TagText <> '' then
-      Output.Append(TagText);
+    if InTag then
+      Output.Append(Copy(AHtmlText, TagStart, MaxInt))
+    else
+      Segment := Copy(AHtmlText, SegmentStart, MaxInt);
     AppendSegment;
     Result := Output.ToString;
   finally
