@@ -9,6 +9,7 @@ uses
   System.JSON,
   System.Diagnostics,
   System.RegularExpressions,
+  System.NetEncoding,
   System.Generics.Collections,
   DAT.Runtime.LanguagePack,
   DAT.Runtime.Manager,
@@ -21,10 +22,13 @@ var
   SourcePair: TPair<string,string>;
   MissingText: TStringList;
   Runtime: TTranslationRuntime;
+  FmxCatalog: TDictionary<string,string>;
   EnglishPack,EnglishStrings,AuditFacts,PopulatedFacts: TJSONObject;
   PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText,
-    PercentPattern, DossierSource, RawHtml: string;
-  DossierMatch: TMatch;
+    PercentPattern, DossierSource, RawHtml, ProjectRoot, FormFile,
+    FormName, ObjectName, PropertyKey, PropertyValue, CatalogValue,
+    HtmlFile, HtmlSource, NodeText, SourceLine: string;
+  DossierMatch, FormMatch: TMatch;
   Count, SafePaneRuleCount, DossierPage, AuditVariant: Integer;
   PreferenceID: TGUID;
   HtmlTimer: TStopwatch;
@@ -33,6 +37,34 @@ begin
     if ParamCount <> 1 then
       raise Exception.Create('Pass the Localization\Languages directory.');
     PackDirectory := TPath.GetFullPath(ParamStr(1));
+    ProjectRoot := TPath.GetDirectoryName(TPath.GetDirectoryName(PackDirectory));
+    FmxCatalog := TDictionary<string,string>.Create;
+    for FormFile in TDirectory.GetFiles(ProjectRoot, 'DPH.*.fmx') do
+    begin
+      FormName := '';
+      ObjectName := '';
+      for SourceLine in TFile.ReadAllLines(FormFile, TEncoding.UTF8) do
+      begin
+        FormMatch := TRegEx.Match(SourceLine, '^\s*object\s+(\w+):');
+        if FormMatch.Success then
+        begin
+          ObjectName := FormMatch.Groups[1].Value;
+          if FormName = '' then FormName := ObjectName;
+        end;
+        FormMatch := TRegEx.Match(SourceLine,
+          '^\s*(Text|TextPrompt|Hint|Caption) = ''(.*)''\s*$');
+        if not FormMatch.Success then Continue;
+        PropertyValue := StringReplace(FormMatch.Groups[2].Value,
+          '''''', '''', [rfReplaceAll]);
+        if not TRegEx.IsMatch(PropertyValue, '[A-Za-z]{3}') then Continue;
+        if ObjectName = FormName then
+          PropertyKey := FormName + '.' + FormMatch.Groups[1].Value
+        else
+          PropertyKey := FormName + '.' + ObjectName + '.' +
+            FormMatch.Groups[1].Value;
+        FmxCatalog.AddOrSetValue(PropertyKey, PropertyValue);
+      end;
+    end;
     DossierSource := TFile.ReadAllText(TPath.Combine(
       TPath.GetDirectoryName(TPath.GetDirectoryName(PackDirectory)),
       'DPH.Handoff.Dossier.pas'), TEncoding.UTF8);
@@ -73,6 +105,22 @@ begin
         begin
           if not Runtime.LoadLanguage(Descriptor.LanguageCode) then
             raise Exception.Create('Could not load ' + Descriptor.LanguageCode);
+          for SourcePair in FmxCatalog do
+          begin
+            if not Runtime.ActivePack.TryGetSource(SourcePair.Key,
+              CatalogValue) or (CatalogValue <> SourcePair.Value) then
+              raise Exception.Create('Form text catalog drift in ' +
+                Descriptor.LanguageCode + ': ' + SourcePair.Key);
+            if not SameText(Descriptor.LanguageCode, 'en-US') and
+              (Length(SourcePair.Value) > 20) and
+              (SourcePair.Value <> 'Delphi Project Handoff') and
+              not SourcePair.Value.StartsWith(
+                'Delphi Project Handoff -') and
+              (Runtime.Translate(SourcePair.Key, SourcePair.Value) =
+                SourcePair.Value) then
+              raise Exception.Create('Untranslated form guidance in ' +
+                Descriptor.LanguageCode + ': ' + SourcePair.Key);
+          end;
           for SourcePair in Runtime.ActivePack.SourceStrings do
             if SourcePair.Value.Contains('[[S') or
               SourcePair.Value.Contains(#$00AD) then
@@ -145,6 +193,39 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            for HtmlFile in ['dossier-start.html', 'index.html'] do
+            begin
+              HtmlSource := TFile.ReadAllText(TPath.Combine(
+                TPath.Combine(ProjectRoot, 'help'), HtmlFile),
+                TEncoding.UTF8);
+              Html := Runtime.TranslateHtmlText(HtmlSource);
+              for TitleSource in ['Open application', 'Open saved project',
+                'Handoff dossier', 'Learning library', 'Project map',
+                'Screenshots', 'Application diagrams'] do
+                if (Runtime.TranslateDynamicText(TitleSource) <> TitleSource) and
+                  Html.Contains('>' + TitleSource + '<') then
+                  raise Exception.Create('Help page retained English navigation in ' +
+                    Descriptor.LanguageCode + ' / ' + HtmlFile + ': ' +
+                    TitleSource);
+              HtmlSource := TRegEx.Replace(HtmlSource,
+                '<(style|script|template|noscript)[^>]*>.*?</\1>', '',
+                [roIgnoreCase, roSingleLine]);
+              for DossierMatch in TRegEx.Matches(HtmlSource,
+                '>([^<>]+)<') do
+              begin
+                NodeText := TNetEncoding.HTML.Decode(
+                  Trim(DossierMatch.Groups[1].Value));
+                NodeText := TRegEx.Replace(NodeText, '\s+', ' ');
+                if (Length(NodeText) <= 20) or
+                  (NodeText = 'Delphi Project Handoff') or
+                  not TRegEx.IsMatch(NodeText, '[A-Za-z]{3}') then Continue;
+                if not Runtime.ActivePack.TryTranslateSource(NodeText,
+                  CatalogValue) or (CatalogValue = NodeText) then
+                  raise Exception.Create('Untranslated help HTML in ' +
+                    Descriptor.LanguageCode + ' / ' + HtmlFile + ': ' +
+                    NodeText);
+              end;
+            end;
             Html := Runtime.TranslateHtmlText(
               '<pre class="project-prose">What this application is for</pre>');
             if not Html.Contains('>What this application is for<') then

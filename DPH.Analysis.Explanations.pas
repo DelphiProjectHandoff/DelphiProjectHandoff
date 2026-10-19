@@ -492,10 +492,10 @@ begin
     '<$1 dir="auto"');
   Result:='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src ''self'' data:; script-src ''none''; connect-src ''none''; base-uri ''none''"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+
     Encode(ATitle)+'</title><style>body{font:16px/1.6 Segoe UI,Arial,sans-serif;color:#20364a;margin:0;background:#f1f5fa}main{max-width:1100px;margin:auto;padding:26px}header{background:#146cb4;color:white;width:calc(100% - 52px);max-width:1048px;margin:26px auto 0;padding:20px;border-bottom:5px solid #f28c28;border-radius:9px 9px 0 0;display:flex;align-items:center;gap:20px}.brand{width:76px;height:76px;object-fit:contain;flex:none}'+
-    'h1{font-size:28px;margin:0}body{overflow-wrap:anywhere}main{width:100%;min-width:0}.card{min-width:0}*{box-sizing:border-box}'+
+    'h1{font-size:28px;margin:0}body{overflow-wrap:break-word;word-break:normal;hyphens:none}main{width:100%;min-width:0}.card{min-width:0}*{box-sizing:border-box}'+
     'h2{font-size:21px;color:#146cb4}h3{font-size:18px}'+
     'html[dir="rtl"] [dir="auto"]{text-align:start!important}'+
-    'pre.project-prose{font:inherit;white-space:pre-wrap;unicode-bidi:plaintext;overflow-wrap:anywhere}'+
+    'pre.project-prose{font:inherit;white-space:pre-wrap;unicode-bidi:plaintext;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
     'code{direction:ltr;unicode-bidi:isolate}code.project-name{font:inherit;direction:inherit;white-space:normal}a,bdi{unicode-bidi:isolate}'+
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+

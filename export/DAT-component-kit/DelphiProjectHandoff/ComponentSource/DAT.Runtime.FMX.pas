@@ -1788,6 +1788,12 @@ begin
   end;
   if Result then
     Exit;
+  { Do not splice translated terms into an uncatalogued sentence. A stale
+    designer source must remain intact until its full phrase is catalogued. }
+  if (Length(CurrentText) > 60) and
+    not APack.SourceStrings.ContainsKey(CurrentText) and
+    not APack.SourceTemplates.ContainsKey(CurrentText) then
+    Exit;
   TranslatedText := CurrentText;
   for Pass := 1 to 64 do
   begin
@@ -2812,6 +2818,10 @@ const
         EditableTextComponent(AComponent) and
         not (APack.SourceStrings.ContainsKey(CurrentText) or
           APack.SourceTemplates.ContainsKey(CurrentText)) then
+        Continue;
+      if (Length(CurrentText) > 60) and
+        not APack.SourceStrings.ContainsKey(CurrentText) and
+        not APack.SourceTemplates.ContainsKey(CurrentText) then
         Continue;
       TranslatedText := CurrentText;
       for Pass := 1 to 64 do
