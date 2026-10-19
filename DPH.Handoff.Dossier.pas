@@ -159,9 +159,10 @@ begin
           end;
         end;
         Body.Append('<section class="card"><h2>What this application is for</h2>');
-        if Purpose<>'' then Body.Append('<p class="source-note">Project description from the selected source (shown in its original language).</p>'+
+        if Purpose<>'' then Body.Append('<div class="source-excerpt">'+
+          '<p class="source-note">Project description from the selected source (shown in its original language).</p>'+
           '<pre dir="auto" class="project-prose">'+
-          Esc(Copy(Purpose,1,1800))+'</pre><p><small>'+PurposeEvidence+'</small></p>')
+          Esc(Copy(Purpose,1,1800))+'</pre><p><small>'+PurposeEvidence+'</small></p></div>')
         else Body.Append('<p class="unknown">Purpose is not established by the captured evidence. '+
           'Use the screens, commands and local guides below as leads; do not treat a filename as a business description.</p>');
         Body.Append('</section><section class="card"><h2>What the captured source shows</h2>');
@@ -420,6 +421,9 @@ begin
       '.badge{font-size:11px;font-weight:700;color:#125a92;background:#e8f2fb;padding:3px 7px;'+
       'border-radius:4px;text-transform:uppercase}.inferred{color:#945000;background:#fff1df}'+
       '.cite{display:block;color:#597087}.card pre{white-space:pre-wrap;overflow-wrap:anywhere}pre.project-prose{font:inherit;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
+      '.source-excerpt{border-left:4px solid #f28c28;background:#f7fafe;padding:14px 18px;border-radius:4px}'+
+      '.source-excerpt .source-note{font-weight:600;color:#31506b;margin:0 0 12px}'+
+      '.source-excerpt pre{margin:0 0 12px}.source-excerpt p:last-child{margin:0}'+
       '.unknown{color:#865500}'+
       'a{color:#146cb4}code{direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}'+
       'nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}nav a{color:#fff}'+

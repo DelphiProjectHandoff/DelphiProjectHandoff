@@ -18,7 +18,6 @@ object DPHProgressForm: TDPHProgressForm
     StyledSettings = []
     TextSettings.Font.Size = 17
     TextSettings.FontColor = xFF146CB4
-    Text = 'Checking the selected application...'
   end
   object ProgressHint: TLabel
     Position.X = 24

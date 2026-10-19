@@ -52,6 +52,8 @@ begin
       '"project_screens":[{"name":"XForm","source":"XForm.fmx",'+
       '"line":1}],"project_startup_forms":[{"instance":"XForm",'+
       '"class":"XClass","program":"XProgram","line":1}],'+
+      '"project_guides":[{"source":"README.md","sections":['+
+      '{"heading":"Overview","text":"Original project-purpose text."}]}],'+
       '"author_questions":[{"title":"XQuestion","prompt":"XPrompt"}],'+
       '"diagnostics":[{"code":"XDiagnostic","message":"XMessage"}]}'
       ) as TJSONObject;
@@ -88,6 +90,43 @@ begin
               (HelpText = '') then
               raise Exception.Create('Missing localized save confirmation in ' +
                 Descriptor.LanguageCode + ': ' + TitleSource);
+          for TitleSource in [
+            'Opening the saved project and locating its Delphi files...',
+            'Refreshing project analysis and eligible documents...',
+            'Refreshing project-local documents and learning views...',
+            'Reading Delphi project files and form definitions...',
+            'Tracing forms, controls, user actions and code connections...',
+            'Saving project findings and preparing learning views...',
+            'Reading local guides, help, notes, logs and referenced public websites...',
+            'Reading local guides, help, notes and logs without Internet access...',
+            'Analysis current',
+            'Backup restored to a new database; opening the verified copy',
+            'Bundle validation passed. Read the report and any historical/partial qualification.',
+            'Cached project - detached: source has not been attached',
+            'Captured revision comparison ready; no selected source was read or changed.',
+            'First 200 matching link targets. Narrow the filter to find others.',
+            'Identity candidates are proposals only. Approved links still require knowledge-content review.',
+            'Knowledge saved; named review remains explicit',
+            'Offline HTML, editable guides and technical bundle exported. Review coverage and stale status before use.',
+            'Offline translations loaded for the exact saved revision. Source fallbacks remain explicit; approval is a separate named action.',
+            'PARTIAL captured analysis; previous complete head retained',
+            'Pending review tasks with captured before/after evidence; first 1000 tasks, 200 affected objects/relationships per task.',
+            'Retention report ready. Immutable evidence and authored history are preserved.',
+            'Saved project verified; Delphi source unchanged',
+            'Saved runtime claims loaded (newest 50). No program executed; contributor evidence remains unverified.',
+            'Saved target-data check report imported with attribution and original SHA256; human review pending.',
+            'Screen history comparison ready. Contributor images and approximate captured layouts remain distinct evidence.',
+            'Screenshot imported as attributed, unverified image evidence',
+            'Source changed during analysis - superseded; retry scheduled',
+            'Source fingerprints unchanged'] do
+          begin
+            if not Runtime.ActivePack.TryTranslateSource(TitleSource, HelpText) or
+              (Runtime.TranslateDynamicText(TitleSource) <> HelpText) or
+              (not SameText(Descriptor.LanguageCode, 'en-US') and
+                (HelpText = TitleSource)) then
+              raise Exception.Create('Incomplete worker message in ' +
+                Descriptor.LanguageCode + ': ' + TitleSource);
+          end;
           Caption := Runtime.Translate('DPHMainForm.OpenProjectButton.Text',
             'Open application');
           if Caption = '' then
@@ -106,6 +145,16 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            Html := Runtime.TranslateHtmlText(
+              '<pre class="project-prose">What this application is for</pre>');
+            if not Html.Contains('>What this application is for<') then
+              raise Exception.Create('Original project-purpose evidence was translated in ' +
+                Descriptor.LanguageCode);
+            Html := Runtime.TranslateHtmlText(
+              '<pre>What this application is for</pre>');
+            if not Html.Contains('>What this application is for<') then
+              raise Exception.Create('Unmarked preformatted source was translated in ' +
+                Descriptor.LanguageCode);
             for TitleSource in [
               'Project preparation stopped. Read the status message for details.',
               'Project saved to:',
@@ -212,6 +261,7 @@ begin
               begin
                 TitleSource := Trim(DossierMatch.Groups[1].Value);
                 if (TitleSource = 'audit.dproj') or
+                  (TitleSource = 'README.md') or
                   TitleSource.Contains('&mdash;') or
                   (Pos('X',TitleSource) > 0) or
                   (Pos('{',TitleSource) > 0) or
@@ -402,6 +452,11 @@ begin
           HtmlTimer.ElapsedMilliseconds, ' ms.');
         if Pos(' &mdash; ',TDPHHandoffDossier.Render(PopulatedFacts,0))=0 then
           raise Exception.Create('Dossier em dash is not encoded safely.');
+        Html := Runtime.TranslateHtmlText(
+          TDPHHandoffDossier.Render(PopulatedFacts,0));
+        if not Html.Contains('Original project-purpose text.</pre>') or
+          Html.Contains('Project description from the selected source (shown in its original language).') then
+          raise Exception.Create('Original purpose evidence or its localized label changed.');
         Runtime.LoadLanguage('fr-FR');
         Writeln('PASS: ', Count,
           ' DPH language packs load; localized heading, French UI, and RTL mixed text verified.');
