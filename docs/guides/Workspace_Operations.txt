@@ -29,10 +29,8 @@ incomplete; inspect diagnostics and missing inputs. The capture date by
 itself does not expire the analysis. Static inspection only always remains
 because DPH never runs the selected application.
 
-The header language selector changes DPH's interface offline. The current
-source bundles experimental local translation for selected project prose in
-Bulgarian, Czech, French, German, Italian, Portuguese, Russian, Spanish, and
-Ukrainian; source names,
+The header language selector changes DPH's interface offline. German has an
+experimental local translation for selected project prose; source names,
 citations, and unsupported passages remain in their original language.
 Generated preview captions can use the selected project's de-DE.json pack
 when available. See the User Guide for limitations and the Engineering Guide for

@@ -3625,14 +3625,8 @@ var
   AssetsDirectory: string;
 begin
   Result := False;
-  if not MatchText(DATLanguageManager.CurrentLanguageCode,
-    ['bg-BG', 'cs-CZ', 'de-DE', 'es-ES', 'fr-FR',
-     'it-IT', 'pt-BR', 'ru-RU', 'uk-UA']) or
+  if not SameText(DATLanguageManager.CurrentLanguageCode, 'de-DE') or
      not AHTML.Contains('class="project-prose"') then Exit;
-  AHTML := AHTML.Replace('<html lang="en">',
-    '<html lang="' + DATLanguageManager.CurrentLanguageCode + '">');
-  AHTML := AHTML.Replace('<html>',
-    '<html lang="' + DATLanguageManager.CurrentLanguageCode + '">');
   try
     if FOfflinePreview = nil then begin
       AssetsDirectory := TPath.Combine(FBaseDirectory, 'Localization\OfflineTranslation');
@@ -3660,10 +3654,12 @@ begin
     '#offline-translation-status{margin:0 0 16px}</style></head>');
   if AHTML.Contains('<main>') then
     AHTML := AHTML.Replace('<main>',
-      '<main><p id="offline-translation-status" class="warning"></p>')
+      '<main><p id="offline-translation-status" class="warning" lang="de">' +
+      'Der Projekttext wird lokal ins Deutsche übersetzt…</p>')
   else
     AHTML := AHTML.Replace('<body>',
-      '<body><p id="offline-translation-status"></p>');
+      '<body><p id="offline-translation-status" lang="de">' +
+      'Der Projekttext wird lokal ins Deutsche übersetzt…</p>');
   AHTML := AHTML.Replace('</body>', '<script type="module" src="' +
     FOfflinePreview.ScriptURL + '"></script></body>');
   Result := True;
