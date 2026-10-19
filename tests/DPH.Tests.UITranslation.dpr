@@ -4,31 +4,54 @@ program DPH.Tests.UITranslation;
 
 uses
   System.SysUtils,
+  System.Classes,
   System.IOUtils,
   System.JSON,
   System.RegularExpressions,
   System.Generics.Collections,
   DAT.Runtime.LanguagePack,
-  DAT.Runtime.Manager;
+  DAT.Runtime.Manager,
+  DPH.Handoff.Dossier;
 
 var
   Languages: TObjectList<TLanguagePackDescriptor>;
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
+  MissingText: TStringList;
   Runtime: TTranslationRuntime;
-  EnglishPack,EnglishStrings: TJSONObject;
+  EnglishPack,EnglishStrings,AuditFacts,PopulatedFacts: TJSONObject;
   PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText,
-    PercentPattern: string;
-  Count, SafePaneRuleCount: Integer;
+    PercentPattern, DossierSource, RawHtml: string;
+  DossierMatch: TMatch;
+  Count, SafePaneRuleCount, DossierPage, AuditVariant: Integer;
   PreferenceID: TGUID;
 begin
   try
     if ParamCount <> 1 then
       raise Exception.Create('Pass the Localization\Languages directory.');
     PackDirectory := TPath.GetFullPath(ParamStr(1));
+    DossierSource := TFile.ReadAllText(TPath.Combine(
+      TPath.GetDirectoryName(TPath.GetDirectoryName(PackDirectory)),
+      'DPH.Handoff.Dossier.pas'), TEncoding.UTF8);
     EnglishPack := TJSONObject.ParseJSONValue(TFile.ReadAllText(
       TPath.Combine(PackDirectory,'en-US.json'),TEncoding.UTF8)) as TJSONObject;
     EnglishStrings := EnglishPack.GetValue<TJSONObject>('strings');
+    AuditFacts := TJSONObject.Create;
+    AuditFacts.AddPair('project','audit.dproj');
+    PopulatedFacts := TJSONObject.ParseJSONValue(
+      '{"project":"audit.dproj","files":[{"path":"XFile.pas"}],'+
+      '"symbols":[{"key":"X1","name":"XObject","kind":"variable",'+
+      '"type":"XType"}],"relationships":[{"kind":"binds",'+
+      '"from":"X1","to":"X1"},{"kind":"output_candidate",'+
+      '"from":"X1","to":"X1"},{"kind":"static_sql",'+
+      '"from":"X1","to":"X1"},{"kind":"dynamic_sql",'+
+      '"from":"X1","to":"X1"}],'+
+      '"project_screens":[{"name":"XForm","source":"XForm.fmx",'+
+      '"line":1}],"project_startup_forms":[{"instance":"XForm",'+
+      '"class":"XClass","program":"XProgram","line":1}],'+
+      '"author_questions":[{"title":"XQuestion","prompt":"XPrompt"}],'+
+      '"diagnostics":[{"code":"XDiagnostic","message":"XMessage"}]}'
+      ) as TJSONObject;
     CreateGUID(PreferenceID);
     PreferencePath := TPath.Combine(TPath.GetTempPath,
       'DPH-translation-smoke-' + GUIDToString(PreferenceID) + '.ini');
@@ -78,6 +101,102 @@ begin
                 EnglishStrings.Values[TitleSource].Value then
                 raise Exception.Create('Untranslated interface guidance in ' +
                   Descriptor.LanguageCode + ': ' + TitleSource);
+            for TitleSource in [
+              'DPHMainForm.HelpFallback.Lines.Strings.0',
+              'DPHMainForm.HelpFallback.Lines.Strings.2',
+              'DPHMainForm.HelpFallback.Lines.Strings.3',
+              'DPHMainForm.HelpFallback.Lines.Strings.4',
+              'DPHMainForm.HelpFallback.Lines.Strings.5',
+              'DPHMainForm.HelpFallback.Lines.Strings.6',
+              'DPHMainForm.HelpFallback.Lines.Strings.8',
+              'DPHMainForm.HelpFallback.Lines.Strings.10'] do
+              if Runtime.Translate(TitleSource,
+                EnglishStrings.Values[TitleSource].Value) =
+                EnglishStrings.Values[TitleSource].Value then
+                raise Exception.Create('Getting-started text remains English in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
+            for TitleSource in [
+              'Welcome to Delphi Project Handoff',
+              'Open the application project',
+              'Handoff dossier',
+              'Coverage',
+              'Some explanations need checking. Ask about unexplained behavior before relying on it.',
+              'STALE evidence',
+              'Captured analysis complete',
+              'Coverage and gaps: separate static capture measures, human review and diagnostics. Select a diagnostic and click Inspect selected gap to read evidence and open matching source.',
+              'Refresh the lessons after the source changes and check affected explanations.',
+              'A true result follows one branch and a false result follows the other. Conditions found in this operation:',
+              'Declared here:',
+              'Inspect the saved form design',
+              'Inspect the source walkthrough for branch order and other paths.',
+              'Optional: read the code walkthrough and source details',
+              'This source unit contains the declarations and operations listed in its connections below.',
+              'Saved capture needs source refresh',
+              'Project analysis is incomplete',
+              'Source-derived, unreviewed',
+              'captured',
+              'Static inspection only; the selected application was not run.',
+              'DPH saved what it found, but some results may be missing. Open Coverage, select a diagnostic, and choose Inspect selected gap to see the affected source. If a file, path, or project setting is missing, correct it and choose Rescan project.',
+              'What this application is for',
+              'What the captured source shows',
+              'Visible commands and connected handlers',
+              'Data and output evidence',
+              'Questions to resolve',
+              'Analysis gaps and risk candidates',
+              'Dependencies and build paths',
+              'Database connections and bindings',
+              'Normal sequence / handoff',
+              'Select for full step details; orange routes are exceptions'] do
+            begin
+              if Runtime.TranslateDynamicText(TitleSource) = TitleSource then
+                raise Exception.Create('Interface prose lacks a complete translation in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
+              Html := Runtime.TranslateHtmlText('<p>' + TitleSource + '</p>');
+              if Pos('>' + TitleSource + '<', Html) > 0 then
+                raise Exception.Create('HTML retained English interface prose in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
+            end;
+            for DossierMatch in TRegEx.Matches(DossierSource,
+              '>([A-Za-z][^<>''\r\n]{5,})<') do
+            begin
+              TitleSource := Trim(DossierMatch.Groups[1].Value);
+              if not TRegEx.IsMatch(TitleSource,
+                '^[A-Za-z][A-Za-z0-9 ,.;:/?()\-]+$') then Continue;
+              Html := Runtime.TranslateHtmlText('<p>' + TitleSource + '</p>');
+              if Pos('>' + TitleSource + '<', Html) > 0 then
+                raise Exception.Create('Dossier HTML retained English interface text in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
+            end;
+            MissingText := TStringList.Create;
+            try
+            for AuditVariant := 0 to 1 do
+            for DossierPage := 0 to 3 do
+            begin
+              if AuditVariant=0 then
+                RawHtml := TDPHHandoffDossier.Render(AuditFacts,DossierPage)
+              else
+                RawHtml := TDPHHandoffDossier.Render(PopulatedFacts,DossierPage);
+              RawHtml := TRegEx.Replace(RawHtml,'<pre[^>]*>.*?</pre>','',
+                [roIgnoreCase,roSingleLine]);
+              for DossierMatch in TRegEx.Matches(RawHtml,'>([^<>]+)<') do
+              begin
+                TitleSource := Trim(DossierMatch.Groups[1].Value);
+                if (TitleSource = 'audit.dproj') or
+                  (TitleSource = '&mdash;') or
+                  (Pos('X',TitleSource) > 0) or
+                  (Pos('{',TitleSource) > 0) or
+                  not TRegEx.IsMatch(TitleSource,'[A-Za-z]{3}') then Continue;
+                Html := Runtime.TranslateHtmlText('<p>' + TitleSource + '</p>');
+                if Pos('>' + TitleSource + '<', Html) > 0 then
+                  MissingText.Add(TitleSource);
+              end;
+            end;
+            if MissingText.Count > 0 then
+              raise Exception.Create('Rendered dossier retains English in ' +
+                Descriptor.LanguageCode + ': ' + MissingText.Text);
+            finally
+              MissingText.Free;
+            end;
             HelpText := Runtime.Translate('DPHMainForm.LearnerTabLabel1.Text',
               'Handoff dossier');
             if (HelpText = '') or (HelpText = 'Handoff dossier') then
@@ -247,6 +366,8 @@ begin
     finally
       Runtime.Free;
       EnglishPack.Free;
+      AuditFacts.Free;
+      PopulatedFacts.Free;
     end;
     Runtime := TTranslationRuntime.Create('DelphiProjectHandoff',
       PackDirectory, PreferencePath, 'en-US', 'FireMonkey');

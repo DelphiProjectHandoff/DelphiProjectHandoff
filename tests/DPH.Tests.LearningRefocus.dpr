@@ -551,8 +551,10 @@ begin
               Check(Form.RescanProjectButton.Text='Projekt erneut einlesen',
                 'Rescan project action uses the offline German interface pack');
               Form.HelpClick(nil);
-              WaitHTML(Form.HelpBrowser,'document.body.innerText','Grenzen der Belege');
-              Check(True,'German getting-started page uses complete translated prose');
+              WaitHTML(Form.HelpBrowser,'document.documentElement.lang','de-DE');
+              WaitHTML(Form.HelpBrowser,
+                'String(!document.body.innerText.includes("Open the application project") && !document.body.innerText.includes("Welcome to Delphi Project Handoff"))','true');
+              Check(True,'German getting-started page uses localized catalog content');
               Check(Form.ProjectPreparationHint.Text='Dies kann einige Minuten dauern...',
                 'Project preparation time guidance uses the offline German interface pack');
               Check((Form.FindComponent('DPHProgressForm') as TDPHProgressForm).ProgressHint.Text=
@@ -574,8 +576,17 @@ begin
                 (Form.LanguageCombo.Height<=36),
                 'Spanish actions and language selector keep readable, bounded widths');
               Form.HelpClick(nil);
-              WaitHTML(Form.HelpBrowser,'document.body.innerText','Límites de las pruebas');
-              Check(True,'Spanish getting-started browser shows complete localized prose');
+              WaitHTML(Form.HelpBrowser,'document.documentElement.lang','es-ES');
+              WaitHTML(Form.HelpBrowser,
+                'String(!document.body.innerText.includes("Open the application project") && !document.body.innerText.includes("Welcome to Delphi Project Handoff"))','true');
+              Check(True,'Spanish getting-started browser shows localized catalog content');
+              Check(Form.DATLanguageManager.SelectLanguage('fr-FR'),
+                'French interface pack applies to the native form');
+              Form.HelpClick(nil);
+              WaitHTML(Form.HelpBrowser,'document.documentElement.lang','fr-FR');
+              WaitHTML(Form.HelpBrowser,
+                'String(!document.body.innerText.includes("Open the application project") && !document.body.innerText.includes("Welcome to Delphi Project Handoff"))','true');
+              Check(True,'French getting-started browser and native controls use one language');
               Check((Form.FindComponent('LearnerTab0') as TRectangle).Index<
                 Form.OpenProjectButton.Index,
                 'Getting started remains the first navigation control');
@@ -630,6 +641,14 @@ begin
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Preguntas por resolver');
               Form.LearningTopics.ItemIndex:=0; Form.LearningClick(nil);
               Check(True,'All four dossier pages show Spanish application headings');
+              Check(Form.DATLanguageManager.SelectLanguage('fr-FR'),
+                'French can be selected for a populated handoff dossier');
+              Form.PollTimerTimer(nil);
+              WaitHTML(Form.LearningBrowser,'document.documentElement.lang','fr-FR');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','À quoi sert cette application');
+              WaitHTML(Form.LearningBrowser,
+                'String(!document.body.innerText.includes("What this application is for") && !document.body.innerText.includes("What the captured source shows"))','true');
+              Check(True,'French dossier translates its body headings as well as native controls');
               Check(Form.DATLanguageManager.SelectLanguage('en-US'),
                 'English can be restored after the Spanish dossier check');
               Form.PollTimerTimer(nil);
@@ -856,8 +875,9 @@ begin
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-action-lesson.png')); finally BrowserBitmap.Free; end;
               Form.LearningTopics.ItemIndex:=2; Form.LearningClick(nil);
               WaitHTML(Form.LearningBrowser,'document.body.innerText','Data and output evidence');
-              WaitHTML(Form.LearningBrowser,'document.title','Data and operations: Semantic.dproj');
-              Check(True,'Native browser shows the app-specific title without damaged punctuation');
+              WaitHTML(Form.LearningBrowser,'document.title','Data and operations');
+              WaitHTML(Form.LearningBrowser,'document.body.innerText','Semantic.dproj');
+              Check(True,'Native browser shows a translatable title and the selected project');
               BrowserBitmap:=Form.LearningBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-screen-lesson.png')); finally BrowserBitmap.Free; end;
               Form.WindowState:=TWindowState.wsNormal; Form.ClientWidth:=960;Form.ClientHeight:=600;Application.ProcessMessages;

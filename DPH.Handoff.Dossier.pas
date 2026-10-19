@@ -169,7 +169,7 @@ begin
           Row:=Startup.Items[0] as TJSONObject;
           Body.Append('<p><span>The project entry registers</span> <strong>'+Esc(
             Row.GetValue<string>('instance','the first form'))+'</strong> '+
-            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) <span>from</span> '+
+            '(<code>'+Esc(Row.GetValue<string>('class',''))+'</code>) — '+
             '<code>'+Esc(Row.GetValue<string>('program',''))+':'+
             IntToStr(Row.GetValue<Integer>('line',0))+'</code>.</p>');
         end else Body.Append('<p>The initial form registration was not resolved in this capture.</p>');
@@ -190,7 +190,7 @@ begin
           'These are static findings; they do not establish that a conversion or other '+
           'operation completed at runtime.</p>');
         Body.Append('<div class="metrics">');
-        if Files<>nil then Body.Append('<span><strong>'+IntToStr(Files.Count)+'</strong> <em>files</em></span>');
+        if Files<>nil then Body.Append('<span><strong>'+IntToStr(Files.Count)+'</strong> <em>captured files</em></span>');
         if Symbols<>nil then Body.Append('<span><strong>'+IntToStr(Symbols.Count)+'</strong> <em>objects</em></span>');
         if Relations<>nil then Body.Append('<span><strong>'+IntToStr(Relations.Count)+'</strong> <em>relationships</em></span>');
         if Screens<>nil then Body.Append('<span><strong>'+IntToStr(Screens.Count)+'</strong> <em>form designs</em></span>');
@@ -201,7 +201,7 @@ begin
           Row:=Value as TJSONObject;
           DirectoryName:=Row.GetValue<string>('path','').Replace('\','/');
           Index:=LastDelimiter('/',DirectoryName);
-          if Index=0 then DirectoryName:='(project root)'
+          if Index=0 then DirectoryName:='.'
           else DirectoryName:=Copy(DirectoryName,1,Index);
           if DirectoryCounts.TryGetValue(DirectoryName,Count) then
             DirectoryCounts[DirectoryName]:=Count+1
@@ -406,7 +406,7 @@ begin
       '<meta name="viewport" content="width=device-width,initial-scale=1">'+
       '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; '+
       'style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''">'+
-      '<title>'+Esc(Titles[APage])+': '+Esc(AFacts.GetValue<string>('project',''))+'</title>'+
+      '<title>'+Esc(Titles[APage])+'</title>'+
       '<style>*{box-sizing:border-box}body{margin:0;background:#f1f5fa;color:#19364e;'+
       'font:16px/1.55 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
       'header{background:#146cb4;color:#fff;border-bottom:5px solid #f28c28;padding:22px 30px}'+

@@ -3977,7 +3977,7 @@ begin
 end;
 procedure TDPHMainForm.HelpClick(Sender: TObject);
 var ID:TGUID; HTML,PreviewPath,Logo,ImagePath,StatusNotice,Status:string;
-    Facts:TJSONObject; IncompleteAnalysis,IsGerman,IsSpanish:Boolean;
+    Facts:TJSONObject; IncompleteAnalysis:Boolean;
 begin
   WorkspaceTabs.ActiveTab:=HelpTab;
   if FLearningDirectory='' then begin
@@ -3992,88 +3992,44 @@ begin
     '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; img-src data:; script-src ''none''; connect-src ''none''; base-uri ''none''">'+
     '<style>body{margin:0;background:#f1f5fa;color:#20364a;font:18px/1.6 Segoe UI,Arial,sans-serif;overflow-wrap:anywhere}'+
     'header{background:#146cb4;color:white;padding:28px;border-bottom:5px solid #f28c28;display:flex;align-items:center;gap:22px}header img{width:88px;height:88px;object-fit:contain}h1{margin:0;font-size:34px}main{padding:26px;max-width:1000px;margin:auto}'+
-    'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}.scope{border-left:5px solid #f28c28}h2{color:#146cb4;font-size:24px}li{margin-bottom:14px}'+
-    '*{box-sizing:border-box}a{color:#146cb4}</style><title>Explore an application with DPH</title></head><body><header>'+Logo+'<div><h1>Welcome to Delphi Project Handoff</h1>'+
-    '<p>Build a source-backed maintenance handoff for an unfamiliar Delphi application.</p></div></header><main><section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>'+
-    '<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>'+
-    '<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section></main></body></html>';
-  if SameText(DATActiveLanguageCode,'de-DE') then begin
-    HTML:=HTML.Replace('<html lang="en">','<html lang="de">')
-      .Replace('Explore an application with DPH','Eine Anwendung mit DPH erkunden')
-      .Replace('Welcome to Delphi Project Handoff','Willkommen bei Delphi Project Handoff')
-      .Replace('Build a source-backed maintenance handoff for an unfamiliar Delphi application.',
-        'Erstellen Sie eine anhand des Quellcodes belegte Übergabe für eine unbekannte Delphi-Anwendung.')
-      .Replace('<section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>',
-        '<section><h2>Anwendungsprojekt öffnen</h2><p>Wählen Sie <strong>Anwendung öffnen</strong> und danach eine .dproj-, .dpr- oder .groupproj-Datei. DPH liest Projektdateien, Formularentwürfe, Quellcode und geeignete lokale Dokumentation. Um eine vorhandene Erfassung zu laden, wählen Sie <strong>Gespeichertes Projekt öffnen</strong>.</p></section>')
-      .Replace('<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>',
-        '<section><h2>Die Übergabe lesen</h2><ol><li>Das <strong>Übergabedossier</strong> zeigt Belege zum Zweck, die Startreihenfolge, Befehlszuordnungen, Datenkandidaten und offene Fragen.</li><li>Die <strong>Lernbibliothek</strong> zeigt projektspezifische Anleitungen und Hilfen.</li><li>Die <strong>Projektkarte</strong> verbindet erfasste Objekte mit Quellcode und Beziehungen.</li><li>Unter <strong>Screenshots</strong> lassen sich Formularvorschauen bei Bedarf aus .dfm- oder .fmx-Dateien erzeugen; importierte Laufzeitbilder bleiben getrennte Belege.</li><li>Die <strong>Anwendungsdiagramme</strong> zeigen statische Verbindungen, die noch zur Laufzeit bestätigt werden müssen.</li></ol></section>')
-      .Replace('<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section>',
-        '<section><h2>Grenzen der Belege</h2><p>Extrahierte Fakten, aus dem Quellcode abgeleitete Schlussfolgerungen und Angaben von Mitwirkenden haben unterschiedliche Gewissheit. Prüfen Sie jede Schlussfolgerung anhand ihres Quellverweises und der Erfassungskonfiguration. DPH führt die ausgewählte Anwendung nicht aus und verändert sie nicht. Das Kontrollkästchen oben steuert das optionale Lesen öffentlicher Websites.</p></section>');
-  end;
-  if SameText(DATActiveLanguageCode,'es-ES') then begin
-    HTML:=HTML.Replace('<html lang="en">','<html lang="es">')
-      .Replace('Explore an application with DPH','Explorar una aplicación con DPH')
-      .Replace('Welcome to Delphi Project Handoff','Bienvenido a Delphi Project Handoff')
-      .Replace('Build a source-backed maintenance handoff for an unfamiliar Delphi application.',
-        'Prepare una transferencia de mantenimiento basada en el código de una aplicación Delphi que aún no conoce.')
-      .Replace('<section><h2>Open the application project</h2><p>Select <strong>Open application</strong> and choose a .dproj, .dpr or .groupproj file. DPH reads project files, form designs, source, and eligible local documentation. For an existing capture, choose <strong>Open saved project</strong>.</p></section>',
-        '<section><h2>Abrir el proyecto de la aplicación</h2><p>Seleccione <strong>Abrir aplicación</strong> y elija un archivo .dproj, .dpr o .groupproj. DPH lee los archivos del proyecto, los formularios, el código y la documentación local pertinente. Para abrir una recopilación anterior, seleccione <strong>Abrir proyecto guardado</strong>.</p></section>')
-      .Replace('<section><h2>Read the handoff</h2><ol><li><strong>Handoff dossier</strong> presents purpose evidence, startup order, command bindings, data candidates and open questions.</li><li><strong>Learning library</strong> shows project-local guides and help.</li><li><strong>Project map</strong> links captured objects to source and relationships.</li><li><strong>Screenshots</strong> generates form previews on demand from .dfm or .fmx designs; an imported runtime image remains separate evidence.</li><li><strong>Application diagrams</strong> shows static connections that still need runtime confirmation.</li></ol></section>',
-        '<section><h2>Leer el informe de transferencia</h2><ol><li>El <strong>Informe de transferencia</strong> presenta las pruebas del propósito, el orden de inicio, los vínculos de comandos, los posibles datos y las preguntas pendientes.</li><li>La <strong>Biblioteca de aprendizaje</strong> muestra las guías y ayudas locales del proyecto.</li><li>El <strong>Mapa del proyecto</strong> relaciona los objetos recopilados con el código y sus vínculos.</li><li><strong>Capturas de pantalla</strong> genera vistas previas de formularios .dfm o .fmx cuando se solicitan; una imagen importada de la aplicación en ejecución sigue siendo una prueba independiente.</li><li>Los <strong>Diagramas de aplicación</strong> muestran conexiones estáticas que aún requieren comprobación durante la ejecución.</li></ol></section>')
-      .Replace('<section><h2>Evidence limits</h2><p>Extracted facts, source-derived inferences and contributor claims have different certainty. Every conclusion should be checked against its source citation and capture configuration. DPH does not run or change the selected application. Optional public-website reading is controlled by the checkbox in the header.</p></section>',
-        '<section><h2>Límites de las pruebas</h2><p>Los hechos extraídos, las inferencias derivadas del código y las afirmaciones de los colaboradores tienen distintos grados de certeza. Compruebe cada conclusión con su referencia al código y la configuración de la recopilación. DPH no ejecuta ni modifica la aplicación seleccionada. La casilla de la cabecera controla la lectura opcional de sitios web públicos.</p></section>');
-  end;
+    'section{padding:24px;margin-bottom:20px;background:white;border:1px solid #dce5ef;border-radius:9px}.scope{border-left:5px solid #f28c28}h2{color:#146cb4;font-size:24px}.step{margin:12px 0}'+
+    '*{box-sizing:border-box}a{color:#146cb4}</style><title>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Welcome to Delphi Project Handoff'))+'</title></head><body><header>'+Logo+'<div><h1>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Welcome to Delphi Project Handoff'))+'</h1>'+
+    '<p>'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.0','Build a source-backed maintenance handoff for an unfamiliar Delphi application.'))+'</p></div></header><main>'+
+    '<section><h2>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Open the application project'))+'</h2>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.2','1. Click Open application at the top left and select its .dproj, .dpr or .groupproj file.'))+'</p>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.3','2. Accept the proposed project file in Databases. For an existing file, click Open saved project.'))+'</p></section>'+
+    '<section><h2>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Handoff dossier'))+'</h2>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.4','3. Handoff dossier summarizes purpose, startup, commands, data and open questions.'))+'</p>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.5','4. Learning library lists topics from this application''s guides and help.'))+'</p>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.6','5. Screenshots shows available application images in fitted or native size.'))+'</p>'+
+    '<p class="step">'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.8','Project map identifies forms, controls and connected actions. Application diagrams show supported connections.'))+'</p></section>'+
+    '<section><h2>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Coverage'))+'</h2>'+
+    '<p>'+TNetEncoding.HTML.Encode(DATTranslateText('DPHMainForm.HelpFallback.Lines.Strings.10','DPH reads the application files without changing or running them.'))+'</p>'+
+    '<p>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText('Some explanations need checking. Ask about unexplained behavior before relying on it.'))+'</p></section></main></body></html>';
   Facts:=nil;
   if FLearningFacts<>nil then Facts:=FLearningFacts.Document
   else if FView<>nil then Facts:=FView.Document;
   if Facts<>nil then begin
-    IsGerman:=SameText(DATActiveLanguageCode,'de-DE');
-    IsSpanish:=SameText(DATActiveLanguageCode,'es-ES');
     IncompleteAnalysis:=not Facts.GetValue<Boolean>('stale',False) and
       not Facts.GetValue<Boolean>('analysis_complete',False);
-    if Facts.GetValue<Boolean>('stale',False) then begin
-      if IsGerman then Status:='Gespeicherte Erfassung muss aktualisiert werden'
-      else if IsSpanish then Status:='La recopilación guardada necesita actualizarse'
-      else Status:='Saved capture needs source refresh';
-    end else if IncompleteAnalysis then begin
-      if IsGerman then Status:='Projektanalyse ist unvollständig'
-      else if IsSpanish then Status:='El análisis del proyecto está incompleto'
-      else Status:='Project analysis is incomplete';
-    end else if IsGerman then Status:='Aus dem Quellcode abgeleitet, ungeprüft'
-    else if IsSpanish then Status:='Derivado del código, sin revisar'
+    if Facts.GetValue<Boolean>('stale',False) then
+      Status:='Saved capture needs source refresh'
+    else if IncompleteAnalysis then
+      Status:='Project analysis is incomplete'
     else Status:='Source-derived, unreviewed';
-    StatusNotice:='<section class="scope"><p><strong>'+Status+'</strong> | '+
+    StatusNotice:='<section class="scope"><p><strong>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText(Status))+'</strong> | '+
       TNetEncoding.HTML.Encode(Facts.GetValue<string>('configuration','unknown configuration'))+' / '+
-      TNetEncoding.HTML.Encode(Facts.GetValue<string>('platform','unknown platform'));
-    if IsGerman then StatusNotice:=StatusNotice+' | erfasst '
-    else if IsSpanish then StatusNotice:=StatusNotice+' | recopilado '
-    else StatusNotice:=StatusNotice+' | captured ';
-    StatusNotice:=StatusNotice+
-      TNetEncoding.HTML.Encode(Facts.GetValue<string>('captured_utc','unknown time'));
-    if IsGerman then StatusNotice:=StatusNotice+
-      '. Nur statische Analyse; die ausgewählte Anwendung wurde nicht ausgeführt.</p>'
-    else if IsSpanish then StatusNotice:=StatusNotice+
-      '. Solo se realizó un análisis estático; no se ejecutó la aplicación seleccionada.</p>'
-    else StatusNotice:=StatusNotice+
-      '. Static inspection only; the selected application was not run.</p>';
-    if IncompleteAnalysis then begin
-      if IsGerman then StatusNotice:=StatusNotice+
-        '<p>DPH hat die gefundenen Ergebnisse gespeichert, aber einige können fehlen. '+
-        'Öffnen Sie Abdeckung, wählen Sie eine Diagnose und dann Ausgewählte Lücke untersuchen, '+
-        'um die betroffene Quelldatei zu sehen. Korrigieren Sie fehlende Dateien, Pfade oder '+
-        'Projekteinstellungen und wählen Sie danach Projekt erneut prüfen.</p>'
-      else if IsSpanish then StatusNotice:=StatusNotice+
-        '<p>DPH guardó lo que encontró, pero pueden faltar resultados. Abra Cobertura, '+
-        'seleccione un diagnóstico y elija Inspeccionar la laguna seleccionada para ver el '+
-        'código afectado. Corrija cualquier archivo, ruta o ajuste del proyecto que falte y '+
-        'seleccione Volver a analizar el proyecto.</p>'
-      else StatusNotice:=StatusNotice+
-        '<p>DPH saved what it found, but some results may be missing. Open Coverage, '+
-        'select a diagnostic, and choose Inspect selected gap to see the affected source. '+
-        'If a file, path, or project setting is missing, correct it and choose Rescan project.</p>';
-    end;
+      TNetEncoding.HTML.Encode(Facts.GetValue<string>('platform','unknown platform'))+
+      ' | '+TNetEncoding.HTML.Encode(DATTranslateDynamicText('captured'))+' '+
+      TNetEncoding.HTML.Encode(Facts.GetValue<string>('captured_utc','unknown time'))+
+      '</p><p>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText(
+        'Static inspection only; the selected application was not run.'))+'</p>';
+    if IncompleteAnalysis then
+      StatusNotice:=StatusNotice+'<p>'+TNetEncoding.HTML.Encode(DATTranslateDynamicText(
+        'DPH saved what it found, but some results may be missing. Open Coverage, select a diagnostic, and choose Inspect selected gap to see the affected source. If a file, path, or project setting is missing, correct it and choose Rescan project.'))+'</p>';
     HTML:=HTML.Replace('<main>','<main>'+StatusNotice+'</section>');
   end;
+  HTML:=DATTranslateHtmlText(HTML);
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML));FPreviewPages.Add(PreviewPath);end;
   try HelpBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; HelpBrowser.Visible:=True;
