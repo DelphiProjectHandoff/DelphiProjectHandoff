@@ -658,6 +658,16 @@ begin
               WaitHTML(Form.CardBrowser,
                 'String(document.documentElement.scrollWidth <= window.innerWidth)','true');
               Check(True,'The Word guide has a right-aligned contents list and fits the viewer width');
+              var FormattedGuideURL:=Form.CardBrowser.URL;
+              Check(Form.DATLanguageManager.SelectLanguage('fr-FR'),
+                'French can be selected while a formatted project document is open');
+              Form.PollTimerTimer(nil);
+              Check((Form.CardBrowser.URL=FormattedGuideURL) and
+                Form.CardBrowser.Visible,
+                'Changing interface language keeps the already formatted project document');
+              Check(Form.DATLanguageManager.SelectLanguage('en-US'),
+                'English can be restored after the formatted document check');
+              Form.PollTimerTimer(nil);
               Check(not TDPHBrowserPolicy.Allowed('file://'+TPath.Combine(
                 TPath.GetDirectoryName(TPath.GetDirectoryName(TPath.GetDirectoryName(Path))),
                 'documents\invalid\unreviewed-view.html'),
@@ -859,6 +869,24 @@ begin
                 Application.ProcessMessages; TThread.Sleep(200);
               BrowserBitmap:=Form.FlowBrowser.CaptureBitmap;
               try BrowserBitmap.SaveToFile(TPath.Combine(Work,'learning-refocus-grouped-graph-browser.png')); finally BrowserBitmap.Free; end;
+              GraphWatch:=TStopwatch.StartNew;
+              Check(Form.DATLanguageManager.SelectLanguage('fr-FR'),
+                'French can be selected while an application diagram is open');
+              Writeln('Diagram language selection: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              Form.WorkspacePageChange(Form.WorkspaceTabs);
+              Writeln('Diagram page regeneration: ',GraphWatch.ElapsedMilliseconds,' ms cumulative'); Flush(Output);
+              Form.PollTimerTimer(nil);
+              Writeln('Diagram pending native refresh: ',GraphWatch.ElapsedMilliseconds,' ms cumulative'); Flush(Output);
+              WaitHTML(Form.FlowBrowser,
+                'String(document.querySelector("h1")?.innerText.charCodeAt(2) === 233)','true');
+              Check(Form.FlowBrowser.Visible and (Form.GraphGroupingCombo.ItemIndex=2),
+                'Changing language redraws the same grouped diagram');
+              Writeln('Grouped diagram language redisplay: ',GraphWatch.ElapsedMilliseconds,' ms'); Flush(Output);
+              Check(Form.DATLanguageManager.SelectLanguage('en-US'),
+                'English can be restored after diagram translation');
+              Form.PollTimerTimer(nil);
+              WaitHTML(Form.FlowBrowser,
+                'document.querySelector("h1")?.innerText','Execution');
               Form.WorkspaceTabs.ActiveTab:=Form.PublishTab;
               Check(not Form.PublishSettingsExpander.IsExpanded and (Form.PublishSettingsExpander.Height<50),'Sharing starts with plain instructions and collapsed optional settings');
               Form.PublishBrowser.OnShouldLoadURL:=nil;

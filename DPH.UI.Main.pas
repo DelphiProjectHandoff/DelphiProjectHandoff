@@ -944,7 +944,7 @@ type
     procedure SelectSymbol(const AKey: string; AHistory: Boolean = True);
     function DatabaseERRect(AIndex:Integer):TRectF;
     procedure DatabaseEREvidence(const AID:string);
-    procedure RefreshGraphics;
+    procedure RefreshGraphics(const AReuseGraph: Boolean = False);
     procedure UpdateScreenBounds;
     procedure UpdateScreenshotBounds;
     procedure UpdateLearnerNavigation;
@@ -2138,7 +2138,9 @@ begin
   end else if (WorkspaceTabs.ActiveTab = CardLibraryTab) and
     (FCardRows <> nil) and
     (FLibraryLanguageGeneration <> DATLanguageManager.Generation) then begin
-    CardSelectionChange(nil);
+    if (CardList.ItemIndex<0) or (CardList.ItemIndex>=FCardRows.Count) or
+       (FCardRows[CardList.ItemIndex].GetValue<string>('library_kind','')<>'document_group') then
+      CardSelectionChange(nil);
     FLibraryLanguageGeneration := DATLanguageManager.Generation;
   end else if (WorkspaceTabs.ActiveTab = ExplainTab) and
     (FView <> nil) and
@@ -2148,7 +2150,7 @@ begin
   end else if (WorkspaceTabs.ActiveTab = GraphTab) and
     (FView <> nil) and
     (FGraphLanguageGeneration <> DATLanguageManager.Generation) then begin
-    RefreshGraphics;
+    RefreshGraphics(True);
     FGraphLanguageGeneration := DATLanguageManager.Generation;
   end;
 end;
@@ -2540,7 +2542,7 @@ begin
   if FClosing and FWorker.Finished then begin FBusy:=False; FClosing:=False; Close; Exit; end;
   if FPendingLanguageRefresh then begin
     FPendingLanguageRefresh:=False;
-    LanguageCombo.RefreshLanguages;
+    LanguageCombo.SelectLanguageCode(DATActiveLanguageCode);
     WorkspacePageChange(WorkspaceTabs);
     if (FView<>nil) and not FBusy then begin
       if WorkspaceTabs.ActiveTab=TaskTab then TaskNavigate(nil)
@@ -5994,12 +5996,14 @@ begin
   WorkspaceTabs.ActiveTab:=GraphTab;
   StatusLabel.Text:='Project data: source input/output dependencies, resources, SQL and artifacts. Arrow labels retain their rules; runtime values and context are unverified.';
 end;
-procedure TDPHMainForm.RefreshGraphics;
+procedure TDPHMainForm.RefreshGraphics(const AReuseGraph: Boolean);
 const GraphKinds: array[0..7] of string = ('Execution','Procedure CFG','Caller / callee','Form navigation','Data flow','Change impact','Data lineage','Business process');
 var Grouped: TJSONObject; Limit: Integer; HTML,GraphPath,Seed,Direction: string;IsLineage:Boolean;
-    GraphModel: TDPHExplanationModel;
+    GraphModel: TDPHExplanationModel; ReuseGraph: Boolean;
 begin
-  FreeAndNil(FGraph); FreeAndNil(FScreen); if FView=nil then Exit;
+  ReuseGraph:=AReuseGraph and (FGraph<>nil) and (WorkspaceTabs.ActiveTab=GraphTab);
+  if not ReuseGraph then begin FreeAndNil(FGraph); FreeAndNil(FScreen); end;
+  if FView=nil then Exit;
   FExpectedGraphPage:=''; FlowBrowser.Visible:=False;
   if (WorkspaceTabs.ActiveTab<>GraphTab) and (WorkspaceTabs.ActiveTab<>ScreenTab) then Exit;
   if WorkspaceTabs.ActiveTab=ScreenTab then begin
@@ -6013,7 +6017,7 @@ begin
   if (WorkspaceTabs.ActiveTab=GraphTab) and (FLearningFacts=nil) then RefreshLearning;
   if (FSelected='') and (GraphCombo.ItemIndex in [0,3,4]) then FWholeGraph:=True;
   GraphPaint.Width:=Max(1050,GraphScroll.Width-24);
-  GraphPaint.Height:=4500;
+  if not ReuseGraph then GraphPaint.Height:=4500;
   IsLineage:=GraphCombo.ItemIndex=6;
   if GraphCombo.ItemIndex>=0 then case GraphCombo.ItemIndex of
     0: GraphPurpose.Text:='Execution shows which routines may call other routines. Follow a connection to understand how an action moves through the code.';
@@ -6029,8 +6033,12 @@ begin
   Limit:=120; GraphGroupingCombo.Enabled:=(GraphCombo.ItemIndex<>1) and not IsLineage;
   if (GraphCombo.ItemIndex<>1) and (GraphGroupingCombo.ItemIndex>0) then Limit:=1000;
   if GraphCombo.ItemIndex=7 then begin
-   GraphGroupingCombo.Enabled:=False;
-   GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
+    GraphGroupingCombo.Enabled:=False;
+    GraphLegend.Text:='Authored business workflow | blue: normal sequence | orange: exception routes | select steps for details | exact process links retain revision review; runtime unobserved';
+  end else if IsLineage then
+    GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
+  if not ReuseGraph then begin
+  if GraphCombo.ItemIndex=7 then begin
    if FKnowledgeEdited then StatusLabel.Text:='Save or discard the current Knowledge draft before opening a saved workflow diagram.'
    else if (DepartmentalWorkflowList.ItemIndex>=0) and (DepartmentalWorkflowList.ItemIndex<FDepartmentalWorkflowRows.Count) then
     FGraph:=TDPHGraphProjection.Workflow(FDepartmentalWorkflowRows[DepartmentalWorkflowList.ItemIndex],FKnowledge,FView.Document.GetValue<Int64>('generation_id'));
@@ -6040,7 +6048,6 @@ begin
    if FDatabaseInventory=nil then FDatabaseInventory:=TDPHDatabaseConnections.Inspect(FView);
    Seed:=FLineageSeed;if Seed='' then Seed:=FSelected;Direction:=FLineageDirection;if Direction='' then Direction:='both';
    if FDatabaseInventory<>nil then FGraph:=TDPHDatabaseConnections.Lineage(FView,FDatabaseInventory,Seed,Direction);
-   GraphLegend.Text:='Data lineage source candidates | arrows: lexical dependency or labeled context, not runtime order | select a node for details | unresolved breaks are listed below the HTML diagram and in Trace lineage';
   end
   else if FWholeGraph and (GraphCombo.ItemIndex in [0,3,4]) then FGraph:=FView.Graph(GraphKinds[GraphCombo.ItemIndex],'',Limit)
   else if GraphCombo.ItemIndex=1 then FGraph:=FView.Graph('Procedure CFG',FSelected,Limit)
@@ -6055,6 +6062,7 @@ begin
   end;
   if (FGraph<>nil) and (GraphCombo.ItemIndex<>1) and not IsLineage and (FGraph.GetValue<string>('kind')<>'Business process') and (GraphGroupingCombo.ItemIndex>0) then begin
     Grouped:=TDPHGraphProjection.Group(FView,FGraph,GraphGroupingCombo.Items[GraphGroupingCombo.ItemIndex]); FGraph.Free; FGraph:=Grouped;
+  end;
   end;
   if (FGraph<>nil) and (FLearningFacts<>nil) then begin
     GraphModel:=FExplanations;

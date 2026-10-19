@@ -56,6 +56,25 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            HelpText := Runtime.Translate('DPHMainForm.LearnerTabLabel1.Text',
+              'Handoff dossier');
+            if (HelpText = '') or (HelpText = 'Handoff dossier') then
+              raise Exception.Create('Untranslated handoff navigation in ' +
+                Descriptor.LanguageCode);
+            for TitleSource in ['Handoff overview', 'Commands and workflows',
+              'Data and operations', 'Risks and open questions'] do
+            begin
+              Html := Runtime.TranslateHtmlText('<p>' + TitleSource + '</p>');
+              if Pos('>' + TitleSource + '<', Html) > 0 then
+                raise Exception.Create('Untranslated handoff page title in ' +
+                  Descriptor.LanguageCode + ': ' + TitleSource);
+            end;
+            Html := Runtime.TranslateHtmlText(
+              '<p>Handoff dossier</p><p>reads</p><p>writes</p>');
+            if (Pos('>Handoff dossier<', Html) > 0) or
+              (Pos('>reads<', Html) > 0) or (Pos('>writes<', Html) > 0) then
+              raise Exception.Create('Mixed handoff or relationship labels in ' +
+                Descriptor.LanguageCode);
             HelpText := Runtime.Translate('DPHMainForm.RescanProjectButton.Text',
               'Rescan project');
             if (HelpText = '') or (HelpText = 'Rescan project') then
