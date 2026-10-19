@@ -42,8 +42,8 @@ DELPHI PROJECT HANDOFF $Version - EDITABLE SOURCE DISTRIBUTION
 This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
 guide source, guide illustrations, the OrderPractice example, all 35 offline
-interface language packs, the experimental bundled English-to-German project-text
-model, and the bundled build dependencies. It contains no personal .dphdb databases,
+interface language packs, experimental bundled project-text models for nine
+languages, and the bundled build dependencies. It contains no personal .dphdb databases,
 Git history, or compiled DPH executable.
 
 TO BUILD
@@ -59,8 +59,8 @@ TO BUILD
    corresponding WebView2Loader.dll beside it. The project copies that loader
    automatically after a successful build.
 5. Run the executable from the extracted project folder. Keep migrations,
-   help, images and icons, and Localization in that folder. The German project-text
-   trial reads its WebAssembly model from Localization\OfflineTranslation without Internet access.
+   help, images and icons, and Localization in that folder. The project-text
+   trial reads its WebAssembly models from Localization\OfflineTranslation without Internet access.
    See docs\guides\Run_And_Test.txt
    for the application's first-use and validation steps.
 

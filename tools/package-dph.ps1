@@ -33,7 +33,7 @@ foreach ($directory in @('migrations','help','images and icons')) {
 }
 $offlineTranslation=Join-Path $projectRoot 'Localization\OfflineTranslation'
 if (-not (Test-Path -LiteralPath (Join-Path $offlineTranslation 'package\worker\bergamot-translator-worker.wasm') -PathType Leaf)) {
- throw 'Offline German translation engine is missing'
+ throw 'Offline project-text translation engine is missing'
 }
 Copy-Item -LiteralPath $offlineTranslation -Destination (Join-Path $packageRoot 'Localization\OfflineTranslation') -Recurse
 foreach ($relative in @('LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
@@ -66,8 +66,9 @@ Experimental Windows desktop handoff application - version $Version
    application; custom painting and runtime data may differ.
 6. Choose your language from the selector in the main header. All 35 language
    packs work offline and remain beside each Windows edition.
-   The experimental English-to-German project-text model is also bundled in
-   Localization\OfflineTranslation and runs without Internet access.
+   The experimental project-text models for Bulgarian, Czech, French,
+   German, Italian, Portuguese, Russian, Spanish, and Ukrainian are bundled
+   in Localization\OfflineTranslation and run without Internet access.
 7. A new capture stays temporary. Click Save project at any time to keep it.
    When closing DPH or opening another project, choose Yes to save it as a
    .dphdb, No to discard it, or Cancel

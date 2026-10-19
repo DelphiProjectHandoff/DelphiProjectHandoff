@@ -9,13 +9,18 @@ uses
   DAT.Runtime.LanguagePack,
   DAT.Runtime.Manager;
 
+const
+  DossierTitles: array[0..3] of string =
+    ('Handoff overview', 'Commands and workflows', 'Data and operations',
+     'Risks and open questions');
+
 var
   Languages: TObjectList<TLanguagePackDescriptor>;
   Descriptor: TLanguagePackDescriptor;
   LayoutRule: TRuntimeLayoutRule;
   Runtime: TTranslationRuntime;
   PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText: string;
-  Count, SafePaneRuleCount: Integer;
+  Count, SafePaneRuleCount, HeadingIndex: Integer;
   PreferenceID: TGUID;
 begin
   try
@@ -56,6 +61,14 @@ begin
               Descriptor.LanguageCode);
           if not SameText(Descriptor.LanguageCode, 'en-US') then
           begin
+            for HeadingIndex := Low(DossierTitles) to High(DossierTitles) do
+            begin
+              Html := Runtime.TranslateHtmlText('<html lang="en"><body><h1>' +
+                DossierTitles[HeadingIndex] + '</h1></body></html>');
+              if Pos('>' + DossierTitles[HeadingIndex] + '</h1>', Html) <> 0 then
+                raise Exception.Create('Untranslated handoff page title in ' +
+                  Descriptor.LanguageCode + ': ' + DossierTitles[HeadingIndex]);
+            end;
             HelpText := Runtime.Translate('DPHMainForm.RescanProjectButton.Text',
               'Rescan project');
             if (HelpText = '') or (HelpText = 'Rescan project') then

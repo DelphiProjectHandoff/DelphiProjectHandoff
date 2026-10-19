@@ -24,15 +24,18 @@ CHOOSE A LANGUAGE
 
 Select a language in the header. DPH should change its labels and built-in
 learning pages immediately and remember the choice when reopened. English is
-the source language; the other 34 choices match VCL2FMXConverter v7. The
-German also offers an experimental local translation of selected English
-project prose in Handoff dossier and Learning library. DPH-authored memo
+the source language; the other 34 choices match VCL2FMXConverter v7. The current
+source bundles experimental local project-prose models for Bulgarian,
+Czech, French, German, Italian, Portuguese, Russian, Spanish, and Ukrainian.
+They apply to marked text in Handoff dossier, Learning library, and
+source-linked explanations. DPH-authored memo
 directions use the interface packs; some project-derived prose and technical
 labels remain in their source language. Original files,
 identifiers, and citations are unchanged. German preview captions can use
 the selected project's Localization/Languages/de-DE.json when present;
-otherwise the saved form captions remain. Other language
-choices retain project content in its original language.
+otherwise the saved form captions remain. Other language choices retain
+project content in its original language. The 0.8.0.10 Windows ZIP has the
+earlier German-only trial.
 
 OPEN AN APPLICATION
 
