@@ -89,6 +89,12 @@ begin
       '"author_questions":[{"title":"XQuestion","prompt":"XPrompt"}],'+
       '"diagnostics":[{"code":"XDiagnostic","message":"XMessage"}]}'
       ) as TJSONObject;
+    RawHtml := TDPHHandoffDossier.Render(PopulatedFacts, 0);
+    if not RawHtml.Contains('<details class="source-excerpt">') or
+      RawHtml.Contains('<details class="source-excerpt" open') or
+      not RawHtml.Contains('<pre dir="auto" class="project-prose">' +
+        'Original project-purpose text.</pre>') then
+      raise Exception.Create('Project source description must start collapsed and remain original evidence.');
     CreateGUID(PreferenceID);
     PreferencePath := TPath.Combine(TPath.GetTempPath,
       'DPH-translation-smoke-' + GUIDToString(PreferenceID) + '.ini');
@@ -230,6 +236,12 @@ begin
               '<pre class="project-prose">What this application is for</pre>');
             if not Html.Contains('>What this application is for<') then
               raise Exception.Create('Original project-purpose evidence was translated in ' +
+                Descriptor.LanguageCode);
+            Html := Runtime.TranslateHtmlText(
+              TDPHHandoffDossier.Render(PopulatedFacts, 0));
+            if Html.Contains('>Project description from the selected source (shown in its original language).<') or
+              not Html.Contains('>Original project-purpose text.</pre>') then
+              raise Exception.Create('Localized dossier must label the collapsed original project text in ' +
                 Descriptor.LanguageCode);
             Html := Runtime.TranslateHtmlText(
               '<pre>What this application is for</pre>');

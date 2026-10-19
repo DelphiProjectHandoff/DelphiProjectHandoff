@@ -3727,7 +3727,7 @@ begin
   Result := True;
 end;
 procedure TDPHMainForm.LearningClick(Sender: TObject);
-var HTML,PreviewPath: string; Offline: Boolean;
+var HTML,PreviewPath: string;
 begin
   if FBinding then Exit;
   if FLearningFacts=nil then begin
@@ -3750,15 +3750,13 @@ begin
   HTML:=DATTranslateHtmlText(HTML);
   if not SameText(DATActiveLanguageCode,'en-US') then
     HTML:=HTML.Replace('<html lang="en">','<html lang="'+DATActiveLanguageCode+'">');
-  Offline:=(FLearningFacts<>nil) and PrepareOfflineProjectTranslation(HTML);
   OverviewMemo.Text:='';
   PreviewPath:=TPath.Combine(FLearningDirectory,THashSHA2.GetHashString(HTML)+'.html');
   if not FPreviewPages.Contains(PreviewPath) then begin TFile.WriteAllBytes(PreviewPath,TEncoding.UTF8.GetBytes(HTML)); FPreviewPages.Add(PreviewPath); end;
   TFile.WriteAllBytes(TPath.Combine(FLearningDirectory,'index.html'),TEncoding.UTF8.GetBytes(HTML));
   FExpectedDossierPage:=TPath.GetFileName(PreviewPath);
   try LearningBrowser.WindowsEngine:=TWindowsEngine.EdgeOnly; OverviewMemo.Visible:=False; LearningBrowser.Visible:=True;
-    if Offline then LearningBrowser.Navigate(FOfflinePreview.URLForPage(PreviewPath))
-    else LearningBrowser.Navigate('file://'+PreviewPath);
+    LearningBrowser.Navigate('file://'+PreviewPath);
   except on E: Exception do begin
     FExpectedDossierPage:='';
     LearningBrowser.Visible:=False; OverviewMemo.Visible:=False;
