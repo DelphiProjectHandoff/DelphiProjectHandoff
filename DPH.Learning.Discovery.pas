@@ -4,7 +4,7 @@ interface
 
 uses System.JSON;
 
-const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-4';
+const DPHLearningDiscoveryVersion = 'DPH-DOC-SCOPE-5';
 
 type
   TDPHLearningDiscovery = class
@@ -109,6 +109,7 @@ var
         not MatchText(Ext,['.md','.markdown','.rst','.adoc','.asciidoc','.txt','.text',
         '.nfo','.log','.html','.htm','.docx','.docm','.doc','.dot','.dotx',
         '.odt','.ott','.sxw','.fodt','.pdf','.rtf','.wpd','.wpt','.wps','.wri','.tex']) or
+        (TFile.GetSize(Entry)<2) or
         (Paths.Count+PreferredPaths.Count>=300) then Continue;
       if (ADepth=0) and not
         (MatchText(LowerName,['readme.md','readme.txt']) or
@@ -117,8 +118,9 @@ var
         (MatchText(LowerName,['readme.md','readme.txt']) or
          ContainsText(LowerName,'guide') or ContainsText(LowerName,'manual')) then Continue;
       VersionMatch:=TRegEx.Match(LowerName,'(?i)(?:^|[_\W])v(\d+)(?:[_\W]|$)');
-      if (CurrentMajor<>'') and VersionMatch.Success and
-        (VersionMatch.Groups[1].Value<>CurrentMajor) then Continue;
+      if (CurrentMajor<>'') and
+        ((SameText(TPath.GetFileName(AFolder),'notes') and not VersionMatch.Success) or
+         (VersionMatch.Success and (VersionMatch.Groups[1].Value<>CurrentMajor))) then Continue;
       Preferred:=(ContainsText(LowerName,'readme') or ContainsText(LowerName,'guide') or
         ContainsText(LowerName,'manual') or ContainsText(LowerName,'help') or
         ContainsText(LowerName,'notes') or ContainsText(LowerName,'getting start') or

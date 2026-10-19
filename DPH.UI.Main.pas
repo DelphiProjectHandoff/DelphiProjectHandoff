@@ -1371,7 +1371,7 @@ var R,Section,Symbol,Group:TJSONObject; V,W:TJSONValue; Guides,GuideIndexes:TJSO
   RichDirectory,ConvertedPath,RichHTML,Converter,ProfileURL,CommandLine,Extension,
   TocHTML,TocText,TocBlock:string;
   Lines:TStringList; Sections,Symbols:TJSONArray;
-  Cells:TArray<string>; I,J,Count,GuideIndex:Integer; Offline,InTable,InList,InCode,IsTableHeader,
+  Cells:TArray<string>; I,J,Count,GuideIndex,TocPosition:Integer; Offline,InTable,InList,InCode,IsTableHeader,
     IsOrderedItem,ListOrdered,IsStandaloneHeading,OldBinding,IsDetailedFlow:Boolean;
   StartupInfo:TStartupInfo; ProcessInfo:TProcessInformation;
   TocTable,TocRow,TocParts,TocStart,TocEnd:TMatch; TocRows:TMatchCollection;
@@ -1501,7 +1501,7 @@ begin
            IsDetailedFlow:=ContainsText(Source,'Detailed_Runtime_Flow');
            if TFile.Exists(RichPath) and
              not ContainsText(TFile.ReadAllText(RichPath,TEncoding.UTF8),
-               'name="dph-document-view-version" content="3"') then
+               'name="dph-document-view-version" content="4"') then
              TFile.Delete(RichPath);
            if not TFile.Exists(RichPath) then begin
              StatusLabel.Text:=DATTranslateDynamicText('Wait for the current operation to finish.');
@@ -1586,27 +1586,40 @@ begin
                end;
                if not ContainsText(RichHTML,'<nav class="toc"') then begin
                  TocStart:=TRegEx.Match(RichHTML,
-                   '(?is)<p\b[^>]*>\s*(?:Table of Contents|Contents)\s*</p>');
+                   '(?is)<p\b[^>]*>\s*(?:<span\b[^>]*>)?\s*'+
+                   '(?:Table of Contents|Contents)\s*(?:</span>)?\s*</p>');
                  if TocStart.Success then begin
-                   TocEnd:=TRegEx.Match(RichHTML.Substring(TocStart.Index+TocStart.Length),
-                     '(?is)<h1\b[^>]*>');
-                   if TocEnd.Success and (TocEnd.Index<100000) then begin
-                     TocBlock:=RichHTML.Substring(TocStart.Index,TocStart.Length+TocEnd.Index);
-                     TocRows:=TRegEx.Matches(TocBlock,'(?is)<p\b[^>]*>(.*?)</p>');
-                     TocHTML:='<nav class="toc" aria-label="Contents"><h2>Contents</h2>';
-                     Count:=0;
-                     for TocRow in TocRows do begin
-                       TocText:=TNetEncoding.HTML.Decode(
-                         TRegEx.Replace(TocRow.Groups[1].Value,'<[^>]+>','')).Trim;
-                       TocParts:=TRegEx.Match(TocText,'(?s)^(.*?)\s+(\d+)$');
-                       if not TocParts.Success then Continue;
-                       TocHTML:=TocHTML+'<div class="toc-row"><span class="toc-title">'+
-                         TNetEncoding.HTML.Encode(TocParts.Groups[1].Value.Trim)+'</span>'+
-                         '<span class="toc-dots"></span><span class="toc-page">'+
-                         TocParts.Groups[2].Value+'</span></div>';
-                       Inc(Count);
+                   TocPosition:=TocStart.Index+TocStart.Length;
+                   TocHTML:='<nav class="toc" aria-label="Contents"><h2>Contents</h2>';
+                   Count:=0;
+                   while Count<200 do begin
+                     if TocPosition-TocStart.Index>100000 then Break;
+                     TocRow:=TRegEx.Match(RichHTML.Substring(TocPosition),
+                       '(?is)^\s*<p\b[^>]*>(.*?)</p>');
+                     if not TocRow.Success then Break;
+                     TocText:=TNetEncoding.HTML.Decode(
+                       TRegEx.Replace(TocRow.Groups[1].Value,'<[^>]+>',''));
+                     TocText:=TocText.Replace(#$00A0,' ');
+                     TocText:=TRegEx.Replace(TocText,'\s+',' ').Trim;
+                     if TocText='' then begin
+                       Inc(TocPosition,TocRow.Length);
+                       Continue;
                      end;
-                     if Count>=2 then RichHTML:=RichHTML.Replace(TocBlock,TocHTML+'</nav>');
+                     TocParts:=TRegEx.Match(TocText,'(?s)^(.*?)\s+(\d+)$');
+                     if not TocParts.Success then Break;
+                     if TRegEx.IsMatch(TocParts.Groups[1].Value,'^\d+\.\d+\s') then
+                       TocHTML:=TocHTML+'<div class="toc-row toc-sub">'
+                     else TocHTML:=TocHTML+'<div class="toc-row">';
+                     TocHTML:=TocHTML+'<span class="toc-title">'+
+                       TNetEncoding.HTML.Encode(TocParts.Groups[1].Value.Trim)+'</span>'+
+                       '<span class="toc-dots"></span><span class="toc-page">'+
+                       TocParts.Groups[2].Value+'</span></div>';
+                     Inc(Count);
+                     Inc(TocPosition,TocRow.Length);
+                   end;
+                   if Count>=2 then begin
+                     TocBlock:=RichHTML.Substring(TocStart.Index,TocPosition-TocStart.Index);
+                     RichHTML:=RichHTML.Replace(TocBlock,TocHTML+'</nav>');
                    end;
                  end;
                end;
@@ -1681,7 +1694,7 @@ begin
                  '.document-cover,.document-overview,.toc{padding:18px}.toc-sub{padding-left:12px}}'+
                  '</style></head>');
                RichHTML:=RichHTML.Replace('</head>',
-                 '<meta name="dph-document-view-version" content="3"></head>');
+                 '<meta name="dph-document-view-version" content="4"></head>');
                TFile.WriteAllText(RichPath,RichHTML,TEncoding.UTF8);
              end;
            end;

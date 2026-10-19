@@ -1,7 +1,7 @@
 ﻿program DPH.Tests.LearningRefocus;
 {$APPTYPE CONSOLE}
 {$SETPEFLAGS $20}
-uses FMX.Objects, FMX.Types, FMX.Layouts, FMX.StdCtrls, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
+uses FMX.Objects, FMX.Types, FMX.Layouts, FMX.StdCtrls, System.SysUtils, System.Classes, System.IOUtils, System.JSON, System.Hash, System.StrUtils, System.RegularExpressions, System.Diagnostics, System.Types, System.Generics.Collections, System.Math.Vectors, System.Zip,
   Winapi.ActiveX, FMX.Forms, FMX.Graphics, FMX.WebBrowser, System.UITypes,
   DPH.UI.Main in '..\DPH.UI.Main.pas', DPH.UI.Progress in '..\DPH.UI.Progress.pas', DPH.Storage.Database in '..\DPH.Storage.Database.pas',
   DPH.Workspace.Model in '..\DPH.Workspace.Model.pas', DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas',
@@ -151,6 +151,39 @@ begin
         Check(FoundProjectGuide and not FoundHelpTopic and not FoundOtherRelease,
           'Selected project docs are included; unrelated Help and release packages are excluded');
       finally DiscoveryFacts.Free;end;
+      var VersionedRoot:=TPath.Combine(Work,'versioned-documents');
+      TDirectory.CreateDirectory(TPath.Combine(VersionedRoot,'docs\guides'));
+      TDirectory.CreateDirectory(TPath.Combine(VersionedRoot,'docs\notes'));
+      TFile.WriteAllText(TPath.Combine(VersionedRoot,'README.md'),
+        '# Example v7.0 project',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(VersionedRoot,'docs\guides\Example_v7_User_Guide.md'),
+        'The current project guide.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(VersionedRoot,'docs\guides\General_User_Guide.md'),
+        'A version-neutral guide for this project.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(VersionedRoot,'docs\notes\OLD_HANDOFF.md'),
+        'Unversioned archive note.',TEncoding.UTF8);
+      TFile.WriteAllText(TPath.Combine(VersionedRoot,'docs\notes\Example_v6_Notes.md'),
+        'Earlier release note.',TEncoding.UTF8);
+      TFile.WriteAllBytes(TPath.Combine(VersionedRoot,'docs\notes\Example_v7_Empty.md'),
+        TEncoding.ASCII.GetBytes('x'));
+      var VersionedFacts:=TJSONObject.Create.AddPair('root',VersionedRoot);
+      try
+        TDPHLearningDiscovery.AddEvidence(VersionedFacts,VersionedFacts,False);
+        var VersionedGuides:=VersionedFacts.GetValue<TJSONArray>('project_guides');
+        var FoundCurrentGuide:=False;
+        var FoundGeneralGuide:=False;
+        var FoundArchivedGuide:=False;
+        for var VersionedGuide in VersionedGuides do begin
+          if SameText(VersionedGuide.GetValue<string>('source',''),
+            'docs/guides/Example_v7_User_Guide.md') then FoundCurrentGuide:=True;
+          if SameText(VersionedGuide.GetValue<string>('source',''),
+            'docs/guides/General_User_Guide.md') then FoundGeneralGuide:=True;
+          if ContainsText(VersionedGuide.GetValue<string>('source',''),'docs/notes/') then
+            FoundArchivedGuide:=True;
+        end;
+        Check(FoundCurrentGuide and FoundGeneralGuide and not FoundArchivedGuide,
+          'Versioned project keeps current and general guides, excluding unversioned or older archived notes');
+      finally VersionedFacts.Free;end;
       Fixture:=TPath.Combine(Work,'learning-app');TDirectory.CreateDirectory(Fixture);
       for Path in TDirectory.GetFiles(TPath.Combine(Root,'tests\fixtures\semantics')) do
         TFile.Copy(Path,TPath.Combine(Fixture,TPath.GetFileName(Path)));
@@ -546,9 +579,9 @@ begin
               Form.WindowState:=TWindowState.wsNormal; Form.Width:=960; Application.ProcessMessages;
               Check(Form.DATLanguageManager.SelectLanguage('de-DE'),'German interface pack applies to the native form');
               Application.ProcessMessages;
-              Check(Form.SaveProjectButton.Text='Speichern',
+              Check(Form.SaveProjectButton.Text='Projekt speichern',
                 'New Save project action uses the offline German interface pack');
-              Check(Form.RescanProjectButton.Text='Projekt erneut einlesen',
+              Check(Form.RescanProjectButton.Text='Projekt erneut scannen',
                 'Rescan project action uses the offline German interface pack');
               Form.HelpClick(nil);
               WaitHTML(Form.HelpBrowser,'document.documentElement.lang','de-DE');
@@ -699,13 +732,15 @@ begin
                 ' version=',ContainsText(WordViewText,'dph-document-view-version'),
                 ' body=',ContainsText(WordViewText,'class="project-document"'),
                 ' cover=',ContainsText(WordViewText,'class="document-cover"'),
-                ' title=',ContainsText(WordViewText,'Delphi Project Handoff Engineering Guide'));
+                ' title=',ContainsText(WordViewText,'Delphi Project Handoff Engineering Guide'),
+                ' toc=',TRegEx.Matches(WordViewText,'class="toc-row').Count);
               Check(Form.CardBrowser.Visible and ContainsText(Form.CardBrowser.URL,'-view.html') and
                 TFile.Exists(Path) and
                 ContainsText(WordViewText,'Content-Security-Policy') and
                 ContainsText(WordViewText,'dph-document-view-version') and
                 ContainsText(WordViewText,'class="project-document"') and
                 ContainsText(WordViewText,'class="document-cover"') and
+                (TRegEx.Matches(WordViewText,'class="toc-row').Count>10) and
                 ContainsText(WordViewText,'Delphi Project Handoff Engineering Guide'),
                 'Selecting a Word guide displays its formatted, restricted HTML conversion');
               WaitHTML(Form.CardBrowser,
