@@ -1,5 +1,5 @@
-DELPHI PROJECT HANDOFF 0.8.0.5 - WORKSPACE OPERATIONS
-Last changed: 16 October 2026
+DELPHI PROJECT HANDOFF 0.8.0.10 - WORKSPACE OPERATIONS
+Last changed: 19 October 2026
 
 Start with Getting started. Choose Open application and select the target
 .dproj, .dpr, or .groupproj. DPH reads files and local project documents; it
@@ -29,9 +29,10 @@ incomplete; inspect diagnostics and missing inputs. The capture date by
 itself does not expire the analysis. Static inspection only always remains
 because DPH never runs the selected application.
 
-The header language selector changes DPH's interface offline. German has an
-experimental local translation for selected project prose; source names,
-citations, and unsupported passages remain in their original language.
+The header language selector changes DPH's interface and authored HTML pages
+offline in all 35 languages. German also has an experimental local translation
+for selected project prose; source names, citations, and unsupported passages
+remain in their original language.
 Generated preview captions can use the selected project's de-DE.json pack
 when available. See the User Guide for limitations and the Engineering Guide for
 the underlying capture and verification rules.

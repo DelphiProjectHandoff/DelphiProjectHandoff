@@ -7,8 +7,8 @@ from docx.shared import Inches,Pt,RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
-CHANGED='17 October 2026'
-VERSION=58
+CHANGED='19 October 2026'
+VERSION=59
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -222,5 +222,5 @@ if __name__=='__main__':
   if kind=='User':help_page(blocks)
   reports[kind]={'parts':sum(k=='part' for k,v in blocks),'chapters':sum(k=='chapter' for k,v in blocks),'subsections':sum(k=='section' for k,v in blocks),'words':len(' '.join(' '.join(v) if isinstance(v,list) else v for k,v in blocks).split()),'figures':sum(k=='image' for k,v in blocks)}
  sources={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in [*ROOT.glob('DPH.*.pas'),*ROOT.glob('DPH.UI.*.fmx'),* (ROOT/'migrations').glob('*.sql'),*(ROOT/'docs/guides/source').glob('*.txt'),ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-17','sources':sources,'content':reports,'basis':'Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-19','sources':sources,'content':reports,'basis':'Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
  print(json.dumps(reports,indent=2))

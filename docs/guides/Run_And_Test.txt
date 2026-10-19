@@ -1,5 +1,5 @@
 RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.10
-Last changed: 17 October 2026
+Last changed: 19 October 2026
 
 BUILD AND START FROM SOURCE
 
@@ -22,14 +22,12 @@ BUILD AND START FROM SOURCE
 
 CHOOSE A LANGUAGE
 
-Select a language in the header. DPH should change its labels and built-in
-learning pages immediately and remember the choice when reopened. English is
-the source language; the other 34 choices match VCL2FMXConverter v7. The
-German also offers an experimental local translation of selected English
-project prose in Handoff dossier and Learning library. DPH-authored memo
-directions use the interface packs; some project-derived prose and technical
-labels remain in their source language. Original files,
-identifiers, and citations are unchanged. German preview captions can use
+Select a language in the header. DPH should change its labels and authored
+HTML pages immediately and remember the choice when reopened. English is
+the source language; 34 other interface languages are supplied. German also
+offers an experimental local translation of selected English project prose in
+Handoff dossier and Learning library. Project documents, source code,
+identifiers, and citations remain unchanged. German preview captions can use
 the selected project's Localization/Languages/de-DE.json when present;
 otherwise the saved form captions remain. Other language
 choices retain project content in its original language.
