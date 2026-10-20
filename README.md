@@ -4,6 +4,8 @@
 
 **Prepare an evidence-based handoff for an unfamiliar Delphi application.**
 
+**Website:** [delphiprojecthandoff.github.io](https://delphiprojecthandoff.github.io/)
+
 Delphi Project Handoff (DPH) helps a new maintainer orient themselves when the original developer or documentation is unavailable. It captures project structure, forms, Pascal code, and eligible local documents, then assembles a handoff dossier with source links, uncertainties, and questions for a person who knows the application. It does not compile, run, or change the application being studied. A static trace is evidence to investigate, not proof of runtime behavior or business intent.
 
 DPH is experimental Windows software built with Delphi 13.1. It is not a production 1.0 release.
@@ -13,9 +15,9 @@ DPH is experimental Windows software built with Delphi 13.1. It is not a product
 ## Choose a download
 
 - **Run the packaged 0.8.0.16 experiment:** Download the [Windows ZIP](export/DPH-0.8.0.16-experimental-Windows.zip), extract the whole ZIP, and run `Win64/DelphiProjectHandoff.exe` (or the Win32 edition). Keep the supplied folders together. Microsoft WebView2 Runtime is required for embedded pages.
-- **Build editable source:** Download the source distribution matching 0.8.0.16 from its [release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.16-experimental), or clone this repository. Install the supplied translation design package in RAD Studio before opening the project's main form in the designer, then open `DelphiProjectHandoff.dproj`. GitHub's **Code → Download ZIP** contains no compiled executable.
+- **Build editable source:** Download the source distribution matching 0.8.0.16 from its [release page](https://github.com/DelphiProjectHandoff/DelphiProjectHandoff/releases/tag/v0.8.0.16-experimental), or clone this repository. Install the supplied translation design package in RAD Studio before opening the project's main form in the designer, then open `DelphiProjectHandoff.dproj`. GitHub's **Code → Download ZIP** contains no compiled executable.
 
-The [0.8.0.16 release page](https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.16-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
+The [0.8.0.16 release page](https://github.com/DelphiProjectHandoff/DelphiProjectHandoff/releases/tag/v0.8.0.16-experimental) lists both ZIPs and release notes. The Windows ZIP includes Win32 and Win64 executables; the source ZIP contains editable forms and build inputs. Both include the files needed for DPH's 35 offline interface languages. Earlier releases remain available as historical experiments.
 
 ## Build and start from source
 

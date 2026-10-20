@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://delphiprojecthandoff.github.io/sitemap.xml
