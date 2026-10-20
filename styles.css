@@ -59,9 +59,10 @@
 @media(max-width:540px){.downloads-hero-grid{padding-top:54px;padding-bottom:54px}.release-card{padding:25px}.package-card{padding:25px}.install-steps li{grid-template-columns:28px 1fr;gap:12px}}
 
 /* Keep related sections connected without flattening the page rhythm. */
-.route-section{padding-bottom:72px}
-.route-card{min-height:244px}
-.experience{padding-top:76px}
+@media(min-width:821px){.section-pad{padding:84px 0}}
+.route-section{padding-bottom:64px}
+.route-card{min-height:220px}
+.experience{padding-top:64px}
 .package-section{padding-bottom:64px}
-.install-section{padding-top:72px}
+.install-section{padding-top:64px}
 @media(max-width:820px){.route-section,.package-section{padding-bottom:56px}.experience,.install-section{padding-top:56px}.route-card{min-height:0}}
