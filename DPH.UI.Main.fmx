@@ -2145,7 +2145,7 @@ end
 object TaskResetProgress: TButton
 Position.X = 610
 Position.Y = 6
-Width = 160
+Width = 200
 Height = 30
 Text = 'Clear my progress'
 OnClick = TaskProgressClick
@@ -2586,7 +2586,7 @@ end
 object OpenSearchResultButton: TButton
 Position.X = 244
 Position.Y = 44
-Width = 140
+Width = 180
 Height = 30
 Text = 'Open result'
 OnClick = ProjectSearchClick
@@ -3612,40 +3612,40 @@ end
 object SaveKnowledgeButton: TButton
 Position.X = 80
 Position.Y = 74
-Width = 70
+Width = 95
 Text = 'Save'
 OnClick = SaveKnowledgeClick
 end
 object RefreshKnowledgeButton: TButton
-Position.X = 156
+Position.X = 181
 Position.Y = 74
 Width = 70
 Text = 'Refresh'
 OnClick = RefreshKnowledgeClick
 end
 object VerifyKnowledgeButton: TButton
-Position.X = 232
+Position.X = 257
 Position.Y = 74
 Width = 100
 Text = 'Verify review'
 OnClick = ReviewKnowledgeClick
 end
 object RejectKnowledgeButton: TButton
-Position.X = 338
+Position.X = 363
 Position.Y = 74
 Width = 70
 Text = 'Reject'
 OnClick = ReviewKnowledgeClick
 end
 object RetireKnowledgeButton: TButton
-Position.X = 414
+Position.X = 439
 Position.Y = 74
-Width = 70
+Width = 100
 Text = 'Retire'
 OnClick = ReviewKnowledgeClick
 end
 object DiscardKnowledgeButton: TButton
-Position.X = 490
+Position.X = 545
 Position.Y = 74
 Width = 80
 Text = 'Discard edit'
@@ -3898,16 +3898,16 @@ end
 object DatabaseInventoryTrace: TButton
 Position.X = 1372
 Position.Y = 0
-Width = 120
+Width = 280
 Height = 28
 Text = 'Trace lineage'
 OnClick = DatabaseInventoryTraceClick
 Enabled = False
 end
 object DatabaseInventoryDiagram: TButton
-Position.X = 1500
+Position.X = 1660
 Position.Y = 0
-Width = 130
+Width = 230
 Height = 28
 Text = 'Lineage diagram'
 OnClick = DatabaseInventoryTraceClick
@@ -6079,20 +6079,20 @@ OnChange = DatabaseERFilterChange
 end
 object DatabaseERAll: TButton
 Position.X = 678
-Width = 100
+Width = 270
 Height = 28
 Text = 'All tables'
 OnClick = DatabaseERFilterChange
 end
 object DatabaseERFocus: TButton
-Position.X = 786
+Position.X = 956
 Width = 170
 Height = 28
 Text = 'Focus schema selection'
 OnClick = DatabaseERFocusClick
 end
 object DatabaseERRelations: TComboBox
-Position.X = 964
+Position.X = 1134
 Width = 350
 Height = 28
 Hint = 'FK numbers match the diagram arrows; unresolved and off-page evidence remains selectable'
@@ -6100,8 +6100,8 @@ ShowHint = True
 OnChange = DatabaseERSelectionChange
 end
 object DatabaseEROpen: TButton
-Position.X = 1322
-Width = 140
+Position.X = 1492
+Width = 180
 Height = 28
 Text = 'Open evidence'
 OnClick = DatabaseEROpenClick

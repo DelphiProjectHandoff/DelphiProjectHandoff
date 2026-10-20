@@ -23,11 +23,13 @@ var
   MissingText: TStringList;
   Runtime: TTranslationRuntime;
   FmxCatalog: TDictionary<string,string>;
+  ButtonKeys: TDictionary<string,Boolean>;
   EnglishPack,EnglishStrings,AuditFacts,PopulatedFacts: TJSONObject;
   PackDirectory, PreferencePath, Caption, TitleText, TitleSource, Html, HelpText,
     PercentPattern, DossierSource, RawHtml, ProjectRoot, FormFile,
     FormName, ObjectName, PropertyKey, PropertyValue, CatalogValue,
-    HtmlFile, HtmlSource, NodeText, SourceLine: string;
+  HtmlFile, HtmlSource, NodeText, SourceLine: string;
+  IsButton: Boolean;
   DossierMatch, FormMatch: TMatch;
   Count, SafePaneRuleCount, DossierPage, AuditVariant: Integer;
   PreferenceID: TGUID;
@@ -39,16 +41,20 @@ begin
     PackDirectory := TPath.GetFullPath(ParamStr(1));
     ProjectRoot := TPath.GetDirectoryName(TPath.GetDirectoryName(PackDirectory));
     FmxCatalog := TDictionary<string,string>.Create;
+    ButtonKeys := TDictionary<string,Boolean>.Create;
     for FormFile in TDirectory.GetFiles(ProjectRoot, 'DPH.*.fmx') do
     begin
       FormName := '';
       ObjectName := '';
+      IsButton := False;
       for SourceLine in TFile.ReadAllLines(FormFile, TEncoding.UTF8) do
       begin
-        FormMatch := TRegEx.Match(SourceLine, '^\s*object\s+(\w+):');
+        FormMatch := TRegEx.Match(SourceLine,
+          '^\s*object\s+(\w+):\s*(\w+)');
         if FormMatch.Success then
         begin
           ObjectName := FormMatch.Groups[1].Value;
+          IsButton := FormMatch.Groups[2].Value = 'TButton';
           if FormName = '' then FormName := ObjectName;
         end;
         FormMatch := TRegEx.Match(SourceLine,
@@ -63,6 +69,8 @@ begin
           PropertyKey := FormName + '.' + ObjectName + '.' +
             FormMatch.Groups[1].Value;
         FmxCatalog.AddOrSetValue(PropertyKey, PropertyValue);
+        if IsButton and (FormMatch.Groups[1].Value = 'Text') then
+          ButtonKeys.AddOrSetValue(PropertyKey, True);
       end;
     end;
     DossierSource := TFile.ReadAllText(TPath.Combine(
@@ -116,6 +124,15 @@ begin
             if not Runtime.ActivePack.TryGetSource(SourcePair.Key,
               CatalogValue) or (CatalogValue <> SourcePair.Value) then
               raise Exception.Create('Form text catalog drift in ' +
+                Descriptor.LanguageCode + ': ' + SourcePair.Key);
+            if ButtonKeys.ContainsKey(SourcePair.Key) and
+              (not Runtime.ActivePack.TryGetText(
+                SourcePair.Key, CatalogValue) or
+               not Runtime.ActivePack.TryTranslateSource(
+                SourcePair.Value, CatalogValue) or
+               (Runtime.Translate(SourcePair.Key, SourcePair.Value) <>
+                CatalogValue)) then
+              raise Exception.Create('Button and shared action text differ in ' +
                 Descriptor.LanguageCode + ': ' + SourcePair.Key);
             if not SameText(Descriptor.LanguageCode, 'en-US') and
               (Length(SourcePair.Value) > 20) and
