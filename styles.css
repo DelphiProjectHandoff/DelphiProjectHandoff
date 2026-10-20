@@ -57,3 +57,11 @@
 .downloads-page .download{background:#fff}
 @media(max-width:820px){.downloads-hero-grid,.install-grid,.details-grid{grid-template-columns:1fr;gap:32px}.downloads-hero-grid{padding-top:72px;padding-bottom:72px}.release-card{max-width:450px}.package-grid{grid-template-columns:1fr}.package-card{padding:30px}}
 @media(max-width:540px){.downloads-hero-grid{padding-top:54px;padding-bottom:54px}.release-card{padding:25px}.package-card{padding:25px}.install-steps li{grid-template-columns:28px 1fr;gap:12px}}
+
+/* Keep related sections connected without flattening the page rhythm. */
+.route-section{padding-bottom:72px}
+.route-card{min-height:244px}
+.experience{padding-top:76px}
+.package-section{padding-bottom:64px}
+.install-section{padding-top:72px}
+@media(max-width:820px){.route-section,.package-section{padding-bottom:56px}.experience,.install-section{padding-top:56px}.route-card{min-height:0}}
