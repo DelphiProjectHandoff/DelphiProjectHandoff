@@ -23,6 +23,7 @@
       <a class="brand" href="index.html" aria-label="Delphi Project Handoff home"><img src="assets/dph-logo.svg" alt="Delphi Project Handoff"></a>
       <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
       <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
         <a href="index.html#why">Why <span class="notranslate" translate="no">DPH</span></a>
         <a href="index.html#experience">Explore the app</a>
         <a href="index.html#privacy">Privacy and limits</a>
@@ -71,6 +72,18 @@
             <small class="package-filename notranslate" translate="no">DPH_v0_8_0_16_Source_Distribution_2026-10-19_210017.zip</small>
           </article>
         </div>
+        <aside class="package-layout" aria-labelledby="package-layout-title">
+          <div>
+            <p class="eyebrow">Keep these files together</p>
+            <h3 id="package-layout-title">The loader and language packs belong with each executable.</h3>
+            <p>After extraction, each <code class="notranslate" translate="no">Win64</code> and <code class="notranslate" translate="no">Win32</code> folder must keep <code class="notranslate" translate="no">WebView2Loader.dll</code> beside <code class="notranslate" translate="no">DelphiProjectHandoff.exe</code>, with its own <code class="notranslate" translate="no">Localization/Languages</code> folder in place. Keep the other supplied package folders where extracted, too. <span class="notranslate" translate="no">Microsoft WebView2 Runtime</span> is installed separately on Windows.</p>
+          </div>
+          <pre aria-label="Folder layout for each Windows edition"><code>Win64/ or Win32/
+  DelphiProjectHandoff.exe
+  WebView2Loader.dll
+  Localization/
+    Languages/</code></pre>
+        </aside>
         <p class="package-note">These are experimental beta builds for evaluation. Read the <a href="https://github.com/tmartindub/DelphiProjectHandoff/releases/tag/v0.8.0.16-experimental" target="_blank" rel="noopener noreferrer">release notes</a> before testing. GitHub’s <strong>Code → Download ZIP</strong> contains repository files, not the compiled Windows application.</p>
       </div>
     </section>
@@ -79,11 +92,26 @@
       <div class="shell install-grid">
         <div><p class="eyebrow">First use</p><h2 id="steps-title">From ZIP to a useful first look.</h2><p>Keep the extracted package together. <span class="notranslate" translate="no">DPH</span> reads the application project you choose; it does not compile, run, or modify that application.</p></div>
         <ol class="install-steps">
-          <li><span>01</span><div><h3>Extract the full ZIP</h3><p>Place it in a writable location. Do not move only the executable away from its companion folders.</p></div></li>
+          <li><span>01</span><div><h3>Extract the full ZIP</h3><p>Place it in a writable location. Keep the executable, <code class="notranslate" translate="no">WebView2Loader.dll</code>, and <code class="notranslate" translate="no">Localization/Languages</code> together in each Windows edition's folder.</p></div></li>
           <li><span>02</span><div><h3>Launch the Windows edition</h3><p>Run <code class="notranslate" translate="no">Win64/DelphiProjectHandoff.exe</code> or the Win32 edition. Embedded pages require <span class="notranslate" translate="no">Microsoft WebView2 Runtime</span>.</p></div></li>
           <li><span>03</span><div><h3>Open an application project</h3><p>Select a <code class="notranslate" translate="no">.dproj</code>, <code class="notranslate" translate="no">.dpr</code>, or <code class="notranslate" translate="no">.groupproj</code> file. Larger projects may take more than a minute to analyze.</p></div></li>
           <li><span>04</span><div><h3>Review and save your capture</h3><p>Explore the handoff dossier, learning library, project map, form views, and diagrams. Save a <code class="notranslate" translate="no">.dphdb</code> when you want to keep the analysis; keep its adjacent <code class="notranslate" translate="no">.dphdb.views</code> folder with it.</p></div></li>
         </ol>
+      </div>
+    </section>
+
+    <section class="studio-section section-pad" id="languages" aria-labelledby="languages-title">
+      <div class="shell studio-grid">
+        <div>
+          <p class="eyebrow">Language development</p>
+          <h2 id="languages-title">35 languages are included. More can be developed.</h2>
+          <p>The packaged beta includes 35 offline interface languages. Its language selector does not download new packs, and a project's own source and documents remain in their original language.</p>
+        </div>
+        <div class="studio-card">
+          <h3><span class="notranslate" translate="no">Delphi App Translation Studio</span></h3>
+          <p>For developers building from source, the Studio helps scan a Delphi VCL or FMX project, prepare and review interface translations, and export offline language packs. To add a language to <span class="notranslate" translate="no">DPH</span>, start with its source distribution, then integrate the pack and test the translated screens and packaged builds. Additional languages are development work, not a one-click option in this beta.</p>
+          <a class="studio-link" href="https://delphitranslate.github.io/" target="_blank" rel="noopener noreferrer">Explore <span class="notranslate" translate="no">Delphi App Translation Studio</span> <span aria-hidden="true">↗</span></a>
+        </div>
       </div>
     </section>
 
