@@ -186,6 +186,10 @@ begin
           if Caption = '' then
             raise Exception.Create('Empty application caption in ' +
               Descriptor.LanguageCode);
+          if SameText(Descriptor.LanguageCode, 'es-ES') and
+            ((Runtime.Translate('DPHMainForm.CloseButton.Text', 'Close') <> 'Cerrar') or
+             (Runtime.TranslateDynamicText('Close') <> 'Cerrar')) then
+            raise Exception.Create('Spanish Close action must read Cerrar');
           TitleText := Runtime.Translate('DPHMainForm.BaselineLabel.Text',
             'Delphi Project Handoff');
           if not Runtime.ActivePack.TryGetSource(

@@ -603,6 +603,7 @@ begin
                 'Spanish interface pack applies to the native form');
               Application.ProcessMessages;
               Check((Form.OpenProjectButton.Text='Abrir aplicación') and
+                (Form.CloseButton.Text='Cerrar') and
                 ((Form.FindComponent('LearnerTabLabel1') as TLabel).Text='Informe de transferencia') and
                 ((Form.FindComponent('LearnerTab1') as TRectangle).Width>100) and
                 ((Form.FindComponent('LanguageSelectorLayout') as TLayout).Width<=290) and
