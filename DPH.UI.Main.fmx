@@ -1,5 +1,5 @@
 object DPHMainForm: TDPHMainForm
-  Caption = 'Delphi Project Handoff - Experimental Software'
+  Caption = 'Delphi Project Handoff - Change Cookbook Test'
   ClientWidth = 1400
   ClientHeight = 850
 Constraints.MinWidth = 960
@@ -3080,7 +3080,7 @@ Text = 'Project map'
 object ProjectMapToolbar: TLayout
 Align = Top
 Height = 72
-object ProjectMapToolbarItems: TLayout
+object ProjectMapToolbarItems: THorzScrollBox
 Align = Top
 Height = 40
 object BackButton: TButton
@@ -3122,6 +3122,41 @@ Width = 110
 Height = 30
 Text = 'Next results'
 OnClick = NextPageClick
+end
+object OpenCookbookButton: TButton
+Position.X = 548
+Position.Y = 5
+Width = 150
+Height = 30
+Text = 'Change cookbook'
+OnClick = OpenCookbookClick
+end
+object ReturnToMapButton: TButton
+Position.X = 706
+Position.Y = 5
+Width = 130
+Height = 30
+Visible = False
+Text = 'Return to map'
+OnClick = ReturnToMapClick
+end
+object CookbookSourceButton: TButton
+Position.X = 844
+Position.Y = 5
+Width = 110
+Height = 30
+Visible = False
+Text = 'Open source'
+OnClick = CookbookSourceClick
+end
+object CookbookImpactButton: TButton
+Position.X = 962
+Position.Y = 5
+Width = 130
+Height = 30
+Visible = False
+Text = 'Change impact'
+OnClick = CookbookImpactClick
 end
 end
 object BreadcrumbLabel: TLabel

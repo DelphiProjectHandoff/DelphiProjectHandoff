@@ -71,6 +71,12 @@ begin
             Check(ContainsText(Explain.ObjectHTML(Key),'SOURCE WALKTHROUGH') and ContainsText(Explain.ObjectHTML(Key),'Sender &gt; 0') and
               ContainsText(Explain.ObjectText(Key),'CHECK YOUR UNDERSTANDING'),
               'Native HTML and exported text share the source lesson with escaped expressions and a concrete learning exercise');
+            Check(ContainsText(Explain.CookbookHTML(Key),'Files to inspect before changing code') and
+              ContainsText(Explain.CookbookHTML(Key),'not a measured execution sequence') and
+              ContainsText(Explain.CookbookHTML(Key),'DPH has not run the target application'),
+              'Cookbook provides a bounded source-reading route without inventing execution or test results');
+            Check(ContainsText(Explain.CookbookHTML('absent-object'),'Selection unavailable'),
+              'Cookbook does not fabricate a route for an absent source object');
             Check(Explain.RoutineLesson('absent-object')='', 'An absent routine cannot acquire a fabricated walkthrough');
             for I:=0 to 10 do Check(Length(Explain.TopicHTML(I))>1500,'Learning topic '+IntToStr(I)+' renders a complete offline page');
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'handoff'));

@@ -26,6 +26,7 @@ type
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,SaveProjectButton,RescanProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenCookbookButton,ReturnToMapButton,CookbookSourceButton,CookbookImpactButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -767,6 +768,10 @@ type
     procedure DetailsObjectClick(Sender: TObject);
     procedure RelationsClick(Sender: TObject);
     procedure BackClick(Sender: TObject);
+    procedure OpenCookbookClick(Sender: TObject);
+    procedure ReturnToMapClick(Sender: TObject);
+    procedure CookbookSourceClick(Sender: TObject);
+    procedure CookbookImpactClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
     procedure NextPageClick(Sender: TObject);
     procedure BookmarkClick(Sender: TObject);
@@ -812,7 +817,7 @@ type
     FPendingWorkspaceTab: TTabItem;
     FScreenshotOriginTab: TTabItem;
     FPage: Integer;
-    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject: Boolean;
+    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject,FCookbookMode: Boolean;
     FPreparationCompletionTicks: Integer;
     FScreenScale: Single;
     FScreenFullscreen: Boolean;
@@ -2121,6 +2126,14 @@ begin
     for Index:=0 to WorkspaceTabs.TabCount-1 do
       if WorkspaceTabs.Tabs[Index].Text=Choice.Items[Choice.ItemIndex] then begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
+      end;
+    if WorkspaceTabs.ActiveTab=ExplainTab then begin
+      FCookbookMode:=False;
+      OpenCookbookButton.Visible:=True;
+      ReturnToMapButton.Visible:=False;
+      CookbookSourceButton.Visible:=False;
+      CookbookImpactButton.Visible:=False;
+      if FView<>nil then ShowExplanation;
       end;
     if (Sender=LessonPageCombo) and (WorkspaceTabs.ActiveTab=ExplainTab) and (FView<>nil) then begin
       FSelected:=''; FShowingBookmarks:=False; FScope:=''; FPage:=0;
@@ -3812,7 +3825,8 @@ begin
   if (FLearningFacts=nil) and (FView<>nil) then RefreshLearning;
   if FLearningFacts=nil then Exit;
   if FExplanations=nil then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
-  if FSelected='' then HTML:=FExplanations.ProjectMapHTML
+  if FCookbookMode then HTML:=FExplanations.CookbookHTML(FSelected)
+  else if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
@@ -5955,6 +5969,49 @@ begin
   if FHistory.Count=0 then begin StatusLabel.Text:='There is no earlier selection yet. Choose an object in Project map first.'; WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
   Key:=FHistory.Last; FHistory.Delete(FHistory.Count-1); SelectSymbol(Key,False);
   WorkspaceTabs.ActiveTab:=ExplainTab; StatusLabel.Text:='Returned to the previous object.';
+end;
+procedure TDPHMainForm.OpenCookbookClick(Sender: TObject);
+begin
+  if FView=nil then begin
+    StatusLabel.Text:='Open or select a project before using the change cookbook.';
+    Exit;
+  end;
+  FCookbookMode:=True;
+  OpenCookbookButton.Visible:=False;
+  ReturnToMapButton.Visible:=True;
+  CookbookSourceButton.Visible:=True;
+  CookbookImpactButton.Visible:=True;
+  ShowExplanation;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ReturnToMapClick(Sender: TObject);
+begin
+  FCookbookMode:=False;
+  OpenCookbookButton.Visible:=True;
+  ReturnToMapButton.Visible:=False;
+  CookbookSourceButton.Visible:=False;
+  CookbookImpactButton.Visible:=False;
+  if FView<>nil then ShowExplanation;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.CookbookSourceClick(Sender: TObject);
+begin
+  if (FView=nil) or (FSelected='') then begin
+    StatusLabel.Text:='Select a project object before opening its source.';
+    Exit;
+  end;
+  WorkspaceTabs.ActiveTab:=SourceTab;
+end;
+procedure TDPHMainForm.CookbookImpactClick(Sender: TObject);
+begin
+  if (FView=nil) or (FSelected='') then begin
+    StatusLabel.Text:='Select a project object before opening its impact graph.';
+    Exit;
+  end;
+  GraphCombo.ItemIndex:=5;
+  FWholeGraph:=False;
+  RefreshGraphics;
+  WorkspaceTabs.ActiveTab:=GraphTab;
 end;
 procedure TDPHMainForm.ParentClick(Sender: TObject);
 var Rows: TJSONArray; V: TJSONValue; R: TJSONObject; ParentKey: string;

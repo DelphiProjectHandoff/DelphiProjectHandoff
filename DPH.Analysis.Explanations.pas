@@ -27,6 +27,7 @@ type
     function LessonHTML(AIndex: Integer): string;
     function ApplicationRouteHTML(AIndex: Integer): string;
     function ProjectMapHTML: string;
+    function CookbookHTML(const AKey: string): string;
     function FlowSVG(const AKey: string): string;
     function FlowHTML(const AKey: string): string;
     function GraphHTML(AGraph: TJSONObject): string;
@@ -498,6 +499,7 @@ begin
     'pre.project-prose{font:inherit;white-space:pre-wrap;unicode-bidi:plaintext;overflow-wrap:break-word;word-break:normal;hyphens:none}'+
     'code{direction:ltr;unicode-bidi:isolate}code.project-name{font:inherit;direction:inherit;white-space:normal}a,bdi{unicode-bidi:isolate}'+
     '.card{background:white;border:1px solid #dce5ef;border-radius:9px;padding:20px;margin:16px 0}.badge{display:inline-block;background:#eaf3fc;padding:3px 8px;border-radius:4px;font-size:12px}'+
+    '.path-step{border-left:4px solid #f28c28;background:#f7faff;padding:12px 16px;margin:12px 0;border-radius:0 6px 6px 0}.path-step h3{margin:8px 0}.path-step p{margin:8px 0}'+
     '.warning{border-left:5px solid #f28c28;padding:12px;background:#fff3e4}a{color:#146cb4}code{overflow-wrap:anywhere;font-size:13px}'+
     'pre{white-space:pre-wrap;font:15px/1.6 Segoe UI,Arial,sans-serif}table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:13px}td,th{border:1px solid #dce5ef;padding:9px;text-align:left;vertical-align:top;overflow-wrap:anywhere}'+
     'small{color:#53697f}.diagram{width:100%;max-width:100%;overflow:auto;max-height:75vh;border:1px solid #dce5ef}.diagram svg{min-width:100%;height:auto}svg text{font-family:Segoe UI,Arial,sans-serif}@media print{body{background:white}main{padding:0}'+
@@ -506,6 +508,148 @@ begin
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+
     TRegEx.Replace(AutoDirectionBody,'(?i)\bPAGEREF\s+[_A-Za-z0-9.-]+(?:\s+\\[A-Za-z]+)*','')+'</main></body></html>';
 end;
+function TDPHExplanationModel.CookbookHTML(const AKey: string): string;
+var
+  Selected,Related,Relation: TJSONObject;
+  Body: TStringBuilder;
+  Current,Next: TList<string>;
+  Edges: TList<TJSONObject>;
+  Seen: TDictionary<string,Boolean>;
+  Files: TDictionary<string,string>;
+  FileNames: TStringList;
+  Key,Target,Path,Reason,Kind,Resolution: string;
+  Depth,Shown,DirectCount,InboundCount,Index: Integer;
+  HasUI,HasData,HasOutput,HasAsync,HasConditional: Boolean;
+begin
+  if AKey='' then Exit(Page('Change cookbook',
+    '<section class="card"><h2>Start with an object</h2><p>Choose a control, command, routine, data object or file in Project map. The cookbook will assemble a source-linked reading route for that selection.</p></section>'));
+  if not FSymbols.TryGetValue(AKey,Selected) then Exit(Page('Change cookbook',
+    '<section class="card"><h2>Selection unavailable</h2><p>This object is not in the current capture. Choose another object in Project map.</p></section>'));
+  Body:=TStringBuilder.Create;
+  Current:=TList<string>.Create;
+  Next:=TList<string>.Create;
+  Seen:=TDictionary<string,Boolean>.Create;
+  Files:=TDictionary<string,string>.Create;
+  FileNames:=TStringList.Create;
+  try
+    FileNames.Sorted:=True; FileNames.Duplicates:=dupIgnore;
+    HasUI:=Selected.GetValue<string>('kind')='component';
+    HasData:=False; HasOutput:=False; HasAsync:=False;
+    HasConditional:=Selected.GetValue<string>('condition','')<>'';
+    Path:=Selected.GetValue<string>('range.source','');
+    if Path<>'' then Files.AddOrSetValue(Path,'Selected declaration');
+    Body.Append('<section class="card"><span class="badge">SOURCE-BASED READING GUIDE</span><h2>'+Encode(Selected.GetValue<string>('name'))+'</h2>');
+    Body.Append('<p><strong>Kind:</strong> '+Encode(Selected.GetValue<string>('kind'))+
+      ' &nbsp; <strong>Source:</strong> <code>'+Encode(Path)+':'+
+      Selected.GetValue<Integer>('range.line',0).ToString+'</code></p>');
+    if Selected.GetValue<string>('condition','')<>'' then
+      Body.Append('<p class="warning"><strong>Build condition:</strong> '+Encode(Selected.GetValue<string>('condition'))+'</p>');
+    Body.Append('<p>This guide identifies where to investigate a proposed change. It does not prescribe an edit, establish business intent, or verify runtime behavior.</p>');
+    Body.Append('<details><summary>Capture identity and exact evidence</summary><p><code>'+Encode(Citation(Selected))+'</code></p>');
+    Body.Append('<p>Project capture: '+Encode(FFacts.GetValue<string>('project','unknown'))+
+      '. Review the current source before using cached locations.</p></details></section>');
+
+    Body.Append('<section class="card"><h2>How this object is reached</h2>');
+    InboundCount:=0;
+    if FIncoming.TryGetValue(AKey,Edges) then for Relation in Edges do begin
+      if Relation.GetValue<string>('kind')='owns' then Continue;
+      Inc(InboundCount);
+      if InboundCount>12 then Continue;
+      Key:=Relation.GetValue<string>('from','');
+      Body.Append('<p><span class="badge">'+Encode(Relation.GetValue<string>('kind').Replace('_',' '))+'</span> '+
+        Link(Key)+' <small>'+Encode(Relation.GetValue<string>('resolution'))+'</small></p>');
+      Body.Append('<details><summary>Connection evidence</summary><p>'+Encode(RelationText(Relation,True))+'</p></details>');
+      if FSymbols.TryGetValue(Key,Related) then begin
+        Path:=Related.GetValue<string>('range.source','');
+        if (Path<>'') and not Files.ContainsKey(Path) then Files.Add(Path,'Direct incoming relationship');
+      end;
+    end;
+    if InboundCount=0 then Body.Append('<p>No supported incoming relationship was captured. External callers, inherited controls and dynamic dispatch may still reach it.</p>');
+    if InboundCount>12 then Body.Append('<p>Showing 12 of '+InboundCount.ToString+' incoming relationships. Use Project map for the rest.</p>');
+    Body.Append('</section>');
+
+    Body.Append('<section class="card"><h2>Reading path from this selection</h2>');
+    Body.Append('<p>Follow these links in order as an investigation route. Each arrow is a source relationship, not a measured execution sequence.</p>');
+    Current.Add(AKey); Seen.Add(AKey,True); Shown:=0; DirectCount:=0;
+    for Depth:=1 to 2 do begin
+      Next.Clear;
+      for Key in Current do begin
+        if Shown>=24 then Break;
+        if not FOutgoing.TryGetValue(Key,Edges) then Continue;
+        for Relation in Edges do begin
+          if Shown>=24 then Break;
+          Kind:=Relation.GetValue<string>('kind','');
+          if not MatchText(Kind,['binds','calls','dispatches_callback','schedules','passes_callback',
+            'starts','reads','writes','static_sql','dynamic_sql','output_candidate','renders',
+            'configures','creates','shows_form','shows_modal_form']) then Continue;
+          if Kind='binds' then HasUI:=True;
+          if MatchText(Kind,['reads','writes','static_sql','dynamic_sql','configures']) then HasData:=True;
+          if Kind='output_candidate' then HasOutput:=True;
+          if MatchText(Kind,['dispatches_callback','schedules','passes_callback','starts']) then HasAsync:=True;
+          if Relation.GetValue<string>('condition','')<>'' then HasConditional:=True;
+          Target:=Relation.GetValue<string>('to','');
+          if (Target='') or not FSymbols.TryGetValue(Target,Related) then Continue;
+          if Seen.ContainsKey(Target) then Continue;
+          Seen.Add(Target,True); Next.Add(Target);
+          if Depth=1 then Inc(DirectCount);
+          Path:=Related.GetValue<string>('range.source','');
+          if (Path<>'') and not Files.ContainsKey(Path) then begin
+            Reason:='Follow-on source relationship';
+            if Depth=1 then Reason:='Direct source relationship';
+            Files.Add(Path,Reason);
+          end;
+          Resolution:=Relation.GetValue<string>('resolution','unresolved');
+          Body.Append('<article class="path-step"><span class="badge">STEP '+Depth.ToString+
+            ' &middot; '+Encode(Kind.Replace('_',' '))+'</span><h3>'+Link(Key)+' &rarr; '+Link(Target)+'</h3>');
+          Body.Append('<p><strong>Evidence:</strong> <code>'+Encode(Citation(Relation))+
+            '</code><br><strong>Resolution:</strong> '+Encode(Resolution)+'</p>');
+          if Relation.GetValue<string>('condition','')<>'' then
+            Body.Append('<p><strong>Compile condition:</strong> '+Encode(Relation.GetValue<string>('condition'))+'</p>');
+          Body.Append('<details><summary>Why this link appears</summary><p>'+Encode(RelationText(Relation,False))+'</p></details></article>');
+          Inc(Shown);
+        end;
+      end;
+      Current.Clear; Current.AddRange(Next);
+      if (Current.Count=0) or (Shown>=24) then Break;
+    end;
+    if Shown=0 then Body.Append('<p>No supported downstream path was captured. Read the declaration and inspect unresolved references before assuming the object has no effect.</p>');
+    if Shown>=24 then Body.Append('<p>First 24 distinct linked objects shown. Project map contains the remaining relationships.</p>');
+    Body.Append('</section>');
+
+    Body.Append('<section class="card"><h2>Files to inspect before changing code</h2>');
+    Body.Append('<p>These are reading candidates, not a complete or mandatory edit list. A file appears because it contains the selected object or a linked declaration.</p>');
+    for Path in Files.Keys do FileNames.Add(Path);
+    Body.Append('<table><thead><tr><th>Captured file</th><th>Why it appears</th></tr></thead><tbody>');
+    for Index:=0 to FileNames.Count-1 do begin
+      Path:=FileNames[Index];
+      Body.Append('<tr><td><code>'+Encode(Path)+'</code></td><td>'+Encode(Files[Path])+'</td></tr>');
+    end;
+    Body.Append('</tbody></table><p><small>'+Files.Count.ToString+' distinct files in this bounded route; '+
+      DirectCount.ToString+' direct downstream objects found.</small></p></section>');
+
+    Body.Append('<section class="card"><h2>Verification plan for this route</h2><ol>'+
+      '<li>Confirm the requested behavior and acceptance criteria with a knowledgeable user or reviewed project documentation.</li>'+
+      '<li>Read each cited source location and its callers; check unresolved and conditional paths before editing.</li>'+
+      '<li>Build the relevant project configurations and platforms. A source link does not establish that every variant compiles.</li>');
+    if HasUI then Body.Append('<li>Exercise the visible action and its error and cancellation paths; check enabled state, captions and keyboard access where applicable.</li>');
+    if HasData then Body.Append('<li>Use safe test data to review affected queries, bindings and persistence. Confirm actual database behavior and rollback requirements separately.</li>');
+    if HasOutput then Body.Append('<li>Compare generated files or reports, including names, locations, content and encoding, against the agreed output contract.</li>');
+    if HasAsync then Body.Append('<li>Check background completion, cancellation, errors and shutdown without assuming the captured call order is a runtime trace.</li>');
+    if HasConditional then Body.Append('<li>Test the relevant compile-condition variants; this capture represents one selected configuration.</li>');
+    Body.Append('<li>Run applicable project tests, record actual results, and review documentation or contributor notes that describe the behavior.</li>'+
+      '</ol><p><strong>Status:</strong> Suggested checks only. DPH has not run the target application or marked any check passed.</p></section>');
+    Body.Append('<section class="card"><h2>Questions to resolve</h2><ul>'+
+      '<li>What user outcome should the change produce, and what behavior must remain unchanged?</li>'+
+      '<li>Are there runtime-created controls, indirect calls, external consumers or inherited behavior outside this capture?</li>'+
+      '<li>Which data, outputs and configurations matter in the deployed environment?</li>'+
+      '<li>Who can verify the result, and which sample or test environment is safe to use?</li>'+
+      '</ul><p>Record decisions and observed results in attributed project knowledge. This cookbook is an investigation aid, not an approved change procedure.</p></section>');
+    Result:=Page('Change cookbook — '+Selected.GetValue<string>('name'),Body.ToString);
+  finally
+    FileNames.Free; Files.Free; Seen.Free; Next.Free; Current.Free; Body.Free;
+  end;
+end;
+
 function TDPHExplanationModel.ObjectHTML(const AKey: string): string;
 var S,R: TJSONObject; Body,Kind,Key: string; Text: TStringBuilder; Rows: TList<TJSONObject>; Count,Pass: Integer; V,W: TJSONValue; Linked: Boolean;
 begin

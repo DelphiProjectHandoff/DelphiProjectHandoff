@@ -34,6 +34,10 @@ begin
       (WindowBounds.Right<=MonitorInfo.rcWork.Right+16),'Maximized window fits the monitor work area');
     Check(Trim(Form.InspectorTitle.Text)<>'','Right pane has a visible purpose heading');
     Check(Form.InspectorMemo.WordWrap,'Details text wraps inside the pane');
+    Check((Form.OpenCookbookButton<>nil) and (Form.ReturnToMapButton<>nil),
+      'Cookbook controls are present on the editable form');
+    Check(Form.OpenCookbookButton.Visible and not Form.ReturnToMapButton.Visible,
+      'Project map shows the cookbook entry point before a cookbook is opened');
     Form.HelpBrowser.Visible:=False;
     Form.HelpFallback.Visible:=True;
     Form.InspectorMemo.Text:='Example selection for layout verification'+sLineBreak+sLineBreak+
