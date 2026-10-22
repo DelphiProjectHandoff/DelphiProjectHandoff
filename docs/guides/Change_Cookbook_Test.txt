@@ -14,8 +14,10 @@ Try it
 4. Read How this object is reached, then the bounded Reading path. Click a linked
    object to make it the new cookbook target. Use Open source to inspect its
    captured source and Change impact to inspect the existing impact graph.
-5. Read Files to inspect, the suggested verification plan, and unresolved
-   questions. Click Return to map to resume the regular explanation view.
+5. Read Files to inspect, any attributed guidance linked to the selected
+   object, the suggested verification plan, and unresolved questions. The
+   guidance section opens existing Knowledge records for source and revision
+   review. Click Return to map to resume the regular explanation view.
 
 Interpretation
 The cookbook is an investigation guide assembled from captured source

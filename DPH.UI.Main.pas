@@ -3915,6 +3915,9 @@ begin
   if EndsText('#open_coverage',AURL) then begin
     ACancel:=True; WorkspaceTabs.ActiveTab:=CoverageTab; Exit;
   end;
+  if EndsText('#open_knowledge',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit;
+  end;
   P:=Pos('#library_',AURL);
   if P>0 then begin
     ACancel:=True; Fragment:=Copy(AURL,P+9,MaxInt);

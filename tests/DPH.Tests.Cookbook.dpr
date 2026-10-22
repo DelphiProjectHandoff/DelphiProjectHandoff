@@ -3,7 +3,7 @@ program DPH.Tests.Cookbook;
 uses System.SysUtils, System.JSON, System.StrUtils, DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas';
 var
   Facts,Symbol,Relation: TJSONObject;
-  Symbols,Relations: TJSONArray;
+  Symbols,Relations,Knowledge: TJSONArray;
   Model: TDPHExplanationModel;
   HTML: string;
 begin
@@ -29,6 +29,11 @@ begin
     Relations.AddElement(Relation);
     Facts.AddPair('flow_nodes',TJSONArray.Create);
     Facts.AddPair('flow_edges',TJSONArray.Create);
+    Knowledge:=TJSONArray.Create; Facts.AddPair('knowledge',Knowledge);
+    Knowledge.AddElement(TJSONObject.Create.AddPair('entity_key','button')
+      .AddPair('title','Reviewed usage').AddPair('state','verified')
+      .AddPair('owner','Sample contributor').AddPair('body','Confirmed by sample test')
+      .AddPair('links',TJSONArray.Create));
     Model:=TDPHExplanationModel.Create(Facts);
     try
       HTML:=Model.CookbookHTML('button');
@@ -43,6 +48,8 @@ begin
       if not ContainsText(HTML,'Exercise the visible action') or
         ContainsText(HTML,'review affected queries') then
         raise Exception.Create('Cookbook suggested a check unsupported by the captured route');
+      if not ContainsText(HTML,'Reviewed usage') or not ContainsText(HTML,'Open Knowledge records') then
+        raise Exception.Create('Cookbook omitted linked contributor guidance');
       HTML:=Model.CookbookHTML('absent');
       if not ContainsText(HTML,'Selection unavailable') then
         raise Exception.Create('Cookbook invented a route for an absent object');

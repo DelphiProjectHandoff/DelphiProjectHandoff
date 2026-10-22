@@ -510,7 +510,9 @@ begin
 end;
 function TDPHExplanationModel.CookbookHTML(const AKey: string): string;
 var
-  Selected,Related,Relation: TJSONObject;
+  Selected,Related,Relation,RecordValue: TJSONObject;
+  Value,LinkValue: TJSONValue;
+  KnowledgeRows,LinkedRows: TJSONArray;
   Body: TStringBuilder;
   Current,Next: TList<string>;
   Edges: TList<TJSONObject>;
@@ -518,8 +520,9 @@ var
   Files: TDictionary<string,string>;
   FileNames: TStringList;
   Key,Target,Path,Reason,Kind,Resolution: string;
-  Depth,Shown,DirectCount,InboundCount,Index: Integer;
+  Depth,Shown,DirectCount,InboundCount,Index,GuidanceCount: Integer;
   HasUI,HasData,HasOutput,HasAsync,HasConditional: Boolean;
+  Linked,HasGuidance: Boolean;
 begin
   if AKey='' then Exit(Page('Change cookbook',
     '<section class="card"><h2>Start with an object</h2><p>Choose a control, command, routine, data object or file in Project map. The cookbook will assemble a source-linked reading route for that selection.</p></section>'));
@@ -626,6 +629,29 @@ begin
     end;
     Body.Append('</tbody></table><p><small>'+Files.Count.ToString+' distinct files in this bounded route; '+
       DirectCount.ToString+' direct downstream objects found.</small></p></section>');
+
+    Body.Append('<section class="card"><h2>Recorded project guidance</h2>');
+    HasGuidance:=False; GuidanceCount:=0;
+    if FFacts.TryGetValue<TJSONArray>('knowledge',KnowledgeRows) then
+      for Value in KnowledgeRows do begin
+        RecordValue:=Value as TJSONObject;
+        Linked:=RecordValue.GetValue<string>('entity_key','')=AKey;
+        LinkedRows:=RecordValue.GetValue<TJSONArray>('links',nil);
+        if LinkedRows<>nil then for LinkValue in LinkedRows do
+          if (LinkValue as TJSONObject).GetValue<string>('canonical_key','')=AKey then Linked:=True;
+        if not Linked then Continue;
+        HasGuidance:=True;
+        Inc(GuidanceCount);
+        Body.Append('<article class="path-step"><h3>'+Encode(RecordValue.GetValue<string>('title','Untitled record'))+'</h3>');
+        Body.Append('<p><strong>Review state:</strong> '+Encode(RecordValue.GetValue<string>('state','unknown'))+
+          ' &nbsp; <strong>Contributor:</strong> '+Encode(RecordValue.GetValue<string>('owner','unknown'))+'</p>');
+        Body.Append('<p>'+Encode(Copy(RecordValue.GetValue<string>('body',''),1,700))+'</p>');
+        Body.Append('<p><small>Attributed project guidance; compare its revision and evidence with current source before relying on it.</small></p></article>');
+        if GuidanceCount>=6 then Break;
+      end;
+    if not HasGuidance then Body.Append('<p>No contributor guidance is linked to this exact object in the selected capture. Business purpose remains unverified.</p>');
+    if GuidanceCount>=6 then Body.Append('<p>Showing at most six linked records. Open Knowledge for the full set.</p>');
+    Body.Append('<p><a href="#open_knowledge">Open Knowledge records</a> to review sources and revisions or record a verified procedure.</p></section>');
 
     Body.Append('<section class="card"><h2>Verification plan for this route</h2><ol>'+
       '<li>Confirm the requested behavior and acceptance criteria with a knowledgeable user or reviewed project documentation.</li>'+
