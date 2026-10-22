@@ -501,7 +501,6 @@ type
     SetupProfileButton,SetupTaskButton: TButton;
     AnalysisSettingsExpander: TExpander;
     AnalysisSettingsLayout: TLayout;
-    SetupButton: TButton;
     CardLibraryTab,CardEditorTab:TTabItem;
     CardToolbar,CardEditToolbar:THorzScrollBox;
     CardFilter,CardRole,CardAuthor:TEdit;
@@ -1021,9 +1020,6 @@ begin
   DatabaseDirectory:=TPath.Combine(FBaseDirectory,DatabaseDialog.InitialDir);
   try
     TDirectory.CreateDirectory(DatabaseDirectory);
-    DatabaseDialog.InitialDir:=DatabaseDirectory; OpenCacheDialog.InitialDir:=DatabaseDirectory;
-    BackupDialog.InitialDir:=DatabaseDirectory; RestoreBackupDialog.InitialDir:=DatabaseDirectory;
-    RestoreDestinationDialog.InitialDir:=DatabaseDirectory;
   except on E: Exception do StatusLabel.Text:='Cannot prepare Databases folder: '+E.Message; end;
   FWorker:=TDPHWorkspaceWorker.Create(FBaseDirectory);
   FProgressForm:=TDPHProgressForm.Create(Self);
@@ -2433,10 +2429,10 @@ begin
     mrYes: begin
       // A full filename keeps the save dialog in DPH's Databases folder even
       // when Windows remembers another folder from an earlier file dialog.
-      Destination:=TPath.Combine(DatabaseDialog.InitialDir,
+      Destination:=TPath.Combine(TPath.Combine(FBaseDirectory,'Databases'),
         TPath.GetFileNameWithoutExtension(FEntry)+'.dphdb');
       if TFile.Exists(Destination) or TDirectory.Exists(Destination+'.views') then
-        Destination:=TPath.Combine(DatabaseDialog.InitialDir,
+        Destination:=TPath.Combine(TPath.Combine(FBaseDirectory,'Databases'),
           TPath.GetFileNameWithoutExtension(FEntry)+'-'+
           FormatDateTime('yyyymmdd-hhnnss',Now)+'.dphdb');
       DatabaseDialog.FileName:=Destination;

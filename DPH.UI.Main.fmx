@@ -2847,20 +2847,6 @@ end
 end
 end
 end
-object BackupDialog: TSaveDialog
-DefaultExt = 'dphdb'
-Filter = 'DPH project backup (*.dphdb)|*.dphdb'
-Title = 'Save a new project backup; keep its adjacent .views folder'
-end
-object RestoreBackupDialog: TOpenDialog
-Filter = 'DPH project backup (*.dphdb)|*.dphdb'
-Title = 'Select the backup database; its .views folder must be beside it'
-end
-object RestoreDestinationDialog: TSaveDialog
-DefaultExt = 'dphdb'
-Filter = 'DPH project database (*.dphdb)|*.dphdb'
-Title = 'Restore to a NEW database outside the selected source project'
-end
   object ComparisonTab: TTabItem
     Text = 'Revision comparison'
     object ComparisonPurpose: TLabel
@@ -7780,6 +7766,20 @@ DefaultExt = 'dphdb'
 Filter = 'DPH knowledge database|*.dphdb'
 InitialDir = 'Databases'
 Title = 'Save knowledge database outside the analyzed source folder'
+end
+object BackupDialog: TSaveDialog
+DefaultExt = 'dphdb'
+Filter = 'DPH project backup (*.dphdb)|*.dphdb'
+Title = 'Save a new project backup; keep its adjacent .views folder'
+end
+object RestoreBackupDialog: TOpenDialog
+Filter = 'DPH project backup (*.dphdb)|*.dphdb'
+Title = 'Select the backup database; its .views folder must be beside it'
+end
+object RestoreDestinationDialog: TSaveDialog
+DefaultExt = 'dphdb'
+Filter = 'DPH project database (*.dphdb)|*.dphdb'
+Title = 'Restore to a NEW database outside the selected source project'
 end
 object FDGUIxWaitCursor: TFDGUIxWaitCursor
 Provider = 'FMX'
