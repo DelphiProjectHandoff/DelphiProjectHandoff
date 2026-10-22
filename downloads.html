@@ -102,6 +102,21 @@
       </div>
     </section>
 
+    <section class="release-details section-pad" id="source-update" aria-labelledby="source-update-title">
+      <div class="shell details-grid">
+        <div>
+          <p class="eyebrow">Source project update · 22 October 2026</p>
+          <h2 id="source-update-title">A more reliable path from build to first run.</h2>
+          <p>These corrections are in the <a href="https://github.com/DelphiProjectHandoff/DelphiProjectHandoff" target="_blank" rel="noopener noreferrer">current GitHub source</a>. The <span class="notranslate" translate="no">0.8.0.16</span> ZIP downloads above have not been rebuilt with them.</p>
+        </div>
+        <div class="details-list">
+          <div><h3>Build and Run agree on the executable location</h3><p><span class="notranslate" translate="no">RAD Studio</span> now writes the Windows executable to the configured <code class="notranslate" translate="no">bin/&lt;platform&gt;/&lt;configuration&gt;</code> folder and runs it from there. The Debug and Release build choices are available again.</p></div>
+          <div><h3>Startup dialogs initialize correctly</h3><p>The backup and restore dialogs are now owned by the main form in the visual designer. Startup no longer changes their folder properties during form creation, avoiding the access violation encountered after building.</p></div>
+          <div><h3>Project artwork uses the supplied assets</h3><p>The Windows icon and logo settings reference the project's existing artwork, and the saved application resource is included in the source. This corrects project configuration; the artwork itself has not been redesigned.</p></div>
+        </div>
+      </div>
+    </section>
+
     <section class="studio-section section-pad" id="languages" aria-labelledby="languages-title">
       <div class="shell studio-grid">
         <div>
