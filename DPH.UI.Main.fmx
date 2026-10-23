@@ -3182,6 +3182,13 @@ end
 end
 object SourceTab: TTabItem
 Text = 'Source'
+object ChangeGuideSourceReturnButton: TButton
+Align = Top
+Height = 34
+Visible = False
+Text = 'Return to guide'
+OnClick = ReturnToChangeGuideClick
+end
 object SourceMemo: TMemo
 Align = Client
 ReadOnly = True
@@ -3245,6 +3252,15 @@ Height = 28
 Items.Strings = ('Objects' 'Types' 'Units')
 ItemIndex = 0
 OnChange = ViewChange
+end
+object ChangeGuideGraphReturnButton: TButton
+Position.X = 946
+Position.Y = 4
+Width = 134
+Height = 28
+Visible = False
+Text = 'Return to guide'
+OnClick = ReturnToChangeGuideClick
 end
 object GraphLegend: TLabel
 Visible = False

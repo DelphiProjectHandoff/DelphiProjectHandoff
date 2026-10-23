@@ -509,6 +509,19 @@ begin
     TRegEx.Replace(AutoDirectionBody,'(?i)\bPAGEREF\s+[_A-Za-z0-9.-]+(?:\s+\\[A-Za-z]+)*','')+'</main></body></html>';
 end;
 function TDPHExplanationModel.ChangeGuideHTML(const AKey: string): string;
+const
+  RelationKinds: array[0..15] of string =
+    ('binds','calls','dispatches_callback','schedules','passes_callback','starts',
+     'reads','writes','static_sql','dynamic_sql','output_candidate','renders',
+     'configures','creates','shows_form','shows_modal_form');
+  RelationNames: array[0..15] of string =
+    ('Event connects to','Calls','Invokes a callback','Schedules work','Passes a callback','May start',
+     'Reads a value','May change a value','Uses SQL text','Builds SQL','May create output','Renders',
+     'Configures','May create','May open a form','May open a dialog');
+  IncomingNames: array[0..15] of string =
+    ('Bound from','Called by','Callback invoked by','Scheduled by','Callback passed by','May be started by',
+     'Read by','May be changed by','SQL used by','SQL built by','Possible output from','Rendered by',
+     'Configured by','May be created by','May be opened by','May be opened as a dialog by');
 var
   Selected,Related,Relation,RecordValue: TJSONObject;
   Value,LinkValue: TJSONValue;
@@ -519,7 +532,7 @@ var
   Seen: TDictionary<string,Boolean>;
   Files: TDictionary<string,string>;
   FileNames: TStringList;
-  Key,Target,Path,Reason,Kind,Resolution: string;
+  Key,Target,Path,Reason,Kind,Resolution,RelationLabel,ResolutionLabel,Summary: string;
   Depth,Shown,DirectCount,InboundCount,Index,GuidanceCount: Integer;
   HasUI,HasData,HasOutput,HasAsync,HasConditional: Boolean;
   Linked,HasGuidance: Boolean;
@@ -530,7 +543,8 @@ begin
     '<ol><li>Choose a control or routine from the Project map list on the left.</li>'+
     '<li>Read where it is used and follow the cited connections to nearby code.</li>'+
     '<li>Inspect the source, decide what actually needs changing, and verify the result yourself.</li></ol>'+
-    '<p>For example, select a button click handler to find its binding and the routines it calls. A whole unit is usually too broad for a focused guide.</p>'+
+    '<div class="path-step"><strong>Try this first:</strong> If the project has a Convert button, find its click handler (for example, <code>ConvertClick</code>) in the list on the left. Select it to see who reaches it and which routines it connects to.</div>'+
+    '<p>A whole unit is usually too broad for a focused guide.</p>'+
     '<p><small>This is a reading aid based on static inspection. It does not create a change plan or run the application.</small></p></section>'));
   if not FSymbols.TryGetValue(AKey,Selected) then Exit(Page('Change Guide',
     '<section class="card"><h2>Selection unavailable</h2><p>This object is not in the current capture. Choose another object from the Project map list.</p></section>'));
@@ -568,8 +582,16 @@ begin
       Inc(InboundCount);
       if InboundCount>12 then Continue;
       Key:=Relation.GetValue<string>('from','');
-      Body.Append('<p><span class="badge">'+Encode(Relation.GetValue<string>('kind').Replace('_',' '))+'</span> '+
-        Link(Key)+' <small>'+Encode(Relation.GetValue<string>('resolution'))+'</small></p>');
+      Kind:=Relation.GetValue<string>('kind','');
+      RelationLabel:='Connected from';
+      for Index:=Low(RelationKinds) to High(RelationKinds) do
+        if Kind=RelationKinds[Index] then begin RelationLabel:=IncomingNames[Index]; Break; end;
+      Resolution:=Relation.GetValue<string>('resolution','unresolved');
+      if Resolution='confirmed_static' then ResolutionLabel:='Found in captured source'
+      else if Resolution='inferred' then ResolutionLabel:='Inferred from source'
+      else ResolutionLabel:='Needs review';
+      Body.Append('<p><span class="badge">'+Encode(RelationLabel)+'</span> '+
+        Link(Key)+' <small>'+ResolutionLabel+'</small></p>');
       Body.Append('<details><summary>Connection evidence</summary><p>'+Encode(RelationText(Relation,True))+'</p></details>');
       if FSymbols.TryGetValue(Key,Related) then begin
         Path:=Related.GetValue<string>('range.source','');
@@ -611,11 +633,17 @@ begin
             Files.Add(Path,Reason);
           end;
           Resolution:=Relation.GetValue<string>('resolution','unresolved');
+          RelationLabel:=Kind.Replace('_',' ');
+          for Index:=Low(RelationKinds) to High(RelationKinds) do
+            if Kind=RelationKinds[Index] then begin RelationLabel:=RelationNames[Index]; Break; end;
+          if Resolution='confirmed_static' then ResolutionLabel:='Found in captured source'
+          else if Resolution='inferred' then ResolutionLabel:='Inferred from source'
+          else ResolutionLabel:='Needs review';
           if Depth=1 then Reason:='DIRECT CONNECTION' else Reason:='ONE MORE CONNECTION';
           Body.Append('<article class="path-step"><span class="badge">'+Reason+
-            ' &middot; '+Encode(Kind.Replace('_',' '))+'</span><h3>'+Link(Key)+' &rarr; '+Link(Target)+'</h3>');
+            ' &middot; '+Encode(RelationLabel)+'</span><h3>'+Link(Key)+' &rarr; '+Link(Target)+'</h3>');
           Body.Append('<p><strong>Evidence:</strong> <code>'+Encode(Citation(Relation))+
-            '</code><br><strong>Resolution:</strong> '+Encode(Resolution)+'</p>');
+            '</code><br><strong>Confidence:</strong> '+ResolutionLabel+'</p>');
           if Relation.GetValue<string>('condition','')<>'' then
             Body.Append('<p><strong>Compile condition:</strong> '+Encode(Relation.GetValue<string>('condition'))+'</p>');
           Body.Append('<details><summary>Why this link appears</summary><p>'+Encode(RelationText(Relation,False))+'</p></details></article>');
@@ -663,23 +691,37 @@ begin
     if GuidanceCount>=6 then Body.Append('<p>Showing at most six linked records. Open Knowledge for the full set.</p>');
     Body.Append('<p><a href="#open_knowledge">Open Knowledge records</a> to review sources and revisions or record a verified procedure.</p></section>');
 
-    Body.Append('<section class="card"><h2>Checks to plan after making a change</h2><p>Choose the checks that match the agreed behavior. These are prompts, not completed tests.</p><ol>'+
+    Body.Append('<section class="card"><h2>Checks for this selection</h2><p>Use the checks that fit the proposed change. Nothing here has been tested by DPH.</p>');
+    if HasUI or HasData or HasOutput or HasAsync or HasConditional then begin
+      Body.Append('<ul>');
+      if HasUI then Body.Append('<li>Exercise the visible action and its error and cancellation paths; check enabled state, captions and keyboard access where applicable.</li>');
+      if HasData then Body.Append('<li>Use safe test data to review affected queries, bindings and persistence. Confirm actual database behavior and rollback requirements separately.</li>');
+      if HasOutput then Body.Append('<li>Compare generated files or reports, including names, locations, content and encoding, against the agreed output contract.</li>');
+      if HasAsync then Body.Append('<li>Check background completion, cancellation, errors and shutdown without assuming the captured call order is a runtime trace.</li>');
+      if HasConditional then Body.Append('<li>Test the relevant compile-condition variants; this capture represents one selected configuration.</li>');
+      Body.Append('</ul>');
+    end else Body.Append('<p>No specialized check was identified from the captured connections. Use the general checks below.</p>');
+    Body.Append('<details><summary>General checks for any change</summary><ol>'+
       '<li>Confirm the requested behavior and acceptance criteria with a knowledgeable user or reviewed project documentation.</li>'+
       '<li>Read each cited source location and its callers; check unresolved and conditional paths before editing.</li>'+
-      '<li>Build the relevant project configurations and platforms. A source link does not establish that every variant compiles.</li>');
-    if HasUI then Body.Append('<li>Exercise the visible action and its error and cancellation paths; check enabled state, captions and keyboard access where applicable.</li>');
-    if HasData then Body.Append('<li>Use safe test data to review affected queries, bindings and persistence. Confirm actual database behavior and rollback requirements separately.</li>');
-    if HasOutput then Body.Append('<li>Compare generated files or reports, including names, locations, content and encoding, against the agreed output contract.</li>');
-    if HasAsync then Body.Append('<li>Check background completion, cancellation, errors and shutdown without assuming the captured call order is a runtime trace.</li>');
-    if HasConditional then Body.Append('<li>Test the relevant compile-condition variants; this capture represents one selected configuration.</li>');
-    Body.Append('<li>Run applicable project tests, record actual results, and review documentation or contributor notes that describe the behavior.</li>'+
-      '</ol><p><strong>Status:</strong> Suggested checks only. DPH has not run the target application or marked any check passed.</p></section>');
+      '<li>Build the relevant project configurations and platforms. A source link does not establish that every variant compiles.</li>'+
+      '<li>Run applicable project tests, record actual results, and review documentation or contributor notes that describe the behavior.</li>'+
+      '</ol></details><p><strong>Status:</strong> Suggested checks only. DPH has not run the target application or marked any check passed.</p></section>');
     Body.Append('<section class="card"><h2>Questions to resolve</h2><ul>'+
       '<li>What user outcome should the change produce, and what behavior must remain unchanged?</li>'+
       '<li>Are there runtime-created controls, indirect calls, external consumers or inherited behavior outside this capture?</li>'+
       '<li>Which data, outputs and configurations matter in the deployed environment?</li>'+
       '<li>Who can verify the result, and which sample or test environment is safe to use?</li>'+
       '</ul><p>Record decisions and observed results in attributed project knowledge. This guide is an investigation aid, not an approved change procedure.</p></section>');
+    Summary:='<section class="card"><span class="badge">AT A GLANCE</span><h2>Starting points for this change</h2>'+
+      '<p><strong>'+InboundCount.ToString+'</strong> incoming connections &nbsp; <strong>'+Shown.ToString+
+      '</strong> nearby objects'+IfThen(Shown>=24,' shown (24-object limit)','')+
+      ' &nbsp; <strong>'+Files.Count.ToString+'</strong> source files to consider.</p>';
+    if (InboundCount=0) and (Shown=0) then Summary:=Summary+
+      '<p>No supported connections were captured for this selection. Inspect its declaration and search the source before assuming it is unused.</p>';
+    Summary:=Summary+'<p><a href="#all_objects">Choose another object</a> from the list on the left. '+
+      'After viewing source or impact, use Return to guide to resume this page.</p></section>';
+    Body.Insert(0,Summary);
     Result:=Page('Change Guide - '+Selected.GetValue<string>('name'),Body.ToString);
   finally
     FileNames.Free; Files.Free; Seen.Free; Next.Free; Current.Free; Body.Free;
@@ -1351,7 +1393,7 @@ begin
       +'<a href="#open_screenshots">Open generated screens</a></p></section>'+
       '<section class="card"><h2>Planning a code change?</h2>'+
       '<p>Select a specific control or routine from the list on the left, then choose <strong>Change Guide</strong> in the toolbar. The guide brings together source evidence, nearby connections, files worth reading and checks to plan.</p>'+
-      '<p>For a first try, choose a button click handler rather than an entire Pascal unit. The guide helps you investigate; it cannot decide what to edit or confirm the application''s runtime behavior.</p></section>');
+      '<p><strong>Try this first:</strong> To investigate a Convert button, select its click handler (such as <code>ConvertClick</code>) in the list. A whole Pascal unit is usually too broad. The guide helps you investigate; it cannot decide what to edit or confirm runtime behavior.</p></section>');
     if FFacts.GetValue<TJSONArray>('project_screens',nil)<>nil then begin
       Body.Append('<section class="card" id="screens"><h2>Screens <bdi>('+IntToStr(FFacts.GetValue<TJSONArray>('project_screens').Count)+')</bdi></h2><p>'+
         '<a href="#open_screenshots">Screenshots</a></p><ul>');

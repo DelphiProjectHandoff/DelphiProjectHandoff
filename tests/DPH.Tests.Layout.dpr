@@ -38,6 +38,16 @@ begin
     Check(Form.InspectorMemo.WordWrap,'Details text wraps inside the pane');
     Check((Form.OpenChangeGuideButton<>nil) and (Form.ReturnToMapButton<>nil),
       'Change Guide controls are present on the editable form');
+    Check((Form.ChangeGuideSourceReturnButton<>nil) and
+      (Form.ChangeGuideGraphReturnButton<>nil) and
+      not Form.ChangeGuideSourceReturnButton.Visible and
+      not Form.ChangeGuideGraphReturnButton.Visible,
+      'Return to guide controls are editable and hidden outside guide mode');
+    Check((Form.ChangeGuideSourceReturnButton.Parent<>nil) and
+      (Form.ChangeGuideGraphReturnButton.Parent<>nil) and
+      Assigned(Form.ChangeGuideSourceReturnButton.OnClick) and
+      Assigned(Form.ChangeGuideGraphReturnButton.OnClick),
+      'Source and diagram views provide working return controls');
     Check(Form.OpenChangeGuideButton.Visible and not Form.ReturnToMapButton.Visible,
       'Project map shows the Change Guide entry point before a guide is opened');
     Form.HelpBrowser.Visible:=False;

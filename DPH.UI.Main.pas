@@ -27,6 +27,7 @@ type
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,SaveProjectButton,RescanProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
     OpenChangeGuideButton,ReturnToMapButton,ChangeGuideSourceButton,ChangeGuideImpactButton: TButton;
+    ChangeGuideSourceReturnButton,ChangeGuideGraphReturnButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -770,6 +771,7 @@ type
     procedure BackClick(Sender: TObject);
     procedure OpenChangeGuideClick(Sender: TObject);
     procedure ReturnToMapClick(Sender: TObject);
+    procedure ReturnToChangeGuideClick(Sender: TObject);
     procedure ChangeGuideSourceClick(Sender: TObject);
     procedure ChangeGuideImpactClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
@@ -2127,14 +2129,8 @@ begin
       if WorkspaceTabs.Tabs[Index].Text=Choice.Items[Choice.ItemIndex] then begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
       end;
-    if WorkspaceTabs.ActiveTab=ExplainTab then begin
-      FChangeGuideMode:=False;
-      OpenChangeGuideButton.Visible:=True;
-      ReturnToMapButton.Visible:=False;
-      ChangeGuideSourceButton.Visible:=False;
-      ChangeGuideImpactButton.Visible:=False;
-      if FView<>nil then ShowExplanation;
-      end;
+    if (WorkspaceTabs.ActiveTab=ExplainTab) and not FChangeGuideMode and (FView<>nil) then
+      ShowExplanation;
     if (Sender=LessonPageCombo) and (WorkspaceTabs.ActiveTab=ExplainTab) and (FView<>nil) then begin
       FSelected:=''; FShowingBookmarks:=False; FScope:=''; FPage:=0;
       FBinding:=True;
@@ -2896,6 +2892,15 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  if not SameProject then begin
+    FChangeGuideMode:=False;
+    OpenChangeGuideButton.Visible:=True;
+    ReturnToMapButton.Visible:=False;
+    ChangeGuideSourceButton.Visible:=False;
+    ChangeGuideImpactButton.Visible:=False;
+    ChangeGuideSourceReturnButton.Visible:=False;
+    ChangeGuideGraphReturnButton.Visible:=False;
+  end;
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FreeAndNil(FDatabaseER);
   FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
@@ -5984,6 +5989,8 @@ begin
   ReturnToMapButton.Visible:=True;
   ChangeGuideSourceButton.Visible:=True;
   ChangeGuideImpactButton.Visible:=True;
+  ChangeGuideSourceReturnButton.Visible:=True;
+  ChangeGuideGraphReturnButton.Visible:=True;
   ShowExplanation;
   WorkspaceTabs.ActiveTab:=ExplainTab;
 end;
@@ -5994,8 +6001,14 @@ begin
   ReturnToMapButton.Visible:=False;
   ChangeGuideSourceButton.Visible:=False;
   ChangeGuideImpactButton.Visible:=False;
+  ChangeGuideSourceReturnButton.Visible:=False;
+  ChangeGuideGraphReturnButton.Visible:=False;
   if FView<>nil then ShowExplanation;
   WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ReturnToChangeGuideClick(Sender: TObject);
+begin
+  if FChangeGuideMode and (FView<>nil) then WorkspaceTabs.ActiveTab:=ExplainTab;
 end;
 procedure TDPHMainForm.ChangeGuideSourceClick(Sender: TObject);
 begin

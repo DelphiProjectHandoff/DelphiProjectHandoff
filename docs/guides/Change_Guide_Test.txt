@@ -18,17 +18,23 @@ Try it with a specific object
    inside the extracted package. Neither is in the base project folder.
    Keep WebView2Loader.dll beside the executable and the supplied folders in place.
 2. Open a Delphi project or a saved DPH capture.
-3. Choose Project map. Read the Planning a code change? introduction, then
-   click Change Guide. An introductory page explains how to begin.
+3. Choose Project map. Read the Planning a code change? introduction and its
+   Convert button example, then click Change Guide. An introductory page
+   explains how to begin before an object is selected.
 4. Select a specific control or routine from the list on the left. A button
    click handler is a good first example; a whole unit is usually too broad.
-5. Read Where this object is used and Connections to examine next. Click a
+5. Read the at-a-glance counts, Where this object is used, and Connections to
+   examine next. Plain-language connection labels are shown first; expand the
+   evidence to see the exact captured relation and confidence term. Click a
    linked object to make it the new guide target. Use Open source to inspect its
    captured source and Change impact to inspect the existing impact graph.
 6. Read Source files worth opening, any attributed guidance linked to the
-   selected object, the checks to plan, and unresolved questions. The
+   selected object, the relevant checks, and unresolved questions. General
+   checks are collapsed so they do not obscure checks tied to the selection. The
    guidance section opens existing Knowledge records for source and revision
-   review. Click Return to map to resume the regular explanation view.
+   review. Use Return to guide from Source or Application diagrams to resume
+   the same guide page without losing your place. Choose another object resets
+   the selection; Return to map resumes the regular explanation view.
 
 Interpretation
 The guide is assembled from captured source relationships. Confirmed static

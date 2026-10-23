@@ -55,6 +55,19 @@ begin
         raise Exception.Create('Change Guide suggested a check unsupported by the captured route');
       if not ContainsText(HTML,'Reviewed usage') or not ContainsText(HTML,'Open Knowledge records') then
         raise Exception.Create('Change Guide omitted linked contributor guidance');
+      if not ContainsText(HTML,'AT A GLANCE') or
+        not ContainsText(HTML,'<strong>1</strong> nearby objects') or
+        not ContainsText(HTML,'<strong>2</strong> source files') or
+        not ContainsText(HTML,'Event connects to') or
+        not ContainsText(HTML,'Found in captured source') or
+        not ContainsText(HTML,'<summary>General checks for any change</summary>') or
+        not ContainsText(HTML,'Choose another object') then
+        raise Exception.Create('Change Guide summary, plain labels, checks or navigation are missing');
+      HTML:=Model.ChangeGuideHTML('handler');
+      if not ContainsText(HTML,'Bound from') or
+        not ContainsText(HTML,'<strong>1</strong> incoming connections') then
+        raise Exception.Create('Change Guide incoming relationship is unclear');
+      HTML:=Model.ChangeGuideHTML('button');
       if not ContainsText(HTML,'Use this guide to:') or
         not ContainsText(HTML,'Where this object is used') or
         not ContainsText(HTML,'DIRECT CONNECTION') or
@@ -66,14 +79,17 @@ begin
         raise Exception.Create('Change Guide invented a route for an absent object');
       HTML:=Model.ChangeGuideHTML('');
       if not ContainsText(HTML,'Start with a specific project object') or
-        not ContainsText(HTML,'For example, select a button click handler') then
+        not ContainsText(HTML,'Try this first:') or
+        not ContainsText(HTML,'ConvertClick') then
         raise Exception.Create('Change Guide introduction is missing');
       HTML:=Model.ChangeGuideHTML('unit');
-      if not ContainsText(HTML,'Broad selection:') then
+      if not ContainsText(HTML,'Broad selection:') or
+        not ContainsText(HTML,'No supported connections were captured') then
         raise Exception.Create('Change Guide did not flag a broad unit selection');
       HTML:=Model.ProjectMapHTML;
       if not ContainsText(HTML,'Planning a code change?') or
-        not ContainsText(HTML,'<strong>Change Guide</strong>') then
+        not ContainsText(HTML,'<strong>Change Guide</strong>') or
+        not ContainsText(HTML,'ConvertClick') then
         raise Exception.Create('Project map did not introduce the Change Guide');
       Writeln('PASS: Change Guide introduction, evidence, escaping, limitations and missing-target behavior');
     finally Model.Free; end;
