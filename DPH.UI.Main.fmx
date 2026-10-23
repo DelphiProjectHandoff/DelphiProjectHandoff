@@ -3080,7 +3080,7 @@ Text = 'Project map'
 object ProjectMapToolbar: TLayout
 Align = Top
 Height = 72
-object ProjectMapToolbarItems: TLayout
+object ProjectMapToolbarItems: THorzScrollBox
 Align = Top
 Height = 40
 object BackButton: TButton
@@ -3123,6 +3123,41 @@ Height = 30
 Text = 'Next results'
 OnClick = NextPageClick
 end
+object OpenChangeGuideButton: TButton
+Position.X = 548
+Position.Y = 5
+Width = 172
+Height = 30
+Text = 'Change Guide'
+OnClick = OpenChangeGuideClick
+end
+object ReturnToMapButton: TButton
+Position.X = 728
+Position.Y = 5
+Width = 230
+Height = 30
+Visible = False
+Text = 'Return to map'
+OnClick = ReturnToMapClick
+end
+object ChangeGuideSourceButton: TButton
+Position.X = 966
+Position.Y = 5
+Width = 204
+Height = 30
+Visible = False
+Text = 'View source code'
+OnClick = ChangeGuideSourceClick
+end
+object ChangeGuideImpactButton: TButton
+Position.X = 1178
+Position.Y = 5
+Width = 170
+Height = 30
+Visible = False
+Text = 'Change impact'
+OnClick = ChangeGuideImpactClick
+end
 end
 object BreadcrumbLabel: TLabel
 Align = Bottom
@@ -3147,6 +3182,13 @@ end
 end
 object SourceTab: TTabItem
 Text = 'Source'
+object ChangeGuideSourceReturnButton: TButton
+Align = Top
+Height = 34
+Visible = False
+Text = 'Return to guide'
+OnClick = ReturnToChangeGuideClick
+end
 object SourceMemo: TMemo
 Align = Client
 ReadOnly = True
@@ -3210,6 +3252,15 @@ Height = 28
 Items.Strings = ('Objects' 'Types' 'Units')
 ItemIndex = 0
 OnChange = ViewChange
+end
+object ChangeGuideGraphReturnButton: TButton
+Position.X = 946
+Position.Y = 4
+Width = 210
+Height = 28
+Visible = False
+Text = 'Return to guide'
+OnClick = ReturnToChangeGuideClick
 end
 object GraphLegend: TLabel
 Visible = False

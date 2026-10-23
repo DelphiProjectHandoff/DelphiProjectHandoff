@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.18')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.19')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -20,7 +20,7 @@ if($languagePacks.Count -ne 35) {throw "Expected 35 DPH language packs; found $(
 
 $files=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach($relative in @('DelphiProjectHandoff.dpr','DelphiProjectHandoff.dproj',
-  'DelphiProjectHandoff.res','README.md','LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\Run_And_Test.txt',("docs\guides\Release_Notes_$Version.txt"),
+  'DelphiProjectHandoff.res','README.md','LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\Change_Guide.txt','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt',("docs\guides\Release_Notes_$Version.txt"),
   'docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx',
   'docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf')) {
  [void]$files.Add($relative)
@@ -89,6 +89,9 @@ capture and Cancel keeps it open. Rescan project checks attached source for chan
 The dossier maps captured directories and project build paths and links component
 and database evidence. Generated form views are reconstructions, not runtime
 screenshots.
+The Project map's Change Guide introduces a source-linked way to review a
+specific control or routine before editing. Its generated narrative is
+English-language beta content; new native buttons use the 35 language packs.
 The Read public websites checkbox is off by default and controls optional
 HTTPS requests for public sites referenced in selected project documents.
 The included third-party dependency folders contain their own license files.

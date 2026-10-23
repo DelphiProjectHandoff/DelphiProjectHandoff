@@ -26,6 +26,8 @@ type
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,SaveProjectButton,RescanProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
+    OpenChangeGuideButton,ReturnToMapButton,ChangeGuideSourceButton,ChangeGuideImpactButton: TButton;
+    ChangeGuideSourceReturnButton,ChangeGuideGraphReturnButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -767,6 +769,11 @@ type
     procedure DetailsObjectClick(Sender: TObject);
     procedure RelationsClick(Sender: TObject);
     procedure BackClick(Sender: TObject);
+    procedure OpenChangeGuideClick(Sender: TObject);
+    procedure ReturnToMapClick(Sender: TObject);
+    procedure ReturnToChangeGuideClick(Sender: TObject);
+    procedure ChangeGuideSourceClick(Sender: TObject);
+    procedure ChangeGuideImpactClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
     procedure NextPageClick(Sender: TObject);
     procedure BookmarkClick(Sender: TObject);
@@ -812,7 +819,7 @@ type
     FPendingWorkspaceTab: TTabItem;
     FScreenshotOriginTab: TTabItem;
     FPage: Integer;
-    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject: Boolean;
+    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject,FChangeGuideMode: Boolean;
     FPreparationCompletionTicks: Integer;
     FScreenScale: Single;
     FScreenFullscreen: Boolean;
@@ -2122,6 +2129,8 @@ begin
       if WorkspaceTabs.Tabs[Index].Text=Choice.Items[Choice.ItemIndex] then begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
       end;
+    if (WorkspaceTabs.ActiveTab=ExplainTab) and not FChangeGuideMode and (FView<>nil) then
+      ShowExplanation;
     if (Sender=LessonPageCombo) and (WorkspaceTabs.ActiveTab=ExplainTab) and (FView<>nil) then begin
       FSelected:=''; FShowingBookmarks:=False; FScope:=''; FPage:=0;
       FBinding:=True;
@@ -2883,6 +2892,15 @@ begin
   FSearchOffset:=0; NextProjectSearchButton.Enabled:=False;
   FQualityRows.Clear; QualityList.Items.Clear;
   FreeAndNil(FView); FView:=TDPHWorkspaceView.Create(ADocument); FSelected:='';
+  if not SameProject then begin
+    FChangeGuideMode:=False;
+    OpenChangeGuideButton.Visible:=True;
+    ReturnToMapButton.Visible:=False;
+    ChangeGuideSourceButton.Visible:=False;
+    ChangeGuideImpactButton.Visible:=False;
+    ChangeGuideSourceReturnButton.Visible:=False;
+    ChangeGuideGraphReturnButton.Visible:=False;
+  end;
   FDatabaseSchemaRows.Clear;FreeAndNil(FDatabaseSchema);DatabaseSchemaFilterChange(nil);FreeAndNil(FDatabaseER);
   FCalculationEvidenceRows.Clear;FreeAndNil(FCalculationEvidence);CalculationEvidenceFilterChange(nil);
   FFileFormatRows.Clear;FreeAndNil(FFileFormats);FileFormatsFilterChange(nil);
@@ -3812,7 +3830,8 @@ begin
   if (FLearningFacts=nil) and (FView<>nil) then RefreshLearning;
   if FLearningFacts=nil then Exit;
   if FExplanations=nil then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
-  if FSelected='' then HTML:=FExplanations.ProjectMapHTML
+  if FChangeGuideMode then HTML:=FExplanations.ChangeGuideHTML(FSelected)
+  else if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
   HTML:=DATTranslateHtmlText(HTML);
@@ -3900,6 +3919,9 @@ begin
   end;
   if EndsText('#open_coverage',AURL) then begin
     ACancel:=True; WorkspaceTabs.ActiveTab:=CoverageTab; Exit;
+  end;
+  if EndsText('#open_knowledge',AURL) then begin
+    ACancel:=True; WorkspaceTabs.ActiveTab:=KnowledgeTab; Exit;
   end;
   P:=Pos('#library_',AURL);
   if P>0 then begin
@@ -5955,6 +5977,57 @@ begin
   if FHistory.Count=0 then begin StatusLabel.Text:='There is no earlier selection yet. Choose an object in Project map first.'; WorkspaceTabs.ActiveTab:=ExplainTab; Exit; end;
   Key:=FHistory.Last; FHistory.Delete(FHistory.Count-1); SelectSymbol(Key,False);
   WorkspaceTabs.ActiveTab:=ExplainTab; StatusLabel.Text:='Returned to the previous object.';
+end;
+procedure TDPHMainForm.OpenChangeGuideClick(Sender: TObject);
+begin
+  if FView=nil then begin
+    StatusLabel.Text:='Open or select a project before using the Change Guide.';
+    Exit;
+  end;
+  FChangeGuideMode:=True;
+  OpenChangeGuideButton.Visible:=False;
+  ReturnToMapButton.Visible:=True;
+  ChangeGuideSourceButton.Visible:=True;
+  ChangeGuideImpactButton.Visible:=True;
+  ChangeGuideSourceReturnButton.Visible:=True;
+  ChangeGuideGraphReturnButton.Visible:=True;
+  ShowExplanation;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ReturnToMapClick(Sender: TObject);
+begin
+  FChangeGuideMode:=False;
+  OpenChangeGuideButton.Visible:=True;
+  ReturnToMapButton.Visible:=False;
+  ChangeGuideSourceButton.Visible:=False;
+  ChangeGuideImpactButton.Visible:=False;
+  ChangeGuideSourceReturnButton.Visible:=False;
+  ChangeGuideGraphReturnButton.Visible:=False;
+  if FView<>nil then ShowExplanation;
+  WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ReturnToChangeGuideClick(Sender: TObject);
+begin
+  if FChangeGuideMode and (FView<>nil) then WorkspaceTabs.ActiveTab:=ExplainTab;
+end;
+procedure TDPHMainForm.ChangeGuideSourceClick(Sender: TObject);
+begin
+  if (FView=nil) or (FSelected='') then begin
+    StatusLabel.Text:='Select a project object before opening its source.';
+    Exit;
+  end;
+  WorkspaceTabs.ActiveTab:=SourceTab;
+end;
+procedure TDPHMainForm.ChangeGuideImpactClick(Sender: TObject);
+begin
+  if (FView=nil) or (FSelected='') then begin
+    StatusLabel.Text:='Select a project object before opening its impact graph.';
+    Exit;
+  end;
+  GraphCombo.ItemIndex:=5;
+  FWholeGraph:=False;
+  RefreshGraphics;
+  WorkspaceTabs.ActiveTab:=GraphTab;
 end;
 procedure TDPHMainForm.ParentClick(Sender: TObject);
 var Rows: TJSONArray; V: TJSONValue; R: TJSONObject; ParentKey: string;

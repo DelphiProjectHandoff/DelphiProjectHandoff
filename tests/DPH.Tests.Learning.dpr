@@ -71,6 +71,12 @@ begin
             Check(ContainsText(Explain.ObjectHTML(Key),'SOURCE WALKTHROUGH') and ContainsText(Explain.ObjectHTML(Key),'Sender &gt; 0') and
               ContainsText(Explain.ObjectText(Key),'CHECK YOUR UNDERSTANDING'),
               'Native HTML and exported text share the source lesson with escaped expressions and a concrete learning exercise');
+            Check(ContainsText(Explain.ChangeGuideHTML(Key),'Source files worth opening') and
+              ContainsText(Explain.ChangeGuideHTML(Key),'not a measured execution sequence') and
+              ContainsText(Explain.ChangeGuideHTML(Key),'DPH has not run the target application'),
+              'Change Guide provides a bounded source-reading route without inventing execution or test results');
+            Check(ContainsText(Explain.ChangeGuideHTML('absent-object'),'Selection unavailable'),
+              'Change Guide does not fabricate a route for an absent source object');
             Check(Explain.RoutineLesson('absent-object')='', 'An absent routine cannot acquire a fabricated walkthrough');
             for I:=0 to 10 do Check(Length(Explain.TopicHTML(I))>1500,'Learning topic '+IntToStr(I)+' renders a complete offline page');
             TDPHPublisher.Export(Model,Store,TPath.Combine(Work,'handoff'));

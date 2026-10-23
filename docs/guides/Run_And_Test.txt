@@ -1,4 +1,4 @@
-RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.18
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.19
 Last changed: 23 October 2026
 
 BUILD AND START FROM SOURCE
@@ -61,7 +61,7 @@ CHECK THE LEARNING VIEWS
 7. Open Handoff dossier. Check its capture status and purpose evidence, then
    confirm the reading pane is formatted HTML. Before selecting a project,
    the same tab should show a styled HTML introduction, not a plain memo.
-   inspect startup forms, command bindings, data candidates, and open
+   Inspect startup forms, command bindings, data candidates, and open
    questions. Follow a cited link to a screen or source object. Registration
    and static connections cannot prove what happens at runtime.
    If it says STALE capture, wait for automatic background verification when
@@ -85,6 +85,13 @@ CHECK THE LEARNING VIEWS
    remain available in its original language.
 9. Open Project map. Select a form, control, unit, routine, or variable to see
    its saved declaration and connections. Follow an action link if present.
+   Select a specific control or routine and choose Change Guide. Read the
+   introduction before following incoming uses, nearby downstream objects,
+   files, suggested checks, and source-linked connection evidence. Use View
+   source code and Change impact to investigate, then Return to guide or
+   Return to map. The guide's narrative is English-language beta content;
+   its native navigation buttons use the selected offline language pack.
+   Check this route with both a small project and an incomplete capture.
 10. Open Screenshots. DPH generates one empty-state PNG for each distinct form
     definition found in .fmx or .dfm. Select an image; it opens at Native
     pixels for readable detail. Scroll to inspect the rest, or choose Fit to
@@ -112,3 +119,6 @@ CHECK REOPENING AND SOURCE BUILD
 
 If embedded HTML does not display, install the Microsoft WebView2 Runtime.
 The project map and source-based analysis still require no target execution.
+The 0.8.0.19 release offers four ZIPs: complete Win64 and Win32 editions, a
+build-ready editable-source ZIP, and optional translation-authoring projects.
+Choose one Windows ZIP to run DPH; keep its full extracted layout together.

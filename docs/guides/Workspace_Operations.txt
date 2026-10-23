@@ -1,5 +1,5 @@
-DELPHI PROJECT HANDOFF 0.8.0.10 - WORKSPACE OPERATIONS
-Last changed: 19 October 2026
+DELPHI PROJECT HANDOFF 0.8.0.19 - WORKSPACE OPERATIONS
+Last changed: 23 October 2026
 
 Start with Getting started. Choose Open application and select the target
 .dproj, .dpr, or .groupproj. DPH reads files and local project documents; it
@@ -12,6 +12,13 @@ eligible project documents and topics. Project map follows units, forms,
 controls, routines, and connections. Screenshots reconstruct saved .fmx and
 .dfm forms on demand; they are not images of a running application. Diagrams
 show possible relationships, not recorded execution.
+In Project map, select a specific control or routine and open Change Guide
+when planning a code change. It explains the selected object's incoming uses,
+nearby connections, relevant files, suggested checks, and open questions.
+Follow the cited evidence before editing. Use View source code or Change
+impact for detail, Return to guide to resume, and Return to map to leave.
+The generated Change Guide narrative is English-language beta content;
+the navigation buttons use the selected offline interface language pack.
 
 New captures are temporary. On closing DPH or changing projects, Yes saves
 the capture as a .dphdb, No discards it, and Cancel keeps it open. Save outside
@@ -36,3 +43,8 @@ remain in their original language.
 Generated preview captions can use the selected project's de-DE.json pack
 when available. See the User Guide for limitations and the Engineering Guide for
 the underlying capture and verification rules.
+
+The 0.8.0.19 release has complete Win64 and Win32 ZIPs, an independent
+build-ready source ZIP, and a separate optional translation-authoring ZIP.
+One Windows ZIP is enough to run the matching edition. Keep its loader,
+runtime language packs, help, and shared assets with the extracted package.

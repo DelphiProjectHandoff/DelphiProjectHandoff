@@ -25,6 +25,8 @@ begin
   try
     Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False;
     Form.Show; Settle;
+    Check(Form.Caption='Delphi Project Handoff - Experimental Software',
+      'Release window identifies the experimental application');
     Check(IsZoomed(FormToHWND(Form)),'Application opens maximized');
     GetWindowRect(FormToHWND(Form),WindowBounds);
     MonitorInfo.cbSize:=SizeOf(MonitorInfo);
@@ -34,6 +36,20 @@ begin
       (WindowBounds.Right<=MonitorInfo.rcWork.Right+16),'Maximized window fits the monitor work area');
     Check(Trim(Form.InspectorTitle.Text)<>'','Right pane has a visible purpose heading');
     Check(Form.InspectorMemo.WordWrap,'Details text wraps inside the pane');
+    Check((Form.OpenChangeGuideButton<>nil) and (Form.ReturnToMapButton<>nil),
+      'Change Guide controls are present on the editable form');
+    Check((Form.ChangeGuideSourceReturnButton<>nil) and
+      (Form.ChangeGuideGraphReturnButton<>nil) and
+      not Form.ChangeGuideSourceReturnButton.Visible and
+      not Form.ChangeGuideGraphReturnButton.Visible,
+      'Return to guide controls are editable and hidden outside guide mode');
+    Check((Form.ChangeGuideSourceReturnButton.Parent<>nil) and
+      (Form.ChangeGuideGraphReturnButton.Parent<>nil) and
+      Assigned(Form.ChangeGuideSourceReturnButton.OnClick) and
+      Assigned(Form.ChangeGuideGraphReturnButton.OnClick),
+      'Source and diagram views provide working return controls');
+    Check(Form.OpenChangeGuideButton.Visible and not Form.ReturnToMapButton.Visible,
+      'Project map shows the Change Guide entry point before a guide is opened');
     Form.HelpBrowser.Visible:=False;
     Form.HelpFallback.Visible:=True;
     Form.InspectorMemo.Text:='Example selection for layout verification'+sLineBreak+sLineBreak+

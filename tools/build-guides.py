@@ -7,8 +7,8 @@ from docx.shared import Inches,Pt,RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
-CHANGED='19 October 2026'
-VERSION=59
+CHANGED='23 October 2026'
+VERSION=60
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -26,7 +26,7 @@ LAYER_PURPOSE={
 'Analysis.SQL':'Adds supported SQL/data-use evidence from source. It is not permission to connect to or execute statements against target data.',
 'Analysis.Persistence':'Persists supported semantic facts and their references into generation-scoped storage. Keep fact transactions and publication separate.',
 'Analysis.Quality':'Projects metrics and investigation candidates from captured facts. Candidate findings do not prove unused code or safe removal.',
-'Analysis.Explanations':'Builds learner topics and object explanations from source facts and relevant attributed knowledge. Keep meaning first and deeper code optional.',
+'Analysis.Explanations':'Builds learner topics, object explanations, and the bounded Change Guide from source facts and relevant attributed knowledge. Keep meaning first, qualify static links, and leave deeper code optional.',
 'Handoff.Dossier':'Renders the selected capture as a four-part, source-linked maintenance handoff. Distinguish extracted facts, author statements, reading guidance and unresolved questions.',
 'Learning.Discovery':'Finds project-local documents, logs, saved screens, startup forms and referenced public websites. Retain source paths, bounded scanning, original-language text and explicit extraction status.',
 'Storage.Types':'Defines persistent status and manifest types shared by analysis and storage. Changes require serialization and lifecycle compatibility checks.',
@@ -57,8 +57,9 @@ LAYER_PURPOSE={
 'Publish.OfflinePreview':'Serves the local preview and bundled German translation assets over loopback. It must not expose the selected project to an external network interface.',
 'Publish.BrowserPolicy':'Constrains local embedded navigation and internal routes. Rendering success does not replace URL containment tests.',
 'Publish.Translation':'Adapts pinned translation capabilities and revision/locale cache state. Provider configuration and named review remain separate.',
-'UI.Main':'Binds serialized FireMonkey controls to worker requests and owned models. Preserve pending drafts, busy state, selection identity and close guards.',
+'UI.Main':'Binds serialized FireMonkey controls to worker requests and owned models. Preserve pending drafts, busy state, Change Guide navigation, selection identity and close guards.',
 'UI.Progress':'Defines the IDE-editable centered preparation window. The main form updates its stage message, progress bar and percentage from worker responses.',
+'UI.SavePrompt':'Defines the IDE-editable save, discard, and cancel prompt used when a temporary capture would be replaced or closed.',
 'UI.ProjectProfile':'Collects application-profile fields in an IDE-editable dialog. Applying returns a draft; general knowledge saving persists it.',
 'UI.Glossary':'Collects a business term and its supporting meaning/aliases. Validate before applying the draft to saved knowledge.',
 'UI.ActionPurpose':'Collects an action explanation in a serialized dialog. Keep user purpose and supporting captured target clearly identified.',
@@ -162,7 +163,7 @@ def document(kind,blocks):
  for border in list(doc.styles.element.iter(qn('w:pBdr'))):border.getparent().remove(border)
  title='Delphi Project Handoff '+kind+' Guide'
  props=doc.core_properties;props.author='';props.last_modified_by='';props.title=title;props.subject='Detailed application operation' if kind=='User' else 'Architecture contracts implementation and maintenance';props.comments='';props.keywords=''
- doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.10  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
+ doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.19  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
  intro='Open a project, follow its files into screens and actions, and assess what the evidence can show' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
  doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Information about a selected Delphi application is presented separately by the program.')
  doc.add_page_break();doc.add_paragraph('Contents','Title');field(doc.add_paragraph(),'begin',' TOC \\o "1-2" \\h \\z \\u ');field(doc.add_paragraph(),'separate')
@@ -201,7 +202,7 @@ def help_page(blocks):
  chapters=[v for k,v in blocks if k=='chapter']
  for i,title in enumerate(chapters):parts.append(f'<a href="#chapter_{i}">{html.escape(title)}</a>')
  parts.append('</nav>');index=-1
- pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b|Open application|Open saved project|Handoff dossier|Learning library|Project map|Screenshots|Application diagrams'
+ pattern=r'DelphiProjectHandoff\.exe|\.dphdb(?:\.views)?|learning\.html|\bDPH\b'
  def prose(s):return re.sub(pattern,lambda m:'<span class="notranslate" translate="no">'+m[0]+'</span>',html.escape(s))
  for k,v in blocks:
   if k=='part':parts.append('<h2>'+html.escape(v)+'</h2>')
@@ -222,5 +223,5 @@ if __name__=='__main__':
   if kind=='User':help_page(blocks)
   reports[kind]={'parts':sum(k=='part' for k,v in blocks),'chapters':sum(k=='chapter' for k,v in blocks),'subsections':sum(k=='section' for k,v in blocks),'words':len(' '.join(' '.join(v) if isinstance(v,list) else v for k,v in blocks).split()),'figures':sum(k=='image' for k,v in blocks)}
  sources={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in [*ROOT.glob('DPH.*.pas'),*ROOT.glob('DPH.UI.*.fmx'),* (ROOT/'migrations').glob('*.sql'),*(ROOT/'docs/guides/source').glob('*.txt'),ROOT/'DelphiProjectHandoff.dproj']}
- (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-19','sources':sources,'content':reports,'basis':'Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
+ (ROOT/'docs/validation/reports/guide-source-validation.json').write_text(json.dumps({'guide_version':VERSION,'last_changed':'2026-10-23','sources':sources,'content':reports,'basis':'Current source and serialized controls, current handoff procedures, exact unit declarations and SQL migration reference'},indent=2)+'\n',encoding='utf-8')
  print(json.dumps(reports,indent=2))

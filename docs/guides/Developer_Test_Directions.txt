@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.18 - DEVELOPER TEST DIRECTIONS
+DELPHI PROJECT HANDOFF 0.8.0.19 - DEVELOPER TEST DIRECTIONS
 Last changed: 23 October 2026
 
 Before opening the main form in the designer, install the supplied DAT design
@@ -19,6 +19,13 @@ checks for the contract changed. Current scripts include:
   tools\build-learning-refocus.cmd    current six-view learning route
   tools\build-ui-translation.cmd      35 interface language packs
   tools\build-wp6.cmd                 browser and local preview checks
+
+Also build and run tests\DPH.Tests.ChangeGuide.dpr. Verify the Project map
+button route, introduction, narrow-toolbar scrolling, source and diagram
+handoffs, return navigation, evidence limits, and an incomplete capture.
+Run build-ui-translation.cmd after changing new native button labels; all 35
+packs should load and the selected language should persist. The guide's
+generated narrative is English-language beta content in this release.
 
 Run broader analyzer and storage regression suites when changing those
 layers. Every invoked script should finish with PASS and exit code 0. Use
@@ -42,6 +49,11 @@ must be described as reconstructions. Check that screenshots and diagrams
 start at a readable size, remain scrollable, and preserve selection routes.
 Review both User and Engineering Guide DOCX/PDF pairs and local HTML help
 after editing guide source; the guide build and render scripts are in tools.
+Check the 0.8.0.19 Win64 and Win32 ZIPs independently after extraction. Each
+must contain its matching executable, WebView2 loader, 35 runtime language
+packs, Change_Guide.txt, current DOCX/PDF guides, and local HTML help. The
+editable-source ZIP must build without the optional authoring ZIP. The fourth
+ZIP is only for editing translations in Delphi App Translation Studio.
 
 Historical practice-example and lesson-authoring tests remain in the
 repository for regression work on those modules. They are not the current

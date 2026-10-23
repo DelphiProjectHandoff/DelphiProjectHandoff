@@ -1,0 +1,61 @@
+DELPHI PROJECT HANDOFF 0.8.0.19
+Experimental beta | 23 October 2026
+
+WHAT CHANGED
+
+The Change Guide trial is now included in the Win64 and Win32 editions and
+the editable-source distribution. In Project map, select a specific control
+or routine and choose Change Guide. The introduction explains the workflow;
+the selected guide brings together incoming uses, nearby downstream objects,
+files worth opening, suggested checks, unresolved questions, and captured
+connection evidence. View source code and Change impact lead to the existing
+source and diagram views. Return to guide resumes the selected guide, while
+Return to map restores the ordinary project explanation.
+
+The guide is designed to help a maintainer plan an investigation before
+editing. Its links are derived from static project inspection; they are not
+observations of a running application, instructions to edit, or proof that
+a proposed change is safe. Contributor guidance appears only when linked to
+the exact selected object. Large selections may be too broad for a useful
+guide; select a control or routine instead.
+
+The new native navigation buttons use the 35 offline interface language
+packs. The generated Change Guide narrative is English-language beta content
+in this release. Project-supplied source and documents remain local and in
+their original language. The new docs/guides/Change_Guide.txt provides a
+focused walkthrough and explains these limits.
+
+DOWNLOADS AND INSTALLATION
+
+Choose one of the complete Windows ZIPs to run the application:
+
+  DPH-0.8.0.19-experimental-Win64.zip
+  DPH-0.8.0.19-experimental-Win32.zip
+
+Extract the entire chosen ZIP to a writable folder. Open its Win64 or Win32
+folder and run DelphiProjectHandoff.exe. Keep WebView2Loader.dll beside the
+executable, keep that edition's Localization/Languages folder, and retain
+the shared help, migrations, and images and icons folders. Microsoft WebView2
+Runtime is required for embedded pages. One Windows ZIP is sufficient; the
+other architecture and the source ZIP are not required to run it.
+
+Developers can choose the build-ready editable-source ZIP instead. It has
+the IDE-editable forms, Delphi project and resource, bundled DAT design
+package and dependencies, 35 runtime language packs, help, and guides. It
+builds Win32 and Win64 in RAD Studio 37 without either Windows ZIP. The
+fourth ZIP contains optional Localization/Development projects for editing
+translations in Delphi App Translation Studio. Extract it into the matching
+source folder only when needed; it is not an install or build dependency.
+
+The four downloadable ZIPs include SHA-256 file manifests or checksum lists.
+GitHub's Code > Download ZIP is a repository snapshot, not a compiled Windows
+application. The 0.8.0.18 release remains available as a prior experiment.
+
+DOCUMENTATION AND FEEDBACK
+
+The User Guide, Engineering Guide, local HTML help, first-use directions, and
+Change Guide directions describe this beta. The two principal guides ship in
+editable DOCX and companion PDF formats. The release is for evaluation; test
+the generated evidence and any resulting code changes in the target project.
+Developer feedback, including a selected object and steps to reproduce an
+issue, is welcome at churchesite@gmail.com.

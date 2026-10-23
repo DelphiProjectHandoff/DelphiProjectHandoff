@@ -1,0 +1,66 @@
+DELPHI PROJECT HANDOFF CHANGE GUIDE
+Experimental beta 0.8.0.19 | Last changed 23 October 2026
+
+Purpose
+
+The Change Guide helps a maintainer investigate a proposed change to a
+selected Delphi application. It starts with one captured control or routine,
+then brings together its source location, incoming connections, nearby
+relationships, files worth reading, linked contributor knowledge, and checks
+to consider. It is an investigation aid. It neither edits the application
+nor runs it, approves a change plan, or marks a test as passed.
+
+This first public test presents the generated Change Guide narrative in
+English. Its new native navigation buttons are included in the 35 offline
+interface language packs. The selected project's source code, documents,
+identifiers, and citations remain local and in their original language.
+
+Start with a focused selection
+
+1. Extract one complete Windows ZIP to a writable folder. Run
+   Win64\DelphiProjectHandoff.exe or Win32\DelphiProjectHandoff.exe inside
+   that edition's folder. Keep WebView2Loader.dll beside the executable and
+   retain its Localization\Languages directory and the shared folders at
+   the extracted ZIP root. Embedded pages require Microsoft WebView2 Runtime.
+2. Open a Delphi project or a saved DPH capture. Let preparation finish.
+3. Open Project map. Its introduction points to the Change Guide. Choose
+   Change Guide in the map toolbar to read the guide's introduction.
+4. Select a specific control or routine from the list on the left. For
+   example, select a Convert button's click handler. A whole Pascal unit
+   generally produces a broader, less useful reading route.
+
+Read and verify the result
+
+The at-a-glance counts summarize captured incoming links, nearby objects,
+and distinct source files. Where this object is used lists incoming
+relationships. Connections to examine next shows direct links and one
+further level, limited to 24 distinct downstream objects. Source files
+worth opening is a reading list, not a required edit list. Expand a
+connection's evidence and inspect its cited source before relying on it.
+
+Contributor guidance appears only when it is linked to the selected object.
+Its contributor and review state are shown; open Knowledge to check the full
+record, source, and revision. Checks for this selection suggest validation
+areas supported by the captured relationships. General checks and unresolved
+questions prompt further review. The guide does not infer business intent.
+
+Use View source code to inspect the selected declaration and Change impact
+to open the existing dependency diagram. Return to guide resumes the same
+guide after visiting either view. Choose another object in the left list to
+start a new route. Return to map restores the normal Project map explanation.
+The toolbar scrolls horizontally when a window or translated button labels
+need more width.
+
+Interpretation and feedback
+
+The guide uses static source inspection. A direct connection is supported by
+captured files; an inferred or unresolved one still needs interpretation.
+Arrows do not describe a measured runtime sequence or a safe order of edits.
+Compile conditions, indirect calls, inherited controls, and runtime-created
+objects may affect behavior beyond the displayed route. Verify the actual
+source and run suitable project tests before changing or deploying anything.
+
+Feedback from beta users is welcome. Please report the selected object, the
+source citation, the edition and language used, and the guidance that was
+missing or unclear to churchesite@gmail.com. Do not send private project
+source or documents unless you have permission to share them.
