@@ -3079,10 +3079,10 @@ object ExplainTab: TTabItem
 Text = 'Project map'
 object ProjectMapToolbar: TLayout
 Align = Top
-Height = 72
+Height = 84
 object ProjectMapToolbarItems: THorzScrollBox
 Align = Top
-Height = 40
+Height = 52
 object BackButton: TButton
 Position.X = 8
 Position.Y = 5
