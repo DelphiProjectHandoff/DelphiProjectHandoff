@@ -27,7 +27,7 @@ type
     function LessonHTML(AIndex: Integer): string;
     function ApplicationRouteHTML(AIndex: Integer): string;
     function ProjectMapHTML: string;
-    function CookbookHTML(const AKey: string): string;
+    function ChangeGuideHTML(const AKey: string): string;
     function FlowSVG(const AKey: string): string;
     function FlowHTML(const AKey: string): string;
     function GraphHTML(AGraph: TJSONObject): string;
@@ -508,7 +508,7 @@ begin
     IfThen(FFacts.GetValue<Boolean>('stale') or not FFacts.GetValue<Boolean>('analysis_complete'),'<p><small>Some explanations need checking. Ask about unexplained behavior before relying on it.</small></p>','')+
     TRegEx.Replace(AutoDirectionBody,'(?i)\bPAGEREF\s+[_A-Za-z0-9.-]+(?:\s+\\[A-Za-z]+)*','')+'</main></body></html>';
 end;
-function TDPHExplanationModel.CookbookHTML(const AKey: string): string;
+function TDPHExplanationModel.ChangeGuideHTML(const AKey: string): string;
 var
   Selected,Related,Relation,RecordValue: TJSONObject;
   Value,LinkValue: TJSONValue;
@@ -524,10 +524,16 @@ var
   HasUI,HasData,HasOutput,HasAsync,HasConditional: Boolean;
   Linked,HasGuidance: Boolean;
 begin
-  if AKey='' then Exit(Page('Change cookbook',
-    '<section class="card"><h2>Start with an object</h2><p>Choose a control, command, routine, data object or file in Project map. The cookbook will assemble a source-linked reading route for that selection.</p></section>'));
-  if not FSymbols.TryGetValue(AKey,Selected) then Exit(Page('Change cookbook',
-    '<section class="card"><h2>Selection unavailable</h2><p>This object is not in the current capture. Choose another object in Project map.</p></section>'));
+  if AKey='' then Exit(Page('Change Guide',
+    '<section class="card"><span class="badge">PLAN A CODE CHANGE</span><h2>Start with a specific project object</h2>'+
+    '<p>The Change Guide helps you investigate a proposed change before editing code. It brings together source locations, captured connections, relevant files and checks to consider.</p>'+
+    '<ol><li>Choose a control or routine from the Project map list on the left.</li>'+
+    '<li>Read where it is used and follow the cited connections to nearby code.</li>'+
+    '<li>Inspect the source, decide what actually needs changing, and verify the result yourself.</li></ol>'+
+    '<p>For example, select a button click handler to find its binding and the routines it calls. A whole unit is usually too broad for a focused guide.</p>'+
+    '<p><small>This is a reading aid based on static inspection. It does not create a change plan or run the application.</small></p></section>'));
+  if not FSymbols.TryGetValue(AKey,Selected) then Exit(Page('Change Guide',
+    '<section class="card"><h2>Selection unavailable</h2><p>This object is not in the current capture. Choose another object from the Project map list.</p></section>'));
   Body:=TStringBuilder.Create;
   Current:=TList<string>.Create;
   Next:=TList<string>.Create;
@@ -541,18 +547,21 @@ begin
     HasConditional:=Selected.GetValue<string>('condition','')<>'';
     Path:=Selected.GetValue<string>('range.source','');
     if Path<>'' then Files.AddOrSetValue(Path,'Selected declaration');
-    Body.Append('<section class="card"><span class="badge">SOURCE-BASED READING GUIDE</span><h2>'+Encode(Selected.GetValue<string>('name'))+'</h2>');
+    Body.Append('<section class="card"><span class="badge">CHANGE GUIDE</span><h2>Investigate '+Encode(Selected.GetValue<string>('name'))+'</h2>');
+    Body.Append('<p><strong>Use this guide to:</strong> find the selected object in source, examine its captured connections, and prepare checks for a proposed change. Start with the evidence below; decide the actual edit after reviewing the code and the requested behavior.</p>');
     Body.Append('<p><strong>Kind:</strong> '+Encode(Selected.GetValue<string>('kind'))+
       ' &nbsp; <strong>Source:</strong> <code>'+Encode(Path)+':'+
       Selected.GetValue<Integer>('range.line',0).ToString+'</code></p>');
+    if Selected.GetValue<string>('kind')='unit' then
+      Body.Append('<p class="warning"><strong>Broad selection:</strong> This is an entire Pascal unit. Select a routine or control in the Project map list for a more useful change guide.</p>');
     if Selected.GetValue<string>('condition','')<>'' then
       Body.Append('<p class="warning"><strong>Build condition:</strong> '+Encode(Selected.GetValue<string>('condition'))+'</p>');
-    Body.Append('<p>This guide identifies where to investigate a proposed change. It does not prescribe an edit, establish business intent, or verify runtime behavior.</p>');
+    Body.Append('<p><small>Captured source relationships are clues, not observed runtime behavior. This guide does not prescribe an edit or establish business intent.</small></p>');
     Body.Append('<details><summary>Capture identity and exact evidence</summary><p><code>'+Encode(Citation(Selected))+'</code></p>');
     Body.Append('<p>Project capture: '+Encode(FFacts.GetValue<string>('project','unknown'))+
       '. Review the current source before using cached locations.</p></details></section>');
 
-    Body.Append('<section class="card"><h2>How this object is reached</h2>');
+    Body.Append('<section class="card"><h2>Where this object is used</h2><p>Start with these incoming connections to learn what may invoke or reference the selection. Open connection evidence when a link needs checking.</p>');
     InboundCount:=0;
     if FIncoming.TryGetValue(AKey,Edges) then for Relation in Edges do begin
       if Relation.GetValue<string>('kind')='owns' then Continue;
@@ -571,8 +580,8 @@ begin
     if InboundCount>12 then Body.Append('<p>Showing 12 of '+InboundCount.ToString+' incoming relationships. Use Project map for the rest.</p>');
     Body.Append('</section>');
 
-    Body.Append('<section class="card"><h2>Reading path from this selection</h2>');
-    Body.Append('<p>Follow these links in order as an investigation route. Each arrow is a source relationship, not a measured execution sequence.</p>');
+    Body.Append('<section class="card"><h2>Connections to examine next</h2>');
+    Body.Append('<p>These links show directly connected objects and one further level. Follow the ones relevant to your proposed change. The arrows are source relationships, not a measured execution sequence or required edit order.</p>');
     Current.Add(AKey); Seen.Add(AKey,True); Shown:=0; DirectCount:=0;
     for Depth:=1 to 2 do begin
       Next.Clear;
@@ -602,7 +611,8 @@ begin
             Files.Add(Path,Reason);
           end;
           Resolution:=Relation.GetValue<string>('resolution','unresolved');
-          Body.Append('<article class="path-step"><span class="badge">STEP '+Depth.ToString+
+          if Depth=1 then Reason:='DIRECT CONNECTION' else Reason:='ONE MORE CONNECTION';
+          Body.Append('<article class="path-step"><span class="badge">'+Reason+
             ' &middot; '+Encode(Kind.Replace('_',' '))+'</span><h3>'+Link(Key)+' &rarr; '+Link(Target)+'</h3>');
           Body.Append('<p><strong>Evidence:</strong> <code>'+Encode(Citation(Relation))+
             '</code><br><strong>Resolution:</strong> '+Encode(Resolution)+'</p>');
@@ -619,7 +629,7 @@ begin
     if Shown>=24 then Body.Append('<p>First 24 distinct linked objects shown. Project map contains the remaining relationships.</p>');
     Body.Append('</section>');
 
-    Body.Append('<section class="card"><h2>Files to inspect before changing code</h2>');
+    Body.Append('<section class="card"><h2>Source files worth opening</h2>');
     Body.Append('<p>These are reading candidates, not a complete or mandatory edit list. A file appears because it contains the selected object or a linked declaration.</p>');
     for Path in Files.Keys do FileNames.Add(Path);
     Body.Append('<table><thead><tr><th>Captured file</th><th>Why it appears</th></tr></thead><tbody>');
@@ -630,7 +640,7 @@ begin
     Body.Append('</tbody></table><p><small>'+Files.Count.ToString+' distinct files in this bounded route; '+
       DirectCount.ToString+' direct downstream objects found.</small></p></section>');
 
-    Body.Append('<section class="card"><h2>Recorded project guidance</h2>');
+    Body.Append('<section class="card"><h2>What the project team has recorded</h2>');
     HasGuidance:=False; GuidanceCount:=0;
     if FFacts.TryGetValue<TJSONArray>('knowledge',KnowledgeRows) then
       for Value in KnowledgeRows do begin
@@ -653,7 +663,7 @@ begin
     if GuidanceCount>=6 then Body.Append('<p>Showing at most six linked records. Open Knowledge for the full set.</p>');
     Body.Append('<p><a href="#open_knowledge">Open Knowledge records</a> to review sources and revisions or record a verified procedure.</p></section>');
 
-    Body.Append('<section class="card"><h2>Verification plan for this route</h2><ol>'+
+    Body.Append('<section class="card"><h2>Checks to plan after making a change</h2><p>Choose the checks that match the agreed behavior. These are prompts, not completed tests.</p><ol>'+
       '<li>Confirm the requested behavior and acceptance criteria with a knowledgeable user or reviewed project documentation.</li>'+
       '<li>Read each cited source location and its callers; check unresolved and conditional paths before editing.</li>'+
       '<li>Build the relevant project configurations and platforms. A source link does not establish that every variant compiles.</li>');
@@ -669,8 +679,8 @@ begin
       '<li>Are there runtime-created controls, indirect calls, external consumers or inherited behavior outside this capture?</li>'+
       '<li>Which data, outputs and configurations matter in the deployed environment?</li>'+
       '<li>Who can verify the result, and which sample or test environment is safe to use?</li>'+
-      '</ul><p>Record decisions and observed results in attributed project knowledge. This cookbook is an investigation aid, not an approved change procedure.</p></section>');
-    Result:=Page('Change cookbook — '+Selected.GetValue<string>('name'),Body.ToString);
+      '</ul><p>Record decisions and observed results in attributed project knowledge. This guide is an investigation aid, not an approved change procedure.</p></section>');
+    Result:=Page('Change Guide - '+Selected.GetValue<string>('name'),Body.ToString);
   finally
     FileNames.Free; Files.Free; Seen.Free; Next.Free; Current.Free; Body.Free;
   end;
@@ -1338,7 +1348,10 @@ begin
       '<p>The left-hand list contains the captured units, types, operations, screen controls and data values. '
       +'Choose a group below, search by name, or expand a unit. Select an item to see its type, source and connections.</p>'+
       '<p><a href="#objects">Browse project objects</a> &nbsp; <a href="#screens">Browse screen definitions</a> &nbsp; '
-      +'<a href="#open_screenshots">Open generated screens</a></p></section>');
+      +'<a href="#open_screenshots">Open generated screens</a></p></section>'+
+      '<section class="card"><h2>Planning a code change?</h2>'+
+      '<p>Select a specific control or routine from the list on the left, then choose <strong>Change Guide</strong> in the toolbar. The guide brings together source evidence, nearby connections, files worth reading and checks to plan.</p>'+
+      '<p>For a first try, choose a button click handler rather than an entire Pascal unit. The guide helps you investigate; it cannot decide what to edit or confirm the application''s runtime behavior.</p></section>');
     if FFacts.GetValue<TJSONArray>('project_screens',nil)<>nil then begin
       Body.Append('<section class="card" id="screens"><h2>Screens <bdi>('+IntToStr(FFacts.GetValue<TJSONArray>('project_screens').Count)+')</bdi></h2><p>'+
         '<a href="#open_screenshots">Screenshots</a></p><ul>');

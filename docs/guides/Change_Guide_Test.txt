@@ -1,0 +1,51 @@
+Delphi Project Handoff - Change Guide test edition
+22 October 2026
+
+This is an isolated test build. It does not replace the deployed DPH executable
+or the main source checkout. The Change Guide content is English in this test edition;
+the existing application's language packs and controls remain otherwise intact.
+
+What it is
+The Change Guide helps a maintainer investigate a proposed code change. It
+starts from a selected project object and brings together its captured source
+location, incoming and outgoing connections, files worth opening, recorded
+project guidance, and checks to plan. It is a starting point for investigation,
+not a recipe that decides what to edit.
+
+Try it with a specific object
+1. In this test checkout, run bin\Win64\Debug\DelphiProjectHandoff.exe.
+   If using the test ZIP, extract it first and run Win64\DelphiProjectHandoff.exe
+   inside the extracted package. Neither is in the base project folder.
+   Keep WebView2Loader.dll beside the executable and the supplied folders in place.
+2. Open a Delphi project or a saved DPH capture.
+3. Choose Project map. Read the Planning a code change? introduction, then
+   click Change Guide. An introductory page explains how to begin.
+4. Select a specific control or routine from the list on the left. A button
+   click handler is a good first example; a whole unit is usually too broad.
+5. Read Where this object is used and Connections to examine next. Click a
+   linked object to make it the new guide target. Use Open source to inspect its
+   captured source and Change impact to inspect the existing impact graph.
+6. Read Source files worth opening, any attributed guidance linked to the
+   selected object, the checks to plan, and unresolved questions. The
+   guidance section opens existing Knowledge records for source and revision
+   review. Click Return to map to resume the regular explanation view.
+
+Interpretation
+The guide is assembled from captured source relationships. Confirmed static
+links, inferred links, compile conditions, and source citations retain their
+labels. An arrow is not an observed runtime event or a required edit order.
+The file table is a bounded reading list, not an authoritative edit plan.
+DPH does not modify or execute the selected Delphi project. It does not mark
+tests passed or establish business intent.
+
+Review points
+- Is the introduction clear to someone opening Project map for the first time?
+- Are the first 24 distinct downstream links a useful starting route?
+- Are the directly connected files and reasons easy to follow?
+- Do the source/impact links help you decide what to inspect next?
+- Which checks should become more specific to your project?
+- Which terms or sections should change before the guide is localized?
+
+The pre-change ZIP backup is on H: in DPH Backups. The current main checkout and
+its deployed executable remain unchanged. Keep this test branch separate until
+the feature has been reviewed.

@@ -1,5 +1,5 @@
 object DPHMainForm: TDPHMainForm
-  Caption = 'Delphi Project Handoff - Change Cookbook Test'
+  Caption = 'Delphi Project Handoff - Change Guide Test'
   ClientWidth = 1400
   ClientHeight = 850
 Constraints.MinWidth = 960
@@ -3123,13 +3123,13 @@ Height = 30
 Text = 'Next results'
 OnClick = NextPageClick
 end
-object OpenCookbookButton: TButton
+object OpenChangeGuideButton: TButton
 Position.X = 548
 Position.Y = 5
 Width = 150
 Height = 30
-Text = 'Change cookbook'
-OnClick = OpenCookbookClick
+Text = 'Change Guide'
+OnClick = OpenChangeGuideClick
 end
 object ReturnToMapButton: TButton
 Position.X = 706
@@ -3140,23 +3140,23 @@ Visible = False
 Text = 'Return to map'
 OnClick = ReturnToMapClick
 end
-object CookbookSourceButton: TButton
+object ChangeGuideSourceButton: TButton
 Position.X = 844
 Position.Y = 5
 Width = 110
 Height = 30
 Visible = False
 Text = 'Open source'
-OnClick = CookbookSourceClick
+OnClick = ChangeGuideSourceClick
 end
-object CookbookImpactButton: TButton
+object ChangeGuideImpactButton: TButton
 Position.X = 962
 Position.Y = 5
 Width = 130
 Height = 30
 Visible = False
 Text = 'Change impact'
-OnClick = CookbookImpactClick
+OnClick = ChangeGuideImpactClick
 end
 end
 object BreadcrumbLabel: TLabel

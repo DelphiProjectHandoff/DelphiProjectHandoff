@@ -25,6 +25,8 @@ begin
   try
     Form.PollTimer.Enabled:=False; Form.ChangeTimer.Enabled:=False;
     Form.Show; Settle;
+    Check(Form.Caption='Delphi Project Handoff - Change Guide Test',
+      'Isolated test window identifies the Change Guide build');
     Check(IsZoomed(FormToHWND(Form)),'Application opens maximized');
     GetWindowRect(FormToHWND(Form),WindowBounds);
     MonitorInfo.cbSize:=SizeOf(MonitorInfo);
@@ -34,10 +36,10 @@ begin
       (WindowBounds.Right<=MonitorInfo.rcWork.Right+16),'Maximized window fits the monitor work area');
     Check(Trim(Form.InspectorTitle.Text)<>'','Right pane has a visible purpose heading');
     Check(Form.InspectorMemo.WordWrap,'Details text wraps inside the pane');
-    Check((Form.OpenCookbookButton<>nil) and (Form.ReturnToMapButton<>nil),
-      'Cookbook controls are present on the editable form');
-    Check(Form.OpenCookbookButton.Visible and not Form.ReturnToMapButton.Visible,
-      'Project map shows the cookbook entry point before a cookbook is opened');
+    Check((Form.OpenChangeGuideButton<>nil) and (Form.ReturnToMapButton<>nil),
+      'Change Guide controls are present on the editable form');
+    Check(Form.OpenChangeGuideButton.Visible and not Form.ReturnToMapButton.Visible,
+      'Project map shows the Change Guide entry point before a guide is opened');
     Form.HelpBrowser.Visible:=False;
     Form.HelpFallback.Visible:=True;
     Form.InspectorMemo.Text:='Example selection for layout verification'+sLineBreak+sLineBreak+

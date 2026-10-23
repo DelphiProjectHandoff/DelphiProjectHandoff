@@ -1,4 +1,4 @@
-program DPH.Tests.Cookbook;
+program DPH.Tests.ChangeGuide;
 {$APPTYPE CONSOLE}
 uses System.SysUtils, System.JSON, System.StrUtils, DPH.Analysis.Explanations in '..\DPH.Analysis.Explanations.pas';
 var
@@ -12,7 +12,12 @@ begin
     Facts.AddPair('project','Example project');
     Facts.AddPair('stale',TJSONBool.Create(False));
     Facts.AddPair('analysis_complete',TJSONBool.Create(True));
+    Facts.AddPair('files',TJSONArray.Create);
     Symbols:=TJSONArray.Create; Facts.AddPair('symbols',Symbols);
+    Symbol:=TJSONObject.Create.AddPair('key','unit').AddPair('name','MainForm')
+      .AddPair('kind','unit').AddPair('source_hash',StringOfChar('c',64))
+      .AddPair('range',TJSONObject.Create.AddPair('source','MainForm.pas').AddPair('line',TJSONNumber.Create(1)));
+    Symbols.AddElement(Symbol);
     Symbol:=TJSONObject.Create.AddPair('key','button').AddPair('name','Convert <script>')
       .AddPair('kind','component').AddPair('source_hash',StringOfChar('a',64))
       .AddPair('range',TJSONObject.Create.AddPair('source','MainForm.fmx').AddPair('line',TJSONNumber.Create(12)));
@@ -36,24 +41,41 @@ begin
       .AddPair('links',TJSONArray.Create));
     Model:=TDPHExplanationModel.Create(Facts);
     try
-      HTML:=Model.CookbookHTML('button');
+      HTML:=Model.ChangeGuideHTML('button');
       if not ContainsText(HTML,'MainForm.fmx:12') or not ContainsText(HTML,'MainForm.pas') or
         not ContainsText(HTML,'confirmed_static') then
-        raise Exception.Create('Cookbook lost a source citation or confirmed relationship');
+        raise Exception.Create('Change Guide lost a source citation or confirmed relationship');
       if ContainsText(HTML,'Convert <script>') or not ContainsText(HTML,'Convert &lt;script&gt;') then
-        raise Exception.Create('Cookbook did not escape an untrusted source name');
+        raise Exception.Create('Change Guide did not escape an untrusted source name');
       if not ContainsText(HTML,'not a measured execution sequence') or
         not ContainsText(HTML,'DPH has not run the target application') then
-        raise Exception.Create('Cookbook failed to qualify static evidence');
+        raise Exception.Create('Change Guide failed to qualify static evidence');
       if not ContainsText(HTML,'Exercise the visible action') or
         ContainsText(HTML,'review affected queries') then
-        raise Exception.Create('Cookbook suggested a check unsupported by the captured route');
+        raise Exception.Create('Change Guide suggested a check unsupported by the captured route');
       if not ContainsText(HTML,'Reviewed usage') or not ContainsText(HTML,'Open Knowledge records') then
-        raise Exception.Create('Cookbook omitted linked contributor guidance');
-      HTML:=Model.CookbookHTML('absent');
+        raise Exception.Create('Change Guide omitted linked contributor guidance');
+      if not ContainsText(HTML,'Use this guide to:') or
+        not ContainsText(HTML,'Where this object is used') or
+        not ContainsText(HTML,'DIRECT CONNECTION') or
+        not ContainsText(HTML,'Change Guide - Convert &lt;script&gt;') or
+        ContainsText(HTML,'â€”') then
+        raise Exception.Create('Change Guide framing or title is incorrect');
+      HTML:=Model.ChangeGuideHTML('absent');
       if not ContainsText(HTML,'Selection unavailable') then
-        raise Exception.Create('Cookbook invented a route for an absent object');
-      Writeln('PASS: cookbook evidence, escaping, limitations and missing-target behavior');
+        raise Exception.Create('Change Guide invented a route for an absent object');
+      HTML:=Model.ChangeGuideHTML('');
+      if not ContainsText(HTML,'Start with a specific project object') or
+        not ContainsText(HTML,'For example, select a button click handler') then
+        raise Exception.Create('Change Guide introduction is missing');
+      HTML:=Model.ChangeGuideHTML('unit');
+      if not ContainsText(HTML,'Broad selection:') then
+        raise Exception.Create('Change Guide did not flag a broad unit selection');
+      HTML:=Model.ProjectMapHTML;
+      if not ContainsText(HTML,'Planning a code change?') or
+        not ContainsText(HTML,'<strong>Change Guide</strong>') then
+        raise Exception.Create('Project map did not introduce the Change Guide');
+      Writeln('PASS: Change Guide introduction, evidence, escaping, limitations and missing-target behavior');
     finally Model.Free; end;
   finally Facts.Free; end;
 end.

@@ -26,7 +26,7 @@ type
     GraphToolbar: THorzScrollBox;
     ExplorerSplitter,InspectorSplitter: TSplitter;
     OpenProjectButton,OpenCacheButton,SaveProjectButton,RescanProjectButton,CloseButton,BackButton,BookmarkButton,BookmarksButton,NextPageButton,ParentButton,FullscreenButton: TButton;
-    OpenCookbookButton,ReturnToMapButton,CookbookSourceButton,CookbookImpactButton: TButton;
+    OpenChangeGuideButton,ReturnToMapButton,ChangeGuideSourceButton,ChangeGuideImpactButton: TButton;
     SearchEdit,DefinesEdit,ExternalRootsEdit,CodePageEdit: TEdit;
     CodePageLabel: TLabel;
     WholeProgramGraphButton,AllFormsGraphButton,AllDataGraphButton,ExplorerExpandButton: TButton;
@@ -768,10 +768,10 @@ type
     procedure DetailsObjectClick(Sender: TObject);
     procedure RelationsClick(Sender: TObject);
     procedure BackClick(Sender: TObject);
-    procedure OpenCookbookClick(Sender: TObject);
+    procedure OpenChangeGuideClick(Sender: TObject);
     procedure ReturnToMapClick(Sender: TObject);
-    procedure CookbookSourceClick(Sender: TObject);
-    procedure CookbookImpactClick(Sender: TObject);
+    procedure ChangeGuideSourceClick(Sender: TObject);
+    procedure ChangeGuideImpactClick(Sender: TObject);
     procedure ParentClick(Sender: TObject);
     procedure NextPageClick(Sender: TObject);
     procedure BookmarkClick(Sender: TObject);
@@ -817,7 +817,7 @@ type
     FPendingWorkspaceTab: TTabItem;
     FScreenshotOriginTab: TTabItem;
     FPage: Integer;
-    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject,FCookbookMode: Boolean;
+    FBusy,FDetached,FClosing,FBinding,FRenderingScreens,FPreparingProject,FChangeGuideMode: Boolean;
     FPreparationCompletionTicks: Integer;
     FScreenScale: Single;
     FScreenFullscreen: Boolean;
@@ -2128,11 +2128,11 @@ begin
         WorkspaceTabs.ActiveTab:=WorkspaceTabs.Tabs[Index]; Break;
       end;
     if WorkspaceTabs.ActiveTab=ExplainTab then begin
-      FCookbookMode:=False;
-      OpenCookbookButton.Visible:=True;
+      FChangeGuideMode:=False;
+      OpenChangeGuideButton.Visible:=True;
       ReturnToMapButton.Visible:=False;
-      CookbookSourceButton.Visible:=False;
-      CookbookImpactButton.Visible:=False;
+      ChangeGuideSourceButton.Visible:=False;
+      ChangeGuideImpactButton.Visible:=False;
       if FView<>nil then ShowExplanation;
       end;
     if (Sender=LessonPageCombo) and (WorkspaceTabs.ActiveTab=ExplainTab) and (FView<>nil) then begin
@@ -3825,7 +3825,7 @@ begin
   if (FLearningFacts=nil) and (FView<>nil) then RefreshLearning;
   if FLearningFacts=nil then Exit;
   if FExplanations=nil then FExplanations:=TDPHExplanationModel.Create(FLearningFacts.Document);
-  if FCookbookMode then HTML:=FExplanations.CookbookHTML(FSelected)
+  if FChangeGuideMode then HTML:=FExplanations.ChangeGuideHTML(FSelected)
   else if FSelected='' then HTML:=FExplanations.ProjectMapHTML
   else HTML:=FExplanations.ObjectLessonHTML(FSelected);
   HTML:=HTML.Replace('href="#','href="index.html#');
@@ -5973,31 +5973,31 @@ begin
   Key:=FHistory.Last; FHistory.Delete(FHistory.Count-1); SelectSymbol(Key,False);
   WorkspaceTabs.ActiveTab:=ExplainTab; StatusLabel.Text:='Returned to the previous object.';
 end;
-procedure TDPHMainForm.OpenCookbookClick(Sender: TObject);
+procedure TDPHMainForm.OpenChangeGuideClick(Sender: TObject);
 begin
   if FView=nil then begin
-    StatusLabel.Text:='Open or select a project before using the change cookbook.';
+    StatusLabel.Text:='Open or select a project before using the Change Guide.';
     Exit;
   end;
-  FCookbookMode:=True;
-  OpenCookbookButton.Visible:=False;
+  FChangeGuideMode:=True;
+  OpenChangeGuideButton.Visible:=False;
   ReturnToMapButton.Visible:=True;
-  CookbookSourceButton.Visible:=True;
-  CookbookImpactButton.Visible:=True;
+  ChangeGuideSourceButton.Visible:=True;
+  ChangeGuideImpactButton.Visible:=True;
   ShowExplanation;
   WorkspaceTabs.ActiveTab:=ExplainTab;
 end;
 procedure TDPHMainForm.ReturnToMapClick(Sender: TObject);
 begin
-  FCookbookMode:=False;
-  OpenCookbookButton.Visible:=True;
+  FChangeGuideMode:=False;
+  OpenChangeGuideButton.Visible:=True;
   ReturnToMapButton.Visible:=False;
-  CookbookSourceButton.Visible:=False;
-  CookbookImpactButton.Visible:=False;
+  ChangeGuideSourceButton.Visible:=False;
+  ChangeGuideImpactButton.Visible:=False;
   if FView<>nil then ShowExplanation;
   WorkspaceTabs.ActiveTab:=ExplainTab;
 end;
-procedure TDPHMainForm.CookbookSourceClick(Sender: TObject);
+procedure TDPHMainForm.ChangeGuideSourceClick(Sender: TObject);
 begin
   if (FView=nil) or (FSelected='') then begin
     StatusLabel.Text:='Select a project object before opening its source.';
@@ -6005,7 +6005,7 @@ begin
   end;
   WorkspaceTabs.ActiveTab:=SourceTab;
 end;
-procedure TDPHMainForm.CookbookImpactClick(Sender: TObject);
+procedure TDPHMainForm.ChangeGuideImpactClick(Sender: TObject);
 begin
   if (FView=nil) or (FSelected='') then begin
     StatusLabel.Text:='Select a project object before opening its impact graph.';
