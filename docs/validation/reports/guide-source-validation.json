@@ -1,5 +1,5 @@
 {
-  "guide_version": 60,
+  "guide_version": 61,
   "last_changed": "2026-10-23",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -61,7 +61,7 @@
     "DPH.UI.ComponentDependency.fmx": "3b604fcf033e37ebda4aa6968e1a9e6ffe11bf40416fac5fbdd39fa2599d7862",
     "DPH.UI.DatabaseDictionary.fmx": "5b40f12073d093c4e0b7f708440dd125662dc8e76a0b3c3bf30a4c749c69484e",
     "DPH.UI.Glossary.fmx": "3334c41ac643daa3596f1a5c9cb8fb65c3447daf77cf00006d6a0ca7a9d517d5",
-    "DPH.UI.Main.fmx": "692a0caff7ba1c076422bee6d54ced0d96b1a274d4a17777ecb1c72ec34d7a40",
+    "DPH.UI.Main.fmx": "d28416a85e899357c97911665515a48cc08bce38c5a489b7c90c9397fce60f39",
     "DPH.UI.Progress.fmx": "98e38e7a4fcc4e889db731bcbff960ed0468c766500ee108b9bb732c5b7a4096",
     "DPH.UI.ProjectProfile.fmx": "9f20888a47a17cf4ed982a438127e111b6db74ddabffcfcbfc1b16368e5cd690",
     "DPH.UI.SavePrompt.fmx": "ac9de1814a8651bb28c25bd935d6f2dd5d4cc6c098e7320113f59da58981ae27",
@@ -74,9 +74,9 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "85f6357aea955d2438620a955003a41f462639ff43a4fcb32f3f8e3b4f6d8e26",
-    "docs/guides/source/DPH_User_Guide.txt": "422759f7ae2589f9c793a0dbad738187bbf53151c26825be8fb1b12838838e51",
-    "DelphiProjectHandoff.dproj": "ebf2b96595a019d1419b7116fee0d85a51624991261741e89fdb7109c941a19a"
+    "docs/guides/source/DPH_Engineering_Guide.txt": "ed91ca6b680a0ea0015f85d18830386b21dd9cfbe1f7d46859d12808dce81586",
+    "docs/guides/source/DPH_User_Guide.txt": "43a26ef966cc4d6fd3efd2d34c9497a99c9a6eb8eefd3971ab78496076cc99cf",
+    "DelphiProjectHandoff.dproj": "8fcef75bb720674224fa9610ba05ac92c6213bcb966bdaba5a0612033e29dfe3"
   },
   "content": {
     "User": {

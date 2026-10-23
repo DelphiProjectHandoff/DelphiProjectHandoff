@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.19 - WORKSPACE OPERATIONS
+DELPHI PROJECT HANDOFF 0.8.0.20 - WORKSPACE OPERATIONS
 Last changed: 23 October 2026
 
 Start with Getting started. Choose Open application and select the target
@@ -44,7 +44,7 @@ Generated preview captions can use the selected project's de-DE.json pack
 when available. See the User Guide for limitations and the Engineering Guide for
 the underlying capture and verification rules.
 
-The 0.8.0.19 release has complete Win64 and Win32 ZIPs, an independent
+The 0.8.0.20 release has complete Win64 and Win32 ZIPs, an independent
 build-ready source ZIP, and a separate optional translation-authoring ZIP.
 One Windows ZIP is enough to run the matching edition. Keep its loader,
 runtime language packs, help, and shared assets with the extracted package.

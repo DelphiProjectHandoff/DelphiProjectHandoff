@@ -8,7 +8,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parents[1]
 CHANGED='23 October 2026'
-VERSION=60
+VERSION=61
 LAYER_PURPOSE={
 'Project.Source':'Owns original bytes, decoding, character to byte ranges and verified acquisition. Preserve byte identity and ranges when changing encodings.',
 'Project.Inventory':'Discovers the selected project and permitted dependencies under its configuration. Maintains source availability, defines and path boundaries.',
@@ -158,12 +158,12 @@ def document(kind,blocks):
  doc.styles['Heading 2'].font.color.rgb=RGBColor.from_string('146CB4')
  doc.styles['Heading 3'].font.bold=True
  for name in ['TOC 1','TOC 2']:
-  doc.styles[name].paragraph_format.space_after=Pt(2);doc.styles[name].paragraph_format.line_spacing=1.0
+  doc.styles[name].paragraph_format.space_after=Pt(3);doc.styles[name].paragraph_format.line_spacing=1.10
  doc.styles['TOC 2'].paragraph_format.left_indent=Inches(.18)
  for border in list(doc.styles.element.iter(qn('w:pBdr'))):border.getparent().remove(border)
  title='Delphi Project Handoff '+kind+' Guide'
  props=doc.core_properties;props.author='';props.last_modified_by='';props.title=title;props.subject='Detailed application operation' if kind=='User' else 'Architecture contracts implementation and maintenance';props.comments='';props.keywords=''
- doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.19  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
+ doc.add_paragraph(title,'Title');doc.add_paragraph('Explore an unfamiliar Delphi application' if kind=='User' else 'Architecture, data contracts, validation and maintenance','Subtitle');doc.add_paragraph('Experimental release 0.8.0.20  |  Guide edition '+str(VERSION));doc.add_paragraph('Last changed '+CHANGED)
  intro='Open a project, follow its files into screens and actions, and assess what the evidence can show' if kind=='User' else 'From architecture and data ownership to source analysis, storage, testing and release'
  doc.add_paragraph(intro);doc.add_paragraph('Experimental software');doc.add_paragraph('This manual describes Delphi Project Handoff. Information about a selected Delphi application is presented separately by the program.')
  doc.add_page_break();doc.add_paragraph('Contents','Title');field(doc.add_paragraph(),'begin',' TOC \\o "1-2" \\h \\z \\u ');field(doc.add_paragraph(),'separate')

@@ -1,0 +1,56 @@
+DELPHI PROJECT HANDOFF 0.8.0.20
+Experimental beta | 23 October 2026
+
+WHAT CHANGED
+
+The Project map toolbar now gives its horizontal scrollbar room below the
+navigation buttons. When Change Guide adds View source code, Change impact,
+and Return to map, the scrollbar no longer covers button labels. The same
+layout also applies while selecting or expanding objects and when the window
+is too narrow to show every toolbar action at once.
+
+Change Guide remains an investigation aid. It gathers source-linked uses,
+nearby connections, files worth opening, suggested checks, and unresolved
+questions for a selected control or routine. These are findings from static
+inspection, not observations of a running target application or proof that a
+proposed edit is safe. Its generated narrative is English-language beta
+content; native navigation buttons use the 35 offline interface language
+packs. Project source and documents stay local and retain their original
+language.
+
+DOWNLOADS AND FIRST USE
+
+Choose one complete Windows ZIP to run the application:
+
+  DPH-0.8.0.20-experimental-Win64.zip
+  DPH-0.8.0.20-experimental-Win32.zip
+
+Extract the entire ZIP to a writable folder. Run DelphiProjectHandoff.exe
+inside the Win64 or Win32 folder. Keep WebView2Loader.dll beside the
+executable, retain that edition's Localization/Languages folder, and keep
+the shared help, migrations, and images and icons folders. Microsoft
+WebView2 Runtime is required for embedded pages. One Windows ZIP is enough;
+the other architecture and the source ZIP are not needed to run DPH.
+
+Developers can download the matching editable-source ZIP. It includes the
+IDE-editable forms, RAD Studio 37 project, bundled DAT design package and
+dependencies, 35 runtime language packs, help, guides, and offline assets.
+The fourth ZIP contains optional Localization/Development projects for
+editing language packs in Delphi App Translation Studio. It is not needed
+to run or build DPH. GitHub's Code > Download ZIP is a repository snapshot,
+not a compiled Windows application.
+
+In Project map, choose Change Guide, then select a specific control or
+routine. Use the toolbar to open source or the change-impact diagram and
+return to the guide. If all buttons do not fit, scroll the toolbar sideways;
+the buttons should remain fully readable above its scrollbar.
+
+VERIFICATION AND FEEDBACK
+
+The Win32 and Win64 Release configurations compiled with RAD Studio 37.
+The package ZIPs include file checksum manifests. The User and Engineering
+Guides, local HTML help, Change Guide directions, and first-use instructions
+ship with this release. Developer feedback, including a selected object and
+steps to reproduce an issue, is welcome at churchesite@gmail.com.
+
+The 0.8.0.19 release remains available for comparison.

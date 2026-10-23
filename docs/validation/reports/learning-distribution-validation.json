@@ -1,17 +1,17 @@
 ﻿{
-    "version":  "0.8.0.19",
+    "version":  "0.8.0.20",
     "packages":  [
                      {
                          "architecture":  "Win64",
-                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.19-experimental-Win64.zip",
-                         "binary_sha256":  "0eb3f883bdf6664e357e24ced240674010fe8a4cde21a5895a1749abee542da4",
+                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.20-experimental-Win64.zip",
+                         "binary_sha256":  "ef87023d87b3bc300039079a3249c4051ac4df6376d9fe86a64a2123e23c9d0c",
                          "files":  111,
                          "extracted_file_check":  "PASS; temporary extraction removed"
                      },
                      {
                          "architecture":  "Win32",
-                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.19-experimental-Win32.zip",
-                         "binary_sha256":  "00db408f6b2bc608d3987ba7359bf4b7be50c48f0232af7b3b697d9c79f85d58",
+                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.20-experimental-Win32.zip",
+                         "binary_sha256":  "0bc29ee9a898fac77a7e2cc45d5e7e56a0047002f8024eee5321f0bbdaacac85",
                          "files":  111,
                          "extracted_file_check":  "PASS; temporary extraction removed"
                      }

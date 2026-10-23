@@ -1,5 +1,5 @@
 DELPHI PROJECT HANDOFF CHANGE GUIDE
-Experimental beta 0.8.0.19 | Last changed 23 October 2026
+Experimental beta 0.8.0.20 | Last changed 23 October 2026
 
 Purpose
 
@@ -48,8 +48,9 @@ Use View source code to inspect the selected declaration and Change impact
 to open the existing dependency diagram. Return to guide resumes the same
 guide after visiting either view. Choose another object in the left list to
 start a new route. Return to map restores the normal Project map explanation.
-The toolbar scrolls horizontally when a window or translated button labels
-need more width.
+The map toolbar scrolls horizontally when its buttons do not fit. Its
+scrollbar sits below the buttons so labels remain readable at narrow window
+widths and with longer translated labels.
 
 Interpretation and feedback
 
