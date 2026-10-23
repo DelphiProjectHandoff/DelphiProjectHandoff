@@ -1,12 +1,19 @@
-param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.17')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.18')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
-$archiveName='DPH_v'+$Version.Replace('.','_')+'_Source_Distribution_'+(Get-Date -Format 'yyyy-MM-dd_HHmmss')+'.zip'
+$stamp=Get-Date -Format 'yyyy-MM-dd_HHmmss'
+$archiveName='DPH_v'+$Version.Replace('.','_')+'_Source_Distribution_'+$stamp+'.zip'
 $archivePath=Join-Path $projectRoot ('source distributions\'+$archiveName)
 if (Test-Path -LiteralPath $archivePath) {throw "Archive already exists: $archivePath"}
+$developmentDirectory=Join-Path $projectRoot 'Localization\Development'
+$developmentFiles=@(Get-ChildItem -LiteralPath $developmentDirectory -File -Recurse)
+if($developmentFiles.Count -ne 35) {throw "Expected 35 optional translation-authoring projects; found $($developmentFiles.Count)"}
+$authoringName='DPH_v'+$Version.Replace('.','_')+'_Translation_Authoring_'+$stamp+'.zip'
+$authoringPath=Join-Path $projectRoot ('source distributions\'+$authoringName)
+if (Test-Path -LiteralPath $authoringPath) {throw "Archive already exists: $authoringPath"}
 $languagePacks=Get-ChildItem -LiteralPath (Join-Path $projectRoot 'Localization\Languages') -File -Filter '*.json' |
   Where-Object {$_.Name -notlike '*.layout-proposal.json'}
 if($languagePacks.Count -ne 35) {throw "Expected 35 DPH language packs; found $($languagePacks.Count)"}
@@ -27,6 +34,7 @@ foreach($folder in @('dependencies\DelphiAppTranslation','Localization','migrati
  $fullFolder=Join-Path $projectRoot $folder
  foreach($file in Get-ChildItem -LiteralPath $fullFolder -File -Recurse) {
   if($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw "Reparse point in source package: $($file.FullName)"}
+  if($file.FullName.StartsWith($developmentDirectory+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {continue}
   [void]$files.Add($file.FullName.Substring($projectRoot.Length+1))
  }
 }
@@ -43,8 +51,11 @@ This archive contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
 guide source, guide illustrations, the OrderPractice example, all 35 offline
 interface language packs, the experimental bundled English-to-German project-text
-model, and the bundled build dependencies. It contains no personal .dphdb databases,
-Git history, or compiled DPH executable.
+model, and the bundled build dependencies. The optional Translation Authoring
+ZIP has the 35 Localization\Development translation-project files for people
+editing or extending language packs. It is not needed to build or run DPH.
+This archive contains no personal .dphdb databases, Git history, or compiled
+DPH executable.
 
 TO BUILD
 1. Extract the entire ZIP into a writable local folder. Do not build in the ZIP.
@@ -138,3 +149,48 @@ try {
 
 Write-Output "SOURCE_DISTRIBUTION=$archivePath"
 Write-Output "FILES=$($files.Count) SHA256=$((Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant())"
+
+$authoringReadme=@"
+DELPHI PROJECT HANDOFF $Version - OPTIONAL TRANSLATION AUTHORING FILES
+
+This ZIP holds 35 translation-project JSON files under Localization\Development.
+They are for developers editing language packs with Delphi App Translation
+Studio. They are not needed to install DPH, run either Windows edition, or
+build the application from the matching editable-source ZIP.
+
+If you plan to edit translations, extract the matching source ZIP first.
+Then extract this ZIP into the same folder, preserving the
+Localization\Development directory. Do not replace the 35 runtime language
+packs in Localization\Languages with these authoring projects.
+
+The matching source ZIP includes the IDE-editable forms, design package,
+runtime language packs, dependencies, guides, and build instructions.
+"@
+$authoringHashes=[Collections.Generic.List[string]]::new()
+$addon=[IO.Compression.ZipFile]::Open($authoringPath,[IO.Compression.ZipArchiveMode]::Create)
+try {
+ foreach($file in ($developmentFiles | Sort-Object FullName)) {
+  if($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw "Reparse point in authoring package: $($file.FullName)"}
+  $relative=$file.FullName.Substring($projectRoot.Length+1).Replace('\','/')
+  [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($addon,$file.FullName,$relative,[IO.Compression.CompressionLevel]::Optimal)
+  $authoringHashes.Add("$((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $relative")
+ }
+ foreach($item in @(@('TRANSLATION_AUTHORING_README.txt',$authoringReadme),@('TRANSLATION_AUTHORING_SHA256.txt',($authoringHashes -join "`n")+"`n"))) {
+  $entry=$addon.CreateEntry($item[0],[IO.Compression.CompressionLevel]::Optimal)
+  $writer=[IO.StreamWriter]::new($entry.Open(),[Text.UTF8Encoding]::new($false))
+  try {$writer.Write($item[1])} finally {$writer.Dispose()}
+ }
+} finally {$addon.Dispose()}
+$addonCheck=[IO.Compression.ZipFile]::OpenRead($authoringPath)
+try {
+ if($addonCheck.Entries.Count -ne $developmentFiles.Count+2) {throw 'Authoring package entry count differs'}
+ foreach($line in $authoringHashes) {
+  $entry=$addonCheck.GetEntry($line.Substring(66))
+  if($null -eq $entry) {throw "Authoring archive entry missing: $line"}
+  $stream=$entry.Open()
+  try {$sha=[Security.Cryptography.SHA256]::Create(); try {$actual=([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','').ToLowerInvariant()} finally {$sha.Dispose()}} finally {$stream.Dispose()}
+  if($actual -ne $line.Substring(0,64)) {throw "Authoring archive checksum differs: $($entry.FullName)"}
+ }
+} finally {$addonCheck.Dispose()}
+Write-Output "TRANSLATION_AUTHORING=$authoringPath"
+Write-Output "FILES=$($developmentFiles.Count) SHA256=$((Get-FileHash -LiteralPath $authoringPath -Algorithm SHA256).Hash.ToLowerInvariant())"

@@ -1,0 +1,42 @@
+DELPHI PROJECT HANDOFF 0.8.0.18 EXPERIMENTAL BETA
+23 October 2026
+
+This release makes the downloads easier to choose and smaller to transfer.
+Application behavior and the 35 offline interface languages are carried
+forward from 0.8.0.17. Project text remains local and in its original
+language. The 0.8.0.17 packages remain available for comparison.
+
+CHOOSE ONE DOWNLOAD PATH
+
+To RUN DPH, download ONE Windows ZIP:
+- Win64 is recommended for 64-bit Windows.
+- Win32 is provided when the 32-bit edition is needed.
+
+Each Windows ZIP is complete for its architecture. Extract the entire ZIP
+to a writable folder. Open its Win64 or Win32 folder and run
+DelphiProjectHandoff.exe. Keep WebView2Loader.dll beside the executable,
+and keep that edition's Localization\Languages folder and the shared
+folders where extracted. Do not take the executable out by itself.
+Microsoft WebView2 Runtime is needed for embedded pages.
+
+To BUILD DPH in RAD Studio 37, download the Editable Source ZIP. It includes
+the IDE-editable forms, project/resource files, required DAT design package
+and runtime dependencies, all 35 interface language packs, guides, help,
+and the offline translation assets. No Windows ZIP or optional authoring
+ZIP is needed for a normal source build. Follow
+docs\guides\Run_And_Test.txt after extraction.
+
+The optional Translation Authoring ZIP contains 35 development JSON
+projects for editing or extending language packs. Only translation
+contributors need it. Extract the Editable Source ZIP first; then extract
+the authoring ZIP into the same folder to add Localization\Development.
+Do not replace Localization\Languages with these development projects.
+
+All release ZIPs include a SHA-256 file manifest or are hash-verified by
+the packaging process. Matching packages are kept in both the public and
+private project repositories and their GitHub releases.
+
+This is experimental software for developer evaluation. DPH reads a
+selected Delphi application; it does not compile, run, or modify it.
+Report reproducible issues and the affected edition and language to
+churchesite@gmail.com.

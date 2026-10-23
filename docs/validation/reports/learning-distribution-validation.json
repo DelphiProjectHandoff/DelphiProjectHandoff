@@ -1,8 +1,20 @@
 ﻿{
-    "version":  "0.8.0.17",
-    "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.17-experimental-Windows.zip",
-    "binary_sha256":  "52cfdb6a499d0ef5712aa082120e43e0d9e42d127b305d075e13c018131608ba",
-    "files":  147,
-    "extracted_file_check":  "PASS; temporary extraction removed",
-    "result":  "PASS package integrity; independent beginner acceptance not performed"
+    "version":  "0.8.0.18",
+    "packages":  [
+                     {
+                         "architecture":  "Win64",
+                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.18-experimental-Win64.zip",
+                         "binary_sha256":  "03f0b88725d180522ba1cb5bcb40e1e66b7af88d6f015323fb646061c8ba72be",
+                         "files":  110,
+                         "extracted_file_check":  "PASS; temporary extraction removed"
+                     },
+                     {
+                         "architecture":  "Win32",
+                         "binary":  "C:\\New Delphi Projects\\Delphi Project Handoff\\export\\DPH-0.8.0.18-experimental-Win32.zip",
+                         "binary_sha256":  "1b57c1ffe5865ccec7d47092f62abfddac15494c07389ebed8579a0fcc06404a",
+                         "files":  110,
+                         "extracted_file_check":  "PASS; temporary extraction removed"
+                     }
+                 ],
+    "result":  "PASS package integrity for both architectures; independent beginner acceptance not performed"
 }

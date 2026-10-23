@@ -1,4 +1,4 @@
-DELPHI PROJECT HANDOFF 0.8.0.17 - DEVELOPER TEST DIRECTIONS
+DELPHI PROJECT HANDOFF 0.8.0.18 - DEVELOPER TEST DIRECTIONS
 Last changed: 23 October 2026
 
 Before opening the main form in the designer, install the supplied DAT design

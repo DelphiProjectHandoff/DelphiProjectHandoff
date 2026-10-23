@@ -1,16 +1,17 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.17',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.18',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $projectRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
-$packageName='DPH-'+$Version+'-experimental-Windows'
-$packageRoot=Join-Path $projectRoot ('bin\distribution\'+$packageName)
-if (Test-Path -LiteralPath $packageRoot) {throw 'Package staging already exists; choose a fresh version'}
-[IO.Directory]::CreateDirectory($packageRoot) | Out-Null
-foreach ($arch in @('Win32','Win64')) {
+$packages=@()
+foreach ($arch in @('Win64','Win32')) {
+ $packageName='DPH-'+$Version+'-experimental-'+$arch
+ $packageRoot=Join-Path $projectRoot ('bin\distribution\'+$packageName)
+ if (Test-Path -LiteralPath $packageRoot) {throw "Package staging already exists: $packageRoot"}
+ [IO.Directory]::CreateDirectory($packageRoot) | Out-Null
  $archRoot=Join-Path $packageRoot $arch
  [IO.Directory]::CreateDirectory($archRoot) | Out-Null
  foreach ($name in @('DelphiProjectHandoff.exe','WebView2Loader.dll')) {
@@ -27,7 +28,6 @@ foreach ($arch in @('Win32','Win64')) {
    Where-Object {$_.Name -notlike '*.layout-proposal.json'}
  if($packs.Count -ne 35) {throw "Expected 35 $arch language packs; found $($packs.Count)"}
  foreach($pack in $packs) {Copy-Item -LiteralPath $pack.FullName -Destination $languageDestination}
-}
 foreach ($directory in @('migrations','help','images and icons')) {
  Copy-Item -LiteralPath (Join-Path $projectRoot $directory) -Destination (Join-Path $packageRoot $directory) -Recurse
 }
@@ -52,8 +52,9 @@ Delphi Project Handoff
 Experimental Windows desktop handoff application - version $Version
 
 1. Extract this whole folder to a writable local location.
-2. On 64-bit Windows, open Win64 and double-click DelphiProjectHandoff.exe.
-   Use the Win32 copy only when you need the 32-bit edition.
+2. Open the $arch folder and double-click DelphiProjectHandoff.exe.
+   This ZIP contains only the $arch edition. To use the other architecture,
+   download its separately labeled ZIP from the same release page.
 3. Click Open application and select a Delphi .dproj, .dpr, or .groupproj.
    DPH reads the project; it does not compile or run the selected application.
 4. Start with Handoff dossier for the captured purpose evidence, startup
@@ -65,7 +66,7 @@ Experimental Windows desktop handoff application - version $Version
    demand and open at 90 percent zoom. They are not captures of the running
    application; custom painting and runtime data may differ.
 6. Choose your language from the selector in the main header. All 35 language
-   packs work offline and remain beside each Windows edition.
+   packs work offline and remain beside this edition's executable.
    The experimental English-to-German project-text model is also bundled in
    Localization\OfflineTranslation and runs without Internet access.
 7. A new capture stays temporary. Click Save project at any time to keep it.
@@ -106,6 +107,8 @@ foreach ($property in $hashes.GetEnumerator()) {
 $verificationParent=[IO.Path]::GetFullPath((Join-Path $projectRoot 'bin'))+[IO.Path]::DirectorySeparatorChar
 if (-not ([IO.Path]::GetFullPath($verificationRoot)).StartsWith($verificationParent,[StringComparison]::OrdinalIgnoreCase)) {throw 'Unsafe temporary verification path'}
 [IO.Directory]::Delete($verificationRoot,$true)
-[ordered]@{version=$Version;binary=$binaryZip;binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();files=$hashes.Count;extracted_file_check='PASS; temporary extraction removed';result='PASS package integrity; independent beginner acceptance not performed'} |
- ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $projectRoot 'docs\validation\reports\learning-distribution-validation.json') -Encoding UTF8
-Write-Output "PACKAGED AND VERIFIED $binaryZip"
+ $packages+=([ordered]@{architecture=$arch;binary=$binaryZip;binary_sha256=(Get-FileHash -LiteralPath $binaryZip -Algorithm SHA256).Hash.ToLowerInvariant();files=$hashes.Count;extracted_file_check='PASS; temporary extraction removed'})
+ Write-Output "PACKAGED AND VERIFIED $binaryZip"
+}
+[ordered]@{version=$Version;packages=$packages;result='PASS package integrity for both architectures; independent beginner acceptance not performed'} |
+ ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $projectRoot 'docs\validation\reports\learning-distribution-validation.json') -Encoding UTF8
