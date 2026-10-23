@@ -1,5 +1,5 @@
-DELPHI PROJECT HANDOFF 0.8.0.10 - DEVELOPER TEST DIRECTIONS
-Last changed: 17 October 2026
+DELPHI PROJECT HANDOFF 0.8.0.17 - DEVELOPER TEST DIRECTIONS
+Last changed: 23 October 2026
 
 Before opening the main form in the designer, install the supplied DAT design
 package through RAD Studio's Component > Install Packages > Add command. See

@@ -1,0 +1,40 @@
+DELPHI PROJECT HANDOFF 0.8.0.17 EXPERIMENTAL BETA
+23 October 2026
+
+This release refreshes the Windows and editable-source packages with the
+project corrections made after 0.8.0.16. It is intended for developer
+evaluation; keep the extracted package together and test findings against
+the selected application's source and actual behavior.
+
+WHAT CHANGED
+
+- RAD Studio now writes and runs the application from the configured
+  bin\<platform>\<configuration> folder. Debug and Release targets use the
+  matching output path.
+- Backup and restore dialogs are owned by the main form in the visual
+  designer. Startup no longer changes their folder properties while the
+  form is being created, avoiding the observed access violation.
+- The Windows application resource and project icon/logo settings use the
+  supplied artwork. The main form remains editable in RAD Studio.
+- Both Windows editions and the source distribution now include these
+  corrections. The 0.8.0.16 packages remain available as historical builds.
+
+CONTINUING BEHAVIOR
+
+The 35 offline interface language packs and the context-sensitive button
+translations introduced in 0.8.0.16 are retained. Project source files and
+documents remain local and in their original language. DPH reads a selected
+application's project, source, forms, and eligible documents; it does not
+compile, run, or modify that application.
+
+PACKAGE USE
+
+For the Windows ZIP, extract the entire archive. Run the Win64 or Win32
+DelphiProjectHandoff.exe with WebView2Loader.dll beside it and that edition's
+Localization\Languages folder in place. Microsoft WebView2 Runtime is needed
+for embedded pages. For the editable-source ZIP, read
+docs\guides\Run_And_Test.txt and install the supplied translation design
+package before opening the main form in RAD Studio 37.
+
+Report reproducible issues and the affected build and language to
+churchesite@gmail.com.

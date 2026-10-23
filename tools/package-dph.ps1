@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.16',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.17',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -36,7 +36,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $offlineTranslation 'package\worker\
  throw 'Offline German translation engine is missing'
 }
 Copy-Item -LiteralPath $offlineTranslation -Destination (Join-Path $packageRoot 'Localization\OfflineTranslation') -Recurse
-foreach ($relative in @('LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py')) {
+foreach ($relative in @('LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py',("docs\guides\Release_Notes_$Version.txt"))) {
  $destination=Join-Path $packageRoot $relative
  [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
  Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $destination

@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.16')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.17')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -13,7 +13,7 @@ if($languagePacks.Count -ne 35) {throw "Expected 35 DPH language packs; found $(
 
 $files=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach($relative in @('DelphiProjectHandoff.dpr','DelphiProjectHandoff.dproj',
-  'DelphiProjectHandoff.res','README.md','LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\Run_And_Test.txt',
+  'DelphiProjectHandoff.res','README.md','LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\Run_And_Test.txt',("docs\guides\Release_Notes_$Version.txt"),
   'docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx',
   'docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf')) {
  [void]$files.Add($relative)
