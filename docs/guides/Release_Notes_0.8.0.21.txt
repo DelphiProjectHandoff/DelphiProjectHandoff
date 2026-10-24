@@ -1,0 +1,42 @@
+DELPHI PROJECT HANDOFF 0.8.0.21 — EXPERIMENTAL BETA
+23 October 2026
+
+This release makes the download choices clearer and removes development-only
+projects from the packages offered to ordinary users. It does not change the
+analysis or Change Guide behavior introduced in earlier beta releases.
+
+CHOOSE THE RIGHT DOWNLOAD
+
+Win64 or Win32: Each Windows ZIP is a complete ready-to-run edition for its
+architecture. Extract the whole ZIP and run DelphiProjectHandoff.exe inside
+the matching Win64 or Win32 folder. RAD Studio and DAT IDE components are not
+needed to run either executable. Keep WebView2Loader.dll beside the EXE and
+the supplied Localization, help, migrations, and artwork folders in place.
+Microsoft WebView2 Runtime is required for formatted embedded pages.
+
+Build-ready source: This ZIP is for developers who intend to inspect or
+compile the editable project in RAD Studio 37. Before opening
+DelphiProjectHandoff.dproj or its main form in the IDE, install the supplied
+DATLanguageManagerFMXDesign.bpl through Component > Install Packages > Add.
+The package and detailed instructions are under
+export/DAT-component-kit/DelphiProjectHandoff. The project includes the DAT
+compiler source path; the optional translation-authoring ZIP is not needed
+for a normal build.
+
+Translation authoring: This separate optional ZIP contains 35 language-pack
+development projects. It is intended for contributors editing translations,
+not for installing or running DPH.
+
+PACKAGE CLEANUP
+
+The release source ZIP omits tests/fixtures and the unrelated OrderPractice
+example, including their .dproj files. These remain in the full Git
+repository for development. The Windows ZIPs omit developer-only test
+directions and packaging tools. The source ZIP retains only the tools needed
+to rebuild guides and create release packages. No test fixture, saved owner
+capture, or unrelated project should appear in a release ZIP.
+
+This is experimental software. Changes to the open source are best discussed
+with the maintainer before distribution; modified builds should not be
+presented as official DPH releases. Feedback is welcome at
+churchesite@gmail.com.

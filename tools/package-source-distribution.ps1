@@ -1,4 +1,4 @@
-param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.20')
+param([ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.21')
 
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -29,8 +29,8 @@ foreach($file in Get-ChildItem -LiteralPath $projectRoot -File) {
  if($file.Name -match '^DPH\..*\.(pas|fmx)$') {[void]$files.Add($file.Name)}
 }
 foreach($folder in @('dependencies\DelphiAppTranslation','Localization','migrations','help',
-  'images and icons','samples\OrderPractice','docs\guides\source',
-  'docs\guides\assets','tests','tools\WebView2','export\DAT-component-kit')) {
+  'images and icons','docs\guides\source','docs\guides\assets',
+  'tools\WebView2','export\DAT-component-kit')) {
  $fullFolder=Join-Path $projectRoot $folder
  foreach($file in Get-ChildItem -LiteralPath $fullFolder -File -Recurse) {
   if($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw "Reparse point in source package: $($file.FullName)"}
@@ -38,33 +38,39 @@ foreach($folder in @('dependencies\DelphiAppTranslation','Localization','migrati
   [void]$files.Add($file.FullName.Substring($projectRoot.Length+1))
  }
 }
-foreach($file in Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tools') -File) {
- if($file.Extension -in @('.cmd','.ps1','.dpr','.py')) {
-  [void]$files.Add('tools\'+$file.Name)
- }
+foreach($name in @('build-guides.py','export-pdf.ps1','finalize-guide.py',
+  'package-dph.ps1','package-source-distribution.ps1','render-guides.ps1')) {
+ [void]$files.Add('tools\'+$name)
 }
 
 $readme=@"
 DELPHI PROJECT HANDOFF $Version - EDITABLE SOURCE DISTRIBUTION
 
-This archive contains the Delphi application source, editable FMX forms,
+If you only want to run DPH, download one complete Win64 or Win32 Windows ZIP
+instead. Its executable needs no RAD Studio component installation.
+
+This archive is for developers opening the DPH source in RAD Studio 37. It
+contains the Delphi application source, editable FMX forms,
 project and resource files, database migrations, the local HTML help, graphics,
-guide source, guide illustrations, the OrderPractice example, all 35 offline
+guide source, guide illustrations, all 35 offline
 interface language packs, the experimental bundled English-to-German project-text
 model, and the bundled build dependencies. The optional Translation Authoring
 ZIP has the 35 Localization\Development translation-project files for people
 editing or extending language packs. It is not needed to build or run DPH.
-This archive contains no personal .dphdb databases, Git history, or compiled
-DPH executable.
+This archive contains no test fixtures, example projects, personal .dphdb
+databases, Git history, or compiled DPH executable. The full Git repository
+retains developer tests; they are not part of this release source ZIP.
 
 TO BUILD
 1. Extract the entire ZIP into a writable local folder. Do not build in the ZIP.
-2. Before opening the main form in RAD Studio 37, choose Component > Install
+2. Before opening DelphiProjectHandoff.dproj or its main form in RAD Studio 37,
+   choose Component > Install
    Packages > Add and select the supplied DAT FMX design BPL under
    export\DAT-component-kit\DelphiProjectHandoff\DesignPackages\Win32\Release.
    Keep its adjacent runtime BPLs. The project already includes the DAT source
    search path; there is no separate dependency preparation command. See
    export\DAT-component-kit\DelphiProjectHandoff\README.txt for details.
+   The two DAT language controls on the editable form require that IDE package.
 3. Open DelphiProjectHandoff.dproj. Select Win64 or Win32 and Release; Build.
 4. Find the executable in bin\Win64\Release or bin\Win32\Release. Keep the
    corresponding WebView2Loader.dll beside it. The project copies that loader
@@ -135,6 +141,14 @@ try {
    'SOURCE_DISTRIBUTION_README.txt','SHA256.txt')) {
    if(-not $names.Contains($required)) {throw "Source archive verification failed: $required is absent"}
  }
+  foreach($name in $names) {
+    if($name.StartsWith('tests/',[StringComparison]::OrdinalIgnoreCase) -or
+      ($name.StartsWith('samples/',[StringComparison]::OrdinalIgnoreCase) -and $name -ne 'samples/') -or
+      ($name -match '(?i)\.(dproj|dpr|groupproj)$' -and
+       $name -notin @('DelphiProjectHandoff.dproj','DelphiProjectHandoff.dpr'))) {
+      throw "Development fixture or unrelated project in source archive: $name"
+    }
+  }
  foreach($line in $hashLines) {
    $expected=$line.Substring(0,64)
    $name=$line.Substring(66)

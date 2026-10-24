@@ -1,5 +1,5 @@
 param(
- [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.20',
+ [ValidatePattern('^[0-9]+(\.[0-9]+){2,3}$')][string]$Version='0.8.0.21',
  [string]$Win32BuildDirectory='bin\Win32\Release'
 )
 $ErrorActionPreference='Stop'
@@ -36,7 +36,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $offlineTranslation 'package\worker\
  throw 'Offline German translation engine is missing'
 }
 Copy-Item -LiteralPath $offlineTranslation -Destination (Join-Path $packageRoot 'Localization\OfflineTranslation') -Recurse
-foreach ($relative in @('LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Change_Guide.txt','docs\guides\Run_And_Test.txt','docs\guides\Developer_Test_Directions.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt','tools\export-pdf.ps1','tools\finalize-guide.py',("docs\guides\Release_Notes_$Version.txt"))) {
+foreach ($relative in @('LICENSE','THIRD_PARTY_NOTICES.md','docs\guides\DPH_User_Guide.docx','docs\guides\DPH_Engineering_Guide.docx','docs\guides\Change_Guide.txt','docs\guides\Run_And_Test.txt','docs\guides\Workspace_Operations.txt','docs\pdf\DPH_User_Guide.pdf','docs\pdf\DPH_Engineering_Guide.pdf','Databases\README.txt',("docs\guides\Release_Notes_$Version.txt"))) {
  $destination=Join-Path $packageRoot $relative
  [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
  Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $destination
@@ -51,7 +51,9 @@ foreach ($name in @('LICENSE','SNAPSHOT.json')) {
 Delphi Project Handoff
 Experimental Windows desktop handoff application - version $Version
 
-1. Extract this whole folder to a writable local location.
+1. Extract this whole folder to a writable local location. This is the
+   ready-to-run edition; no RAD Studio or DAT language-component installation
+   is needed. Do not open a .dproj to run this edition.
 2. Open the $arch folder and double-click DelphiProjectHandoff.exe.
    This ZIP contains only the $arch edition. To use the other architecture,
    download its separately labeled ZIP from the same release page.
@@ -96,7 +98,10 @@ This package contains no owner lesson databases or private documents.
 $hashes=[ordered]@{}
 foreach ($file in Get-ChildItem -LiteralPath $packageRoot -File -Recurse | Sort-Object FullName) {
  if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) {throw 'Reparse package content is not permitted'}
- $relative=$file.FullName.Substring($packageRoot.Length+1).Replace('\','/')
+  $relative=$file.FullName.Substring($packageRoot.Length+1).Replace('\','/')
+  if ($relative -match '(?i)(^|/)(tests|samples|tools)/|\.(dproj|dpr|dpk|pas|fmx|dphdb)$') {
+   throw "Development or owner file in Windows package: $relative"
+  }
  $hashes[$relative]=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 $hashes | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $packageRoot 'SHA256.json') -Encoding UTF8

@@ -1,4 +1,4 @@
-RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.20
+RUN AND TEST DELPHI PROJECT HANDOFF 0.8.0.21
 Last changed: 23 October 2026
 
 BUILD AND START FROM SOURCE
@@ -119,6 +119,6 @@ CHECK REOPENING AND SOURCE BUILD
 
 If embedded HTML does not display, install the Microsoft WebView2 Runtime.
 The project map and source-based analysis still require no target execution.
-The 0.8.0.20 release offers four ZIPs: complete Win64 and Win32 editions, a
+The 0.8.0.21 release offers four ZIPs: complete Win64 and Win32 editions, a
 build-ready editable-source ZIP, and optional translation-authoring projects.
 Choose one Windows ZIP to run DPH; keep its full extracted layout together.

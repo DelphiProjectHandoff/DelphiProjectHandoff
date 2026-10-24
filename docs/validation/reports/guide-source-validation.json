@@ -1,5 +1,5 @@
 {
-  "guide_version": 61,
+  "guide_version": 62,
   "last_changed": "2026-10-23",
   "sources": {
     "DPH.Analysis.Async.pas": "876a836f25b3d323ac4d6f635701fb4e8e97955fdff39c964368aa62f1a4c153",
@@ -74,23 +74,23 @@
     "migrations/007_author_questions.sql": "480cd24b282e8859accea1fa228d57e17590b21f36ede38f6e44dff14242fb18",
     "migrations/008_translation_cache.sql": "41124a321d3012f98f25941bc9004528060f149fc2bbfe621e148025bf1b98a0",
     "migrations/009_structured_knowledge.sql": "f1f45111c901accfd564e9f0e42b8f0cf71ae556c3ab2b0f6ae890362c0ed4a6",
-    "docs/guides/source/DPH_Engineering_Guide.txt": "ed91ca6b680a0ea0015f85d18830386b21dd9cfbe1f7d46859d12808dce81586",
-    "docs/guides/source/DPH_User_Guide.txt": "43a26ef966cc4d6fd3efd2d34c9497a99c9a6eb8eefd3971ab78496076cc99cf",
-    "DelphiProjectHandoff.dproj": "8fcef75bb720674224fa9610ba05ac92c6213bcb966bdaba5a0612033e29dfe3"
+    "docs/guides/source/DPH_Engineering_Guide.txt": "d0ead63fd60a6226422e2875df72be8505b070c85c0c0541f75c34f44c0f6aca",
+    "docs/guides/source/DPH_User_Guide.txt": "f66d30d1cee81b2f08a0bf7a0ce8c30ae24e15a1fa3b5534cbd4061c83dcb8a1",
+    "DelphiProjectHandoff.dproj": "fbe1f8950f2ef4041eb948aa42c1cf1a869e2b8ccd67d892cc6dd0a48dc6754e"
   },
   "content": {
     "User": {
       "parts": 3,
       "chapters": 7,
       "subsections": 18,
-      "words": 2892,
+      "words": 2915,
       "figures": 4
     },
     "Engineering": {
       "parts": 6,
       "chapters": 27,
       "subsections": 177,
-      "words": 18436,
+      "words": 18445,
       "figures": 0
     }
   },

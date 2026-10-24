@@ -1,5 +1,10 @@
-DELPHI PROJECT HANDOFF 0.8.0.20 - DEVELOPER TEST DIRECTIONS
+DELPHI PROJECT HANDOFF 0.8.0.21 - DEVELOPER TEST DIRECTIONS
 Last changed: 23 October 2026
+
+These development tests and their fixture projects are in the full Git
+repository. They are deliberately excluded from the build-ready source
+release ZIP and the ready-to-run Windows ZIPs. You do not need these tests to
+run DPH or build the extracted release source.
 
 Before opening the main form in the designer, install the supplied DAT design
 package through RAD Studio's Component > Install Packages > Add command. See
@@ -51,7 +56,7 @@ must be described as reconstructions. Check that screenshots and diagrams
 start at a readable size, remain scrollable, and preserve selection routes.
 Review both User and Engineering Guide DOCX/PDF pairs and local HTML help
 after editing guide source; the guide build and render scripts are in tools.
-Check the 0.8.0.20 Win64 and Win32 ZIPs independently after extraction. Each
+Check the 0.8.0.21 Win64 and Win32 ZIPs independently after extraction. Each
 must contain its matching executable, WebView2 loader, 35 runtime language
 packs, Change_Guide.txt, current DOCX/PDF guides, and local HTML help. The
 editable-source ZIP must build without the optional authoring ZIP. The fourth
