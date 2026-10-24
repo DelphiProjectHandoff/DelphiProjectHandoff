@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A concise RAD Studio 37 guide to installing the supplied language design package and building Delphi Project Handoff from its source ZIP.">
+  <link rel="canonical" href="https://delphiprojecthandoff.github.io/quick-start.html">
+  <meta name="theme-color" content="#0b3153">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Source build quick start | Delphi Project Handoff">
+  <meta property="og:description" content="Five clear steps to open and build the experimental Delphi Project Handoff source in RAD Studio.">
+  <meta property="og:url" content="https://delphiprojecthandoff.github.io/quick-start.html">
+  <meta property="og:image" content="https://delphiprojecthandoff.github.io/assets/dph-emblem.png">
+  <title>Source build quick start | Delphi Project Handoff</title>
+  <link rel="icon" href="assets/dph-emblem.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://cdn.gtranslate.net">
+</head>
+<body class="quick-start-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="mockup-ribbon"><div class="shell ribbon-inner"><span class="ribbon-status"><span class="ribbon-dot"></span> Experimental beta <span class="ribbon-divider">/</span> 0.8.0 series</span><a class="ribbon-contact" href="mailto:churchesite@gmail.com">Contact: <span class="notranslate" translate="no">churchesite@gmail.com</span></a></div></div>
+  <header class="site-header" id="top">
+    <div class="header-inner shell">
+      <a class="brand" href="index.html" aria-label="Delphi Project Handoff home"><img src="assets/dph-logo.svg" alt="Delphi Project Handoff"></a>
+      <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button>
+      <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="index.html#why">Why <span class="notranslate" translate="no">DPH</span></a>
+        <a href="index.html#experience">Explore the app</a>
+        <a href="downloads.html">Downloads</a>
+        <a class="nav-cta" href="#main" aria-current="page">Quick start <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="quick-start-hero" aria-labelledby="quick-start-title"><div class="shell">
+      <p class="eyebrow light">For source-build developers · <span class="notranslate" translate="no">0.8.0.21</span></p>
+      <h1 id="quick-start-title">Build <span class="notranslate" translate="no">DPH</span> from source.</h1>
+      <p>Five steps from the clean source ZIP to a working Win32 or Win64 build in <span class="notranslate" translate="no">RAD Studio 37</span>.</p>
+    </div></section>
+    <section class="quick-start-main" aria-label="Source build steps"><div class="shell">
+      <div class="quick-start-intro"><p>This guide is for the <strong>build-ready source ZIP</strong>, not the ready-to-run Windows downloads. You do not need the Win32 ZIP, Win64 ZIP, or optional translation-authoring ZIP to compile the source. <a href="https://github.com/DelphiProjectHandoff/DelphiProjectHandoff/releases/download/v0.8.0.21-experimental/DPH_v0_8_0_21_Source_Distribution_2026-10-23_201353.zip">Get the 0.8.0.21 source ZIP</a>.</p></div>
+      <ol class="quick-start-list">
+        <li><h2>Extract the entire source ZIP</h2><p>Choose a writable local folder. Extract all files and keep the folders together; do not open or build files while they are still inside the ZIP.</p></li>
+        <li><h2>Install the language design package</h2><p><strong>Before opening the project</strong>, start <span class="notranslate" translate="no">RAD Studio 37</span> and choose <strong>Component → Install Packages → Add</strong>. Inside the extracted folder, select <code class="notranslate" translate="no">export\DAT-component-kit\DelphiProjectHandoff\DesignPackages\Win32\Release\DATLanguageManagerFMXDesign.bpl</code>.</p><p>Leave <code class="notranslate" translate="no">DATLanguageManagerCoreRuntime.bpl</code> and <code class="notranslate" translate="no">DATLanguageManagerFMXRuntime.bpl</code> in that same folder. You do not add those two BPLs separately. Confirm the design package is enabled; restart the IDE if prompted. The <strong>Win32 design package</strong> is correct even when building the Win64 app.</p></li>
+        <li><h2>Open the project in the IDE</h2><p>In RAD Studio, choose <strong>File → Open Project</strong>. Browse to the <strong>top level of the extracted source folder</strong> and select <code class="notranslate" translate="no">DelphiProjectHandoff.dproj</code>. Do not open <code class="notranslate" translate="no">DPH.UI.Main.fmx</code> by itself. Its two language controls are already on the form.</p></li>
+        <li><h2>Build the Windows edition you need</h2><p>In Project Manager, select <strong>Win32</strong> or <strong>Win64</strong>, select <strong>Release</strong>, then choose <strong>Build</strong>. The project already includes the translation dependency in its compiler search path; there is no separate dependency-preparation step.</p></li>
+        <li><h2>Run your build</h2><p>Open <code class="notranslate" translate="no">bin\Win32\Release\DelphiProjectHandoff.exe</code> or <code class="notranslate" translate="no">bin\Win64\Release\DelphiProjectHandoff.exe</code> inside the extracted folder. Check that <code class="notranslate" translate="no">WebView2Loader.dll</code> is beside the executable. Keep the source folder's <code class="notranslate" translate="no">Localization</code>, <code class="notranslate" translate="no">migrations</code>, <code class="notranslate" translate="no">help</code>, and <code class="notranslate" translate="no">images and icons</code> folders in place. Formatted embedded pages also require Microsoft WebView2 Runtime.</p></li>
+      </ol>
+      <aside class="quick-start-trouble"><h2>If the Form Designer reports missing language controls</h2><p>Do not remove <code class="notranslate" translate="no">TDATFMXLanguageManager</code> or <code class="notranslate" translate="no">TDATFMXLanguageComboBox</code>. Close the form and check <strong>Component → Install Packages</strong> to confirm <code class="notranslate" translate="no">DATLanguageManagerFMXDesign.bpl</code> is installed and enabled.</p></aside>
+      <div class="quick-start-bottom"><a class="quick-start-action quick-start-action-primary" href="docs/pdf/DPH_Source_Build_Quick_Start.pdf" download="DPH_Source_Build_Quick_Start.pdf" type="application/pdf">Download this guide as PDF <span aria-hidden="true">↓</span></a><a href="downloads.html#packages">Return to downloads <span aria-hidden="true">→</span></a></div>
+    </div></section>
+  </main>
+  <footer class="site-footer"><div class="shell footer-grid"><div><a href="index.html"><img src="assets/dph-logo.svg" alt="Delphi Project Handoff home"></a><p>Experimental software for source-backed Delphi application handoffs.</p></div><div class="footer-links"><a href="downloads.html">Downloads</a><a href="mailto:churchesite@gmail.com">Contact: <span class="notranslate" translate="no">churchesite@gmail.com</span></a><a href="https://github.com/DelphiProjectHandoff/DelphiProjectHandoff" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a><a href="https://github.com/DelphiProjectHandoff/DelphiProjectHandoff/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Apache 2.0 license ↗</a></div></div><div class="shell footer-bottom"><span>Experimental beta · 0.8.0 series</span><span class="notranslate" translate="no">Delphi Project Handoff</span></div></footer>
+  <div class="gtranslate_wrapper notranslate" translate="no" aria-label="Optional website translation"></div>
+  <script>window.gtranslateSettings={default_language:'en',languages:['ar','bg','bn','cs','de','el','en','es','fa','fi','tl','fr','he','hi','hr','hu','id','it','ja','ko','pl','ps','pt','ro','ru','sk','sr','sv','th','tr','uk','ur','vi','zh-CN','zh-TW'],native_language_names:true,detect_browser_language:true,wrapper_selector:'.gtranslate_wrapper',switcher_horizontal_position:'right',switcher_vertical_position:'bottom'};</script>
+  <script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+  <script src="assets/translation-selector.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>
